@@ -276,3 +276,34 @@ test('chat aplica edição sem apagar projeto anterior antes de salvar', async (
   assert.equal(calls.projects.length,1);
   assert.equal(calls.projects[0][0].framework,'html5');
 });
+
+test('upload informa conflito 409 e não declara upload como persistido',async()=>{
+  const {dependencies}=fakeUploadDeps();
+  dependencies.salvarProjeto=async()=>{throw Object.assign(Error('busy'),{code:'SOLARIS_PROJECT_BUSY',status:409});};
+  const response=fakeResponse();
+  criarHandlerUploadSolaris(dependencies)(req({sessionId:'1790000000000_abcd'}),response);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(response.statusCode,409);
+  assert.equal(response.jsonBody.code,'SOLARIS_PROJECT_BUSY');
+  assert.match(response.jsonBody.error,/atualizado em outra solicitação/);
+  assert.equal(response.jsonBody.temProjeto,undefined);
+});
+
+test('chat não mascara conflito na edição com resposta genérica',async()=>{
+  const {dependencies}=fakeChatDeps();
+  dependencies.carregarProjeto=async()=>({framework:'html5',arquivos:['index.html']});
+  let normalCalled=false;
+  dependencies.solarisChat.perguntarStream=async function*(){normalCalled=true;yield 'texto incorreto'};
+  dependencies.responderOuEditarProjeto=async({aplicarMudancasReal})=>{
+    await aplicarMudancasReal([{caminho:'index.html',operacao:'editar',conteudoNovo:'novo'}]);
+    return {ok:true,resposta:'salvo',propostasFinais:[],mudancasAplicadas:[],tokens:{total:0,input:0,output:0}};
+  };
+  dependencies.salvarProjeto=async()=>{throw Object.assign(Error('busy'),{code:'SOLARIS_PROJECT_BUSY',status:409});};
+  const response=fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'edite index.html'}),response);
+  assert.equal(normalCalled,false);
+  assert.equal(response.events.at(-1).type,'error');
+  assert.match(response.events.at(-1).message,/atualizado em outra solicitação/);
+  assert.ok(response.events.every(x=>x.type!=='done'));
+  assert.equal(response.ended,true);
+});

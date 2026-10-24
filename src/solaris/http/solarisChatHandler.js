@@ -130,6 +130,9 @@ function criarHandlerChatSolaris(deps) {
                     }
                 }
                 catch (e) {
+                    // Se o projeto está ocupado, não fingir que a edição caiu no chat comum.
+                    if (e.code === 'SOLARIS_PROJECT_BUSY')
+                        throw e;
                     console.warn(`[SOLARIS-CHAT] falha carregando projeto anexado: ${e.message}`);
                 }
                 finally {
@@ -208,6 +211,7 @@ function criarHandlerChatSolaris(deps) {
             const httpStatus = erroHttp.status || erroHttp.statusCode || 0;
             console.error(`[SOLARIS-CHAT] status=${httpStatus} msg=${err.message}`);
             const allErrMsg = erroHttp.message || '';
+            const isProjetoOcupado = erroHttp.code === 'SOLARIS_PROJECT_BUSY';
             const isCota = httpStatus === 429 || allErrMsg.includes('429') || allErrMsg.includes('RESOURCE_EXHAUSTED') || allErrMsg.includes('quota');
             const isSeguranca = allErrMsg.includes('SAFETY') || allErrMsg.includes('content_filter');
             const isChave = httpStatus === 401 || allErrMsg.includes('API_KEY') || allErrMsg.includes('UNAUTHENTICATED') || allErrMsg.includes('não configurada');
@@ -221,7 +225,8 @@ function criarHandlerChatSolaris(deps) {
             }
             sendEvent({
                 type: 'error',
-                message: isCota ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
+                message: isProjetoOcupado ? 'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.'
+                    : isCota ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
                     : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
                         : isChave ? 'Chave de API inválida ou expirada. Verifique GEMINI_API_KEY no servidor.'
                             : `Solaris temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,

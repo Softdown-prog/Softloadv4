@@ -101,6 +101,9 @@ export function criarHandlerUploadSolaris(deps: SolarisUploadHandlerDependencies
                     await salvarProjeto({ uid, email, plano: req.session.user?.plano || 'free', sessionId, framework: melhorPalpite, arquivos });
                     temProjeto = true;
                 } catch (e) {
+                    if ((e as Error & {code?: string}).code === 'SOLARIS_PROJECT_BUSY') {
+                        return res.status(409).json({error:'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.',code:'SOLARIS_PROJECT_BUSY',sessionId});
+                    }
                     console.warn(`[SOLARIS-UPLOAD] não foi possível persistir o projeto: ${(e as Error).message}`);
                 }
             }
