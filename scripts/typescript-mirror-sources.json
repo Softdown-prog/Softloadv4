@@ -122,5 +122,6 @@
   "scripts/limparProjetosSolarisExpirados.ts",
   "scripts/codeCorpus/codeChunker.ts",
   "scripts/codeCorpus/codeSearchService.ts",
-  "scripts/ragCodeCollect.ts"
+  "scripts/ragCodeCollect.ts",
+  "scripts/codeCorpus/authoredCatalog.ts"
 ]

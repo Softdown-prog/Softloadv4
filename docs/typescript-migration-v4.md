@@ -35,3 +35,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 
 - `scripts/codeCorpus/codeChunker.ts` passou a ser a fonte tipada do particionador de código. Mantém o JavaScript CommonJS para os consumidores, a extensão de linguagens, o limite de 220 palavras e os filtros de possíveis segredos.
 - `src/solaris/rag/codeCorpus.test.js` já testa chunking por linhas, preservação de recuos, extensões de código e limites. O gate TypeScript também valida o novo espelho.
+
+## Etapa incremental — carregamento do catálogo autoral de códigos
+
+- `scripts/codeCorpus/authoredCatalog.ts` é agora a fonte tipada do carregador de receitas do Solaris, incluindo caminhos permitidos, estrutura do manifesto, metadados, limites e chunks.
+- `scripts/codeCorpus/authoredCatalog.js` continua como espelho CommonJS para indexação e testes sem alterar a API `loadAuthoredCorpus`.
+- A origem histórica `Softdown-prog/softload-engine-v3` é mantida nos metadados para evitar que uma refatoração de linguagem altere URLs e hashes sem uma migração de conteúdo separada.
+- O corpus Blogger (`src/rag/`) não é consultado; as receitas autorais continuam em `src/solaris/code-examples/` e `examples/solaris-code/`.
+- Regressões: `npm run rag:code-test`, `npm run rag:boundaries-test` e `npm run typecheck` (auditoria e espelho).
