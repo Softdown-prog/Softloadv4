@@ -1,0 +1,168 @@
+{
+  "nicho": "appstore-bulma-mobile",
+  "versaoDossie": 1,
+  "chassis": "blog",
+  "pageType": "catalogo-produtos",
+  "tokensCss": {
+    "light_mode": {
+      "--bulma-primary": "#10b981",
+      "--bulma-text": "#202124",
+      "--bulma-footer": "#121212"
+    }
+  },
+  "pecas": [
+    {
+      "id": "app-list-card-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Estilo do card de app na listagem — squircle icon + botão Baixar pill. As classes (.app-list-card/.app-list-icon) e o botão (.btn-baixar-pill via [[APP_DOWNLOAD_CTA]]) já são renderizados nativamente pelo chassis (Blog1 aplica ambas em cada post-card) — só faltava a CSS, nunca definida no chassis. rgba(var(--sl-primary),X) corrigido pra rgba(var(--sl-primary-rgb),X) (hex string usado onde componentes numéricos são exigidos, mesmo bug já corrigido em outros nichos). 5 variações de estilo (squircle+pill/minimal contorno/elevado circular/neumórfico gradiente/alto contraste com anel) escolhidas por seed — mesmos seletores fixos do chassis (.app-list-card/.app-list-icon/.btn-baixar-pill), só os valores de estilo mudam, nunca os nomes de classe (não há HTML variante aqui: o card é renderizado pelo próprio loop de posts do chassis, sem domId próprio).",
+      "html": "",
+      "css": ".app-list-card { transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; }\n.app-list-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.1)!important; }\n.app-list-icon {\n  width: 65px; height: 65px; object-fit: cover;\n  border-radius: 18%; box-shadow: 0 2px 5px rgba(0,0,0,0.08);\n}\n.btn-baixar-pill {\n  background-color: rgba(var(--sl-primary-rgb),0.1);\n  color: var(--bulma-primary);\n  border: none; transition: all 0.2s;\n}\n.btn-baixar-pill:hover { background-color: var(--bulma-primary); color: #ffffff; }",
+      "js": "",
+      "cssVariantes": [
+        ".app-list-card { transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; }\n.app-list-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.1)!important; }\n.app-list-icon {\n  width: 65px; height: 65px; object-fit: cover;\n  border-radius: 18%; box-shadow: 0 2px 5px rgba(0,0,0,0.08);\n}\n.btn-baixar-pill {\n  background-color: rgba(var(--sl-primary-rgb),0.1);\n  color: var(--bulma-primary);\n  border: none; transition: all 0.2s;\n}\n.btn-baixar-pill:hover { background-color: var(--bulma-primary); color: #ffffff; }",
+        ".app-list-card { transition: border-color 0.2s; text-decoration: none; }\n.app-list-card:hover { border-color: var(--bulma-primary) !important; }\n.app-list-icon {\n  width: 60px; height: 60px; object-fit: cover;\n  border-radius: 8px; box-shadow: none; border: 1px solid #e5e5e5;\n}\n.btn-baixar-pill {\n  background-color: transparent;\n  color: var(--bulma-primary);\n  border: 1.5px solid var(--bulma-primary); border-radius: 6px; transition: all 0.2s;\n}\n.btn-baixar-pill:hover { background-color: var(--bulma-primary); color: #ffffff; }",
+        ".app-list-card { transition: transform 0.25s, box-shadow 0.25s; text-decoration: none; }\n.app-list-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 1rem 2rem rgba(0,0,0,.14)!important; }\n.app-list-icon {\n  width: 68px; height: 68px; object-fit: cover;\n  border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.12);\n}\n.btn-baixar-pill {\n  background-color: var(--bulma-primary);\n  color: #ffffff;\n  border: none; box-shadow: 0 2px 6px rgba(var(--sl-primary-rgb),0.35); transition: all 0.2s;\n}\n.btn-baixar-pill:hover { filter: brightness(1.1); transform: translateY(-1px); }",
+        ".app-list-card { transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; }\n.app-list-card:hover { transform: translateY(-2px); box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.08)!important; }\n.app-list-icon {\n  width: 64px; height: 64px; object-fit: cover;\n  border-radius: 22px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04), 0 3px 8px rgba(0,0,0,0.07);\n}\n.btn-baixar-pill {\n  background: linear-gradient(135deg, var(--bulma-primary), rgba(var(--sl-primary-rgb),0.75));\n  color: #ffffff;\n  border: none; transition: all 0.2s;\n}\n.btn-baixar-pill:hover { filter: brightness(1.08); }",
+        ".app-list-card { transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; }\n.app-list-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.12)!important; }\n.app-list-icon {\n  width: 64px; height: 64px; object-fit: cover;\n  border-radius: 16px; box-shadow: 0 0 0 2px var(--bulma-primary), 0 3px 6px rgba(0,0,0,0.1);\n}\n.btn-baixar-pill {\n  background-color: var(--bulma-primary);\n  color: #ffffff;\n  border: none; font-weight: 700; transition: all 0.2s;\n}\n.btn-baixar-pill:hover { filter: brightness(0.85); }"
+      ]
+    },
+    {
+      "id": "swipe-menu-categorias",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "swipe-menu-categorias"
+      ],
+      "descricao": "Menu horizontal de categorias com scroll oculto (estilo Google Play tabs). Reaproveita o slot NICHO_HERO (gated por isMultipleItems, mesmo condição documentada no meta.json como \"renderizado apenas em páginas não-post\") — não é um hero visual, mas é o único ponto de injeção \"antes da listagem, só fora de post individual\" que o modelo de dossiê oferece hoje. protegida:true pra nunca ser trocado por hero genérico. Achado real (usuário relatou 'mesmo template sempre, sem coerência visual'): 5 variações autorais (pills/tabs sublinhadas/segmented control/chips com ícone/destaque assimétrico) escolhidas por seed determinístico (mesmo padrão de _DARK_MODE_VARIANTES em modules.js) — mesmas 4 categorias e mesmo domId em todas, só a estrutura visual muda.",
+      "html": "<div class=\"swipe-menu-container\" id=\"swipe-menu-categorias\">\n  <a class=\"swipe-menu-item active\" href=\"/\">Para voce</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Jogos\">Jogos</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Mods\">Mods</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Ferramentas\">Ferramentas</a>\n</div>",
+      "css": ".swipe-menu-container {\n  display: flex; overflow-x: auto; gap: 0.75rem; padding-bottom: 0.5rem;\n  scrollbar-width: none;\n}\n.swipe-menu-container::-webkit-scrollbar { display: none; }\n.swipe-menu-item {\n  white-space: nowrap; background: var(--sl-card-bg); border: 1px solid #e0e0e0;\n  border-radius: 50px; padding: 0.4rem 1.2rem; color: var(--bulma-text);\n  font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.2s;\n}\n.swipe-menu-item:hover, .swipe-menu-item.active {\n  background: var(--bulma-primary); color: #ffffff; border-color: var(--bulma-primary);\n}",
+      "js": "",
+      "htmlVariantes": [
+        "<div class=\"swipe-menu-container\" id=\"swipe-menu-categorias\">\n  <a class=\"swipe-menu-item active\" href=\"/\">Para voce</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Jogos\">Jogos</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Mods\">Mods</a>\n  <a class=\"swipe-menu-item\" href=\"/search/label/Ferramentas\">Ferramentas</a>\n</div>",
+        "<div class=\"cat-tabs-container\" id=\"swipe-menu-categorias\">\n  <a class=\"cat-tab active\" href=\"/\">Para voce</a>\n  <a class=\"cat-tab\" href=\"/search/label/Jogos\">Jogos</a>\n  <a class=\"cat-tab\" href=\"/search/label/Mods\">Mods</a>\n  <a class=\"cat-tab\" href=\"/search/label/Ferramentas\">Ferramentas</a>\n</div>",
+        "<div class=\"cat-segmented-wrap\" id=\"swipe-menu-categorias\">\n  <div class=\"cat-segmented\">\n    <a class=\"cat-segment active\" href=\"/\">Para voce</a>\n    <a class=\"cat-segment\" href=\"/search/label/Jogos\">Jogos</a>\n    <a class=\"cat-segment\" href=\"/search/label/Mods\">Mods</a>\n    <a class=\"cat-segment\" href=\"/search/label/Ferramentas\">Ferramentas</a>\n  </div>\n</div>",
+        "<div class=\"cat-chip-row\" id=\"swipe-menu-categorias\">\n  <a class=\"cat-chip active\" href=\"/\"><i class=\"bi bi-grid-fill\"></i><span>Para voce</span></a>\n  <a class=\"cat-chip\" href=\"/search/label/Jogos\"><i class=\"bi bi-controller\"></i><span>Jogos</span></a>\n  <a class=\"cat-chip\" href=\"/search/label/Mods\"><i class=\"bi bi-puzzle-fill\"></i><span>Mods</span></a>\n  <a class=\"cat-chip\" href=\"/search/label/Ferramentas\"><i class=\"bi bi-tools\"></i><span>Ferramentas</span></a>\n</div>",
+        "<div class=\"cat-featured-row\" id=\"swipe-menu-categorias\">\n  <a class=\"cat-featured-main\" href=\"/\"><i class=\"bi bi-stars\"></i><span>Para voce</span></a>\n  <div class=\"cat-featured-rest\">\n    <a href=\"/search/label/Jogos\">Jogos</a>\n    <a href=\"/search/label/Mods\">Mods</a>\n    <a href=\"/search/label/Ferramentas\">Ferramentas</a>\n  </div>\n</div>"
+      ],
+      "cssVariantes": [
+        ".swipe-menu-container {\n  display: flex; overflow-x: auto; gap: 0.75rem; padding-bottom: 0.5rem;\n  scrollbar-width: none;\n}\n.swipe-menu-container::-webkit-scrollbar { display: none; }\n.swipe-menu-item {\n  white-space: nowrap; background: var(--sl-card-bg); border: 1px solid #e0e0e0;\n  border-radius: 50px; padding: 0.4rem 1.2rem; color: var(--bulma-text);\n  font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.2s;\n}\n.swipe-menu-item:hover, .swipe-menu-item.active {\n  background: var(--bulma-primary); color: #ffffff; border-color: var(--bulma-primary);\n}",
+        ".cat-tabs-container {\n  display: flex; overflow-x: auto; gap: 1.5rem; padding-bottom: 0;\n  border-bottom: 1px solid #e0e0e0; scrollbar-width: none;\n}\n.cat-tabs-container::-webkit-scrollbar { display: none; }\n.cat-tab {\n  white-space: nowrap; padding: 0.6rem 0.1rem; color: var(--bulma-text);\n  font-weight: 600; font-size: 0.85rem; text-decoration: none;\n  border-bottom: 2px solid transparent; opacity: 0.65; transition: all 0.2s;\n}\n.cat-tab:hover, .cat-tab.active {\n  color: var(--bulma-primary); border-bottom-color: var(--bulma-primary); opacity: 1;\n}",
+        ".cat-segmented-wrap { overflow-x: auto; scrollbar-width: none; }\n.cat-segmented-wrap::-webkit-scrollbar { display: none; }\n.cat-segmented {\n  display: inline-flex; background: var(--sl-card-bg); border: 1px solid #e0e0e0;\n  border-radius: 12px; padding: 3px; gap: 2px;\n}\n.cat-segment {\n  white-space: nowrap; padding: 0.45rem 1rem; border-radius: 9px;\n  color: var(--bulma-text); font-weight: 600; font-size: 0.82rem;\n  text-decoration: none; transition: all 0.2s;\n}\n.cat-segment:hover, .cat-segment.active {\n  background: var(--bulma-primary); color: #ffffff;\n}",
+        ".cat-chip-row {\n  display: flex; overflow-x: auto; gap: 0.6rem; padding-bottom: 0.5rem; scrollbar-width: none;\n}\n.cat-chip-row::-webkit-scrollbar { display: none; }\n.cat-chip {\n  display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;\n  background: var(--sl-card-bg); border: 1px solid #e0e0e0; border-radius: 10px;\n  padding: 0.5rem 0.9rem; color: var(--bulma-text); font-weight: 600; font-size: 0.82rem;\n  text-decoration: none; transition: all 0.2s;\n}\n.cat-chip i { font-size: 0.95rem; }\n.cat-chip:hover, .cat-chip.active {\n  background: var(--bulma-primary); color: #ffffff; border-color: var(--bulma-primary);\n}",
+        ".cat-featured-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }\n.cat-featured-main {\n  display: inline-flex; align-items: center; gap: 0.4rem;\n  background: var(--bulma-primary); color: #fff; border-radius: 50px;\n  padding: 0.5rem 1.1rem; font-weight: 700; font-size: 0.85rem; text-decoration: none;\n}\n.cat-featured-rest { display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none; }\n.cat-featured-rest::-webkit-scrollbar { display: none; }\n.cat-featured-rest a {\n  white-space: nowrap; color: var(--bulma-text); font-weight: 600; font-size: 0.85rem;\n  text-decoration: none; opacity: 0.75; transition: opacity 0.2s;\n}\n.cat-featured-rest a:hover { opacity: 1; color: var(--bulma-primary); }"
+      ]
+    },
+    {
+      "id": "popular-posts-ranking-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Widget PopularPosts (nativo do Blogger, já ligado via popularPostsRanking:true em nichoModuleDefaults) transformado em ranking numerado via CSS counter — sem JS.",
+      "html": "",
+      "css": ".PopularPosts .widget-content ul {\n  list-style: none !important; padding: 0 !important; margin: 0 !important;\n  counter-reset: top-apps-counter;\n}\n.PopularPosts .widget-content ul li {\n  position: relative; padding: 1rem 0 !important;\n  border-bottom: 1px solid #f0f0f0;\n  counter-increment: top-apps-counter;\n}\n.PopularPosts .item-content {\n  display: flex; align-items: center; gap: 1rem;\n}\n.PopularPosts .item-content::before {\n  content: counter(top-apps-counter);\n  font-size: 1.1rem; font-weight: 800; color: #adb5bd;\n  min-width: 15px; text-align: center;\n}\n.PopularPosts .item-thumbnail { margin: 0 !important; flex-shrink: 0; }\n.PopularPosts .item-thumbnail img {\n  width: 60px !important; height: 60px !important;\n  object-fit: cover !important; border-radius: 20% !important;\n  box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;\n  padding: 0 !important; border: none !important;\n}\n.PopularPosts .item-title {\n  font-size: 0.95rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.2rem;\n  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;\n}\n.PopularPosts .item-title a { color: var(--bulma-text); text-decoration: none; transition: color 0.2s; }\n.PopularPosts .item-title a:hover { color: var(--bulma-primary); }\n.PopularPosts .item-snippet {\n  font-size: 0.75rem; color: #6c757d;\n  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;\n}",
+      "js": ""
+    },
+    {
+      "id": "stats-jelly-bean",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Widget Stats nativo do Blogger transformado via CSS puro (formato \"jelly bean\" com animações). rgba(var(--sl-primary),0.3) corrigido pra rgba(var(--sl-primary-rgb),0.3).",
+      "html": "",
+      "css": ".widget.Stats {\n  background: linear-gradient(145deg, #ffffff, #f0f4f8);\n  padding: 2rem 1.5rem; border-radius: 24px;\n  border: 1px solid #e0e0e0; text-align: center;\n  position: relative; overflow: hidden;\n  box-shadow: 0 4px 15px rgba(0,0,0,0.05);\n  margin-bottom: 2rem;\n}\n.widget.Stats h2.title { display: none !important; }\n.widget.Stats::after {\n  content: \"\\F33D\";\n  font-family: \"bootstrap-icons\";\n  position: absolute; top: -15px; right: -15px;\n  font-size: 8rem; color: var(--bulma-primary);\n  opacity: 0.04; z-index: 0;\n  animation: jellyFloat 6s ease-in-out infinite;\n}\n.widget.Stats .widget-content {\n  position: relative; z-index: 2;\n  display: flex; flex-direction: column; align-items: center;\n}\n.widget.Stats .widget-content::before {\n  content: \"\\F33D\";\n  font-family: \"bootstrap-icons\";\n  display: flex; align-items: center; justify-content: center;\n  width: 65px; height: 65px;\n  margin: 0 auto 1.2rem auto;\n  background: var(--bulma-primary); color: #ffffff; font-size: 2rem;\n  border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%;\n  box-shadow: 0 8px 15px rgba(var(--sl-primary-rgb),0.3);\n  animation: jellySquash 2.5s infinite alternate ease-in-out;\n}\n.widget.Stats span[dir=\"ltr\"], .widget.Stats .widget-content > span {\n  display: block !important; font-size: 3rem !important;\n  font-weight: 900 !important; color: var(--bulma-text) !important;\n  line-height: 1 !important; letter-spacing: -2px !important;\n  animation: countSlideUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;\n}\n.widget.Stats span[dir=\"ltr\"]::after, .widget.Stats .widget-content > span::after {\n  content: \"Visualizacoes Totais\";\n  display: block; font-size: 0.8rem; font-weight: 700;\n  color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;\n}\n.widget.Stats img { display: none !important; }\n@keyframes countSlideUp {\n  0% { opacity: 0; transform: translateY(40px) scale(0.8); filter: blur(5px); }\n  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }\n}\n@keyframes jellySquash {\n  0% { transform: scale(1) rotate(0deg); border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%; }\n  50% { transform: scale(1.05) rotate(8deg); border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }\n  100% { transform: scale(0.95) rotate(-8deg); border-radius: 60% 40% 35% 65% / 55% 45% 40% 60%; }\n}\n@keyframes jellyFloat {\n  0%, 100% { transform: translateY(0) rotate(15deg); }\n  50% { transform: translateY(-20px) rotate(25deg); }\n}",
+      "js": ""
+    },
+    {
+      "id": "label-cloud-multicolor",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Nuvem de labels (widget Label nativo, modo \"cloud\") com 5 cores rotativas via nth-child(5n+X).",
+      "html": "",
+      "css": ".cloud-label-widget-content { display: flex; flex-wrap: wrap; gap: 0.5rem; }\n.cloud-label-widget-content .label-size {\n  font-size: 0.85rem !important; border-radius: 50px;\n  transition: all 0.2s ease; display: flex; align-items: center;\n  border: 2px solid transparent;\n}\n.cloud-label-widget-content .label-size a {\n  padding: 0.4rem 0.8rem; text-decoration: none; font-weight: 700;\n  color: inherit; display: flex; align-items: center; gap: 5px;\n}\n.cloud-label-widget-content .label-count {\n  font-size: 0.75rem; opacity: 0.8;\n  background: rgba(255,255,255,0.4); padding: 2px 6px; border-radius: 20px; margin-left: 4px;\n}\n.cloud-label-widget-content .label-size:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }\n.cloud-label-widget-content .label-size:nth-child(5n+1) { background: rgba(16,185,129,0.15); color: #0d9668; }\n.cloud-label-widget-content .label-size:nth-child(5n+1):hover { background: #10b981; color: #fff; }\n.cloud-label-widget-content .label-size:nth-child(5n+2) { background: rgba(13,110,253,0.15); color: #0b5ed7; }\n.cloud-label-widget-content .label-size:nth-child(5n+2):hover { background: #0d6efd; color: #fff; }\n.cloud-label-widget-content .label-size:nth-child(5n+3) { background: rgba(253,126,20,0.15); color: #d3660a; }\n.cloud-label-widget-content .label-size:nth-child(5n+3):hover { background: #fd7e14; color: #fff; }\n.cloud-label-widget-content .label-size:nth-child(5n+4) { background: rgba(111,66,193,0.15); color: #59359a; }\n.cloud-label-widget-content .label-size:nth-child(5n+4):hover { background: #6f42c1; color: #fff; }\n.cloud-label-widget-content .label-size:nth-child(5n+5) { background: rgba(214,51,132,0.15); color: #a92466; }\n.cloud-label-widget-content .label-size:nth-child(5n+5):hover { background: #d63384; color: #fff; }",
+      "js": ""
+    },
+    {
+      "id": "label-lista-icon",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Widget Label nativo em modo \"List\" — ícone bi-tags-fill + badge de contador. rgba(var(--sl-primary),0.1) corrigido pra rgba(var(--sl-primary-rgb),0.1).",
+      "html": "",
+      "css": ".list-label-widget-content ul { list-style: none; padding: 0; margin: 0; }\n.list-label-widget-content li {\n  display: flex; justify-content: space-between; align-items: center;\n  padding: 0.75rem 0; border-bottom: 1px dashed #e0e0e0;\n}\n.list-label-widget-content li:last-child { border-bottom: none; }\n.list-label-widget-content li a {\n  color: var(--bulma-text); text-decoration: none; font-weight: 600;\n  display: flex; align-items: center; transition: color 0.2s;\n}\n.list-label-widget-content li a::before {\n  content: \"\\F52B\";\n  font-family: \"bootstrap-icons\";\n  margin-right: 10px; color: var(--bulma-primary); font-size: 1.1rem;\n}\n.list-label-widget-content li a:hover { color: var(--bulma-primary); }\n.list-label-widget-content li span {\n  background-color: rgba(var(--sl-primary-rgb),0.1); color: var(--bulma-primary);\n  font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 50px;\n}",
+      "js": ""
+    },
+    {
+      "id": "blockquote-appstore",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Blockquote com ícone bi-quote discreto. Seletor corrigido de volta pra .post-content blockquote (achado 8, ver plano \"esqueleto por nicho\"): a correção anterior tinha trocado .post-content por .blog-post-body achando que era a classe real do chassis — mas .post-content SEMPRE foi a classe real de exemplos/appstore-bulma-mobile.xml, só nunca tinha elemento correspondente no esqueleto até a extração real do main/post do Blog1.",
+      "html": "",
+      "css": ".post-content blockquote {\n  position: relative;\n  background-color: var(--sl-card-bg);\n  border-left: 5px solid var(--bulma-primary);\n  margin: 1.8rem 0;\n  padding: 1.25rem 1.25rem 1.25rem 3.5rem;\n  border-radius: 0 16px 16px 0;\n  font-size: 1rem; font-style: italic; color: #5f6368;\n  box-shadow: 0 4px 10px rgba(0,0,0,0.03);\n}\n.post-content blockquote p:last-child { margin-bottom: 0; }\n.post-content blockquote::before {\n  content: \"\\F50B\";\n  font-family: \"bootstrap-icons\";\n  position: absolute; left: 1rem; top: 1rem;\n  font-size: 1.8rem; color: var(--bulma-primary);\n  opacity: 0.3; line-height: 1;\n}",
+      "js": ""
+    },
+    {
+      "id": "sidebar-widgets-appstore",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Estilo dos widgets da sidebar. Seletor corrigido na fonte: \".sidebar .widget\" nunca existe como classe real (mesmo achado de elearning-academy — o chassis usa <b:section id=\"sidebar\"> sem class, dentro de <aside>) — remapeado pra \"aside .widget\".",
+      "html": "",
+      "css": "aside .widget { background: var(--sl-card-bg); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #eee; }\n.widget h2.title { font-size: 1rem; font-weight: 800; border-bottom: 2px solid var(--bulma-primary); padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; color: var(--bulma-text); }",
+      "js": ""
+    },
+    {
+      "id": "scrollbar-custom-appstore",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Scrollbar customizada WebKit — sitewide, CSS-only.",
+      "html": "",
+      "css": "::-webkit-scrollbar { width: 8px; }\n::-webkit-scrollbar-thumb { background: var(--bulma-primary); border-radius: 10px; }",
+      "js": ""
+    },
+    {
+      "id": "header-footer-accent",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Acento de cor no header/footer próprios do esqueleto (borda inferior no header, fundo do footer) — recoloração, não substituição estrutural. CORRIGIDO (esqueleto próprio, achado real): a versão anterior remapeava pra .sl-header/.sl-footer, época em que o nicho usava o chassis compartilhado. Revertido de volta pros seletores reais confirmados em exemplos/appstore-bulma-mobile.xml (<header class='site-header'>, <footer class='site-footer'>).",
+      "html": "",
+      "css": ".site-header { border-bottom: 2px solid var(--bulma-primary); }\n.site-footer { background: var(--bulma-footer); }\n.site-footer a { color: var(--bulma-primary); }\n.site-footer a:hover { color: #fff; }",
+      "js": ""
+    },
+    {
+      "id": "contato-form-appstore",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "descricao": "Estilo do formulário de contato nativo do Blogger (ContactForm). rgba(var(--sl-primary),0.15) corrigido pra rgba(var(--sl-primary-rgb),0.15).",
+      "html": "",
+      "css": ".contact-form-name, .contact-form-email, .contact-form-email-message {\n  width: 100% !important; max-width: 100% !important;\n  padding: 0.85rem 1rem; margin-bottom: 1rem;\n  background-color: var(--sl-card-bg); border: 1px solid #e0e0e0;\n  border-radius: 12px; font-family: inherit;\n  color: var(--bulma-text); transition: all 0.2s ease; box-sizing: border-box;\n}\n.contact-form-email-message { min-height: 120px; resize: vertical; }\n.contact-form-name:focus, .contact-form-email:focus, .contact-form-email-message:focus {\n  outline: 0; background-color: var(--sl-card-bg); border-color: var(--bulma-primary);\n  box-shadow: 0 0 0 4px rgba(var(--sl-primary-rgb),0.15);\n}\n.contact-form-button-submit {\n  display: block; width: 100%; font-weight: 700; text-align: center;\n  cursor: pointer; padding: 0.85rem 1.5rem; border-radius: 50px;\n  color: #ffffff; background-color: var(--bulma-primary);\n  border: none; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.9rem;\n  transition: all 0.3s ease;\n}\n.contact-form-button-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); filter: brightness(1.05); }\n.contact-form-error-message { color: #842029; background-color: #f8d7da; border: 1px solid #f5c2c7; }\n.contact-form-success-message { color: #0f5132; background-color: #d1e7dd; border: 1px solid #badbcc; }\n.contact-form-error-message, .contact-form-success-message { margin-top: 1rem; padding: 1rem; border-radius: 12px; font-weight: 600; text-align: center; font-size: 0.9rem; }",
+      "js": ""
+    },
+    {
+      "id": "widget-cookie-card-central",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "bulmaCookieBanner",
+        "bulmaCookieAccept"
+      ],
+      "descricao": "Cookie banner em card flutuante centralizado (diferencial documentado vs os outros nichos, que usam barra full-width ou card de canto) — por isso migrado como widget próprio em vez de usar [[COOKIE_MODULE]] genérico (cookieBanner permanece false em nichoModuleDefaults pra não duplicar).",
+      "html": "<div id=\"bulmaCookieBanner\" class=\"bulma-cookie-banner\">\n  <div class=\"bulma-cookie-content\">\n    <i class=\"bi bi-shield-lock-fill bulma-cookie-icon\"></i>\n    <p class=\"bulma-cookie-text\">\n      Nos usamos cookies para garantir que voce tenha a melhor experiencia na nossa loja de aplicativos. Ao continuar navegando, voce concorda com a nossa\n      <a href=\"/p/politica-de-privacidade.html\">Politica de Privacidade</a>.\n    </p>\n  </div>\n  <button id=\"bulmaCookieAccept\" class=\"bulma-cookie-btn\">Entendi e Aceito</button>\n</div>",
+      "css": ".bulma-cookie-banner {\n  position: fixed; bottom: -100px;\n  left: 50%; transform: translateX(-50%);\n  width: 90%; max-width: 500px;\n  background-color: #ffffff; border-radius: 16px;\n  box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 1.25rem;\n  z-index: 2000; display: flex; flex-direction: column; gap: 12px;\n  opacity: 0; visibility: hidden;\n  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  border: 1px solid #eaeaea;\n}\n.bulma-cookie-banner.show { bottom: 20px; opacity: 1; visibility: visible; }\n.bulma-cookie-content { display: flex; align-items: flex-start; gap: 12px; }\n.bulma-cookie-icon { font-size: 1.5rem; color: var(--bulma-primary, #10b981); line-height: 1; }\n.bulma-cookie-text { font-size: 0.85rem; color: var(--bulma-text, #202124); line-height: 1.4; margin: 0; }\n.bulma-cookie-text a { color: var(--bulma-primary, #10b981); font-weight: 600; text-decoration: none; }\n.bulma-cookie-text a:hover { text-decoration: underline; }\n.bulma-cookie-btn {\n  background-color: var(--bulma-primary, #10b981); color: #ffffff;\n  border: none; border-radius: 50px; padding: 10px 20px;\n  font-weight: 700; font-size: 0.9rem; text-transform: uppercase;\n  letter-spacing: 0.5px; cursor: pointer; width: 100%; transition: all 0.2s ease;\n}\n.bulma-cookie-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.2); filter: brightness(1.05); }",
+      "js": "document.addEventListener('DOMContentLoaded', function() {\n  const cookieBanner = document.getElementById('bulmaCookieBanner');\n  const acceptBtn = document.getElementById('bulmaCookieAccept');\n  const cookieName = 'bulma_mobile_cookies_accepted';\n  if (!localStorage.getItem(cookieName)) {\n    setTimeout(() => { cookieBanner.classList.add('show'); }, 1000);\n  }\n  acceptBtn.addEventListener('click', function() {\n    localStorage.setItem(cookieName, 'true');\n    cookieBanner.classList.remove('show');\n    setTimeout(() => { cookieBanner.remove(); }, 500);\n  });\n});"
+    },
+    {
+      "id": "error-404-app-store",
+      "tipo": "modulo",
+      "protegida": false,
+      "css": ".error-icon-wrapper { font-size: 5rem; color: #dee2e6; margin-bottom: 1.5rem; display: inline-block; animation: float404 3s ease-in-out infinite; }\n.error-title-404 { font-size: 1.75rem; font-weight: 800; color: #202124; margin-bottom: 0.5rem; }\n.error-text-404 { font-size: 0.95rem; color: #6c757d; max-width: 450px; margin: 0 auto 2rem; line-height: 1.5; }\n.error-search-form { width: 100%; max-width: 400px; margin: 0 auto 1.5rem; }\n.error-search-input { width: 100%; border-radius: 50px; padding: 0.85rem 1.25rem; border: 2px solid #f0f0f0; background-color: #f8f9fa; transition: all 0.2s ease; }\n.error-search-input:focus { border-color: #10b981; background-color: #fff; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); outline: none; }\n.btn-error-home { background-color: #10b981; color: #ffffff; font-weight: 700; padding: 0.8rem 2rem; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; border: none; transition: all 0.3s ease; }\n.btn-error-home:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16,185,129,0.2); color: #fff; }\n@keyframes float404 { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(5deg); } }",
+      "descricao": "CSS da 404 temática App não encontrado (ver ERROR_404_APPSTORE em modules.js) — existia em impl.json legado mas nunca foi migrada pro dossiê na conversão pra este nicho; a página 404 estava sem estilo nenhum em produção até esta correção (achado da auditoria paginação/404/busca)."
+    }
+  ]
+}

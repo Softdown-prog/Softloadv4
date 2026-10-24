@@ -1,0 +1,113 @@
+{
+  "hero_mosaico": {
+    "descricao": "CSS Grid com 3 posts: post 0 ocupa coluna esquerda inteira (2fr), posts 1 e 2 empilhados na direita (1fr)",
+    "css": ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 300px; background: #000; }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); opacity: 1; }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 80%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.2; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }\n@media (min-width: 992px) {\n  .hero-mosaic { grid-template-columns: 2fr 1fr; grid-template-rows: 250px 250px; }\n  .hero-item-0 { grid-row: 1 / -1; height: 100%; }\n  .hero-item-0 .hero-title { font-size: 2.5rem; }\n  .hero-item-1, .hero-item-2 { height: 100%; }\n  .hero-item-1 .hero-title, .hero-item-2 .hero-title { font-size: 1.3rem; }\n}",
+    "html_estrutura": "<div class=\"hero-mosaic\">\n  <div class=\"hero-card rounded-3 hero-item-0\">\n    <a href=\"[URL_POST_0]\">\n      <img alt=\"[TITULO]\" src=\"[IMG_1200x16:9]\" loading=\"lazy\">\n      <div class=\"hero-overlay\">\n        <span class=\"mag-badge\">[CATEGORIA]</span>\n        <h2 class=\"hero-title playfair mt-3\">[TITULO]</h2>\n        <div class=\"text-light small fw-bold text-uppercase mt-2\" style=\"letter-spacing: 1px;\">\n          [AUTOR] <span class=\"mx-2\">&#8226;</span> [DATA]\n        </div>\n      </div>\n    </a>\n  </div>\n  <div class=\"hero-card rounded-3 hero-item-1\">[POST_1]</div>\n  <div class=\"hero-card rounded-3 hero-item-2\">[POST_2]</div>\n</div>",
+    "mag_badge_css": ".mag-badge { position: absolute; top: 20px; left: 20px; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 5px 12px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 20px; }"
+  },
+  "css_componentes": {
+    "news_card": {
+      "card": "// [0] caminho: news_card.card\n.news-card { background: transparent; border: none; transition: transform 0.3s; height: 100%; }",
+      "imagem": "// [1] caminho: news_card.imagem\n.news-card-img { overflow: hidden; border-radius: 4px; position: relative; margin-bottom: 1rem; }\n.news-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }\n.news-card:hover .news-card-img img { transform: scale(1.03); }",
+      "titulo": "// [2] caminho: news_card.titulo\n.news-title { font-weight: 700; font-size: 1.4rem; line-height: 1.3; }\n.news-title a { color: var(--mag-title); }\n.news-card:hover .news-title a { color: var(--mag-primary); }"
+    },
+    "post_single": {
+      "header": "// [3] caminho: post_single.header\n.post-header-single { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--mag-border); }",
+      "titulo": "// [4] caminho: post_single.titulo\n.post-title-single { font-weight: 900; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; margin: 15px 0; letter-spacing: -1px; }",
+      "corpo": "// [5] caminho: post_single.corpo\n.post-body-content { font-size: 1.15rem; line-height: 1.8; color: var(--mag-text); }\n.post-body-content img, .post-body-content iframe { max-width: 100% !important; height: auto !important; margin: 2rem 0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }"
+    },
+    "dropcap": {
+      "descricao": "Letra capitular no primeiro paragrafo do post",
+      "seletores": ".post-body-content > p:first-of-type::first-letter, .post-body-content > div:first-of-type::first-letter",
+      "propriedades": [
+        "font-family: var(--font-title)",
+        "font-size: 4.5rem",
+        "font-weight: 900",
+        "color: var(--mag-primary)",
+        "float: left",
+        "line-height: 0.8",
+        "margin-right: 12px",
+        "margin-top: 5px"
+      ]
+    },
+    "blockquote_editorial": {
+      "descricao": "Blockquote premium com icone Bootstrap Icons via ::before. Seletor amplo captura todas as variantes de classe do Blogger.",
+      "seletores": ".post-body blockquote, .post-content blockquote, .entry-content blockquote, article blockquote, blockquote.tr_bq",
+      "propriedades_bloco": [
+        "position: relative",
+        "padding: 1.5rem 2rem 1.5rem 3rem",
+        "background-color: var(--bs-tertiary-bg)",
+        "border-left: 5px solid var(--mag-primary)",
+        "border-radius: 0 var(--radius) var(--radius) 0",
+        "font-family: var(--font-title)",
+        "font-style: italic",
+        "font-size: 1.35rem",
+        "box-shadow: 5px 5px 15px rgba(0,0,0,0.03)"
+      ],
+      "pseudo_before": [
+        "content: '\\f6b0'",
+        "font-family: 'bootstrap-icons'",
+        "position: absolute",
+        "top: 10px",
+        "left: 10px",
+        "font-size: 2rem",
+        "color: var(--mag-primary)",
+        "opacity: 0.2"
+      ],
+      "nota_icone": "\\f6b0 e o icone bi-quote do Bootstrap Icons (Unicode PUA U+F6B0)"
+    },
+    "widget_title": "// [6] caminho: widget_title\n.widget-title { font-family: var(--font-title); font-weight: 900; font-size: 1.5rem; border-bottom: 2px solid var(--mag-primary); padding-bottom: 10px; margin-bottom: 20px; color: var(--mag-title); display: inline-block; }",
+    "label_pills_editorial": {
+      "descricao": "Labels como pills com borda e hover elevado com sombra azul",
+      "item_link": [
+        "display: inline-flex",
+        "align-items: center",
+        "background: transparent",
+        "color: var(--mag-text)",
+        "font-size: 0.8rem",
+        "font-weight: 600",
+        "text-transform: uppercase",
+        "letter-spacing: 1px",
+        "padding: 8px 18px",
+        "border-radius: 30px",
+        "border: 1px solid var(--mag-border)",
+        "transition: all 0.3s ease"
+      ],
+      "item_hover": [
+        "background: var(--mag-primary)",
+        "color: #ffffff",
+        "border-color: var(--mag-primary)",
+        "transform: translateY(-3px)",
+        "box-shadow: 0 6px 15px rgba(37, 99, 235, 0.2)"
+      ],
+      "badge_contador": [
+        "background: var(--mag-dark)",
+        "color: #ffffff",
+        "font-size: 0.7rem",
+        "padding: 2px 8px",
+        "border-radius: 12px",
+        "margin-left: -12px",
+        "margin-top: -15px"
+      ]
+    },
+    "animate_up": {
+      "css": "// [7] caminho: animate_up.css\n.animate-up { opacity: 0; transform: translateY(20px); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }\n.animate-up.visible { opacity: 1; transform: translateY(0); }",
+      "js_intersection_observer": "// [8] caminho: animate_up.js_intersection_observer\nconst obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }), { threshold: 0.1 });\ndocument.querySelectorAll('.animate-up, .news-card').forEach((el, i) => {\n  if(el.classList.contains('news-card')) el.style.transitionDelay = `${(i % 2) * 0.1}s`;\n  el.classList.add('animate-up');\n  obs.observe(el);\n});"
+    },
+    "video_responsivo_16x9": "// [9] caminho: video_responsivo_16x9\n.mag-video-wrapper {\n  position: relative;\n  width: 100%;\n  padding-bottom: 56.25%;\n  height: 0;\n  border-radius: var(--radius, 12px);\n  overflow: hidden;\n  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);\n  margin: 2rem 0;\n  background-color: #000;\n}\n.mag-video-wrapper iframe {\n  position: absolute;\n  top: 0; left: 0;\n  width: 100%; height: 100%;\n  border: none;\n}",
+    "footer": {
+      "css": "// [10] caminho: footer.css\n.mag-footer { background-color: var(--sl-footer-bg); color: var(--sl-text-main); padding-top: 5rem; margin-top: 5rem; }\n.mag-footer .playfair { color: #ffffff; }\n.mag-footer .widget-title { color: #ffffff; border-bottom-color: #374151; }\n.mag-footer a { color: var(--sl-text-main); transition: color 0.3s ease; }\n.mag-footer a:hover { color: var(--mag-primary); }\n.mag-footer .btn-social { border-color: #374151; color: #d1d5db; transition: all 0.3s ease; }\n.mag-footer .btn-social:hover { background-color: var(--mag-primary); border-color: var(--mag-primary); color: #ffffff; transform: translateY(-3px); }\n.mag-footer-bottom { border-top: 1px solid #1f2937; padding: 1.5rem 0; margin-top: 3rem; }",
+      "html_social": "<div class=\"d-flex gap-3 mt-4\">\n  <a class=\"btn btn-outline-dark btn-social rounded-circle\" href=\"[INSTAGRAM]\" style=\"width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;\"><i class=\"bi bi-instagram\"></i></a>\n  <a class=\"btn btn-outline-dark btn-social rounded-circle\" href=\"[LINKEDIN]\" style=\"width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;\"><i class=\"bi bi-linkedin\"></i></a>\n  <a class=\"btn btn-outline-dark btn-social rounded-circle\" href=\"[YOUTUBE]\" style=\"width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;\"><i class=\"bi bi-youtube\"></i></a>\n</div>"
+    },
+    "popular_posts_imagem_upgrade": {
+      "descricao": "Script no final do body que atualiza imagens do widget Popular Posts para alta resolucao. Dois padroes: formato antigo s72-c e formato moderno w72-h72-p",
+      "javascript": "// [11] caminho: popular_posts_imagem_upgrade.javascript\nconst popImages = document.querySelectorAll('.popular-posts .item-thumbnail img');\npopImages.forEach(img => {\n  let src = img.getAttribute('src');\n  if (src) {\n    if (src.match(/\\/s[0-9]+(\\-c)?\\//))\n      img.setAttribute('src', src.replace(/\\/s[0-9]+(\\-c)?\\//, '/w500-h350-c/'));\n    else if (src.match(/\\/w[0-9]+\\-h[0-9]+(.*?)\\//))\n      img.setAttribute('src', src.replace(/\\/w[0-9]+\\-h[0-9]+(.*?)\\//, '/w500-h350-c/'));\n  }\n});"
+    }
+  },
+  "html_estruturas": {
+    "news_card_grid": "<article class=\"news-card d-flex flex-column\">\n  <div class=\"news-card-img ratio ratio-4x3\">\n    <a href=\"[URL]\">\n      <img alt=\"[TITULO]\" src=\"[IMG_800x4:3]\" loading=\"lazy\">\n    </a>\n  </div>\n  <div class=\"d-flex flex-column flex-grow-1\">\n    <div class=\"d-flex gap-2 mb-2\">\n      <a class=\"text-primary fw-bold text-uppercase small\" href=\"[URL_LABEL]\" style=\"letter-spacing: 1px;\">[CATEGORIA]</a>\n    </div>\n    <h3 class=\"news-title playfair\"><a href=\"[URL]\">[TITULO]</a></h3>\n    <p class=\"text-muted mt-2 mb-3 flex-grow-1\" style=\"font-size: 0.95rem;\">[SNIPPET]</p>\n    <div class=\"small fw-bold text-uppercase mt-auto\" style=\"color: var(--mag-text); letter-spacing: 1px;\">[DATA]</div>\n  </div>\n</article>",
+    "post_single": "<article class=\"mb-5\">\n  <header class=\"post-header-single\">\n    <div class=\"mb-3\">\n      <a class=\"badge text-decoration-none me-2\" href=\"[URL_LABEL]\" style=\"background: var(--mag-primary); color: #fff; padding: 6px 12px; font-weight: 700; text-transform: uppercase;\">[CATEGORIA]</a>\n    </div>\n    <h1 class=\"post-title-single playfair\">[TITULO]</h1>\n    <div class=\"d-flex justify-content-center align-items-center gap-4 text-muted small fw-bold text-uppercase mt-4\" style=\"letter-spacing: 1px;\">\n      <span>Por <span style=\"color: var(--mag-primary);\">[AUTOR]</span></span>\n      <span>&#8226;</span>\n      <span>[DATA]</span>\n      <span>&#8226;</span>\n      <span id=\"read-time-calc\"><i class=\"bi bi-hourglass-split me-1\"></i> Calculando...</span>\n    </div>\n  </header>\n  <div class=\"post-body-content\" id=\"post-body-content\">[CONTEUDO]</div>\n  <div class=\"mt-5 pt-4 border-top d-flex justify-content-between align-items-center\">\n    <div class=\"post-bottom-tags d-flex flex-wrap gap-2\">\n      <!-- Labels como pills -->\n    </div>\n    <div class=\"d-flex gap-2\">\n      <a class=\"btn btn-outline-dark rounded-circle\" href=\"https://twitter.com/intent/tweet?url=[URL]\" style=\"width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;\" target=\"_blank\"><i class=\"bi bi-twitter-x\"></i></a>\n      <a class=\"btn btn-outline-dark rounded-circle\" href=\"https://api.whatsapp.com/send?text=[URL]\" style=\"width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;\" target=\"_blank\"><i class=\"bi bi-whatsapp\"></i></a>\n    </div>\n  </div>\n  <div class=\"related-posts mt-5 pt-5 border-top\">\n    <h4 class=\"widget-title\">Leia Tambem</h4>\n    <div class=\"row g-4\" id=\"related-grid\">\n      <div class=\"col-12 text-center\">\n        <div class=\"spinner-border spinner-border-sm text-primary\" role=\"status\"></div>\n      </div>\n    </div>\n  </div>\n</article>",
+    "pagina_404": "<div class=\"error-404-wrapper\">\n  <h1 class=\"error-code\">404</h1>\n  <h2 class=\"h3 error-subtitle mb-4\">Pagina nao encontrada</h2>\n  <p class=\"text-muted mb-5 mx-auto\" style=\"max-width: 500px;\">A edicao que procura parece ter sido recolhida das bancas. O link pode estar quebrado ou a materia foi arquivada.</p>\n  <a class=\"btn btn-dark rounded-pill px-5 py-3 fw-bold text-uppercase\" href=\"/\" style=\"background-color: var(--mag-dark); border: none;\"><i class=\"bi bi-journal-text me-2\"></i> Voltar a Capa</a>\n</div>",
+    "css_404": ".error-404-wrapper { min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 1rem; }\n.error-code { font-family: var(--font-title); font-size: clamp(6rem, 15vw, 12rem); color: var(--mag-title); font-weight: 900; line-height: 1; letter-spacing: -5px; }\n.error-subtitle { font-family: var(--font-title); font-style: italic; color: var(--mag-primary); }"
+  }
+}

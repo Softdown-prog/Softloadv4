@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho gamer-playerone — ver plano "esqueleto
+     por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md),
+     Fase 2 (8/11). Chassis 'blog' compartilhado ainda ativo com
+     natureza-bulma-vegan/pop-retro-pixel (2 nichos restantes).
+
+     Estrutura física extraída de exemplos/gamer-playerone.xml (1308
+     linhas, 9 b:section reais). Achados:
+
+     1. Auditoria extensa de CSS órfã por remapeamento pro chassis 'blog'
+        compartilhado (mesmo padrão já corrigido em tecnologia-techwind/
+        saas-nexus/brutalista-appcraft/culinaria-boutique-gourmet) — 5
+        das 9 peças "modulo-*" reais tinham sido remapeadas, corrigidas
+        via dossieWriter.substituirPecas:
+          - 'modulo-topo-e-cabecalho': .sl-header/.sl-header-brand/
+            .sl-nav ul li a → header .navbar/.navbar-brand-wrapper h1/
+            .navbar-nav .nav-link (seletores reais do arquivo).
+          - 'modulo-correcoes-de-imagens-do-post' e
+            'modulo-blockquote-estilizado-vermelho-gamer':
+            .blog-post-body → .post-body-content (classe real do
+            includable main do Blog1).
+          - 'modulo-estilos-dos-cartoes-de-jogos-home': .news-card/
+            .news-card-img → .game-card/.game-cover (classes reais);
+            variável órfã do chassis compartilhado (--sl-primary-rgb,
+            nunca declarada aqui) trocada pelo valor literal real
+            (139, 92, 246); .game-badge (selo "Level Up" no card,
+            existia no arquivo real mas nunca tinha sido extraído pro
+            dossiê) adicionado.
+          - 'modulo-rodape': var(--sl-footer-bg) (chassis, inexistente
+            aqui) → cor literal real (#020617); rgba(var(--sl-primary-rgb))
+            → valor literal; .contact-form-button-submit →
+            .contact-form-button (mesmo achado já corrigido em
+            aquarela/saas-nexus/brutalista-appcraft/culinaria — o
+            includable main do token CONTACT_FORM genérico usa a classe
+            sem sufixo).
+          - 'modulo-popular-posts-thumbnail-mobile-first': .PopularPosts
+            (maiúsculo, nunca bate — CSS é case-sensitive) → .popular-posts
+            (classe real da div widget-content, minúscula).
+        Achado de qualidade adicional (bug pré-existente no arquivo
+        original, não introduzido por esta migração): o JS real do efeito
+        ripple já criava .ripple-effect via createElement, mas nunca
+        existia regra CSS pra essa classe — efeito sempre foi invisível.
+        CSS adicionada em 'modulo-motor-playerone-v2-1-cyberpunk-edition'.
+     2. Peça de CSS inteira faltando no dossiê: a seção real "SHORTCODE:
+        CAIXA DE REVIEW" (.shortcode-review-box/.review-score-circle/
+        .review-bar-container/.review-bar-fill) nunca tinha sido
+        extraída — adicionada como peça nova 'modulo-shortcode-review-box'.
+        O motor de shortcodes em si ([review nota="9" ...] → caixa de
+        pontuação com anéis animados) é JS real e funcional, embutido
+        verbatim no script do esqueleto (não é o motor de review genérico
+        do compilador — mais simples/menos polido, mesma
+        filosofia de tecnologia-techwind: manter o real quando é melhor
+        que o genérico). nichoModuleDefaults.js mantém reviewEngine:true
+        sem efeito neste esqueleto — mesmo trade-off documentado noutras
+        migrações (flag histórica preservada, token não usado aqui).
+     3. 'header-logo': Header1 real usa useImage=false (sem foto/logo,
+        apenas h1 de texto) — sem dado real pra redigir, mantido
+        VERBATIM (mais fiel que o HEADER_WIDGET genérico, mesmo
+        raciocínio já aplicado em biolink-social).
+     4. 'main-menu': PageList1 real tinha URL do blog real do dono
+        original (mega-webly.blogspot.com) — redigido via NAV_WIDGET
+        genérico.
+     5. 'top-bar-right': o botão de tema (dark mode) do arquivo real é a
+        peça 'dark-mode-toggle-scroll' (tipo 'widget', self-contained) —
+        mas seu HTML não é fixo-posicionado (diferente do scroll-to-top
+        de culinaria-boutique-gourmet, que É fixo e pode ir em qualquer
+        lugar via token de blob) — precisa ficar na barra de topo, ao
+        lado de onde as redes sociais renderizariam. Escrito diretamente
+        na posição real (não via NICHO_WIDGETS_HTML, que despejaria
+        num ponto genérico só) — mesmo raciocínio da posição fixa dos 3
+        widgets reais de culinaria-boutique-gourmet. O JS da peça
+        (toggle de tema + observer de scroll-reveal) embutido no script
+        do esqueleto junto do motor de shortcodes, evitando 2 listeners
+        de scroll-reveal duplicados (mesma classe de bug já corrigida
+        nesta sessão pro botão voltar-ao-topo).
+     6. 'main' (Blog1, renomeado do id real 'blog-main' pra satisfazer o
+        marcador canônico do Design Package — mesmo trade-off já aceito em
+        culinaria-boutique-gourmet; sem isso, injetarDesignPackage() não
+        acha onde injetar heroHtml/staticSections do chat de edição do
+        Workspace, achado confirmado pelo teste B de compilerWorker.test.js
+        falhando com o id antigo 'blog-main'): widget-settings trimmados
+        pra lista válida
+        (authorLabel/timestampLabel vazio/reactionsLabel vazio/
+        showAuthorProfile/postsPerAd/style.*/postLabelsLabel vazio
+        rejeitados pelo Blogger hoje). Card do feed/post único/404
+        temático ("Game Over!") extraídos verbatim, sem nenhum erro de
+        colagem (diferente de culinaria-boutique-gourmet).
+     7. 'sidebar-top': PopularPosts1 + FeaturedPost1 nativos, já com
+        defaults seguros (useMostRecentPost/postId=0) — preservados
+        verbatim.
+     8. 'footer-col-1': HTML2 "{Como Instalar o Template}" (iframe
+        promocional do vendedor) NÃO extraído — mesmo achado já fechado
+        em tecnologia-techwind/noticias-mag-news/saas-nexus/culinaria.
+        Translate1+Stats1+Text1(vazio) nativos preservados.
+     9. 'footer-col-2': HTML1 vazio (slot nativo) + Label1 nativo LIST
+        já sem selectedLabelsList hardcoded (real já vinha genérico).
+     10. 'footer-col-4': ContactForm1 real → token CONTACT_FORM genérico
+        (mesmo padrão de sempre), título real "Suporte a Jogadores"
+        preservado via contactFormTitle (já ligado em
+        nichoModuleDefaults.js).
+     11. Copyright do rodapé: "© 2026 PlayerOne Gaming. Vanilla JS
+        Powered." hardcoded → ano dinâmico + data:blog.title.
+     12. Mobília nova: 'top-bar-left' (vazio no real) sem token — sem
+        flag correspondente ligada em nichoModuleDefaults.js pra essa
+        posição; 'top-bar-right' (vazio no real, além do botão de tema)
+        ganha SOCIAL_LINKS_WIDGET (nichoModuleDefaults.js já ligava
+        socialLinksWidget sem seção real pra receber — nome da seção no
+        arquivo original, "Redes Sociais Topo", já sugeria esse uso).
+     13. 'home-hero': o arquivo real não tem nenhuma seção de hero —
+        peça sintética 'gamer-hero-banner' (autorada na task #103,
+        "hero pros 8 nichos sem hero no dossiê") já traz h1 próprio
+        ("As últimas do universo gamer, direto na tela"), então
+        H1_FALLBACK_OCULTO não entra (heroJaTemH1=true em compile.js).
+        b:section nova, gated por isHomepage (mesmo padrão de
+        brutalista-appcraft), entre '/header' e o container principal —
+        NICHO_HERO sozinho na seção, sem irmão HTML (Regra B).
+     14. H1 duplicado real (Diagnóstico Inteligente pegou em runtime): Header1
+        (useImage=false) renderizava um <h1> incondicional com o título do
+        blog — colidia com o h1 do hero (home), do post (single) e do 404
+        (error), todos já com h1 próprio. Fix: título do header só é <h1>
+        nas views que NÃO têm h1 próprio (label/busca/isMultipleItems não-home);
+        em home/post/error vira <p> (mesma classe .navbar-brand-text, CSS
+        revertido de seletor 'h1' pra '.navbar-brand-text' pra cobrir os 2
+        casos). behindImageStyle/image/description/title (includables extras
+        do Header1 real, nunca invocados já que useImage é sempre false e o
+        'main' já é autossuficiente — 2 deles referenciavam includables padrão
+        do Blogger responsiveImageStyle/responsiveImage que não existem nesse
+        widget custom, quebrando a expansão) removidos como código morto.
+     15. showLocation (Blog1) e showType (Label1) não são settings válidos —
+        Blogger rejeita upload com "is not a valid setting name" — removidos
+        (mesmo achado recorrente de showLocation já visto em outros nichos;
+        showType é achado novo, específico do Label1 deste nicho).
+     Ver nichoDossie.gamer-playerone.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:blog.pageTitle/></title>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'/>
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  <!-- Anti-FOUC: mesma chave de localStorage ('theme') que o script do
+       fim do body usa pro toggle. -->
+  <script>
+  //<![CDATA[
+  (function(){
+    var t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-bs-theme', t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+    /* === VARIÁVEIS DO PAINEL DO BLOGGER (arquivo real, preservadas
+       verbatim) === */
+    <Group description="Cores do Tema (PlayerOne)" selector=":root">
+      <Variable name="gamer.primaria" description="Cor Neon Principal (Roxo)" type="color" default="#8b5cf6" value="#8b5cf6"/>
+      <Variable name="gamer.secundaria" description="Cor Neon Secundária (Ciano)" type="color" default="#06b6d4" value="#06b6d4"/>
+      <Variable name="gamer.fundo" description="Fundo do Site (Modo Escuro)" type="color" default="#0f172a" value="#0f172a"/>
+    </Group>
+
+    :root {
+      --gamer-primary: $(gamer.primaria);
+      --gamer-secondary: $(gamer.secundaria);
+      --gamer-bg-dark: $(gamer.fundo);
+      --font-main: 'Inter', sans-serif;
+      --font-display: 'Oswald', sans-serif;
+    }
+    [data-bs-theme="dark"] {
+      --gamer-bg: #0f172a;
+      --gamer-surface: #1e293b;
+      --gamer-text: #e2e8f0;
+      --gamer-border: #334155;
+    }
+
+    [[DYNAMIC_CSS]]
+
+    /* === CSS DO NICHO (peças do dossiê: 9 módulos de estilo real +
+         hero protegido + botão de tema) === */
+    [[NICHO_CSS]]
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <div class='top-bar py-2 d-none d-md-block'>
+    <div class='container d-flex justify-content-between align-items-center'>
+      <div class='top-left'><b:section id='top-bar-left' name='Top Bar (Esquerda)' showaddelement='yes'/></div>
+      <div class='top-right d-flex gap-3'>
+        <b:section id='top-bar-right' name='Redes Sociais Topo' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+        <!-- Achado 5: botão de tema real (peça dark-mode-toggle-scroll)
+             escrito na posição real — não é fixo-posicionado, não pode
+             ir via NICHO_WIDGETS_HTML (despejaria num ponto genérico). -->
+        <button aria-label='Dark Mode' class='btn btn-link btn-sm text-decoration-none p-0 btn-dark-mode' id='btnDarkModeToggle' style='color: var(--gamer-secondary);'><i class='bi bi-moon-stars-fill fs-6'/></button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <nav class='navbar navbar-expand-lg sticky-top shadow-sm'>
+      <div class='container'>
+
+        <div class='navbar-brand-wrapper me-4'>
+          <b:section id='header-logo' maxwidgets='1' name='Logotipo (Gaming)' showaddelement='yes'>
+            <b:widget id='Header1' locked='false' title='Mega Game (Cabeçalho)' type='Header' version='2' visible='true'>
+              <b:widget-settings>
+                <b:widget-setting name='displayUrl'/>
+                <b:widget-setting name='displayHeight'>0</b:widget-setting>
+                <b:widget-setting name='sectionWidth'>-1</b:widget-setting>
+                <b:widget-setting name='useImage'>false</b:widget-setting>
+                <b:widget-setting name='shrinkToFit'>false</b:widget-setting>
+                <b:widget-setting name='imagePlacement'>BEHIND</b:widget-setting>
+                <b:widget-setting name='displayWidth'>0</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                 <a class='text-decoration-none' expr:href='data:blog.homepageUrl'>
+                   <b:if cond='data:useImage'>
+                      <img expr:alt='data:title' expr:src='data:sourceUrl'/>
+                   <b:else/>
+                      <b:if cond='data:view.isHomepage or data:view.isPost or data:view.isError'>
+                         <p class='navbar-brand-text fw-bold m-0 text-uppercase d-flex align-items-center gap-2'><data:title/></p>
+                      <b:else/>
+                         <h1 class='navbar-brand-text fw-bold m-0 text-uppercase d-flex align-items-center gap-2'><data:title/></h1>
+                      </b:if>
+                   </b:if>
+                 </a>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+
+        <button aria-controls='mainNavbar' aria-expanded='false' aria-label='Alternar menu' class='navbar-toggler border-0' data-bs-target='#mainNavbar' data-bs-toggle='collapse' type='button'>
+          <i class='bi bi-list fs-1' style='color: var(--gamer-primary);'/>
+        </button>
+
+        <div class='collapse navbar-collapse' id='mainNavbar'>
+          <div class='me-auto'>
+            <b:section id='main-menu' maxwidgets='1' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+          </div>
+          <div class='d-flex align-items-center mt-3 mt-lg-0'>
+             <form action='/search' class='position-relative' method='get'>
+               <input class='form-control rounded-pill pe-5' name='q' placeholder='Buscar jogo...' style='background-color: var(--gamer-bg); color: var(--gamer-text); border: 1px solid var(--gamer-border);' type='text'/>
+               <button aria-label='Buscar' class='btn position-absolute end-0 top-50 translate-middle-y border-0' style='color: var(--gamer-primary);' type='submit'><i class='bi bi-search'/></button>
+             </form>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <b:if cond='data:view.isHomepage'>
+    <div class='container-fluid px-0'>
+      <b:section id='home-hero' maxwidgets='1' name='Hero (Gaming)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+    </div>
+  </b:if>
+
+  <div class='container mt-5'>
+    <div class='row g-4'>
+      <main class='col-lg-8'>
+        <!-- id renomeado do real 'blog-main' pra 'main' — marcador canônico
+             do Design Package (ver Achado 6 no topo do arquivo). -->
+        <b:section id='main' name='Postagens e Layout' showaddelement='no'>
+          <b:widget id='Blog1' locked='true' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+            <!-- Achado 6 — settings limitados à lista válida pro tipo Blog. -->
+            <b:widget-settings>
+              <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+              <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+              <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+              <b:widget-setting name='showAuthor'>false</b:widget-setting>
+              <b:widget-setting name='showLabels'>true</b:widget-setting>
+              <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+              <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+              <b:widget-setting name='showInlineAds'>true</b:widget-setting>
+              <b:widget-setting name='showReactions'>false</b:widget-setting>
+            </b:widget-settings>
+
+            <b:includable id='main' var='top'>
+              <b:if cond='data:view.isError'>
+                <div class='error-404-wrapper animate-up'>
+                  <div class='error-icon mb-2'>
+                    <i class='bi bi-controller'/>
+                  </div>
+                  <h1 class='oswald-font fw-bold error-code'>404</h1>
+                  <div class='error-content mt-3'>
+                    <h2 class='oswald-font h2 mb-3 text-uppercase' style='color: var(--gamer-text); letter-spacing: 1px;'>Game Over!</h2>
+                    <p class='mb-5 mx-auto opacity-75' style='max-width: 450px; font-size: 1.1rem;'>
+                      Nível não encontrado. O ficheiro que tentaste carregar pode estar corrompido, ter sido apagado ou encontra-se noutra dimensão.
+                    </p>
+                    <a class='btn btn-respawn fs-5' href='/'>
+                      <i class='bi bi-play-fill me-1'/> Fazer Respawn
+                    </a>
+                  </div>
+                </div>
+              </b:if>
+
+              <b:if cond='data:view.isMultipleItems'>
+                <div class='d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom' style='border-color: var(--gamer-border) !important;'>
+                  <h2 class='oswald-font m-0' style='color: var(--gamer-primary);'>Últimos Lançamentos</h2>
+                </div>
+
+                <div class='row row-cols-1 row-cols-md-2 g-4'>
+                  <b:loop values='data:posts' var='post'>
+                    <div class='col'>
+                      <article class='game-card animate-up d-flex flex-column'>
+                        <div class='game-cover'>
+                          <a expr:href='data:post.url'>
+                            <b:if cond='data:post.featuredImage'>
+                              <img expr:alt='data:post.title' expr:src='data:post.featuredImage' loading='lazy'/>
+                            <b:else/>
+                              <div class='w-100 h-100 d-flex align-items-center justify-content-center bg-dark'><i class='bi bi-controller fs-1 text-secondary'/></div>
+                            </b:if>
+                          </a>
+                          <b:if cond='data:post.labels'>
+                            <span class='game-badge'><data:post.labels.first.name/></span>
+                          </b:if>
+                        </div>
+                        <div class='p-4 d-flex flex-column flex-grow-1'>
+                          <h3 class='oswald-font fs-5 mb-3'><a class='text-decoration-none' expr:href='data:post.url' style='color: var(--gamer-text);'><data:post.title/></a></h3>
+                          <p class='small opacity-75 mb-4 flex-grow-1'><data:post.snippet/></p>
+                          <div class='d-flex justify-content-between align-items-center border-top pt-3 mt-auto' style='border-color: var(--gamer-border) !important;'>
+                            <span class='small fw-bold opacity-75'><i class='bi bi-calendar-event me-1'/> <data:post.date/></span>
+                            <a class='fw-bold small text-uppercase text-decoration-none' expr:href='data:post.url' style='color: var(--gamer-secondary); letter-spacing: 1px;'>Ler Análise <i class='bi bi-caret-right-fill'/></a>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </b:loop>
+                </div>
+
+                <b:include name='nextprev'/>
+
+              <b:else/>
+
+                <b:loop values='data:posts' var='post'>
+                  <article class='animate-up mb-5'>
+                    <header class='mb-4'>
+                      <b:if cond='data:post.labels'>
+                        <div class='mb-3'>
+                          <b:loop values='data:post.labels' var='label'>
+                            <a class='badge text-decoration-none me-2' expr:href='data:label.url' style='background: var(--gamer-border); color: var(--gamer-text); padding: 8px 15px; font-family: var(--font-display); letter-spacing: 1px;'><data:label.name/></a>
+                          </b:loop>
+                        </div>
+                      </b:if>
+                      <h1 class='oswald-font display-4 fw-bold mb-3' style='color: var(--gamer-text);'><data:post.title/></h1>
+                      <div class='d-flex align-items-center gap-4 small fw-bold opacity-75 text-uppercase' style='letter-spacing: 1px;'>
+                        <span><i class='bi bi-person-fill me-1' style='color: var(--gamer-primary);'/> <data:post.author.name/></span>
+                        <span><i class='bi bi-calendar3 me-1' style='color: var(--gamer-secondary);'/> <data:post.date/></span>
+                      </div>
+                    </header>
+
+                    <div class='post-body-content fs-5 lh-lg'>
+                      <data:post.body/>
+                    </div>
+                  </article>
+                </b:loop>
+
+              </b:if>
+            </b:includable>
+            <b:includable id='post' var='post'><div/></b:includable>
+            <b:includable id='nextprev'>
+              <div class='d-flex justify-content-between mt-5 pt-4 border-top animate-up' style='border-color: var(--gamer-border) !important;'>
+                <b:if cond='data:newerPageUrl'><a class='btn btn-outline-secondary oswald-font' expr:href='data:newerPageUrl'><i class='bi bi-caret-left-fill'/> Novidades</a><b:else/><span/></b:if>
+                <b:if cond='data:olderPageUrl'><a class='btn btn-outline-secondary oswald-font' expr:href='data:olderPageUrl'>Anteriores <i class='bi bi-caret-right-fill'/></a></b:if>
+              </div>
+            </b:includable>
+
+            [[BLOGGER_INCLUDABLES_PADRAO]]
+
+          </b:widget>
+        </b:section>
+      </main>
+
+      <aside class='col-lg-4'>
+        <b:section id='sidebar-top' name='Sidebar Topo (Perfil)' showaddelement='yes'>
+          <b:widget id='PopularPosts1' locked='false' title='Postagens mais visitadas' type='PopularPosts' version='1'>
+            <b:widget-settings>
+              <b:widget-setting name='numItemsToShow'>10</b:widget-setting>
+              <b:widget-setting name='showThumbnails'>true</b:widget-setting>
+              <b:widget-setting name='showSnippets'>true</b:widget-setting>
+              <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'><h2><data:title/></h2></b:if>
+  <div class='widget-content popular-posts'>
+    <ul>
+      <b:loop values='data:posts' var='post'>
+      <li>
+        <b:if cond='!data:showThumbnails'>
+          <b:if cond='!data:showSnippets'>
+            <a expr:href='data:post.href'><data:post.title/></a>
+          <b:else/>
+            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+            <div class='item-snippet'><data:post.snippet/></div>
+          </b:if>
+        <b:else/>
+          <div expr:class='data:showSnippets ? &quot;item-content&quot; : &quot;item-thumbnail-only&quot;'>
+            <b:if cond='data:post.featuredImage.isResizable or data:post.thumbnail'>
+              <div class='item-thumbnail'>
+                <a expr:href='data:post.href' target='_blank'>
+                 <b:with value='data:post.featuredImage.isResizable                                   ? resizeImage(data:post.featuredImage, 300, &quot;16:9&quot;)                                   : data:post.thumbnail' var='image'>
+                    <img alt='' border='0' expr:src='data:image'/>
+                  </b:with>
+                </a>
+              </div>
+            </b:if>
+            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+            <b:if cond='data:showSnippets'>
+              <div class='item-snippet'><data:post.snippet/></div>
+            </b:if>
+          </div>
+          <div style='clear: both;'/>
+        </b:if>
+      </li>
+      </b:loop>
+    </ul>
+    <b:include name='quickedit'/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='FeaturedPost1' locked='false' title='Postagem em destaque' type='FeaturedPost'>
+            <b:widget-settings>
+              <b:widget-setting name='showSnippet'>true</b:widget-setting>
+              <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+              <b:widget-setting name='postId'>0</b:widget-setting>
+              <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+              <b:widget-setting name='useMostRecentPost'>true</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <b:include name='content'/>
+  <b:include name='quickedit'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='post-summary'>
+    <b:if cond='data:showPostTitle and data:postTitle != &quot;&quot;'>
+      <h3><a expr:href='data:postUrl'><data:postTitle/></a></h3>
+    </b:if>
+    <b:if cond='data:showSnippet and data:postSummary != &quot;&quot;'>
+      <p>
+        <data:postSummary/>
+      </p>
+    </b:if>
+    <b:if cond='data:showFirstImage and data:postFirstImage != &quot;&quot;'>
+      <img class='image' expr:alt='data:postTitle' expr:src='data:postFirstImage'/>
+    </b:if>
+  </div>
+  <style type='text/css'>
+    .image { width: 100%; }
+  </style>
+</b:includable>
+          </b:widget>
+        </b:section>
+      </aside>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class='container'>
+      <div class='row g-4 mb-5'>
+        <div class='col-lg-4 col-md-6'>
+          <b:section id='footer-col-1' name='Footer (Sobre)' showaddelement='yes'>
+            <b:widget id='Translate1' locked='false' title='Translate' type='Translate'>
+              <b:widget-settings>
+                <b:widget-setting name='displayMode'>SIMPLE</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div id='google_translate_element'/>
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: &#39;<data:pageLanguage/>&#39;,
+        autoDisplay: &#39;true&#39;,
+        layout: google.translate.TranslateElement.InlineLayout.<data:layout/>
+      }, &#39;google_translate_element&#39;);
+    }
+  </script>
+  <script src='//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'/>
+  <b:include name='quickedit'/>
+</b:includable>
+            </b:widget>
+            <b:widget id='Stats1' locked='false' title='Total de visualizações de página' type='Stats'>
+              <b:widget-settings>
+                <b:widget-setting name='showGraphicalCounter'>true</b:widget-setting>
+                <b:widget-setting name='showAnimatedCounter'>false</b:widget-setting>
+                <b:widget-setting name='showSparkline'>true</b:widget-setting>
+                <b:widget-setting name='sparklineStyle'>BLACK_TRANSPARENT</b:widget-setting>
+                <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'><h2><data:title/></h2></b:if>
+  <div class='widget-content'>
+    <div expr:id='data:widget.instanceId + &quot;_content&quot;' style='display: none;'>
+      <b:if cond='data:showSparkline'>
+        <script src='https://www.gstatic.com/charts/loader.js' type='text/javascript'/>
+        <span expr:id='data:widget.instanceId + &quot;_sparklinespan&quot;' style='display:inline-block; width:75px; height:30px'/>
+      </b:if>
+      <span expr:class='&quot;counter-wrapper &quot; + (data:showGraphicalCounter ? &quot;graph-counter-wrapper&quot; : &quot;text-counter-wrapper&quot;)' expr:id='data:widget.instanceId + &quot;_totalCount&quot;'/>
+      <b:include name='quickedit'/>
+    </div>
+  </div>
+</b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+        <div class='col-lg-4 col-md-6'>
+          <b:section id='footer-col-2' name='Footer (Links)' showaddelement='yes'>
+            <b:widget id='Label1' locked='false' title='Marcadores' type='Label'>
+              <b:widget-settings>
+                <b:widget-setting name='sorting'>ALPHA</b:widget-setting>
+                <b:widget-setting name='display'>LIST</b:widget-setting>
+                <b:widget-setting name='showFreqNumbers'>false</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2><data:title/></h2>
+  </b:if>
+  <div expr:class='&quot;widget-content &quot; + data:display + &quot;-label-widget-content&quot;'>
+    <b:if cond='data:display == &quot;list&quot;'>
+      <ul>
+        <b:loop values='data:labels' var='label'>
+          <li>
+            <b:if cond='data:blog.url == data:label.url'>
+              <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+            <b:else/>
+              <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+            </b:if>
+            <b:if cond='data:showFreqNumbers'>
+              <span dir='ltr'>(<data:label.count/>)</span>
+            </b:if>
+          </li>
+        </b:loop>
+      </ul>
+    <b:else/>
+      <b:loop values='data:labels' var='label'>
+        <span expr:class='&quot;label-size label-size-&quot; + data:label.cssSize'>
+          <b:if cond='data:blog.url == data:label.url'>
+            <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+          <b:else/>
+            <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+          </b:if>
+          <b:if cond='data:showFreqNumbers'>
+            <span class='label-count' dir='ltr'>(<data:label.count/>)</span>
+          </b:if>
+        </span>
+      </b:loop>
+    </b:if>
+    <b:include name='quickedit'/>
+  </div>
+</b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+
+        <div class='col-lg-4 col-md-12'>
+          <b:section id='footer-col-4' name='Footer (Contato Blogger)' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <div class='border-top pt-4 pb-4' style='border-color: #1e293b !important;'>
+        <div class='text-center small'>&#169; <script>document.write(new Date().getFullYear())</script> <data:blog.title/>. Vanilla JS Powered.</div>
+      </div>
+    </div>
+  </footer>
+
+  [[ERROR_404_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'/>
+  <script>
+  //<![CDATA[
+  document.addEventListener('DOMContentLoaded', () => {
+
+    /* Achado 5 — JS da peça dark-mode-toggle-scroll, embutido aqui
+       (mesmo raciocínio: botão não é fixo-posicionado, HTML escrito na
+       posição real acima; JS precisa rodar independente de onde o
+       botão vive no DOM, já que busca por classe). */
+    const setTheme = t => { document.documentElement.setAttribute('data-bs-theme', t); localStorage.setItem('theme', t); document.querySelector('.btn-dark-mode i').className = t === 'dark' ? 'bi bi-sun-fill fs-6 text-warning' : 'bi bi-moon-stars-fill fs-6'; };
+    setTheme(localStorage.getItem('theme') || 'dark');
+    document.querySelectorAll('.btn-dark-mode').forEach(b => b.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark')));
+
+    const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }), {threshold: 0.1});
+    document.querySelectorAll('.animate-up, .game-card').forEach((el, i) => { if(el.classList.contains('game-card')) el.style.transitionDelay = `${(i % 2) * 0.1}s`; el.classList.add('animate-up'); obs.observe(el); });
+
+    /* =================================================================
+       MOTOR DE SHORTCODES (VANILLA JS CUSTOMIZADO, achado 2)
+       Transforma [review ...] numa caixa de pontuação
+       ================================================================= */
+    const postBodies = document.querySelectorAll('.post-body-content');
+
+    postBodies.forEach(post => {
+      let contentHtml = post.innerHTML;
+      const reviewRegex = /\[review\s+([^\]]+)\]/gi;
+
+      if (reviewRegex.test(contentHtml)) {
+
+        contentHtml = contentHtml.replace(reviewRegex, (match, atributosString) => {
+
+          const attrs = {};
+          const extractRegex = /(\w+)="([^"]+)"/g;
+          let attrMatch;
+          while ((attrMatch = extractRegex.exec(atributosString)) !== null) {
+            attrs[attrMatch[1]] = attrMatch[2];
+          }
+
+          const titulo = attrs.titulo || 'Veredicto Final';
+          const notaFinal = attrs.nota || '0.0';
+          const valGrafico = attrs.grafico || '0';
+          const valSom = attrs.som || '0';
+          const valGameplay = attrs.gameplay || '0';
+
+          return `
+            <div class="shortcode-review-box z-1">
+              <div class="row align-items-center position-relative z-1">
+
+                <div class="col-md-8 mb-4 mb-md-0">
+                  <h3 class="oswald-font fs-3 text-white mb-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-controller text-primary"></i> ${titulo}
+                  </h3>
+
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1 text-uppercase text-secondary"><span>Gráficos</span><span>${valGrafico}/10</span></div>
+                    <div class="review-bar-container"><div class="review-bar-fill" style="width: ${valGrafico}0%;"></div></div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1 text-uppercase text-secondary"><span>Som / Trilha</span><span>${valSom}/10</span></div>
+                    <div class="review-bar-container"><div class="review-bar-fill" style="width: ${valSom}0%;"></div></div>
+                  </div>
+
+                  <div class="mb-2">
+                    <div class="d-flex justify-content-between small fw-bold mb-1 text-uppercase text-secondary"><span>Jogabilidade</span><span>${valGameplay}/10</span></div>
+                    <div class="review-bar-container"><div class="review-bar-fill" style="width: ${valGameplay}0%;"></div></div>
+                  </div>
+                </div>
+
+                <div class="col-md-4 d-flex justify-content-center border-start border-secondary border-opacity-25">
+                  <div class="text-center">
+                    <div class="small fw-bold text-uppercase text-primary mb-2" style="letter-spacing: 2px;">Nota Final</div>
+                    <div class="review-score-circle mx-auto">${notaFinal}</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        });
+
+        post.innerHTML = contentHtml;
+      }
+    });
+
+    /* Ripple Effect */
+    document.querySelectorAll('.btn, .nav-link').forEach(button => {
+      button.addEventListener('click', function(e) {
+        let x = e.clientX - e.target.getBoundingClientRect().left;
+        let y = e.clientY - e.target.getBoundingClientRect().top;
+
+        let ripple = document.createElement('span');
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.classList.add('ripple-effect');
+
+        this.appendChild(ripple);
+
+        setTimeout(() => { ripple.remove(); }, 600);
+      });
+    });
+
+  });
+  //]]>
+  </script>
+
+  <!-- JS do nicho (dossiê — hoje sem peças 'modulo'/'hero' com js
+       próprio, token mantido por consistência com os demais esqueletos). -->
+  [[NICHO_JS]]
+
+</body>
+</html>

@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "kind": "structural-not-visual",
+  "time": "2026-10-24T21:08:12.730Z",
+  "niches": [
+    {
+      "nicho": "gamer-playerone",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 69694
+      },
+      "generated": {
+        "sections": 10,
+        "widgetTypes": 11,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "pop-retro-pixel",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 79715
+      },
+      "generated": {
+        "sections": 6,
+        "widgetTypes": 6,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "culinaria-boutique-gourmet",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 101921
+      },
+      "generated": {
+        "sections": 20,
+        "widgetTypes": 13,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "natureza-bulma-vegan",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 111212
+      },
+      "generated": {
+        "sections": 13,
+        "widgetTypes": 12,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "noticias-mag-news",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 104387
+      },
+      "generated": {
+        "sections": 13,
+        "widgetTypes": 9,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "tecnologia-mag-tech",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 138140
+      },
+      "generated": {
+        "sections": 9,
+        "widgetTypes": 13,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "tecnologia-techwind",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 80134
+      },
+      "generated": {
+        "sections": 19,
+        "widgetTypes": 11,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "viral-magazine",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 106510
+      },
+      "generated": {
+        "sections": 13,
+        "widgetTypes": 10,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "saas-nexus",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 70364
+      },
+      "generated": {
+        "sections": 14,
+        "widgetTypes": 11,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "brutalista-appcraft",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 62448
+      },
+      "generated": {
+        "sections": 10,
+        "widgetTypes": 11,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "portfolio-minimalista",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 66271
+      },
+      "generated": {
+        "sections": 7,
+        "widgetTypes": 4,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "aquarela",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 47530
+      },
+      "generated": {
+        "sections": 5,
+        "widgetTypes": 5,
+        "bootstrapCss5": false,
+        "bootstrapJs5": false
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "biolink-social",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 50369
+      },
+      "generated": {
+        "sections": 7,
+        "widgetTypes": 5,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "elearning-academy",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 90786
+      },
+      "generated": {
+        "sections": 7,
+        "widgetTypes": 8,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 96,
+        "errors": 0,
+        "warnings": 1,
+        "findings": []
+      },
+      "blocked": false
+    },
+    {
+      "nicho": "appstore-bulma-mobile",
+      "siteName": "Auditoria Softload",
+      "example": null,
+      "sizes": {
+        "exampleBytes": null,
+        "generatedBytes": 93306
+      },
+      "generated": {
+        "sections": 11,
+        "widgetTypes": 10,
+        "bootstrapCss5": true,
+        "bootstrapJs5": true
+      },
+      "reference": null,
+      "originalFramework": null,
+      "diagnostic": {
+        "score": 100,
+        "errors": 0,
+        "warnings": 0,
+        "findings": []
+      },
+      "blocked": false
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "blocked": [],
+    "missingExample": [
+      "gamer-playerone",
+      "pop-retro-pixel",
+      "culinaria-boutique-gourmet",
+      "natureza-bulma-vegan",
+      "noticias-mag-news",
+      "tecnologia-mag-tech",
+      "tecnologia-techwind",
+      "viral-magazine",
+      "saas-nexus",
+      "brutalista-appcraft",
+      "portfolio-minimalista",
+      "aquarela",
+      "biolink-social",
+      "elearning-academy",
+      "appstore-bulma-mobile"
+    ],
+    "lowFidelityForReview": []
+  }
+}

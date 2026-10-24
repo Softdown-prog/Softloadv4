@@ -1,0 +1,24 @@
+{
+  "id": "firebase-storage-regras-documentacao",
+  "slug": "firebase-storage-regras-documentacao",
+  "categoria": "firebase",
+  "descricao": "Regras de segurança nativas do Firebase Storage restringindo uploads por tamanho e tipo de arquivo, com isolamento de buckets por ID de usuário, mais a extensão do firebase.json para declarar as regras de storage no deploy e a documentação README de inicialização de um projeto Flask + Firebase Admin SDK.",
+  "componentes": [
+    "storage.rules",
+    "firebase.json-storage",
+    "storage-signed-url"
+  ],
+  "exemplos": [
+    "match /usuarios/{usuarioId}/perfil.jpg {\n  allow read: if usuarioEstaAutenticado();\n  allow write: if ehDonoDoArquivo(usuarioId) && request.resource.size < 2 * 1024 * 1024 && request.resource.contentType.matches('image/jpeg');\n}"
+  ],
+  "boas_praticas": [
+    "Regras de storage bloqueiam arquivos maiores que 2MB (fotos) e 5MB (documentos) para prevenir ataques de esgotamento de armazenamento",
+    "URLs geradas pelo SDK backend são assinadas e temporárias — arquivos nunca ficam expostos publicamente de forma vitalícia"
+  ],
+  "keywords": [
+    "firebase storage rules",
+    "storage.rules",
+    "firebase storage seguranca",
+    "firebase signed url"
+  ]
+}

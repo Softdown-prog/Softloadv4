@@ -1,0 +1,46 @@
+{
+  "padroes_design": {
+    "neon_text": {
+      "descricao": "Texto ciano com brilho neon via text-shadow radial",
+      "css": ".neon-text { color: var(--sd-primary); text-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }"
+    },
+    "hero_fluido": {
+      "descricao": "Hero section com min-height 80vh e titulo fluido via clamp()",
+      "css": ".hero-section { min-height: 80vh; display: flex; align-items: center; }\n.hero-title { font-size: clamp(3rem, 8vw, 6rem); line-height: 1; letter-spacing: -0.04em; }"
+    },
+    "navbar_glassmorphism": {
+      "descricao": "Navbar com fundo semitransparente e blur — efeito glassmorphism",
+      "css": "header .navbar {\n  background-color: rgba(255, 255, 255, 0.9) !important;\n  backdrop-filter: blur(10px);\n  border-bottom: 1px solid rgba(0,0,0,0.05);\n}\n[data-bs-theme=\"dark\"] header .navbar {\n  background-color: rgba(0, 0, 0, 0.8) !important;\n  border-bottom: 1px solid rgba(255,255,255,0.05);\n}"
+    },
+    "card_portfolio_borderless": {
+      "descricao": "Cards sem borda, fundo transparente. Imagem com zoom cubic-bezier no hover. Fallback icon quando post nao tem imagem.",
+      "css": ".card-portfolio { border: none !important; background-color: transparent !important; border-radius: 0; }\n.card-portfolio .img-wrapper { border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }\n.card-portfolio img { transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); }\n.card-portfolio:hover img { transform: scale(1.05); }\n.card-portfolio-title { font-size: 1.5rem; font-weight: 800; color: var(--sd-text); letter-spacing: -0.5px; }"
+    },
+    "botao_neon": {
+      "descricao": "Botao quadrado uppercase — hover vira transparente com glow neon",
+      "css": ".btn-neon {\n  background-color: var(--sd-primary); color: #000 !important; font-weight: 800;\n  border-radius: 0; padding: 12px 30px; text-transform: uppercase; letter-spacing: 1px;\n  border: 2px solid var(--sd-primary); transition: all 0.3s ease;\n}\n.btn-neon:hover {\n  background-color: transparent; color: var(--sd-primary) !important;\n  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);\n}"
+    },
+    "scroll_to_top_square": {
+      "descricao": "Botao de subir ao topo quadrado (border-radius: 0) — identidade minimalista",
+      "css": "#btnScrollToTop {\n  position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px;\n  border-radius: 0; display: flex; align-items: center; justify-content: center;\n  z-index: 1050; opacity: 0; visibility: hidden; transform: translateY(30px);\n  background-color: var(--sd-dark); border: 2px solid var(--sd-primary); color: var(--sd-primary); cursor: pointer;\n  transition: all 0.3s ease;\n}\n#btnScrollToTop.show { opacity: 1; visibility: visible; transform: translateY(0); }\n#btnScrollToTop:hover { background-color: var(--sd-primary); color: #000; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }"
+    },
+    "animate_up": {
+      "descricao": "Classe para entrada de baixo para cima via IntersectionObserver",
+      "css": ".animate-up { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }\n.animate-up.visible { opacity: 1; transform: translateY(0); }"
+    },
+    "video_responsivo": {
+      "descricao": "Wrapper para embed de video YouTube/Vimeo em proporcao 16:9 exata",
+      "css": ".mag-video-wrapper {\n  position: relative; width: 100%; padding-bottom: 56.25%;\n  height: 0; border-radius: 12px; overflow: hidden;\n  box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin: 2rem 0;\n  background-color: #000;\n}\n.mag-video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }"
+    }
+  },
+  "javascript": "document.addEventListener('DOMContentLoaded', () => {\n  'use strict';\n\n  /* Dark Mode */\n  const getStoredTheme = () => localStorage.getItem('theme');\n  const setStoredTheme = theme => localStorage.setItem('theme', theme);\n  const getPreferredTheme = () => {\n    const storedTheme = getStoredTheme();\n    if (storedTheme) return storedTheme;\n    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';\n  };\n\n  const setTheme = theme => {\n    document.documentElement.setAttribute('data-bs-theme', theme);\n    atualizarIcone(theme);\n  };\n\n  const atualizarIcone = (theme) => {\n    const btnIcone = document.querySelector('.btn-dark-mode i');\n    if (btnIcone) {\n      btnIcone.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill';\n    }\n  };\n\n  setTheme(getPreferredTheme());\n\n  window.alternarTema = () => {\n    const temaAtual = document.documentElement.getAttribute('data-bs-theme');\n    const novoTema = temaAtual === 'dark' ? 'light' : 'dark';\n    setStoredTheme(novoTema);\n    setTheme(novoTema);\n  };\n\n  document.querySelectorAll('.btn-dark-mode').forEach(btn => {\n    btn.addEventListener('click', window.alternarTema);\n  });\n\n  /* Animacoes de Scroll */\n  const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };\n  const scrollObserver = new IntersectionObserver((entries, observer) => {\n    entries.forEach(entry => {\n      if (entry.isIntersecting) {\n        entry.target.classList.add('visible');\n        observer.unobserve(entry.target);\n      }\n    });\n  }, observerOptions);\n\n  document.querySelectorAll('.animate-up').forEach((el, index) => {\n    if (el.classList.contains('card-portfolio')) {\n      el.style.transitionDelay = `${(index % 2) * 0.15}s`;\n    }\n    scrollObserver.observe(el);\n  });\n\n  /* Scroll To Top */\n  const btnScroll = document.getElementById('btnScrollToTop');\n  window.addEventListener('scroll', () => {\n    if (window.scrollY > 400) btnScroll.classList.add('show');\n    else btnScroll.classList.remove('show');\n  });\n  btnScroll.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));\n});",
+  "layout_html": {
+    "estrutura": "header sticky-top > nav.navbar | [isHomepage: section.hero-section#sobre + section.py-5.services] | div.container#projetos > main.col-lg-10 (sem sidebar) | footer#contato | button#btnScrollToTop",
+    "nota_ancoras": "Secoes usam id='sobre', id='projetos', id='contato' — menu de navegacao usa href='#projetos', '#sobre', '#contato' para scroll ancora. Funciona em single-page portfolio.",
+    "hero_html_exemplo": "<p class='text-uppercase fw-bold mb-3' style='letter-spacing: 2px;'>Olá, eu sou um Desenvolvedor Web</p>\n<h1 class='hero-title fw-black mb-4'>\n  Eu construo <br/>\n  <span class='neon-text'>experiências digitais</span> <br/>\n  que marcam.\n</h1>\n<p class='fs-4 text-muted mb-5 col-md-10' style='line-height: 1.6;'>...</p>\n<div class='d-flex gap-4 align-items-center'>\n  <a class='btn-neon' href='#projetos'>Ver Meus Trabalhos <i class='bi bi-arrow-down ms-2'></i></a>\n  <a class='fw-bold text-decoration-none' href='#'><i class='bi bi-github fs-4 me-2'></i> Github</a>\n</div>",
+    "services_html_exemplo": "<div class='row g-5'>\n  <div class='col-md-4 animate-up' style='transition-delay: 0.1s;'>\n    <i class='bi bi-code-slash neon-text display-4 mb-3 d-block'></i>\n    <h3 class='fw-bold mb-3'>Desenvolvimento</h3>\n    <p class='text-muted'>...</p>\n  </div>\n  <div class='col-md-4 animate-up' style='transition-delay: 0.2s;'>\n    <i class='bi bi-vector-pen neon-text display-4 mb-3 d-block'></i>\n    <h3 class='fw-bold mb-3'>UI/UX Design</h3>\n    <p class='text-muted'>...</p>\n  </div>\n</div>",
+    "footer_cta": "<p class='text-uppercase fw-bold mb-3' style='color: var(--sd-primary); letter-spacing: 2px;'>Tem um projeto em mente?</p>\n<h2 class='footer-title mb-5'>Vamos construir algo <br/> <span class='neon-text'>Incrível Juntos.</span></h2>",
+    "footer_css": "footer { background-color: var(--sd-dark) !important; color: #ffffff; padding-top: 5rem; padding-bottom: 2rem; }\n.footer-title { font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; letter-spacing: -2px; }",
+    "partilha_single": "<div class='mt-5 pt-4 border-top text-center'>\n  <p class='fw-bold text-uppercase text-muted'>Gostou deste projeto? Partilhe!</p>\n  <a class='btn btn-outline-dark rounded-circle mx-1' href='https://twitter.com/intent/tweet?url=URL' target='_blank'><i class='bi bi-twitter-x'/></a>\n  <a class='btn btn-outline-dark rounded-circle mx-1' href='https://www.linkedin.com/sharing/share-offsite/?url=URL' target='_blank'><i class='bi bi-linkedin'/></a>\n</div>"
+  }
+}

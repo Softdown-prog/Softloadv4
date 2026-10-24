@@ -1,0 +1,16 @@
+{
+  "id": "firestore-crud-nodejs",
+  "slug": "firestore-crud-nodejs",
+  "categoria": "firebase",
+  "descricao": "Operações CRUD completas do Firestore via Node.js (firebase-admin SDK) — inicialização do SDK, criação de documento com ID automático, busca por ID, busca com filtro e paginação, atualização parcial e remoção de documento.",
+  "componentes": ["firestore-admin-sdk-nodejs", "firestore-collection-add", "firestore-doc-update", "firestore-orderby-limit-startafter"],
+  "exemplos": [
+    "const { initializeApp, cert } = require('firebase-admin/app'); const { getFirestore } = require('firebase-admin/firestore'); initializeApp({ credential: cert(serviceAccount) }); const db = getFirestore();",
+    "async function listarUsuariosAtivos(limite, ultimoDocumentoId) { let consulta = db.collection('usuarios').where('status', '==', 'ativo').orderBy('data-criacao', 'desc').limit(limite); if (ultimoDocumentoId) { const ultimoSnapshot = await db.collection('usuarios').doc(ultimoDocumentoId).get(); consulta = consulta.startAfter(ultimoSnapshot); } return (await consulta.get()).docs; }"
+  ],
+  "boas_praticas": [
+    "O Firebase Admin SDK mantém um pool de conexões interno — não reinicialize o app a cada requisição",
+    "Nunca inclua o arquivo chave-privada.json no controle de versão git, use variáveis de ambiente"
+  ],
+  "keywords": ["firestore nodejs", "firestore crud", "firebase admin sdk nodejs", "firestore paginacao nodejs"]
+}

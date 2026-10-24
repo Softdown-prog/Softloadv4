@@ -1,0 +1,94 @@
+{
+  "filosofia_design": {
+    "estetica": "Tailwind-like com Bootstrap — visual moderno e limpo que remete ao ecossistema shadcn/ui e Tailwind sem usar nenhuma dessas libs",
+    "como_consegue": [
+      "Palette slate do Tailwind: #1e293b (slate-800) como --nexus-dark, #64748b (slate-500) como --nexus-gray, #f8fafc (slate-50) como --nexus-light",
+      "border: 1px solid #e2e8f0 (slate-200) nos cards — borda quase invisível que define o card sem peso visual",
+      "border-radius: 16px e 20px nos cards — cantos arredondados generosos, padrão shadcn/ui",
+      "box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) — sombra tênue Tailwind shadow-md equivalente",
+      "Space Grotesk — tipografia geométrica moderna que substitui Inter sem depender do Google Fonts padrão de projetos Tailwind",
+      "letter-spacing: -1px nos títulos grandes — técnica de display type compacto padrão em projetos Tailwind/Radix",
+      "Sem decorações — zero gradients agressivos, zero borders grossas, zero sombras coloridas. Minimalismo funcional."
+    ],
+    "diferenca_vs_tailwind_real": "Tailwind gera classes utilitárias no HTML. Este tema tem CSS semântico por IDs (#saas-cards, #pricing-cards) — o HTML dos gadgets fica limpo. A aparência é idêntica; a arquitetura é oposta."
+  },
+  "css_hero": {
+    "descricao": "Hero split col-lg-6 texto + col-lg-6 imagem. padding-top: 140px compensa navbar fixed-top de ~60px com folga.",
+    "css": ".hero-section { padding: 140px 0 80px 0; background: #ffffff; border-bottom: 1px solid #e2e8f0; }\n.hero-text-area { display: flex; flex-direction: column; justify-content: center; height: 100%; }\n.hero-text-area .widget h2.title { font-size: 3.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 1.5rem; line-height: 1.2; color: var(--nexus-dark); }\n.hero-text-area .widget .widget-content { font-size: 1.25rem; color: var(--nexus-gray); line-height: 1.6; margin-bottom: 2rem; }\n.hero-media-area .widget img { width: 100%; max-width: 600px; height: auto; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }\n.hero-media-area .widget h2.title { display: none; }\n@media (max-width: 768px) {\n  .hero-text-area .widget h2.title { font-size: 2.5rem; text-align: center; }\n  .hero-text-area .widget .widget-content { text-align: center; }\n  .hero-text-area .btn-hero-wrapper { text-align: center; }\n}",
+    "html_widget_hero": "<h2 class='title'>TITULO DO HERO</h2>\n<div class='widget-content'>TEXTO DESCRITIVO DO PRODUTO</div>\n<div class='btn-hero-wrapper mt-3'>\n  <a class='btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm' href='#planos'>Ver Planos</a>\n</div>",
+    "nota": "btn-hero-wrapper é wrapper para centralizar o CTA no mobile sem afetar o flex do pai"
+  },
+  "css_saas_cards": {
+    "descricao": "Cards de funcionalidades/features. Ícone Bootstrap Icons injetado automaticamente via CSS ::before no h2.title — zero HTML extra no gadget.",
+    "css": "#saas-cards .widget {\n  background: #ffffff;\n  border: 1px solid #e2e8f0;\n  border-radius: 16px;\n  padding: 40px 30px;\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);\n  transition: all 0.4s ease;\n  height: 100%;\n  display: flex;\n  flex-direction: column;\n}\n#saas-cards .widget:hover {\n  transform: translateY(-10px);\n  box-shadow: 0 20px 25px -5px rgba(13, 110, 253, 0.1);\n  border-color: var(--nexus-primary);\n}\n#saas-cards .widget h2.title {\n  font-size: 1.5rem;\n  font-weight: 700;\n  color: var(--nexus-dark);\n  margin-bottom: 15px;\n}\n#saas-cards .widget h2.title::before {\n  content: \"\\F287\";\n  font-family: \"bootstrap-icons\";\n  display: block;\n  font-size: 2.5rem;\n  color: var(--nexus-primary);\n  margin-bottom: 15px;\n}\n#saas-cards .widget .widget-content {\n  color: var(--nexus-gray);\n  font-size: 1rem;\n  line-height: 1.7;\n  flex-grow: 1;\n}",
+    "unicode_icone": "\\F287 = bi-lightning-charge — ícone padrão para todos os feature cards. Trocar para \\F52F (bi-shield-check), \\F470 (bi-graph-up), etc. mantendo font-family: 'bootstrap-icons'",
+    "html_widget_exemplo": "<b:widget title='Automação Rápida' type='Text'>\n  <b:widget-setting name='content'>Elimine o trabalho manual da sua equipa e deixe o sistema tratar das tarefas repetitivas automaticamente.</b:widget-setting>\n</b:widget>",
+    "nota": "h2.title vem do campo 'title' do gadget. widget-content vem do campo 'content'. O ícone é 100% CSS — o usuário só preenche título e texto no painel do Blogger."
+  },
+  "css_pricing_cards": {
+    "descricao": "Cards de preço com truque CSS: p:first-of-type no conteúdo do gadget é o número do preço — CSS injeta 'R$' via ::before e aplica font-size 3.5rem automaticamente. Zero HTML de formatação de preço no gadget.",
+    "css": ".pricing-wrapper { background: var(--nexus-light); padding: 80px 0; }\n#pricing-cards .widget {\n  background: #ffffff;\n  border: 2px solid #e2e8f0;\n  border-radius: 20px;\n  padding: 50px 40px;\n  text-align: center;\n  transition: all 0.4s ease;\n  height: 100%;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n#pricing-cards .widget:hover {\n  border-color: var(--nexus-primary);\n  box-shadow: 0 20px 40px rgba(13, 110, 253, 0.08);\n  transform: scale(1.02);\n}\n#pricing-cards .widget h2.title {\n  font-size: 1.5rem;\n  font-weight: 700;\n  color: var(--nexus-dark);\n  margin-bottom: 10px;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n}\n#pricing-cards .widget .widget-content {\n  color: var(--nexus-gray);\n  font-size: 1.1rem;\n  line-height: 1.6;\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n}\n#pricing-cards .widget .widget-content .btn { margin-top: auto !important; }\n#pricing-cards .widget .widget-content p:first-of-type {\n  font-size: 3.5rem;\n  font-weight: 800;\n  color: var(--nexus-dark);\n  margin-bottom: 5px;\n  line-height: 1;\n}\n#pricing-cards .widget .widget-content p:first-of-type::before {\n  content: \"R$ \";\n  font-size: 1.2rem;\n  vertical-align: super;\n  color: var(--nexus-gray);\n}",
+    "truque_preco": "O conteúdo HTML do gadget começa com <p>99</p> — apenas o número. CSS aplica font-size: 3.5rem + injeta 'R$ ' como ::before com vertical-align: super. Usuário edita apenas o número no gadget do Blogger.",
+    "html_widget_starter": "<p>29</p>\n<p>Ideal para pequenos negócios em crescimento.</p>\n<ul class=\"list-unstyled mt-4 text-start\">\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Até 5 utilizadores</li>\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Suporte por email</li>\n</ul>\n<a href=\"#\" class=\"btn btn-outline-primary w-100 rounded-pill mt-4 fw-bold\">Começar Agora</a>",
+    "html_widget_pro": "<p>99</p>\n<p>A solução completa para escalar as suas vendas.</p>\n<ul class=\"list-unstyled mt-4 text-start\">\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Utilizadores ilimitados</li>\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Suporte Prioritário 24/7</li>\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Relatórios em Tempo Real</li>\n  <li class=\"mb-2\"><i class=\"bi bi-check-circle-fill text-primary me-2\"></i> Acesso total à API</li>\n</ul>\n<a href=\"#\" class=\"btn btn-primary w-100 rounded-pill mt-4 fw-bold shadow-sm\">Assinar Plano Pro</a>",
+    "diferenciacao_cta": "Starter usa btn-outline-primary (CTA secundário), Pro usa btn-primary (CTA primário) — hierarquia visual de conversão sem JS",
+    "margin_top_auto": "margin-top: auto no .btn do widget-content (flex-column) empurra o botão para o bottom do card independente de quantas linhas de features o plano tem"
+  },
+  "css_testimonials": {
+    "descricao": "Cards de depoimento com aspas bi-quote amarelas injetadas via CSS ::before no h2.title (nome do autor)",
+    "css": "#testimonials .widget {\n  background: #ffffff;\n  border-radius: 16px;\n  padding: 30px;\n  border: 1px solid #e2e8f0;\n  font-style: italic;\n  color: var(--nexus-gray);\n}\n#testimonials .widget h2.title {\n  font-size: 1.1rem;\n  font-weight: 700;\n  color: var(--nexus-dark);\n  margin-top: 20px;\n  font-style: normal;\n}\n#testimonials .widget h2.title::before {\n  content: \"\\F6B0\";\n  font-family: \"bootstrap-icons\";\n  display: block;\n  font-size: 2rem;\n  color: #ffc107;\n  margin-bottom: 10px;\n}",
+    "unicode_icone": "\\F6B0 = bi-quote — aspas de depoimento amarelas (Bootstrap warning color #ffc107) antes do nome do autor",
+    "html_widget_exemplo": "<b:widget title='João Silva, CEO da TechCorp' type='Text'>\n  <b:widget-setting name='content'>&quot;Desde que implementámos o Nexus, a nossa produtividade aumentou 40%. A facilidade de uso da plataforma é incomparável.&quot;</b:widget-setting>\n</b:widget>",
+    "nota": "Título do gadget = nome + cargo do cliente. Conteúdo = texto do depoimento entre aspas. Aspas decorativas são CSS — o conteúdo não precisa de formatação extra."
+  },
+  "css_blog_section": {
+    "descricao": "Grid de posts 3 colunas (col-md-6 col-lg-4) com card limpo border-radius-16 e image-height fixo de 220px",
+    "css": ".blog-section { padding: 80px 0; background: #ffffff; border-top: 1px solid #e2e8f0; }\n.post-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; height: 100%; transition: all 0.3s; }\n.post-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }\n.post-card-img { width: 100%; height: 220px; object-fit: cover; background: #f1f5f9; }\n.post-card-body { padding: 25px; }\n.post-title a { color: var(--nexus-dark); font-weight: 700; font-size: 1.25rem; }\n.post-title a:hover { color: var(--nexus-primary); }\n.post-snippet { color: var(--nexus-gray); margin-top: 10px; font-size: 0.95rem; }",
+    "fallback_sem_imagem": "div.post-card-img com d-flex.align-items-center.justify-content-center.text-muted + bi-image.fs-1 — quando o post não tem featuredImage, o div preenche o espaço com ícone centralizado em fundo #f1f5f9",
+    "post_single_html": "<article class='mx-auto' style='max-width: 800px;'>\n  <h1 class='fw-bold mb-4 display-5'>TÍTULO DO ARTIGO</h1>\n  <div class='text-muted mb-4 pb-4 border-bottom'>\n    <i class='bi bi-calendar3'></i> DATA\n  </div>\n  <div class='post-body fs-5 text-secondary' style='line-height: 1.8;'>\n    CORPO DO POST\n  </div>\n</article>",
+    "paginacao_html": "<div class='d-flex justify-content-between mt-5'>\n  <a class='btn btn-outline-primary'>← Recentes</a>\n  <a class='btn btn-outline-primary'>Antigos →</a>\n</div>"
+  },
+  "css_footer": {
+    "descricao": "Footer dark com row.g-5 de 2 colunas: texto 'Sobre' + formulário de contato nativo do Blogger estilizado com Bootstrap form-control",
+    "css": ".footer-nexus { background: var(--nexus-dark); color: #94a3b8; padding: 60px 0 30px 0; }\n.footer-nexus .widget h2.title { color: #ffffff; font-weight: 700; margin-bottom: 20px; }",
+    "id_ancora": "id='contato' no footer — âncora para 'Fale Conosco' no navbar e qualquer CTA com href='#contato'",
+    "contact_form_html": "<form name='contact-form'>\n  <input class='form-control mb-3' placeholder='Seu nome' name='name' type='text'/>\n  <input class='form-control mb-3' placeholder='Seu email' name='email' type='email'/>\n  <textarea class='form-control mb-3' placeholder='Sua mensagem' name='email-message' rows='3'></textarea>\n  <button class='btn btn-primary w-100 fw-bold' type='button'>Enviar Mensagem</button>\n</form>",
+    "copyright_html": "<small>© <script>document.write(new Date().getFullYear())</script> Nome da Empresa. Todos os direitos reservados.</small>"
+  },
+  "layout_html": {
+    "estrutura": ".top-bar-wrapper (aviso topo) → nav.navbar-nexus.fixed-top → [b:if isHomepage: hero + funcionalidades + preços + depoimentos] → section.blog-section (sempre visível) → div.container.my-5 (pre-footer banners) → footer.footer-nexus#contato",
+    "secao_eyebrow": "<div class='text-center mb-5 fade-in-up'>\n  <span class='text-primary fw-bold text-uppercase' style='letter-spacing: 1px;'>Vantagens</span>\n  <h2 class='display-6 fw-bold text-dark mt-2'>Tudo o que a sua empresa precisa</h2>\n</div>",
+    "ids_ancora": {
+      "#funcionalidades": "href do menu → seção de cards de funcionalidades",
+      "#planos": "href do botão hero → seção de pricing",
+      "#contato": "href do CTA navbar + id do footer → formulário de contato"
+    },
+    "isHomepage_vs_blog": "b:if cond='data:view.isHomepage' envolve hero + todas as seções de landing. blog-section fica FORA — aparece em todas as views (homepage mostra grid de posts, post individual mostra artigo completo)",
+    "hamburger": "<button class='navbar-toggler border-0 shadow-none' data-bs-toggle='collapse' data-bs-target='#navbarNav'>\n  <i class='bi bi-list fs-1 text-dark'></i>\n</button>"
+  },
+  "javascript": {
+    "descricao": "IntersectionObserver para fade-in-up com transitionDelay escalonado em ondas de 3 elementos",
+    "codigo": "(function() {\n  document.addEventListener('DOMContentLoaded', () => {\n    const observer = new IntersectionObserver((entries, obs) => {\n      entries.forEach(entry => {\n        if (entry.isIntersecting) {\n          entry.target.classList.add('is-visible');\n          obs.unobserve(entry.target);\n        }\n      });\n    }, { root: null, rootMargin: '0px', threshold: 0.1 });\n\n    document.querySelectorAll('.fade-in-up').forEach((el, index) => {\n      el.style.transitionDelay = `${(index % 3) * 0.15}s`;\n      observer.observe(el);\n    });\n  });\n})();",
+    "delay_escalonado": "(index % 3) * 0.15s — produz delays 0s, 0.15s, 0.30s, 0s, 0.15s, 0.30s... Cria efeito de onda visual para grids de 3 colunas",
+    "obs_unobserve": "obs.unobserve(entry.target) — animação dispara apenas uma vez por elemento, não repete ao rolar para cima e voltar"
+  },
+  "html_simulado_homepage": {
+    "descricao": "Saída visual completa da homepage com todos os blocos — dados mock injetados",
+    "hero": "<section class='hero-section'>\n  <div class='container'>\n    <div class='row align-items-center g-5'>\n      <div class='col-lg-6 hero-text-area fade-in-up'>\n        <h2 class='title'>Revolucione a sua Gestão</h2>\n        <div class='widget-content'>A plataforma SaaS mais completa do mercado. Escale os seus resultados com automação inteligente sem código.</div>\n        <div class='btn-hero-wrapper mt-3'>\n          <a class='btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm' href='#planos'>Ver Planos</a>\n        </div>\n      </div>\n      <div class='col-lg-6 hero-media-area fade-in-up text-center'>\n        <img src='dashboard-screenshot.png' alt='Nexus Dashboard' style='border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%;' />\n      </div>\n    </div>\n  </div>\n</section>",
+    "pricing": "<section class='pricing-wrapper' id='planos'>\n  <div class='container'>\n    <div class='text-center mb-5 fade-in-up'>\n      <h2 class='display-6 fw-bold text-dark'>Escolha o plano ideal</h2>\n      <p class='text-muted fs-5'>Sem fidelização. Cancele quando quiser.</p>\n    </div>\n    <div class='cards-grid fade-in-up'>\n      <!-- Card Starter -->\n      <div class='widget'>\n        <h2 class='title'>Starter</h2>\n        <div class='widget-content'>\n          <p>29</p>\n          <p>Ideal para pequenos negócios em crescimento.</p>\n          <ul class='list-unstyled mt-4 text-start'>\n            <li class='mb-2'><i class='bi bi-check-circle-fill text-primary me-2'></i> Até 5 utilizadores</li>\n            <li class='mb-2'><i class='bi bi-check-circle-fill text-primary me-2'></i> Suporte por email</li>\n          </ul>\n          <a href='#' class='btn btn-outline-primary w-100 rounded-pill mt-4 fw-bold'>Começar Agora</a>\n        </div>\n      </div>\n      <!-- Card Pro -->\n      <div class='widget'>\n        <h2 class='title'>Pro</h2>\n        <div class='widget-content'>\n          <p>99</p>\n          <p>A solução completa para escalar as suas vendas.</p>\n          <ul class='list-unstyled mt-4 text-start'>\n            <li class='mb-2'><i class='bi bi-check-circle-fill text-primary me-2'></i> Utilizadores ilimitados</li>\n            <li class='mb-2'><i class='bi bi-check-circle-fill text-primary me-2'></i> Suporte 24/7</li>\n          </ul>\n          <a href='#' class='btn btn-primary w-100 rounded-pill mt-4 fw-bold shadow-sm'>Assinar Pro</a>\n        </div>\n      </div>\n    </div>\n  </div>\n</section>"
+  },
+  "secoes_blogger": {
+    "top-bar": "maxwidgets=1, type=HTML — faixa de aviso de promoção/badge",
+    "header-logo": "maxwidgets=1, type=Header — logo ou nome do blog",
+    "menu-links": "maxwidgets=1, type=PageList — links do menu navbar",
+    "hero-text": "maxwidgets=1, type=HTML — título + subtítulo + CTA do hero",
+    "hero-media": "maxwidgets=1, type=Image — screenshot ou mockup do produto",
+    "saas-cards": "N widgets, type=Text — cada widget = um card de funcionalidade (título + descrição)",
+    "pricing-cards": "N widgets, type=HTML — cada widget = um plano de preço (HTML com <p>PREÇO</p> + lista + botão)",
+    "testimonials": "N widgets, type=Text — cada widget = um depoimento (título=nome+cargo, conteúdo=texto)",
+    "main-blog": "showaddelement=no — Blog1 widget gerenciado pelo Blogger",
+    "pre-footer": "maxwidgets=3 — banners, ads ou stats",
+    "footer-about": "maxwidgets=1, type=Text — texto 'Sobre a empresa'",
+    "footer-contact": "maxwidgets=1, type=ContactForm — formulário de contato nativo do Blogger"
+  }
+}

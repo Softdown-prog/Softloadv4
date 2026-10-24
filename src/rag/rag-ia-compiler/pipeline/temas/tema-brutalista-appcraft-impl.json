@@ -1,0 +1,43 @@
+{
+  "padroes_design": {
+    "link_brutalista": {
+      "descricao": "Sublinhado amarelo grosso que vira marcador de texto no hover",
+      "css": "a {\n  color: var(--ac-dark);\n  text-decoration: underline;\n  text-decoration-thickness: 3px;\n  text-decoration-color: var(--ac-yellow);\n  text-underline-offset: 3px;\n  transition: all 0.2s ease;\n}\na:hover {\n  background-color: var(--ac-yellow);\n  color: var(--ac-dark);\n  text-decoration: none;\n}"
+    },
+    "titulos": "h1-h6 { font-weight: 700; letter-spacing: -1px; color: var(--ac-dark); margin-bottom: 1rem; }",
+    "hero_pontilhado": {
+      "descricao": "Fundo com grid de pontos estilo caderno de anotacoes tecnicas. Texto usa background-color para limpar os pontos atras das letras.",
+      "css": ".hero-section {\n  border-bottom: 3px solid var(--ac-dark);\n  padding: 6rem 0;\n  background-image: radial-gradient(var(--ac-dark) 1px, transparent 1px);\n  background-size: 30px 30px;\n  background-position: center;\n}\n.hero-section h1, .hero-section h2 {\n  font-size: clamp(3rem, 8vw, 5.5rem);\n  line-height: 1;\n  letter-spacing: -3px;\n  font-weight: 700;\n  background-color: var(--ac-bg);\n  display: inline-block;\n  padding: 0 15px;\n}\n.hero-section p {\n  font-size: 1.25rem;\n  font-weight: 500;\n  max-width: 600px;\n  margin: 1.5rem auto;\n  background-color: var(--ac-bg);\n  padding: 10px;\n}"
+    },
+    "sombra_brutalista": "box-shadow: 6px 6px 0 var(--ac-dark) — sombra deslocada sem desfoque, padrao brutalista",
+    "botao_tecla_mecanica": {
+      "descricao": "Botao de submit com efeito de tecla mecanica — sobe no hover, afunda no active",
+      "css": ".contact-form-button-submit {\n  background: var(--ac-yellow) !important;\n  color: var(--ac-dark) !important;\n  font-family: var(--font-display);\n  font-weight: 700;\n  font-size: 1.1rem;\n  border: none !important;\n  padding: 12px !important;\n  cursor: pointer;\n  text-transform: uppercase;\n  box-shadow: 4px 4px 0 #fff;\n  transition: transform 0.1s, box-shadow 0.1s;\n}\n.contact-form-button-submit:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #fff; }\n.contact-form-button-submit:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #fff; }"
+    },
+    "metadados_mono": ".post-meta, .post-meta-single { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; color: #444; text-transform: uppercase; }",
+    "tags_invertidas": ".post-bottom-tags a { background: var(--ac-dark); color: var(--ac-bg); text-decoration: none; padding: 2px 8px; display: inline-block; margin-top: 5px; }\n.post-bottom-tags a:hover { background: var(--ac-yellow); color: var(--ac-dark); }"
+  },
+  "css_secoes": {
+    "header": "header { background-color: var(--ac-bg); border-bottom: 3px solid var(--ac-dark); padding: 0.5rem 0; }\n.navbar-brand h1 { font-weight: 700; font-size: 2rem; text-transform: uppercase; letter-spacing: -2px; margin: 0; }\n.nav-link { font-weight: 700; text-transform: uppercase; font-size: 0.95rem; padding: 0.5rem 1.2rem !important; border: 2px solid transparent; text-decoration: none !important; color: var(--ac-dark) !important; }\n.nav-link:hover { background-color: var(--ac-yellow); border-color: var(--ac-dark); }\n.navbar-toggler { color: var(--ac-dark); border-radius: 0; padding: 5px; }\n.navbar-toggler:focus { box-shadow: 0 0 0 3px var(--ac-yellow); }",
+    "features": ".features-section { border-bottom: 3px solid var(--ac-dark); background: var(--ac-bg); }\n.features-section h2 { font-size: 2.5rem; text-transform: uppercase; border-bottom: 3px solid var(--ac-dark); display: inline-block; padding-bottom: 5px; margin-bottom: 2rem; }",
+    "post_lista": ".post-feed .post-item { border-bottom: 3px solid var(--ac-dark); }\n.post-title { font-size: 2.2rem; line-height: 1.1; margin-bottom: 0.8rem; }\n.post-title a { text-decoration: none; }\n.post-title a:hover { background-color: var(--ac-yellow); }\n.post-snippet { font-size: 1.15rem; color: #222; margin-top: 1rem; }",
+    "post_single": ".post-title-single { font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1; margin-bottom: 1rem; }\n.post-body-content { font-size: 1.2rem; line-height: 1.8; margin-top: 2rem; }\n.post-body-content img { max-width: 100%; height: auto; border: 3px solid var(--ac-dark); margin: 1.5rem 0; box-shadow: 8px 8px 0 var(--ac-dark); }",
+    "sidebar": "aside .widget { background: var(--ac-bg); border: 3px solid var(--ac-dark); padding: 1.5rem; box-shadow: 6px 6px 0 var(--ac-dark); margin-bottom: 2.5rem; }\naside h3 { font-size: 1.3rem; text-transform: uppercase; border-bottom: 3px solid var(--ac-dark); padding-bottom: 10px; margin-bottom: 15px; }",
+    "paginacao": ".pagination a { font-family: var(--font-mono); font-weight: 700; text-decoration: none; border: 2px solid var(--ac-dark); padding: 8px 16px; text-transform: uppercase; }\n.pagination a:hover { background: var(--ac-dark); color: var(--ac-bg); }",
+    "footer": ".footer-section { background-color: var(--ac-dark); color: var(--ac-bg); border-top: 5px solid var(--ac-yellow); }\n.footer-section h2, .footer-section h3 { color: var(--ac-yellow); text-transform: uppercase; border-bottom: 2px solid #333; padding-bottom: 10px; }\n.footer-section a { color: var(--ac-bg); text-decoration-color: #555; }\n.footer-section a:hover { color: var(--ac-dark); background-color: var(--ac-yellow); text-decoration: none; }\n.footer-bottom { border-top: 1px solid #333 !important; font-family: var(--font-mono); font-size: 0.8rem; color: #888; }",
+    "contact_form": ".contact-form-widget form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }\n.contact-form-widget input, .contact-form-widget textarea { width: 100%; padding: 12px 15px; background: transparent; border: 2px solid #333; color: var(--ac-bg); font-family: var(--font-mono); font-size: 0.9rem; outline: none; border-radius: 0; transition: border-color 0.3s ease; }\n.contact-form-widget input::placeholder, .contact-form-widget textarea::placeholder { color: #666; }\n.contact-form-widget input:focus, .contact-form-widget textarea:focus { border-color: var(--ac-yellow); background: rgba(255,255,255,0.05); }",
+    "blockquote": "blockquote { margin: 30px 10px; padding: 20px; background: var(--ac-yellow); border: 3px solid var(--ac-dark); box-shadow: 7px 7px 0 var(--ac-dark); font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-style: italic; color: var(--ac-dark); }"
+  },
+  "layout_html": {
+    "estrutura": "header sticky-top > nav.navbar | [isHomepage: section.hero-section + section.features-section] | div.container > main.col-lg-8 + aside.col-lg-4 | footer.footer-section",
+    "hamburger_svg": "<button class='navbar-toggler border-0' data-bs-target='#mainNavbar' data-bs-toggle='collapse'>\n  <svg fill='none' height='28' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24' width='28'>\n    <line x1='3' x2='21' y1='12' y2='12'/>\n    <line x1='3' x2='21' y1='6' y2='6'/>\n    <line x1='3' x2='21' y1='18' y2='18'/>\n  </svg>\n</button>",
+    "nota_hamburger": "Usa SVG custom inline em vez de bi-list — estilo brutalista puro sem dependencia de Bootstrap Icons",
+    "footer_cols": "row.g-5 > col-md-6 (info + labels) | col-md-6 (contact form)"
+  },
+  "semi_amputado": {
+    "descricao": "Blog1 widget preserva apenas b:includable id='main' com HTML real. Todos os outros inclusables (comments, post, postHeader, etc.) retornam div vazio ou span vazio. Tecnica para usar o Blogger como backend de posts enquanto controla 100% do HTML de saida.",
+    "pattern_amputacao": "<b:includable id='aboutPostAuthor'><div/></b:includable>\n<b:includable id='addComments'><div/></b:includable>\n<b:includable id='commentAuthorAvatar'><div/></b:includable>\n<!-- ... todos os outros como <div/> -->",
+    "lista_vs_single": "b:if cond='data:view.isMultipleItems' → lista de posts com snippet | b:else → post single com corpo completo",
+    "homepage_hero": "b:if cond='data:view.isHomepage' antes do div.container principal → injeta hero + features apenas na pagina inicial"
+  }
+}

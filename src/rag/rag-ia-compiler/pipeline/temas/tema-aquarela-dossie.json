@@ -1,0 +1,50 @@
+{
+  "nicho": "aquarela",
+  "versaoDossie": 1,
+  "chassis": "portfolio",
+  "pageType": "landing-page",
+  "tokensCss": {
+    "light_mode": {
+      "--aqua-primary": "var(--sl-primary)",
+      "--aqua-accent": "#e67e22"
+    }
+  },
+  "pecas": [
+    {
+      "id": "aqua-hero-strip",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "aqua-hero-strip"
+      ],
+      "html": "<div class=\"aqua-hero-strip\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n</div>",
+      "css": "@keyframes aqua-watercolor-shift {\n  0% { background-position: 0% 50%; }\n  50% { background-position: 100% 50%; }\n  100% { background-position: 0% 50%; }\n}\n.aqua-hero-strip {\n  display: flex;\n  justify-content: center;\n  padding: 14px 26px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  border-radius: 50rem;\n  border: 2px solid var(--aqua-primary);\n  background: linear-gradient(-45deg, #fdfcfb, #e2d1c3, #f5f7fa, #c3cfe2, #e0c3fc, #fbc2eb);\n  background-size: 400% 400%;\n  animation: aqua-watercolor-shift 15s ease infinite;\n}\n.aqua-hero-strip-tag {\n  font-size: 0.95rem;\n  font-weight: 800;\n  letter-spacing: 0.3px;\n  background: linear-gradient(to right, #ff7eb3, #ff758c, #ff7eb3, #7afcff, #feff9c, #ff7eb3);\n  background-size: 200% auto;\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n  animation: aqua-watercolor-shift 5s linear infinite;\n}",
+      "js": "",
+      "descricao": "Faixa fina complementar (badge com o efeito 'aquarela' — gradiente pastel animado + texto com clip de gradiente arco-íris animado) acima do hero genérico do chassis 'portfolio'. Sem <h1-h3>: puramente decorativo, não interage com heroTitle/heroSubtitle. Borda usa --aqua-primary (responde ao colorPreset); o próprio gradiente arco-íris fica hardcoded de propósito — é a assinatura visual do nicho, não um tom themável. 5 variações estruturais autorais (htmlVariantes/cssVariantes) escolhidas por seed determinístico — badge em formato pílula/splash/sublinhado/gotas/moldura, mantendo a assinatura aquarela (gradiente pastel/arco-íris) mas com composição genuinamente diferente entre variantes.",
+      "htmlVariantes": [
+        "<div class=\"aqua-hero-strip\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n</div>",
+        "<div class=\"aqua-hero-strip aqua-hero-strip--splash\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-icon\" aria-hidden=\"true\">🎨</span>\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n</div>",
+        "<div class=\"aqua-hero-strip aqua-hero-strip--underline\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n</div>",
+        "<div class=\"aqua-hero-strip aqua-hero-strip--droplets\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-drop\" aria-hidden=\"true\"></span>\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n  <span class=\"aqua-hero-strip-drop\" aria-hidden=\"true\"></span>\n</div>",
+        "<div class=\"aqua-hero-strip aqua-hero-strip--framed\" id=\"aqua-hero-strip\">\n  <span class=\"aqua-hero-strip-tag\">Pintura e Arte para Ambientes</span>\n</div>"
+      ],
+      "cssVariantes": [
+        "@keyframes aqua-watercolor-shift {\n  0% { background-position: 0% 50%; }\n  50% { background-position: 100% 50%; }\n  100% { background-position: 0% 50%; }\n}\n.aqua-hero-strip {\n  display: flex;\n  justify-content: center;\n  padding: 14px 26px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  border-radius: 50rem;\n  border: 2px solid var(--aqua-primary);\n  background: linear-gradient(-45deg, #fdfcfb, #e2d1c3, #f5f7fa, #c3cfe2, #e0c3fc, #fbc2eb);\n  background-size: 400% 400%;\n  animation: aqua-watercolor-shift 15s ease infinite;\n}\n.aqua-hero-strip-tag {\n  font-size: 0.95rem;\n  font-weight: 800;\n  letter-spacing: 0.3px;\n  background: linear-gradient(to right, #ff7eb3, #ff758c, #ff7eb3, #7afcff, #feff9c, #ff7eb3);\n  background-size: 200% auto;\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n  animation: aqua-watercolor-shift 5s linear infinite;\n}",
+        "@keyframes aqua-splash-pulse {\n  0%, 100% { transform: scale(1); }\n  50% { transform: scale(1.04); }\n}\n.aqua-hero-strip--splash {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  padding: 12px 24px 12px 18px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;\n  background: linear-gradient(135deg, #fce4ec, #e0f7fa, #fff9c4);\n  border: 2px solid var(--aqua-primary);\n  animation: aqua-splash-pulse 3.5s ease-in-out infinite;\n}\n.aqua-hero-strip-icon {\n  font-size: 1.1rem;\n  line-height: 1;\n}\n.aqua-hero-strip--splash .aqua-hero-strip-tag {\n  font-size: 0.95rem;\n  font-weight: 800;\n  letter-spacing: 0.3px;\n  color: var(--aqua-primary);\n}",
+        "@keyframes aqua-underline-shift {\n  0% { background-position: 0% 50%; }\n  100% { background-position: 200% 50%; }\n}\n.aqua-hero-strip--underline {\n  display: flex;\n  justify-content: center;\n  padding: 4px 6px 10px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  background-image: linear-gradient(to right, #ff7eb3, #7afcff, #feff9c, #ff7eb3);\n  background-size: 200% 4px;\n  background-repeat: no-repeat;\n  background-position: 0 100%;\n  animation: aqua-underline-shift 4s linear infinite;\n}\n.aqua-hero-strip--underline .aqua-hero-strip-tag {\n  font-size: 0.95rem;\n  font-weight: 800;\n  letter-spacing: 0.4px;\n  text-transform: uppercase;\n  color: var(--aqua-primary);\n}",
+        "@keyframes aqua-drop-glow {\n  0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }\n  50% { box-shadow: 0 0 10px 2px rgba(230,126,34,0.35); }\n}\n.aqua-hero-strip--droplets {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 10px 22px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  border-radius: 50rem;\n  background: #fdfcfb;\n  border: 1px solid var(--aqua-accent);\n}\n.aqua-hero-strip-drop {\n  width: 10px;\n  height: 10px;\n  border-radius: 50% 50% 50% 0;\n  transform: rotate(45deg);\n  background: radial-gradient(circle at 30% 30%, #ff7eb3, #7afcff);\n  animation: aqua-drop-glow 2.4s ease-in-out infinite;\n}\n.aqua-hero-strip--droplets .aqua-hero-strip-tag {\n  font-size: 0.92rem;\n  font-weight: 700;\n  color: var(--aqua-accent);\n}",
+        ".aqua-hero-strip--framed {\n  display: flex;\n  justify-content: center;\n  padding: 12px 28px;\n  margin: 0 auto 8px;\n  max-width: fit-content;\n  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);\n  background: linear-gradient(#fdfcfb, #fdfcfb) padding-box,\n              linear-gradient(120deg, #e0c3fc, #8ec5fc, #ffd3a5) border-box;\n  border: 2px solid transparent;\n}\n.aqua-hero-strip--framed .aqua-hero-strip-tag {\n  font-size: 0.9rem;\n  font-weight: 800;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  font-variant: small-caps;\n  color: var(--aqua-primary);\n}"
+      ]
+    },
+    {
+      "id": "aqua-contact-form-style",
+      "tipo": "modulo",
+      "protegida": true,
+      "domIds": [],
+      "html": "",
+      "css": ".contact-form-widget { max-width: 100%; }\n.contact-form-name, .contact-form-email, .contact-form-email-message {\n  width: 100% !important;\n  max-width: 100% !important;\n  padding: 15px;\n  margin-bottom: 15px;\n  border: 1px solid #ddd;\n  border-radius: 8px;\n  font-family: inherit;\n}\n.contact-form-button {\n  width: 100%;\n  padding: 15px;\n  background-color: var(--aqua-accent);\n  color: white;\n  border: none;\n  border-radius: 8px;\n  font-weight: bold;\n  cursor: pointer;\n}",
+      "js": "",
+      "descricao": "Estiliza o formulário de contato nativo do Blogger (classes fixas geradas pelo gadget ContactForm — .contact-form-widget/.contact-form-name/.contact-form-email/.contact-form-email-message/.contact-form-button-submit) — só tem efeito visível se/quando o dono do site adicionar esse gadget na seção footer-contact do chassis. Mesmo padrão de footer-gamer-style em gamer-playerone. Seletor do botão corrigido de .contact-form-button-submit pra .contact-form-button — output real do token genérico CONTACT_FORM (contactFormWidget() em modules.js) usa classe .contact-form-button (sem sufixo -submit) no includable main, que é o que de fato renderiza."
+    }
+  ]
+}

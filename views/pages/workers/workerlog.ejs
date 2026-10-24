@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %></title>
+    <link href="/vendor/bootstrap/css/bootstrap.min.css?v=<%= gitSha %>" rel="stylesheet">
+    <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { overflow-x: hidden; }
+        body { background: var(--sl-bg-950); color: var(--sl-text-300); }
+
+        /* ── TOPBAR ── */
+        .wl-topbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1050;
+            height: 52px; background: rgba(15,23,42,0.97);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--sl-bg-800);
+            display: flex; align-items: center; padding: 0 1rem; gap: .65rem;
+        }
+        .wl-badge {
+            font-size: 9px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: .12em; color: #f87171;
+            border: 1px solid rgba(239,68,68,.3);
+            background: rgba(239,68,68,.08);
+            padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+        }
+        .topbar-btn {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; border-radius: 6px;
+            padding: 5px 10px; white-space: nowrap; flex-shrink: 0;
+        }
+
+        /* ── LAYOUT ── */
+        .page-wrap {
+            padding-top: 52px;
+            padding-left:  max(0.75rem, env(safe-area-inset-left));
+            padding-right: max(0.75rem, env(safe-area-inset-right));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+        .page-inner { max-width: 1400px; margin: 0 auto; padding-top: 1.25rem; }
+
+        /* ── STAT CARDS ── */
+        .stat-card {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+            border-radius: 12px; padding: 1rem; transition: border-color .2s;
+        }
+        .stat-card:hover { border-color: var(--sl-bg-600); }
+        .stat-num { font-size: clamp(1.6rem,5vw,2.4rem); font-weight: 900; line-height: 1; }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+            border-radius: 12px; overflow: hidden;
+        }
+        .section-label {
+            font-size: 10px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: .15em; color: var(--sl-text-400);
+        }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: .5rem;
+            padding: .875rem 1rem; border-bottom: 1px solid var(--sl-bg-800);
+        }
+        .panel-body { padding: 1rem; }
+
+        /* ── STATUS BADGES ── */
+        .status-badge { font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+        .status-healthy  { background: rgba(34,197,94,0.15);  color: #4ade80; }
+        .status-warning  { background: rgba(234,179,8,0.15);  color: #eab308; }
+        .status-critical { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+        /* ── REFRESH INDICATOR ── */
+        .refresh-ring {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 10px; font-weight: 700; color: var(--sl-text-500);
+            background: rgba(255,255,255,.04); border: 1px solid var(--sl-bg-800);
+            padding: 3px 10px; border-radius: 999px; flex-shrink: 0;
+        }
+        .refresh-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e; animation: pulse 2s infinite; flex-shrink: 0;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+        /* ── ERROR LOG ENTRIES ── */
+        .el-line {
+            display: flex; gap: .5rem; align-items: flex-start;
+            padding: .3rem 0; border-bottom: 1px solid rgba(255,255,255,.03);
+            cursor: default;
+        }
+        .el-line:last-child { border-bottom: none; }
+        .el-line:hover { background: rgba(255,255,255,.02); margin: 0 -.5rem; padding-left: .5rem; padding-right: .5rem; }
+        .el-level {
+            font-size: 8px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: .08em; padding: 2px 6px; border-radius: 4px;
+            flex-shrink: 0; margin-top: 2px; white-space: nowrap;
+        }
+        .el-level-error    { background: rgba(239,68,68,.2);   color: #f87171; }
+        .el-level-warn     { background: rgba(234,179,8,.2);   color: #eab308; }
+        .el-level-uncaught { background: rgba(192,132,252,.2); color: #c084fc; }
+        .el-level-other    { background: rgba(148,163,184,.1); color: #94a3b8; }
+        .el-source {
+            font-size: 9px; font-weight: 900; color: var(--sl-primary);
+            flex-shrink: 0; white-space: nowrap; margin-top: 2px; min-width: 80px;
+        }
+        .el-msg { color: #cbd5e1; flex: 1; min-width: 0; word-break: break-word; font-size: 11px; }
+        .el-ts  { font-size: 9px; color: var(--sl-text-500); flex-shrink: 0; white-space: nowrap; }
+        .el-stack {
+            margin: .3rem 0 .3rem .5rem; color: #64748b; font-size: 10px;
+            border-left: 2px solid var(--sl-bg-700); padding-left: .5rem;
+            display: none; white-space: pre-wrap;
+        }
+        .el-line:hover .el-stack { display: block; }
+
+        /* ── SOURCE CHIPS ── */
+        .source-chip {
+            font-size: 10px; font-weight: 700; padding: 3px 10px;
+            border-radius: 999px; background: rgba(14,165,233,.1);
+            color: var(--sl-primary); border: 1px solid rgba(14,165,233,.2);
+            cursor: pointer; user-select: none; transition: background .15s, color .15s;
+        }
+        .source-chip:hover { background: rgba(14,165,233,.25); }
+        .source-chip.active { background: var(--sl-primary); color: #0f172a; }
+        .source-chip--ai { background: rgba(251,146,60,.12); color: #fb923c; border-color: rgba(251,146,60,.3); }
+        .source-chip--ai:hover { background: rgba(251,146,60,.25); }
+        .source-chip--ai.active { background: #fb923c; color: #0f172a; border-color: #fb923c; }
+
+        /* ── LOG CONTAINER ── */
+        .log-container {
+            background: #050d1a; border: 1px solid var(--sl-bg-800); border-radius: 10px;
+            padding: .75rem; height: calc(100vh - 420px); min-height: 300px;
+            overflow-y: auto; font-family: 'Courier New', monospace; line-height: 1.65;
+        }
+        .log-container::-webkit-scrollbar { width: 4px; }
+        .log-container::-webkit-scrollbar-thumb { background: var(--sl-bg-700); border-radius: 4px; }
+
+        /* ── MOBILE ── */
+        @media(max-width:575px) {
+            .wl-topbar { padding: 0 .65rem; gap: .4rem; }
+            .stat-num { font-size: 1.6rem; }
+            .log-container { height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── TOPBAR ─────────────────────────────── -->
+<nav class="wl-topbar">
+    <span class="fw-black text-white sl-brand" style="font-size:.9rem;white-space:nowrap;flex-shrink:0">
+        SOFTLOAD<span class="sl-accent">LOG</span>
+    </span>
+    <span class="wl-badge"><%- include('../../partials/icon', { name: 'bug', cls: 'me-1', style: 'font-size:9px' }) %>Error Log 24h</span>
+    <div class="flex-grow-1"></div>
+    <div class="refresh-ring d-none d-sm-flex">
+        <span class="refresh-dot"></span>
+        <span id="refreshCountdown">60s</span>
+    </div>
+
+    <a href="/workers" class="btn topbar-btn" style="background:var(--sl-bg-800);color:var(--sl-text-300);border:1px solid var(--sl-bg-800)">
+        <%- include('../../partials/icon', { name: 'shield-check' }) %><span class="d-none d-md-inline"> Sentinel</span>
+    </a>
+    <a href="/eu" class="btn topbar-btn" style="background:var(--sl-bg-800);color:var(--sl-text-300);border:1px solid var(--sl-bg-800)">
+        <%- include('../../partials/icon', { name: 'gauge' }) %><span class="d-none d-md-inline"> Admin</span>
+    </a>
+    <a href="/logout" class="btn topbar-btn" style="background:transparent;color:#f87171;border:1px solid rgba(239,68,68,0.3)">
+        <%- include('../../partials/icon', { name: 'log-out' }) %><span class="d-none d-md-inline"> Sair</span>
+    </a>
+</nav>
+
+<main class="page-wrap">
+<div class="page-inner">
+
+    <!-- ── HEADER ──────────────────────────── -->
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <%- include('../../partials/icon', { name: 'bug', style: 'color:#f87171;font-size:1.1rem;flex-shrink:0' }) %>
+                <h1 class="fw-bolder text-white text-uppercase mb-0"
+                    style="font-size:clamp(1rem,4vw,1.4rem);letter-spacing:-.02em">Error Log — 24 horas</h1>
+            </div>
+            <p class="mb-0" style="font-size:.78rem;color:var(--sl-text-500)">
+                Captura silenciosa de <code>console.error</code> · <code>console.warn</code> · <code>uncaughtException</code> · <code>unhandledRejection</code><br>
+                Monitoramento automático do SaaS · Operador: <span style="color:var(--sl-primary)"><%= user.email %></span>
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span id="errorLogBadge" class="status-badge" style="display:none"></span>
+            <button onclick="downloadErrorLog('zip')"
+                    class="btn btn-sm fw-bold"
+                    style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:6px 12px;border-radius:8px">
+                <%- include('../../partials/icon', { name: 'download', cls: 'me-1' }) %>ZIP
+            </button>
+            <button onclick="downloadErrorLog('json')"
+                    class="btn btn-sm fw-bold"
+                    style="background:rgba(148,163,184,.1);color:var(--sl-text-300);border:1px solid var(--sl-bg-700);font-size:10px;padding:6px 12px;border-radius:8px">
+                <%- include('../../partials/icon', { name: 'file-json', cls: 'me-1' }) %>JSON
+            </button>
+            <button onclick="loadErrorLog()"
+                    class="btn btn-sm fw-bold"
+                    style="background:var(--sl-bg-800);color:var(--sl-text-300);border:1px solid var(--sl-bg-700);font-size:10px;padding:6px 12px;border-radius:8px">
+                <%- include('../../partials/icon', { name: 'refresh-cw', cls: 'me-1' }) %>Atualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- ── STATS ────────────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+            <div class="stat-card">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Total 24h</p>
+                <div class="d-flex align-items-end gap-1">
+                    <span class="stat-num text-white" id="elTotal">—</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">entradas capturadas</p>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="stat-card" style="border-color:rgba(239,68,68,.15)">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Errors</p>
+                <div class="d-flex align-items-end gap-1">
+                    <span class="stat-num" id="elErrors" style="color:#f87171">—</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">console.error</p>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="stat-card" style="border-color:rgba(234,179,8,.15)">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Warnings</p>
+                <div class="d-flex align-items-end gap-1">
+                    <span class="stat-num" id="elWarns" style="color:#eab308">—</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">console.warn</p>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="stat-card" style="border-color:rgba(192,132,252,.15)">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Uncaught</p>
+                <div class="d-flex align-items-end gap-1">
+                    <span class="stat-num" id="elUncaught" style="color:#c084fc">—</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">exceções não tratadas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── LOG PANEL ─────────────────────────── -->
+    <div class="section-card mb-4">
+        <div class="panel-header">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div>
+                    <p class="section-label mb-0">
+                        Entradas <span id="elEntriesCount" style="color:var(--sl-primary);font-weight:900"></span>
+                    </p>
+                    <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">
+                        Hover sobre a linha para ver stack trace completo
+                    </p>
+                </div>
+                <!-- Filtro por fonte -->
+                <div id="errorLogSources" style="display:none">
+                    <p style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500);margin-bottom:.4rem">Filtrar por fonte</p>
+                    <div id="errorLogSourceList" class="d-flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div id="errorLogEntries" class="log-container">
+                <span style="color:var(--sl-text-500)">Carregando entradas...</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js?v=<%= gitSha %>"></script>
+<script src="/js/workers/w-utils.js"></script>
+<script src="/js/workers/w-errorlog.js"></script>
+<script src="/js/workers/w-log-init.js"></script>
+</body>
+</html>

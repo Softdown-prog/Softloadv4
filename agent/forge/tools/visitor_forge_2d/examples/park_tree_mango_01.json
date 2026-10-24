@@ -1,0 +1,135 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_mango_01",
+  "pipelineRevision": 4,
+  "canvas": [
+    256,
+    320
+  ],
+  "anchor": [
+    128,
+    311
+  ],
+  "seed": 42139,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 128,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "authored_quarter_turns",
+    "lightingSpace": "authored_screen_consistent",
+    "views": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "sunlit yellow-green long mango leaves",
+    "front": "broad drooping clusters, subtle unripe fruit, visible woody forks",
+    "base": "short stout bark and flared roots",
+    "rotationSpace": "four authored directional sprites; source images, not geometric rotation"
+  },
+  "broadleafStructure": {
+    "layout": "authored_layers",
+    "species": "mango",
+    "profile": "wide_umbrella"
+  },
+  "palette": {
+    "ground_shadow": "#26302B",
+    "trunk_top": "#6E6658",
+    "trunk_bottom": "#38392F",
+    "trunk_light": "#9A8B73",
+    "back_top": "#31563B",
+    "back_bottom": "#1D3929",
+    "mid_top": "#66874E",
+    "mid_bottom": "#365A3D",
+    "front_top": "#91AB6A",
+    "front_bottom": "#55774B",
+    "highlight": "#BDCD84",
+    "occlusion": "#1A362A"
+  },
+  "raster": {
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "paletteId": "oiti_evergreen",
+  "sourceArt": {
+    "sourceCanvas": [
+      512,
+      640
+    ],
+    "foliageVariation": 0.02,
+    "layersByView": {
+      "south": [
+        {
+          "name": "wood",
+          "path": "../art/sources/mango_tree_v1/south_wood.png",
+          "sha256": "f11fb7b7b92224143a033e7170327c4c206b4f78eeea785ac087b948e47f8217"
+        },
+        {
+          "name": "foliage",
+          "path": "../art/sources/mango_tree_v1/south_foliage.png",
+          "sha256": "161c20214669a370543fae2db32755c17958d05e6bd81b98b9becd0e274f17f8"
+        }
+      ],
+      "west": [
+        {
+          "name": "wood",
+          "path": "../art/sources/mango_tree_v1/west_wood.png",
+          "sha256": "6275934c93332c4c6b2423ba8985703a602d1f3498572b1b6b73069993aa873d"
+        },
+        {
+          "name": "foliage",
+          "path": "../art/sources/mango_tree_v1/west_foliage.png",
+          "sha256": "b93fe6c147672f4d8636bcc29a16a17cead1617c7a762cdd76a610323f4fd80b"
+        }
+      ],
+      "north": [
+        {
+          "name": "wood",
+          "path": "../art/sources/mango_tree_v1/north_wood.png",
+          "sha256": "af699b7ab0d1103a5cfb4073440d5528ed217c0b4fb39b92d4f8e9244812269d"
+        },
+        {
+          "name": "foliage",
+          "path": "../art/sources/mango_tree_v1/north_foliage.png",
+          "sha256": "5edc0b6e5dd518ca5d762d26e0a47767d90138828042559d0755a760131bc78a"
+        }
+      ],
+      "east": [
+        {
+          "name": "wood",
+          "path": "../art/sources/mango_tree_v1/east_wood.png",
+          "sha256": "e535f432ff54987fb210204d6d15bc12515c5e30b18a83c86b8dc22f87176965"
+        },
+        {
+          "name": "foliage",
+          "path": "../art/sources/mango_tree_v1/east_foliage.png",
+          "sha256": "97873f14c35518c1c34eae0a93475dc3d97bbc7c2aed79679404d4d60a065237"
+        }
+      ]
+    }
+  },
+  "validation": {
+    "minimumOpaqueHeightPx": 260,
+    "maximumOpaqueHeightPx": 310
+  }
+}

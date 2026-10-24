@@ -1,0 +1,47 @@
+{
+  "name": "softload-worker-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Worker Agent de código do ecossistema Softload",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "vendor:power-up": "node scripts/vendorPowerUp.js",
+    "test": "node --experimental-test-module-mocks --test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@google-cloud/artifact-registry": "^1.0.0",
+    "@google-cloud/logging": "^11.2.0",
+    "@google-cloud/secret-manager": "^6.0.0",
+    "@google-cloud/storage": "^7.16.0",
+    "@google/genai": "^2.16.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@octokit/rest": "^22.0.0",
+    "axios": "^1.11.0",
+    "diff": "^7.0.0",
+    "dotenv": "^17.2.1",
+    "execa": "^9.6.0",
+    "express": "^4.22.2",
+    "fast-glob": "^3.3.3",
+    "html-to-text": "^10.0.0",
+    "ignore": "^7.0.3",
+    "js-yaml": "^4.1.0",
+    "p-limit": "^6.2.0",
+    "p-queue": "^8.1.0",
+    "proper-lockfile": "^4.1.2",
+    "uuid": "^11.1.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.32.0",
+    "prettier": "^3.6.2"
+  }
+}

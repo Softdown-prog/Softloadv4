@@ -1,0 +1,20 @@
+{
+  "semantica-html-para-ia": {
+    "comportamento-dos-crawlers": "consomem-a-arvore-dom-bruta-ignorando-o-design-visual-ou-efeitos",
+    "crawlers-mencionados": [
+      "google-extended",
+      "gptbot"
+    ],
+    "implementacao-correta": {
+      "tags-estruturais-obrigatorias": [
+        "article",
+        "h1",
+        "h2",
+        "h3",
+        "p"
+      ],
+      "objetivo": "encapsular-estritamente-o-conteudo-principal-do-post"
+    },
+    "erro-comum-evitado": "templates-poluidos-mitigam-a-identificacao-do-ganho-de-informacao-por-excesso-de-divs-aninhadas"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "rota": "pipeline/engenharia",
+  "modelo": "gemini-3.1-flash-lite",
+  "descricao": "Conhecimento técnico profundo sobre o motor Blogger — injetado seletivamente conforme os componentes escolhidos para o template. A IA NÃO carrega todos — lê este índice, identifica quais são relevantes para o pedido atual, e carrega apenas esses.",
+  "instrucao": "Antes de montar o JSON do template, verifica quais ficheiros desta pasta são relevantes para os componentes solicitados. Carrega no máximo 3 ficheiros por vez para não exceder o contexto.",
+  "ficheiros": [
+    {
+      "arquivo": "ia-balcao-blindagem-anti-injecao-blogger.json",
+      "responsabilidade": "Os 3 pilares obrigatórios para templates limpos sem CSS legado: b:css=false, b:skin com CDATA, e empty stubs. SEMPRE relevante — toda a geração de template exige esta técnica.",
+      "quando_usar": "Em QUALQUER geração de template Blogger. É a base estrutural.",
+      "tags": ["blindagem", "b:css=false", "b:skin", "stubs", "anti-injeção", "legado", "obrigatorio"]
+    },
+    {
+      "arquivo": "ia-balcao-comportamentos-ocultos-blogger.json",
+      "responsabilidade": "Comportamentos do motor Blogger que surpreendem: injeção silenciosa de CSS, recriação de b:skin apagado, widgets com markup duplicado.",
+      "quando_usar": "Quando o template tem comportamento inesperado, quando se trabalha com widgets nativos ou quando se depura XML.",
+      "tags": ["motor blogger", "injeção css", "comportamentos", "debug", "widgets nativos", "quirks"]
+    },
+    {
+      "arquivo": "ia-balcao-controle-persistencia.json",
+      "responsabilidade": "Padrão Split-Screen: layout onde um lado (sidebar) persiste fixo enquanto o conteúdo principal faz scroll independente.",
+      "quando_usar": "Template solicita layout com sidebar fixa, painel lateral persistente, split-view ou scroll independente.",
+      "tags": ["split-screen", "sidebar fixa", "scroll independente", "layout", "persistência", "position:sticky"]
+    },
+    {
+      "arquivo": "ia-balcao-grid-sidebar-condicional.json",
+      "responsabilidade": "Grid col-lg-8/col-lg-4 onde a sidebar muda de conteúdo conforme isMultipleItems vs isSingleItem — 'Sobre o Portal' na lista e 'Artigos Relacionados' no post.",
+      "quando_usar": "Template com sidebar que deve mostrar conteúdo diferente na lista de posts vs. post individual.",
+      "tags": ["grid", "col-lg-8", "col-lg-4", "sidebar condicional", "isMultipleItems", "isSingleItem", "dois estados"]
+    },
+    {
+      "arquivo": "ia-balcao-heuristicas-ui-ux.json",
+      "responsabilidade": "Regras de UI/UX para templates Blogger: hierarquia visual, espaçamento, contraste, tipografia, mobile-first, acessibilidade.",
+      "quando_usar": "Em qualquer geração — serve de guia de qualidade visual para o Gemini 3.1 Flash Lite durante a montagem.",
+      "tags": ["ui", "ux", "hierarquia", "tipografia", "espaçamento", "contraste", "mobile-first", "acessibilidade"]
+    },
+    {
+      "arquivo": "ia-balcao-imagens-responsivas-blogger.json",
+      "responsabilidade": "Técnica de resizeImage() via JS Interceptor IIFE com 3 breakpoints — mobile (w480), tablet (w800), desktop (w1200). Substitui o resizeImage() estático do servidor.",
+      "quando_usar": "Template tem cards com imagens, sliders, heroes ou qualquer componente onde a resolução da imagem importa.",
+      "tags": ["resizeImage", "imagens", "responsivo", "breakpoints", "LCP", "IIFE", "lazy loading", "blogspot"]
+    },
+    {
+      "arquivo": "ia-balcao-tag-sanitizacao-antilegado.json",
+      "responsabilidade": "Tag de sanitização que remove lixo visual do Blogger: #navbar-iframe, .quickedit, .widget-item-control, blocos de anúncios legados.",
+      "quando_usar": "Em qualquer template — esta sanitização é aplicada globalmente no CSS.",
+      "tags": ["sanitização", "quickedit", "navbar-iframe", "limpeza", "legado", "anúncios", "widget-item-control"]
+    },
+    {
+      "arquivo": "ia-balcao-vanilla-js-blogger.json",
+      "responsabilidade": "Padrões de Vanilla JS no Blogger: JSON Feed API, IntersectionObserver, fetch com fallback, window.fn para onclick, IIFE vs DOMContentLoaded.",
+      "quando_usar": "Template inclui sliders, posts relacionados, lazy loading, animações por scroll, ou qualquer interactividade JS.",
+      "tags": ["javascript", "vanilla js", "json feed", "fetch", "IntersectionObserver", "IIFE", "window.fn", "DOMContentLoaded"]
+    }
+  ]
+}

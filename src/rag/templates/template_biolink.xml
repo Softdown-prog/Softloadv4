@@ -1,0 +1,983 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='true' b:js='false' b:defaultwidgetversion='2' b:layoutsVersion='3'
+      b:responsive='true' b:skin='true' b:standardsMode='true'
+      expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0' name='viewport'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:blog.pageTitle/></title>
+
+  <!-- Plus Jakarta Sans (fonte principal do BioLink) -->
+  <link href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap' rel='stylesheet'/>
+  <!-- Fonte do nicho (typography preset do compilador) -->
+  [[FONT_MODULE]]
+  <!-- Bootstrap 5.3.3 CSS -->
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'/>
+  <!-- Bootstrap Icons 1.11.3 -->
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+
+  <!-- FOUC Prevention — aplica data-bs-theme antes do body renderizar -->
+  <script>
+  //<![CDATA[
+    var _bt = localStorage.getItem('biolink-theme')
+      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-bs-theme', _bt);
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+/* ============================================================
+   BioLink Pro Social — Chassis CSS
+   Glassmorphism + Blobs Animados + FOUC Prevention + Dark Mode
+   ============================================================ */
+
+/*
+<Group description="🎨 Cores do Tema (BioLink Pro)" selector=":root">
+  <Variable name="cor.primaria"   description="Cor Principal (Ciano dos Botões e Fundo)" type="color" default="#00f2fe" value="#00f2fe"/>
+  <Variable name="cor.secundaria" description="Cor Secundária (Hover e Roxo do Fundo)"   type="color" default="#4facfe" value="#4facfe"/>
+</Group>
+*/
+
+/* Bloco 1 — Theme Designer (editável no painel Blogger) */
+:root {
+  --bio-primary:   $(cor.primaria);
+  --bio-secondary: $(cor.secundaria);
+}
+
+/* Bloco 2 — Paleta estática completa (fallback se Theme Designer inativo) */
+:root {
+  --bio-bg:                #f4f7f6;
+  --bio-text:              #1e293b;
+  --bio-muted:             #64748b;
+  --bio-card-bg:           rgba(255, 255, 255, 0.7);
+  --bio-card-border:       rgba(255, 255, 255, 0.5);
+  --bio-card-shadow:       0 10px 25px rgba(0, 0, 0, 0.06);
+  --bio-card-hover-bg:     rgba(255, 255, 255, 0.9);
+  --bio-card-hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  --bio-primary:           #06b6d4;
+  --bio-secondary:         #8b5cf6;
+  --font-main:             'Plus Jakarta Sans', sans-serif;
+}
+
+[data-bs-theme="dark"] {
+  --bio-bg:                #0a0a0a;
+  --bio-text:              #f8fafc;
+  --bio-muted:             #94a3b8;
+  --bio-card-bg:           rgba(25, 25, 25, 0.4);
+  --bio-card-border:       rgba(255, 255, 255, 0.05);
+  --bio-card-shadow:       0 8px 32px rgba(0, 0, 0, 0.3);
+  --bio-card-hover-bg:     rgba(255, 255, 255, 0.08);
+  --bio-card-hover-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+/* ---- Reset e Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family:      var(--font-main);
+  background-color: var(--bio-bg);
+  color:            var(--bio-text);
+  transition:       background-color 0.4s ease, color 0.4s ease;
+  overflow-x:       hidden;
+  min-height:       100vh;
+}
+
+/* ---- Blobs animados (fundo glassmorphism) ---- */
+.background-blobs {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  overflow: hidden; z-index: -1; pointer-events: none;
+}
+.blob {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: 0.6;
+  animation: blob-float 20s infinite alternate ease-in-out;
+}
+.blob-1 {
+  width: 400px; height: 400px;
+  background: var(--bio-secondary);
+  top: -100px; left: -100px;
+  animation-delay: 0s;
+}
+.blob-2 {
+  width: 300px; height: 300px;
+  background: var(--bio-primary);
+  bottom: -50px; right: -50px;
+  animation-delay: -5s;
+}
+[data-bs-theme="dark"] .blob { opacity: 0.3; }
+@keyframes blob-float {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(150px, 100px) scale(1.2); }
+  100% { transform: translate(50px, 200px) scale(0.9); }
+}
+
+/* ---- Mini nav (controles fixos no topo) ---- */
+.bio-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  position: fixed;
+  top: 0; right: 0;
+  z-index: 1030;
+}
+.btn-bio-ctrl {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--bio-text);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem;
+  transition: all 0.3s ease;
+}
+.btn-bio-ctrl:hover {
+  background: var(--bio-primary);
+  color: #fff;
+  transform: scale(1.1);
+  border-color: var(--bio-primary);
+}
+
+/* ---- Biolink wrapper ---- */
+.biolink-wrapper { position: relative; z-index: 10; }
+
+/* ---- Profile (avatar + nome + bio) ---- */
+.profile-img-wrapper {
+  width: 120px; height: 120px;
+  padding: 4px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, var(--bio-primary), var(--bio-secondary));
+  animation: pulse-ring 3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  display: inline-block;
+}
+.profile-img {
+  width: 100%; height: 100%;
+  border: 4px solid var(--bio-bg);
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--bio-bg);
+  transition: border-color 0.4s ease;
+  display: block;
+}
+.profile-placeholder {
+  width: 100%; height: 100%;
+  border: 4px solid var(--bio-bg);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bio-primary), var(--bio-secondary));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; color: #fff;
+}
+.bio-name {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+.bio-description {
+  font-size: 0.95rem;
+  color: var(--bio-muted);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+  70%  { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+
+/* ---- Link buttons (glassmorphism pills) ---- */
+.links-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0.875rem 1.5rem;
+  border-radius: 50px;
+  background-color: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  box-shadow: var(--bio-card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--bio-text) !important;
+  text-decoration: none !important;
+  font-weight: 600; font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: fadeInUp 0.5s ease backwards;
+  z-index: 10;
+}
+.link-btn:hover {
+  background-color: var(--bio-card-hover-bg);
+  box-shadow: var(--bio-card-hover-shadow);
+  border-color: var(--bio-primary);
+  transform: translateY(-4px) scale(1.02);
+  color: var(--bio-primary) !important;
+}
+.link-icon {
+  position: absolute; left: 1.25rem;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+.links-container .link-btn:nth-child(1) { animation-delay: 0.20s; }
+.links-container .link-btn:nth-child(2) { animation-delay: 0.30s; }
+.links-container .link-btn:nth-child(3) { animation-delay: 0.40s; }
+.links-container .link-btn:nth-child(4) { animation-delay: 0.50s; }
+.links-container .link-btn:nth-child(5) { animation-delay: 0.60s; }
+.links-container .link-btn:nth-child(6) { animation-delay: 0.70s; }
+.links-container .link-btn:nth-child(7) { animation-delay: 0.80s; }
+.links-container .link-btn:nth-child(8) { animation-delay: 0.90s; }
+
+/* ---- Social icon buttons (footer) ---- */
+.social-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--bio-text) !important;
+  text-decoration: none !important;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+.social-icon-btn:hover {
+  background: var(--bio-primary);
+  color: #fff !important;
+  border-color: var(--bio-primary);
+  transform: translateY(-3px) scale(1.1);
+}
+
+/* ---- Footer controls (share + tema) ---- */
+.bio-footer-controls {
+  display: flex; align-items: center;
+  justify-content: center;
+  gap: 0.75rem; flex-wrap: wrap;
+}
+.btn-bio-action {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+  background: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--bio-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-bio-action:hover {
+  background: var(--bio-primary);
+  color: #fff;
+  border-color: var(--bio-primary);
+}
+
+/* ---- Animações ---- */
+.animate-item {
+  animation: fadeInUp 0.6s ease backwards;
+  position: relative; z-index: 10;
+}
+header.animate-item { animation-delay: 0.1s; }
+main.animate-item   { animation-delay: 0.2s; }
+footer.animate-item { animation-delay: 0.3s; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- WhatsApp flutuante ---- */
+.whatsapp-section { position: fixed; bottom: 25px; right: 25px; z-index: 9999; }
+.whatsapp-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 60px; height: 60px;
+  background-color: #25D366;
+  color: #fff !important;
+  border-radius: 50%;
+  text-decoration: none !important;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: pulse-wa 2s infinite;
+}
+.whatsapp-btn:hover {
+  background-color: #1ebe57;
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6);
+}
+@keyframes pulse-wa {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+  70%  { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+@media (max-width: 768px) { .whatsapp-btn { width: 55px; height: 55px; } }
+
+/* ---- Attribution ---- */
+.blogger-attribution { opacity: 0.4; font-size: 0.75rem; }
+
+/* ---- Scroll to top ---- */
+#btnScrollToTop {
+  display: none;
+  position: fixed; bottom: 90px; right: 25px;
+  width: 40px; height: 40px;
+  background: var(--bio-primary); color: #fff;
+  border: none; border-radius: 50%;
+  cursor: pointer; z-index: 1020; font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  align-items: center; justify-content: center;
+  transition: opacity 0.3s, transform 0.3s;
+}
+#btnScrollToTop.visible { display: flex; }
+#btnScrollToTop:hover   { transform: scale(1.1); }
+
+/* ---- Blog post (isPost / item view) ---- */
+.bio-post-wrapper {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 5rem 1rem 4rem;
+  position: relative; z-index: 10;
+}
+.bio-post-hero {
+  width: 100%; aspect-ratio: 21/9;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.bio-post-content {
+  background: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: var(--bio-card-shadow);
+  line-height: 1.8; font-size: 1.05rem;
+}
+.bio-post-content img  { max-width: 100%; border-radius: 0.5rem; }
+.bio-post-content h2,
+.bio-post-content h3   { font-weight: 700; margin-top: 1.5rem; }
+.bio-post-content a    { color: var(--bio-primary); }
+.bio-post-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  color: var(--bio-primary) !important;
+  font-weight: 600; text-decoration: none;
+  margin-bottom: 1.5rem;
+  transition: gap 0.2s ease;
+}
+.bio-post-back:hover { gap: 0.7rem; }
+.bio-post-meta {
+  display: flex; align-items: center; gap: 0.75rem;
+  flex-wrap: wrap; font-size: 0.875rem;
+  color: var(--bio-muted);
+  margin-bottom: 1.25rem;
+}
+.bio-comment-item {
+  background: var(--bio-card-bg);
+  border: 1px solid var(--bio-card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+/* ---- Color preset + botões + badges (gerados pelo compilador) ---- */
+[[DYNAMIC_CSS]]
+
+/* ---- Nicho overrides (CSS do impl.json) ---- */
+[[NICHO_CSS]]
+  ]]></b:skin>
+</head>
+<body class='[[BODY_LAYOUT_CLASS]]'>
+
+<!-- ==========================================
+     BLOBS ANIMADOS (fundo glassmorphism)
+     ========================================== -->
+<div aria-hidden='true' class='background-blobs'>
+  <div class='blob blob-1'/>
+  <div class='blob blob-2'/>
+</div>
+
+<!-- ==========================================
+     MINI NAV (Tema + Partilhar)
+     ========================================== -->
+<nav aria-label='Controles do perfil' class='bio-nav'>
+  <button aria-label='Alternar tema claro/escuro' class='btn-bio-ctrl' id='btnTheme' type='button'>
+    <i class='bi bi-moon-stars-fill' id='themeIcon'/>
+  </button>
+  <button aria-label='Partilhar perfil' class='btn-bio-ctrl' id='btnShareNav' type='button'>
+    <i class='bi bi-share-fill'/>
+  </button>
+</nav>
+
+<!-- ==========================================
+     WHATSAPP FLUTUANTE
+     ========================================== -->
+<b:section class='whatsapp-section' id='whatsapp-float' maxwidgets='1' showaddelement='yes'>
+  <b:widget id='HTML99' title='WhatsApp (somente dígitos, ex: 5511999999999)' type='HTML' version='1' visible='true'>
+    <b:widget-settings>
+      <b:widget-setting name='content'/>
+    </b:widget-settings>
+    <b:includable id='main'>
+      <b:if cond='data:content != &quot;&quot;'>
+        <a class='whatsapp-btn'
+           expr:href='&quot;https://wa.me/&quot; + data:content'
+           rel='noopener noreferrer' target='_blank'
+           title='Fale connosco no WhatsApp'>
+          <svg fill='currentColor' height='30' viewBox='0 0 16 16' width='30' xmlns='http://www.w3.org/2000/svg'>
+            <path d='M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z'/>
+          </svg>
+        </a>
+      </b:if>
+    </b:includable>
+  </b:widget>
+</b:section>
+
+<!-- ==========================================
+     BIOLINK LAYOUT (homepage / isMultipleItems)
+     ========================================== -->
+<b:if cond='data:view.isMultipleItems or data:view.isHomepage'>
+
+<!-- HERO NICHO (injetado pelo impl.json quando o tema tem hero HTML) -->
+<div class='sl-hero-wrapper'>
+  <b:section id='hero-area' maxwidgets='2' name='Área Hero (Full Width)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+</div>
+[[NICHO_EXTRA_SECTIONS]]
+
+<div class='biolink-section'>
+  <div class='biolink-wrapper container-fluid d-flex flex-column align-items-center min-vh-100 py-5'
+       style='max-width: 680px; margin: 0 auto;'>
+
+    <!-- === HEADER: Avatar + Nome + Bio === -->
+    <header class='w-100 mb-4 text-center animate-item'>
+      <b:section class='header-bio-section' id='header-bio' maxwidgets='1' showaddelement='no'>
+        <b:widget id='Header1' title='Perfil BioLink' type='Header' version='2' visible='true'>
+          <b:includable id='main'>
+            <div class='profile-img-wrapper mb-3 mx-auto'>
+              <b:if cond='data:image'>
+                <img class='profile-img'
+                     expr:alt='data:title'
+                     expr:src='data:image.url'/>
+              </b:if>
+              <b:if cond='!data:image'>
+                <div class='profile-placeholder'>
+                  <i class='bi [[ICON_AUTHOR]]'/>
+                </div>
+              </b:if>
+            </div>
+            <h1 class='bio-name mb-1'><data:title/></h1>
+            <b:if cond='data:description != &quot;&quot;'>
+              <p class='bio-description mt-2 mb-0'><data:description/></p>
+            </b:if>
+          </b:includable>
+        </b:widget>
+      </b:section>
+    </header>
+
+    <!-- === MAIN: Link Buttons (LinkList) === -->
+    <main class='w-100 mb-5 px-2 animate-item' id='links-main'>
+      <b:section class='links-section' id='links-section' maxwidgets='3' showaddelement='yes'>
+        <b:widget id='LinkList1' title='Links de Destaque' type='LinkList' version='1' visible='true'>
+          <b:includable id='main'>
+            <div class='links-container'>
+              <b:loop values='data:links' var='link'>
+                <a class='link-btn'
+                   expr:href='data:link.target'
+                   rel='noopener noreferrer' target='_blank'>
+                  <i class='bi bi-link-45deg link-icon'/>
+                  <span class='link-text'><data:link.name/></span>
+                </a>
+              </b:loop>
+            </div>
+          </b:includable>
+        </b:widget>
+
+        <!-- Slot extra para widget HTML com call-to-action personalizado -->
+        <b:widget id='HTML1' title='Bio Extra (opcional)' type='HTML' version='1' visible='false'>
+          <b:includable id='main'>
+            <b:if cond='data:content != &quot;&quot;'>
+              <div class='bio-extra-content mt-3 text-center'>
+                <data:content/>
+              </div>
+            </b:if>
+          </b:includable>
+        </b:widget>
+      </b:section>
+    </main>
+
+    <!-- === FOOTER: Social Icons + Controles === -->
+    <footer class='w-100 mt-auto text-center px-3 pb-4 animate-item'>
+      <!-- Redes sociais (segundo LinkList) -->
+      <b:section class='social-section' id='social-section' maxwidgets='2' showaddelement='yes'>
+        <b:widget id='LinkList2' title='Redes Sociais (ícones no rodapé)' type='LinkList' version='1' visible='true'>
+          <b:includable id='main'>
+            <div class='d-flex justify-content-center gap-2 mb-3 flex-wrap'>
+              <b:loop values='data:links' var='link'>
+                <a class='social-icon-btn'
+                   expr:href='data:link.target'
+                   expr:title='data:link.name'
+                   rel='noopener noreferrer' target='_blank'>
+                  <i class='bi bi-link-45deg'/>
+                </a>
+              </b:loop>
+            </div>
+          </b:includable>
+        </b:widget>
+      </b:section>
+
+      <!-- Botões de ação: Partilhar + Tema -->
+      <div class='bio-footer-controls mb-4'>
+        <button class='btn-bio-action' id='btnShare' type='button'>
+          <i class='bi bi-share-fill'/>
+          <span>Partilhar</span>
+        </button>
+        <button class='btn-bio-action' id='btnThemeFooter' type='button'>
+          <i class='bi bi-moon-stars-fill' id='themeIconFooter'/>
+          <span>Tema</span>
+        </button>
+      </div>
+
+      <!-- Blogger Attribution -->
+      <b:section class='attr-section' id='attr-section' maxwidgets='1' showaddelement='no'>
+        <b:widget id='Attribution1' title='Atribuição' type='Attribution' version='1' visible='true'>
+          <b:includable id='main'>
+            <p class='blogger-attribution mb-0'>
+              Desenvolvido com <a expr:href='data:attribution.bloggerUrl'
+                                  rel='noopener noreferrer' target='_blank'>Blogger</a>
+            </p>
+          </b:includable>
+        </b:widget>
+      </b:section>
+    </footer>
+
+  </div><!-- /.biolink-wrapper -->
+</div><!-- /.biolink-section -->
+</b:if>
+
+<!-- ==========================================
+     BLOG POST (isPost / isPage view)
+     ========================================== -->
+<b:if cond='data:view.isPost or data:view.isPage'>
+<div class='blog-posts-section'>
+  <div class='bio-post-wrapper'>
+    <a class='bio-post-back' expr:href='data:blog.homepageUrl'>
+      <i class='bi bi-arrow-left-short fs-4'/>
+      Voltar ao Perfil
+    </a>
+
+    <b:section class='blog-section-inner' id='blog-section-inner' maxwidgets='1' showaddelement='no'>
+      <b:widget id='Blog1' title='Publicações' type='Blog' version='2' visible='true'>
+
+        <!-- Desliga os defaults do Blogger (share/comment/author/etc) — o
+             'byline'/'shareButtons' abaixo já implementam o necessário; evita
+             que o Blogger acione qualquer machinery interna adicional fora
+             do nosso controle. -->
+        <b:widget-settings>
+          <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+          <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+          <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+          <b:widget-setting name='showAuthor'>false</b:widget-setting>
+          <b:widget-setting name='showLabels'>false</b:widget-setting>
+          <b:widget-setting name='showTimestamp'>false</b:widget-setting>
+          <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+          <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+          <b:widget-setting name='showReactions'>false</b:widget-setting>
+        </b:widget-settings>
+
+        <b:includable id='main' var='top'>
+          <b:if cond='data:posts'>
+            <b:loop values='data:posts' var='post'>
+              <b:include data='post' name='post'/>
+            </b:loop>
+          </b:if>
+          <b:include name='status-message'/>
+          <b:include name='nextprev'/>
+          <b:include name='feedLinks'/>
+        </b:includable>
+
+        <b:includable id='post' var='post'>
+          <article class='bio-post-article mb-5'>
+            <!-- Labels / categorias -->
+            <b:if cond='data:post.labels'>
+              <div class='mb-2'>
+                <b:loop values='data:post.labels' var='label'>
+                  <a class='badge text-bg-secondary text-decoration-none me-1'
+                     expr:href='data:label.url'><data:label.name/></a>
+                </b:loop>
+              </div>
+            </b:if>
+
+            <!-- Título -->
+            <h1 class='display-6 fw-bold mb-3'>
+              <b:if cond='data:post.link'>
+                <a class='text-decoration-none'
+                   expr:href='data:post.link'
+                   style='color: var(--bio-text);'><data:post.title/></a>
+              </b:if>
+              <b:if cond='!data:post.link'>
+                <data:post.title/>
+              </b:if>
+            </h1>
+
+            <!-- Meta: data + autor -->
+            <div class='bio-post-meta'>
+              <span><i class='bi bi-calendar3 me-1'/><data:post.dateHeader/></span>
+              <b:if cond='data:post.author'>
+                <span><i class='bi [[ICON_AUTHOR]] me-1'/><data:post.author/></span>
+              </b:if>
+              <b:if cond='data:post.readingTime'>
+                <span><i class='bi bi-clock me-1'/><data:post.readingTime/> min</span>
+              </b:if>
+            </div>
+
+            <!-- Imagem destaque -->
+            <b:if cond='data:post.featuredImage'>
+              <img class='bio-post-hero'
+                   [[LAZY_LOAD_TOGGLE]]
+                   expr:alt='data:post.title'
+                   expr:src='data:post.featuredImage'/>
+            </b:if>
+
+            <!-- Conteúdo -->
+            <div class='bio-post-content'>
+              <data:post.body/>
+            </div>
+
+            <b:include name='post-footer'/>
+          </article>
+
+          <!-- Comentários -->
+          <b:if cond='data:post.allowComments'>
+            <b:include name='comment-list'/>
+            <b:include name='comment-form'/>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='post-footer'>
+          <div class='d-flex justify-content-between align-items-center mt-3 pt-3 border-top flex-wrap gap-2'>
+            <b:include name='byline'/>
+            <b:include name='shareButtons'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='byline'>
+          <small class='text-muted'>
+            <b:if cond='data:post.author'>
+              <i class='bi bi-pen me-1'/><data:post.author/>
+            </b:if>
+          </small>
+        </b:includable>
+
+        <b:includable id='shareButtons'>
+          [[SHARE_BUTTONS]]
+          <div class='d-flex gap-2'>
+            <b:include name='postQuickEdit'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='postQuickEdit'>
+          <b:if cond='data:post.allowQuickEdit'>
+            <b:include data='post' name='entrydelete'/>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='entrydelete' var='post'>
+          <b:if cond='data:post.deleteClass == &quot;item-control blog-admin&quot;'>
+            <span expr:class='data:post.adminClass'>
+              <a class='btn btn-sm btn-outline-secondary rounded-pill'
+                 expr:href='data:post.editUrl' title='Editar'>
+                <i class='bi bi-pencil-square'/>
+              </a>
+            </span>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='nextprev'>
+          <nav class='d-flex justify-content-between mt-4 gap-2'>
+            <b:if cond='data:newerPageUrl'>
+              <a class='btn btn-outline-secondary btn-sm rounded-pill'
+                 expr:href='data:newerPageUrl'>
+                <i class='bi bi-chevron-left me-1'/>Recentes
+              </a>
+            </b:if>
+            <b:if cond='data:olderPageUrl'>
+              <a class='btn btn-outline-secondary btn-sm rounded-pill ms-auto'
+                 expr:href='data:olderPageUrl'>
+                Antigas<i class='bi bi-chevron-right ms-1'/>
+              </a>
+            </b:if>
+          </nav>
+        </b:includable>
+
+        <b:includable id='status-message'>
+          <b:if cond='data:statusMessage'>
+            <div class='alert alert-info'><data:statusMessage/></div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='comment-form'>
+          <b:if cond='data:post.allowNewComments'>
+            <div class='mt-4'>
+              <h5 class='fw-bold mb-3'>Deixar um Comentário</h5>
+              <b:comment-form/>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='comment-list'>
+          <b:if cond='data:post.comments'>
+            <div class='mt-4'>
+              <h5 class='fw-bold mb-3'>
+                Comentários (<data:post.commentCount/>)
+              </h5>
+              <div class='d-flex flex-column gap-3'>
+                <b:loop values='data:post.comments' var='comment'>
+                  <b:include data='comment' name='comment'/>
+                </b:loop>
+              </div>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='comment' var='comment'>
+          <div class='bio-comment-item'>
+            <div class='d-flex justify-content-between align-items-start mb-2'>
+              <strong><data:comment.author.name/></strong>
+              <span class='d-flex gap-1 align-items-center'>
+                <small class='text-muted'><data:comment.timestamp/></small>
+                <b:include data='comment' name='commentDeleteIcon'/>
+              </span>
+            </div>
+            <p class='mb-0'><data:comment.body/></p>
+          </div>
+        </b:includable>
+
+        <b:includable id='commentDeleteIcon' var='comment'>
+          <b:if cond='data:comment.deleteClass == &quot;item-control blog-admin&quot;'>
+            <span class='item-control blog-admin'>
+              <a class='text-danger' expr:href='data:comment.deleteUrl' title='Apagar'>
+                <i class='bi bi-trash'/>
+              </a>
+            </span>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='backlinks'>
+          <b:if cond='data:post.showBacklinks'>
+            <div class='backlinks mt-3'/>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='backlink' var='backlink'>
+          <div class='backlink-item'>
+            <a expr:href='data:backlink.url'><data:backlink.title/></a>
+          </div>
+        </b:includable>
+
+        <b:includable id='blog-posts' var='post'>
+          <b:include data='post' name='post'/>
+        </b:includable>
+
+        <b:includable id='labels'>
+          <b:if cond='data:post.labels'>
+            <div class='post-labels mt-2'>
+              <b:loop values='data:post.labels' var='label'>
+                <a class='badge text-bg-primary text-decoration-none me-1'
+                   expr:href='data:label.url'><data:label.name/></a>
+              </b:loop>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='readmore'>
+          <b:if cond='data:post.hasJumpLink'>
+            <a class='btn btn-outline-primary btn-sm rounded-pill mt-2'
+               expr:href='data:post.url'>Ler mais</a>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='feedLinks'>
+          <b:if cond='data:blog.feedLinks'>
+            <div class='feed-links visually-hidden'>
+              <b:loop values='data:blog.feedLinks' var='f'>
+                <a expr:href='data:f.url' expr:title='data:f.name'><data:f.name/></a>
+              </b:loop>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='feedLinksBody' var='links'>
+          <b:loop values='data:links' var='f'>
+            <a expr:href='data:f.url'><data:f.name/></a>
+          </b:loop>
+        </b:includable>
+
+        <b:includable id='postMetadataJSONLD'>
+          <script type='application/ld+json'>
+          {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": "<data:blog.pageTitle/>",
+            "url": "<data:blog.canonicalUrl/>"
+          }
+          </script>
+        </b:includable>
+
+        <b:includable id='google-analytics'/>
+        <b:includable id='adsense-empty'/>
+
+      </b:widget>
+    </b:section>
+  </div><!-- /.bio-post-wrapper -->
+</div><!-- /.blog-posts-section -->
+</b:if>
+
+<!-- ==========================================
+     SCROLL TO TOP
+     ========================================== -->
+<button aria-label='Ir ao topo' id='btnScrollToTop' type='button'>
+  <i class='bi bi-chevron-up'/>
+</button>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script crossorigin='anonymous'
+        src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'/>
+
+<!-- ==========================================
+     SCRIPTS BIOLINK — IIFE
+     ========================================== -->
+<script>
+//<![CDATA[
+(function () {
+  'use strict';
+
+  /* ---- Dark mode toggle ---- */
+  var themeIcon       = document.getElementById('themeIcon');
+  var themeIconFooter = document.getElementById('themeIconFooter');
+  var btnTheme        = document.getElementById('btnTheme');
+  var btnThemeFooter  = document.getElementById('btnThemeFooter');
+
+  function applyThemeIcon(theme) {
+    var cls = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    if (themeIcon)       themeIcon.className = cls;
+    if (themeIconFooter) themeIconFooter.className = cls;
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('biolink-theme', theme);
+    applyThemeIcon(theme);
+  }
+
+  /* Sincroniza ícone com tema já aplicado pelo FOUC script no <head> */
+  applyThemeIcon(document.documentElement.getAttribute('data-bs-theme') || 'light');
+
+  function toggleTheme() {
+    setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
+  }
+  if (btnTheme)       btnTheme.addEventListener('click', toggleTheme);
+  if (btnThemeFooter) btnThemeFooter.addEventListener('click', toggleTheme);
+
+  /* ---- Social icon auto-detection ---- */
+  function detectIcon(url) {
+    var u = url.toLowerCase();
+    if      (u.includes('instagram.com'))                            return 'bi bi-instagram';
+    else if (u.includes('twitter.com') || u.includes('x.com'))      return 'bi bi-twitter-x';
+    else if (u.includes('facebook.com'))                             return 'bi bi-facebook';
+    else if (u.includes('youtube.com') || u.includes('youtu.be'))   return 'bi bi-youtube';
+    else if (u.includes('tiktok.com'))                               return 'bi bi-tiktok';
+    else if (u.includes('whatsapp.com') || u.includes('wa.me'))     return 'bi bi-whatsapp';
+    else if (u.includes('linkedin.com'))                             return 'bi bi-linkedin';
+    else if (u.includes('github.com'))                               return 'bi bi-github';
+    else if (u.includes('spotify.com'))                              return 'bi bi-spotify';
+    else if (u.includes('twitch.tv'))                                return 'bi bi-twitch';
+    else if (u.includes('threads.net'))                              return 'bi bi-threads';
+    else if (u.includes('t.me') || u.includes('telegram.org'))      return 'bi bi-telegram';
+    else if (u.includes('snapchat.com'))                             return 'bi bi-snapchat';
+    else if (u.includes('pinterest.com'))                            return 'bi bi-pinterest';
+    else if (u.includes('mailto:'))                                  return 'bi bi-envelope-at-fill';
+    return 'bi bi-link-45deg';
+  }
+
+  function applyIcons() {
+    document.querySelectorAll('.link-btn').forEach(function (btn) {
+      var icon = btn.querySelector('.link-icon');
+      if (icon) icon.className = detectIcon(btn.href) + ' link-icon';
+    });
+    document.querySelectorAll('.social-icon-btn').forEach(function (btn) {
+      var icon = btn.querySelector('i');
+      if (icon) icon.className = detectIcon(btn.href);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyIcons);
+  } else {
+    applyIcons();
+  }
+
+  /* ---- Web Share API (com fallback clipboard) ---- */
+  var isSharing = false;
+
+  function handleShare(btn) {
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (isSharing) return;
+      if (navigator.share) {
+        navigator.share({
+          title: document.title,
+          text:  'Confere os meus links!',
+          url:   window.location.href
+        }).catch(function () { /* usuário cancelou */ });
+      } else {
+        isSharing = true;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(window.location.href);
+        }
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2-circle"></i> <span>Copiado!</span>';
+        setTimeout(function () { btn.innerHTML = orig; isSharing = false; }, 2500);
+      }
+    });
+  }
+
+  handleShare(document.getElementById('btnShare'));
+  handleShare(document.getElementById('btnShareNav'));
+
+  /* ---- Scroll to top ---- */
+  var btnTop = document.getElementById('btnScrollToTop');
+  if (btnTop) {
+    window.addEventListener('scroll', function () {
+      btnTop.classList.toggle('visible', window.scrollY > 300);
+    }, { passive: true });
+    btnTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+})();
+//]]>
+</script>
+
+<!-- JS do nicho (dark mode, animações, interatividade — injetado pelo compilador).
+     Fora do <script> acima de propósito: carregarNichoImpl() já entrega o(s)
+     bloco(s) pré-embrulhados em <script>//<![CDATA[...]]></script> — colocar o
+     token DENTRO de um script/CDATA já aberto aninha tags e quebra o XML. -->
+[[NICHO_JS]]
+
+[[NICHO_WIDGETS_HTML]]
+
+</body>
+</html>

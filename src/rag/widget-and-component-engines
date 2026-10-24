@@ -1,0 +1,74 @@
+{
+  "widget-and-component-engines": {
+    "widget-engine": {
+      "prioridade-de-treinamento": "critical",
+      "objetivo-do-motor": "gerar-widgets-modulares-profissionais-independentes-e-parser-safe",
+      "arquitetura-do-widget": {
+        "modo-de-geracao": [
+          "independent-widget-generation",
+          "modular-widget-rendering",
+          "isolated-widget-logic",
+          "safe-widget-composition"
+        ],
+        "regras-principais": [
+          "parser-safe",
+          "responsive-by-default",
+          "lazy-compatible",
+          "safe-css-isolation"
+        ]
+      },
+      "widgets-suportados": {
+        "plain-text-widget": { "proposito": "conteudo-editorial-e-textual", "regras": ["safe-typography", "responsive-content-width", "safe-line-breaks"] },
+        "newsletter-widget": { "proposito": "captura-de-email", "regras": ["safe-form-rendering", "responsive-inputs", "safe-button-spacing", "anti-overflow-layout"] },
+        "slider-widget": { "proposito": "carrossel-de-posts-ou-conteudo", "regras": ["touch-support", "lazy-loading-images", "safe-slider-loop", "safe-transition-performance"] },
+        "cookie-widget": { "proposito": "consentimento-lgpd-e-cookies", "regras": ["safe-fixed-position", "mobile-safe-banner", "persistent-consent-state", "non-blocking-render"] },
+        "related-posts-widget": { "proposito": "posts-relacionados", "regras": ["safe-thumbnail-render", "responsive-grid", "safe-post-loop", "prevent-layout-break"] },
+        "toc-widget": { "proposito": "table-of-contents", "regras": ["heading-parser", "safe-anchor-links", "sticky-safe-render", "responsive-collapse"] },
+        "comments-widget": { "proposito": "comentarios-blogger-ou-customizados", "regras": ["safe-thread-rendering", "nested-comment-protection", "mobile-safe-comments", "prevent-dom-overflow"] },
+        "share-widget": { "proposito": "compartilhamento-social", "regras": ["safe-share-buttons", "responsive-share-layout", "safe-svg-icons", "non-blocking-scripts"] }
+      }
+    },
+    "includable-component-system": {
+      "prioridade-de-treinamento": "critical",
+      "objetivo-do-motor": "transformar-templates-blogger-em-arquitetura-modular-reutilizavel",
+      "componentizacao": {
+        "principios": [
+          "atomic-components",
+          "isolated-rendering",
+          "reusable-layout-blocks",
+          "safe-widget-encapsulation"
+        ]
+      },
+      "reutilizacao-de-includes": {
+        "estrategia-de-include": [
+          "header-includes",
+          "footer-includes",
+          "card-includes",
+          "widget-includes",
+          "partial-layout-includes"
+        ],
+        "regras-seguras": [
+          "prevent-duplicate-render",
+          "prevent-recursive-includes",
+          "safe-variable-scope"
+        ]
+      },
+      "renderizacao-parcial": {
+        "regras-de-renderizacao": [
+          "conditional-rendering",
+          "lazy-component-rendering",
+          "view-based-rendering",
+          "context-aware-rendering"
+        ]
+      },
+      "modularidade-xml": {
+        "regras-modulares": [
+          "safe-binclude-usage",
+          "safe-bincludable-structure",
+          "parser-safe-components",
+          "safe-conditional-nesting"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id":"css3",
+
+  "slug":"css3",
+
+  "categoria":"framework",
+
+  "descricao":"Folhas de estilo modernas.",
+
+  "recursos":[
+    "Flexbox",
+    "Grid",
+    "Media Queries",
+    "Animations",
+    "Transitions",
+    "Variables",
+    "Clamp",
+    "Container Queries"
+  ],
+
+  "organizacao":[
+    ":root",
+    "reset",
+    "layout",
+    "components",
+    "utilities",
+    "responsive"
+  ],
+
+  "boas_praticas":[
+    "CSS modular",
+    "Variáveis CSS",
+    "Sem !important",
+    "Classes reutilizáveis",
+    "Baixa especificidade"
+  ],
+
+  "workers":[
+    "cssWorker"
+  ]
+}

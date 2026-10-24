@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho aquarela — ver plano "esqueleto por nicho"
+     (/root/.claude/plans/indexed-jumping-treehouse.md), Fase 2 (3/11):
+     terceiro dos 11 nichos restantes com exemplos/ real, escolhido por ser
+     o arquivo mais simples de todos os candidatos restantes (374 linhas,
+     sem Blog widget nenhum — landing page estática de 1 página, achado 6
+     do plano: densidade de gambiarra baixíssima, zero remapeamento de
+     seletor) e por resolver um compartilhamento de chassis ativo hoje
+     ('portfolio', dividido com portfolio-minimalista).
+
+     A estrutura física abaixo foi extraída de exemplos/aquarela.xml
+     (arquivo hand-authored real, origem externa — sem marcadores DP:*,
+     sem b:section id=main original, sem Blog widget). Diferenças
+     estruturais reais vs. template_portfolio.xml:
+       - Sem navbar/menu, sem dark mode, sem back-to-top, sem cookie
+         banner — o arquivo real não tem nenhum desses (nichoModuleDefaults
+         não liga nenhuma dessas flags pra este nicho).
+       - Sem Blog widget nenhum (pageType 'landing-page' de verdade: só
+         header + hero + serviços + contato). O chassis 'portfolio'
+         compartilhado renderizava incondicionalmente um "Feed de
+         Projetos" (Blog1 em b:section id='main') que não existe no
+         arquivo real — removido aqui.
+       - Hero: o arquivo real tem título/parágrafo/CTA 100% ESTÁTICOS ("Renovação
+         e Arte para seus Ambientes" — copy de demonstração do autor
+         original do tema, amarrada a um nicho de pintura residencial
+         específico). Isso NUNCA deveria aparecer verbatim em todo site
+         gerado por qualquer usuário do nicho "aquarela" (identidade
+         visual aquarela ≠ negócio de pintura necessariamente) — trocado
+         por data:blog.title/data:blog.metaDescription (dados reais do
+         site gerado, sempre corretos), como h2 IRMÃO do b:section do
+         hero (não dentro dele — achado de verificação: xmlValidator.js
+         "Regra B" acusa HTML direto num b:section fora de b:widget como
+         "ignorado pelo engine de layout V3", e na prática QUEBRA a
+         árvore XML — o widget da peça hero chegou a aparecer com pai
+         errado quando havia heading/parágrafo/link como irmãos dentro
+         do mesmo b:section numa versão anterior desta migração; corrigido
+         movendo pra fora, mesmo padrão do bloco "Sobre" do
+         template_portfolio.xml original). CTA "Solicite um Orçamento"
+         mantido — copy genérica o bastante pra negócios de serviço, não
+         identifica ninguém.
+       - 'skills-section' (grade de 3 cards de serviço do arquivo real,
+         "Pintura Residencial"/"Texturas e Efeitos"/"Pintura Comercial")
+         NÃO extraída — mesmo raciocínio do hero (copy de demo específica
+         de pintura, não genérica pro nicho aquarela como um todo).
+         Renomeada pra id='main' (marcador canônico do Design Package,
+         ver compilerWorker.js:injetarDesignPackage — REQUER a string
+         literal "b:section id=main" em algum lugar do esqueleto,
+         mesmo sem Blog widget nenhum: data:view.isMultipleItems é um
+         estado de view global, não depende de haver posts) — slot nativo
+         vazio, dono do site adiciona gadgets (Layout do Blogger)
+         manualmente depois, mesmo padrão já usado no dossiê atual
+         ("scripts/extractTemplate.js não extrai nada útil... pontos que
+         o dono do site adiciona manualmente, não pontos que o dossiê
+         popula"). .grid-services/.card do arquivo real NÃO portados pro
+         CSS base por esse motivo — seriam seletor órfão sem HTML real
+         pra bater (mesmo defeito que o teste de seletor órfão existe pra
+         pegar).
+       - 'footer-contact': ContactForm1 nativo do arquivo real → mapeado
+         pro token CONTACT_FORM genérico (mesmo tipo de widget). Achado
+         de verificação: a peça de dossiê 'aqua-contact-form-style' mirava
+         '.contact-form-button-submit', mas o includable 'main' (o que de
+         fato renderiza) do gerador genérico contactFormWidget() usa a
+         classe '.contact-form-button' (sem sufixo '-submit') — corrigido
+         no dossiê nesta migração.
+       - 'footer-social' (novo, sem correspondente no arquivo real): o
+         arquivo real não tinha nenhuma seção de redes sociais, mas
+         nichoModuleDefaults.js já ligava socialLinksWidget:true (sem
+         seção real pra receber) — ganhou seção própria ao lado do
+         formulário de contato, dentro do mesmo rodapé.
+       - .watercolor-bg (classe CSS do arquivo real) NÃO portada — nunca
+         é usada em nenhum elemento do corpo real (a section hero usa
+         'watercolor-animated', não 'watercolor-bg') — CSS órfã já na
+         fonte original, não um erro de extração desta migração.
+     Ver nichoDossie.aquarela.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <meta content='website' property='og:type'/>
+  <meta expr:content='data:blog.title.escaped' property='og:title'/>
+  <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <b:skin><![CDATA[
+
+  :root {
+    --color-bg: #ffffff;
+    --color-text: #333333;
+    --color-primary: var(--aqua-primary,#3498db);
+    --color-accent: var(--aqua-accent,#e67e22);
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --water-blue: rgba(135, 206, 235, 0.2);
+    --water-green: rgba(152, 251, 152, 0.2);
+    --water-pink: rgba(255, 182, 193, 0.2);
+  }
+
+  [[DYNAMIC_CSS]]
+
+  /* === ESTILOS GERAIS (arquivo real) === */
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* HEADER */
+  .site-header { padding: 20px 0; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+  /* HERO SECTION COM EFEITO AQUARELA */
+  .hero-section { padding: 100px 20px; text-align: center; }
+  .hero-section h2 { font-size: 3em; margin-bottom: 10px; color: #2c3e50; }
+  .hero-section p { font-size: 1.2em; color: #555; margin-bottom: 30px; }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: var(--color-primary);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  .btn-primary:hover { transform: translateY(-3px); background-color: #2980b9; }
+
+  /* NOVIDADES (Blog1 real, ver doc do topo do arquivo — grade de serviços
+     estática do arquivo real NÃO portada, mesmo motivo) */
+  .services-section { padding: 60px 20px; text-align: center; }
+  .services-section h2 { margin-bottom: 30px; }
+  .aqua-post-grid { display: flex; grid-gap: 30px; justify-content: center; flex-wrap: wrap; }
+  .aqua-post-card {
+    flex: 1; min-width: 260px; max-width: 340px; text-align: left;
+    background: #fff; border-radius: 15px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-bottom: 4px solid var(--color-primary);
+    transition: transform 0.3s;
+  }
+  .aqua-post-card:hover { transform: translateY(-8px); }
+  .aqua-post-card-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+  .aqua-post-card-body { padding: 20px; }
+  .aqua-post-card-body h3 { margin: 0 0 10px; font-size: 1.1em; }
+  .aqua-post-card-body h3 a { color: inherit; text-decoration: none; }
+  .aqua-post-card-body p { font-size: 0.95em; color: #666; margin: 0 0 12px; }
+  .aqua-post-card-date { font-size: 0.85em; color: #999; }
+  .aqua-post-single { max-width: 760px; margin: 0 auto; text-align: left; }
+  .aqua-post-single h1 { font-size: 2.2em; margin-bottom: 10px; color: #2c3e50; }
+  .aqua-post-single-meta { color: #999; font-size: 0.9em; margin-bottom: 30px; }
+  .aqua-post-single-body { line-height: 1.8; }
+  .aqua-post-single-body img { max-width: 100%; height: auto; border-radius: 8px; }
+
+  /* FOOTER & CONTACT */
+  .site-footer { background-color: #f9f9f9; padding: 50px 20px; text-align: center; }
+  .contact-area { max-width: 600px; margin: 0 auto; text-align: left; }
+
+  /* Definição da Animação Arco-Íris Suave */
+  @keyframes rainbow-watercolor {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Efeito de Texto Animado */
+  .rainbow-text {
+    background: linear-gradient(to right, #ff7eb3, #ff758c, #ff7eb3, #7afcff, #feff9c, #ff7eb3);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbow-watercolor 5s linear infinite;
+    font-weight: 800;
+  }
+
+  /* Fundo Animado Aquarela Arco-Íris */
+  .watercolor-animated {
+    background: linear-gradient(-45deg, #fdfcfb, #e2d1c3, #f5f7fa, #c3cfe2, #e0c3fc, #fbc2eb);
+    background-size: 400% 400%;
+    animation: rainbow-watercolor 15s ease infinite;
+    position: relative;
+  }
+  .watercolor-animated::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 1;
+  }
+  .watercolor-animated .container { position: relative; z-index: 2; }
+
+  /* === CSS DO NICHO (peças do dossiê: aqua-hero-strip + aqua-contact-form-style) === */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <!-- CABEÇALHO -->
+  <header class='site-header'>
+    <b:section id='header-logo' maxwidgets='1' name='Logotipo' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+  </header>
+
+  <!-- HERO SECTION — gated por isMultipleItems (achado de verificação:
+       sem esse gate, colidia com o h1 de post único abaixo — mesmo
+       achado documentado em compilerWorker.test.js "achado D"). b:section
+       id=hero-area contém SÓ o token NICHO_HERO — nenhuma tag HTML
+       solta ao lado (achado de verificação: xmlValidator.js "Regra B"
+       acusa HTML direto num b:section fora de b:widget como "ignorado
+       pelo engine de layout V3", e na prática quebra a árvore XML —
+       widget HTML89 do NICHO_HERO chegou a aparecer com pai b:seção
+       errado quando havia h2/p/a como irmãos dentro do mesmo b:section).
+       Headline visível (h2, não h1) e CTA ficam FORA do b:section, como
+       irmãos — mesmo padrão da seção "Sobre" do template_portfolio.xml
+       original (h2 com data:blog.title fora de qualquer b:section).
+       a peça aqua-hero-strip é 100% visual (badge sem heading próprio),
+       então compile.js já injeta um heading oculto automático
+       (H1_FALLBACK_OCULTO, dentro do próprio widget HTML89 do
+       NICHO_HERO) com o mesmo data:blog.title — mesmo mecanismo usado
+       por 8+ outros nichos com hero puramente visual. Um heading de
+       nível 1 aqui fora duplicaria H1 na mesma página, por isso h2. -->
+  <b:if cond='data:view.isMultipleItems'>
+    <section class='hero-section watercolor-animated' id='sobre'>
+      <div class='container'>
+        <b:section id='hero-area' maxwidgets='2' name='Hero' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+        <h2 class='rainbow-text'><data:blog.title/></h2>
+        <p><data:blog.metaDescription/></p>
+        <a class='btn-primary' href='#contato'>Solicite um Orçamento</a>
+      </div>
+    </section>
+  </b:if>
+
+  <!-- NOVIDADES — Blog1 real (id LITERAL 'main', marcador canônico do
+       Design Package — ver doc do topo do arquivo). Achado de
+       verificação: gerarDiagnostico() exige pelo menos 1 widget
+       type='Blog' em todo template ("sem ele as postagens do Blogger
+       nunca são entregues") — o arquivo real (exemplos/aquarela.xml)
+       não tinha NENHUM Blog widget (bug latente do arquivo de origem,
+       não reproduzido aqui). Grade de posts só na home
+       (isMultipleItems) — se o dono do site nunca publicar nada, a
+       seção fica vazia (Blogger não renderiza o loop de posts sem itens),
+       comportamento aceitável pra um nicho landing-page-first. Não
+       usa o padrão de card genérico .card/.grid-services do arquivo
+       real (ver doc do topo — mesmo motivo de não portar a grade de
+       serviços estática). -->
+  <section class='services-section'>
+    <div class='container'>
+      <b:section id='main' name='Novidades' showaddelement='no'>
+        <b:widget id='Blog1' locked='true' title='Novidades' type='Blog' version='2' visible='true'>
+
+          <!-- Desliga os defaults do Blogger (share/comment/author/etc) —
+               mesmo achado já documentado em template_saas.xml/
+               template_tecnologia-techwind.xml: sem isso o Blogger aciona
+               includables internos (bylineByName/postShareButtons) que
+               este tema não define. -->
+          <b:widget-settings>
+            <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+            <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+            <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+            <b:widget-setting name='showAuthor'>false</b:widget-setting>
+            <b:widget-setting name='showLabels'>false</b:widget-setting>
+            <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+            <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+            <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+            <b:widget-setting name='showReactions'>false</b:widget-setting>
+          </b:widget-settings>
+
+          <b:includable id='main' var='top'>
+            <b:if cond='data:view.isMultipleItems'>
+              <b:if cond='data:posts'>
+                <h2>Novidades e Projetos</h2>
+                <div class='aqua-post-grid'>
+                  <b:loop values='data:posts' var='post'>
+                    <article class='aqua-post-card'>
+                      <b:if cond='data:post.featuredImage'>
+                        <a expr:href='data:post.url'>
+                          <img alt='' class='aqua-post-card-img' expr:src='resizeImage(data:post.featuredImage, 500, &quot;4:3&quot;)' loading='lazy'/>
+                        </a>
+                      </b:if>
+                      <div class='aqua-post-card-body'>
+                        <h3><a expr:href='data:post.url'><data:post.title/></a></h3>
+                        <p><data:post.snippet/></p>
+                        <span class='aqua-post-card-date'><data:post.date/></span>
+                      </div>
+                    </article>
+                  </b:loop>
+                </div>
+                <b:include name='nextprev'/>
+              </b:if>
+            <b:else/>
+              <b:loop values='data:posts' var='post'>
+                <article class='aqua-post-single'>
+                  <h1><data:post.title/></h1>
+                  <div class='aqua-post-single-meta'><data:post.date/></div>
+                  <div class='aqua-post-single-body'>
+                    <data:post.body/>
+                  </div>
+                </article>
+              </b:loop>
+            </b:if>
+          </b:includable>
+
+          <b:includable id='post' var='post'><div/></b:includable>
+
+          <b:includable id='nextprev'>
+            [[PAGINATION_MODULE]]
+          </b:includable>
+
+          [[BLOGGER_INCLUDABLES_PADRAO]]
+
+        </b:widget>
+      </b:section>
+    </div>
+  </section>
+
+  <!-- RODAPÉ & CONTATO -->
+  <footer class='site-footer' id='contato'>
+    <div class='container'>
+      <h2>Fale Conosco</h2>
+      <div class='contact-area'>
+        <b:section id='footer-contact' name='Formulário de Contato' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        <b:section id='footer-social' name='Redes Sociais' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+      </div>
+    </div>
+  </footer>
+
+  [[ERROR_404_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+
+  <!-- Efeito de rolagem suave pra links internos (arquivo real, verbatim) -->
+  <script>
+  //<![CDATA[
+  document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({ top: targetElement.offsetTop - 30, behavior: 'smooth' });
+        }
+      });
+    });
+  });
+  //]]>
+  </script>
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+</body>
+</html>

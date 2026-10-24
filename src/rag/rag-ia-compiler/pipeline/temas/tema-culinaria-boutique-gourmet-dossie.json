@@ -1,0 +1,343 @@
+{
+  "nicho": "culinaria-boutique-gourmet",
+  "versaoDossie": 1,
+  "chassis": "blog",
+  "pageType": "blogger-conteudo",
+  "tokensCss": {
+    "light_mode": {
+      "--search-bg": "#f8f9fa",
+      "--search-border": "#e0e0e0",
+      "--search-focus-color": "var(--bs-primary, #6f42c1)",
+      "--search-btn-gradient": "linear-gradient(45deg, #6f42c1, #d63384)",
+      "--sd-primary": "#6f42c1",
+      "--sd-secondary": "#e83e8c",
+      "--sd-danger": "#dc3545",
+      "--sd-bg": "#fdfafb",
+      "--sd-text": "#2d2d2d",
+      "--sd-dark": "#212529"
+    }
+  },
+  "pecas": [
+    {
+      "id": "secao-top-search",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "secao-top-search"
+      ],
+      "css": ".search-wrapper table.gsc-search-box {\n  border-collapse: collapse;\n  border-style: none;\n  margin-bottom: 0;\n  width: 100%;\n}\n\n.search-wrapper td.gsc-input {\n  padding-right: 0 !important;\n}\n\n.search-wrapper td.gsc-search-button {\n  vertical-align: middle;\n}\n\n.search-wrapper input.gsc-input {\n  background: #fdfbfb !important; /* Branco Creme */\n  border: 2px solid #e0e0e0 !important;\n  border-right: none !important;\n  border-radius: 50px 0 0 50px !important;\n  padding: 10px 20px !important;\n  font-size: 14px !important;\n  color: #555 !important;\n  outline: none !important;\n  transition: all 0.3s ease;\n  width: 100% !important;\n  height: 45px !important;\n  box-sizing: border-box !important;\n}\n\n.search-wrapper input.gsc-input:focus {\n  border-color: #6f42c1 !important; /* Roxo principal */\n  box-shadow: 0 0 8px rgba(111, 66, 193, 0.1);\n  background: #fff !important;\n}\n\n.search-wrapper input.gsc-search-button {\n  background: linear-gradient(45deg, #6f42c1, #d63384) !important; /* Roxo para Rosa */\n  border: none !important;\n  color: #ffffff !important;\n  border-radius: 0 50px 50px 0 !important;\n  padding: 0 20px !important;\n  height: 45px !important;\n  font-weight: 600 !important;\n  text-transform: uppercase;\n  font-size: 12px !important;\n  cursor: pointer;\n  transition: opacity 0.3s ease;\n  margin-left: -1px; /* Ajuste para colar no input */\n}\n\n.search-wrapper input.gsc-search-button:hover {\n  opacity: 0.9;\n  box-shadow: -2px 0 10px rgba(214, 51, 132, 0.2);\n}",
+      "html": "<b:widget id='BlogSearch1' locked='false' title='Pesquisar este blog' type='BlogSearch'>\n                   <b:includable id='main'>\n    <!-- only display title if it's non-empty -->\n    <b:if cond='data:title != &quot;&quot;'>\n      <h2 id='secao-top-search' class='title'><data:title/></h2>\n    </b:if>\n\n    <div class='widget-content'>\n      <div expr:id='data:widget.instanceId + &quot;_form&quot;'>\n        <form class='gsc-search-box' expr:action='data:blog.searchUrl'>\n          <b:attr cond='not data:view.isPreview' name='target' value='_top'/>\n          <table cellpadding='0' cellspacing='0' class='gsc-search-box'>\n            <tbody>\n              <tr>\n                <td class='gsc-input'>\n                  <input autocomplete='off' class='gsc-input' expr:value='data:view.isSearch ? data:view.search.query.escaped : &quot;&quot;' name='q' size='10' title='search' type='text'/>\n                </td>\n                <td class='gsc-search-button'>\n                  <input class='gsc-search-button' expr:value='data:messages.search' title='search' type='submit'/>\n                </td>\n              </tr>\n            </tbody>\n          </table>\n        </form>\n      </div>\n    </div>\n\n    <b:include name='quickedit'/>\n  </b:includable>\n                 </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: top-search"
+    },
+    {
+      "id": "secao-featured-big",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "gourmet-slider-hd",
+        "gs-loading",
+        "gs-track"
+      ],
+      "css": "",
+      "html": "<b:widget id='HTML4' locked='false' title='' type='HTML'>\n                <b:widget-settings>\n                  <b:widget-setting name='content'><![CDATA[<div id=\"gourmet-slider-hd\">\n    <div id=\"gs-loading\">Aquisitando imagens em HD...</div>\n    <div id=\"gs-track\"></div>\n    \n    <button class=\"gs-nav gs-prev\" onclick=\"window.moveGsSlide(-1)\" aria-label=\"Anterior\">&#10094;</button>\n    <button class=\"gs-nav gs-next\" onclick=\"window.moveGsSlide(1)\" aria-label=\"Próximo\">&#10095;</button>\n</div>\n\n<style>\n/* --- CSS: Arquitetura Visual Gourmet --- */\n:root {\n    --gs-purple: #6f42c1;\n    --gs-pink: #d63384;\n    --gs-radius: 24px;\n    --gs-shadow: 0 20px 40px rgba(111, 66, 193, 0.2);\n}\n\n#gourmet-slider-hd {\n    position: relative;\n    width: 100%;\n    max-width: 1150px;\n    height: 500px;\n    margin: 20px auto;\n    background: #1a1a1a;\n    border-radius: var(--gs-radius);\n    overflow: hidden;\n    box-shadow: var(--gs-shadow);\n}\n\n#gs-loading {\n    position: absolute;\n    top: 50%; left: 50%;\n    transform: translate(-50%, -50%);\n    color: #fff;\n    font-family: sans-serif;\n    font-size: 14px;\n    letter-spacing: 1px;\n}\n\n.gs-slide {\n    position: absolute;\n    inset: 0;\n    opacity: 0;\n    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);\n    z-index: 1;\n    text-decoration: none;\n}\n\n.gs-slide.active {\n    opacity: 1;\n    z-index: 5;\n}\n\n/* OTIZAÇÃO DE IMAGEM HD */\n.gs-slide img {\n    width: 100% !important;\n    height: 100% !important;\n    object-fit: cover !important;\n    /* Força nitidez máxima no navegador */\n    image-rendering: -webkit-optimize-contrast;\n    filter: brightness(0.85) contrast(1.1);\n    transition: transform 8s linear;\n    will-change: transform;\n}\n\n.gs-slide.active img {\n    transform: scale(1.1);\n}\n\n/* Overlay Gourmet */\n.gs-info {\n    position: absolute;\n    bottom: 0; left: 0; right: 0;\n    padding: 100px 50px 50px;\n    background: linear-gradient(to top, rgba(18, 1, 34, 0.9) 0%, rgba(18, 1, 34, 0) 100%);\n    color: #fff;\n}\n\n.gs-badge {\n    display: inline-block;\n    background: linear-gradient(45deg, var(--gs-purple), var(--gs-pink));\n    padding: 6px 18px;\n    border-radius: 50px;\n    font-size: 12px;\n    font-weight: 800;\n    text-transform: uppercase;\n    margin-bottom: 15px;\n    box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3);\n}\n\n.gs-title {\n    font-size: 2.8rem;\n    margin: 0;\n    font-weight: 800;\n    line-height: 1.1;\n    text-shadow: 0 4px 15px rgba(0,0,0,0.4);\n}\n\n/* Controles */\n.gs-nav {\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: 55px; height: 55px;\n    border-radius: 50%;\n    border: none;\n    background: rgba(255,255,255,0.95);\n    color: var(--gs-purple);\n    cursor: pointer;\n    z-index: 20;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 22px;\n    transition: all 0.3s ease;\n    box-shadow: 0 8px 20px rgba(0,0,0,0.15);\n}\n\n.gs-nav:hover {\n    background: var(--gs-purple);\n    color: #fff;\n    transform: translateY(-50%) scale(1.15);\n}\n\n.gs-prev { left: 25px; }\n.gs-next { right: 25px; }\n\n@media (max-width: 768px) {\n    #gourmet-slider-hd { height: 400px; border-radius: 0; }\n    .gs-title { font-size: 1.8rem; }\n    .gs-info { padding: 60px 25px 30px; }\n    .gs-nav { width: 45px; height: 45px; }\n}\n</style>\n\n<script>\n//<![CDATA[\n(function() {\n    const SLIDER_SETTINGS = {\n        postsCount: 5,\n        speed: 6000,\n        // Dimensões recomendadas para o corte do Google\n        hdWidth: 1200,\n        hdHeight: 600\n    };\n\n    let idx = 0;\n    let autoRotate;\n\n    const startSlider = () => {\n        const track = document.getElementById('gs-track');\n        const loader = document.getElementById('gs-loading');\n\n        fetch(`/feeds/posts/default?alt=json&max-results=${SLIDER_SETTINGS.postsCount}`)\n            .then(r => r.json())\n            .then(data => {\n                const entries = data.feed.entry || [];\n                if (!entries.length) return;\n\n                let html = '';\n                entries.forEach((post, i) => {\n                    const title = post.title.$t;\n                    const link = post.link.find(l => l.rel === 'alternate').href;\n                    \n                    // LÓGICA DE IMAGEM DE ALTA DEFINIÇÃO\n                    let imgOriginal = 'https://placehold.co/1200x600/6f42c1/ffffff?text=Boutique+Gourmet';\n                    \n                    if (post.media$thumbnail) {\n                        let thumbUrl = post.media$thumbnail.url;\n                        // Regra Sênior: Substitui parâmetros de miniatura por parâmetros de alta qualidade e corte preciso\n                        imgOriginal = thumbUrl.replace(/\\/s\\d+(-c)?/, `/w${SLIDER_SETTINGS.hdWidth}-h${SLIDER_SETTINGS.hdHeight}-p-k-no-nu`);\n                        imgOriginal = imgOriginal.replace(/=s\\d+(-c)?/, `=w${SLIDER_SETTINGS.hdWidth}-h${SLIDER_SETTINGS.hdHeight}-p-k-no-nu`);\n                    }\n\n                    html += `\n                        <a href=\"${link}\" class=\"gs-slide ${i === 0 ? 'active' : ''}\">\n                            <img src=\"${imgOriginal}\" alt=\"${title}\">\n                            <div class=\"gs-info\">\n                                <span class=\"gs-badge\">Receita Premium</span>\n                                <h2 class=\"gs-title\">${title}</h2>\n                            </div>\n                        </a>`;\n                });\n\n                track.innerHTML = html;\n                loader.style.display = 'none';\n                runAutoPlay();\n            });\n    };\n\n    window.moveGsSlide = (dir) => {\n        const slides = document.querySelectorAll('.gs-slide');\n        if (!slides.length) return;\n        slides[idx].classList.remove('active');\n        idx = (idx + dir + slides.length) % slides.length;\n        slides[idx].classList.add('active');\n        resetTimer();\n    };\n\n    const runAutoPlay = () => {\n        autoRotate = setInterval(() => window.moveGsSlide(1), SLIDER_SETTINGS.speed);\n    };\n\n    const resetTimer = () => {\n        clearInterval(autoRotate);\n        runAutoPlay();\n    };\n\n    document.addEventListener('DOMContentLoaded', startSlider);\n})();\n//]]]]><![CDATA[>\n</script>]]></b:widget-setting>\n                </b:widget-settings>\n                <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n              </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: featured-big"
+    },
+    {
+      "id": "secao-featured-small-2",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "btq-cookie-barrier",
+        "btq-cookie-accept"
+      ],
+      "css": "",
+      "html": "<b:widget id='HTML3' locked='false' title='' type='HTML'>\n                    <b:widget-settings>\n                      <b:widget-setting name='content'><![CDATA[<div id=\"btq-cookie-barrier\" style=\"display: none; opacity: 0;\">\n  <div class=\"btq-cookie-box\">\n    <div class=\"btq-cookie-text\">\n      <span class=\"btq-cookie-icon\">🍪</span>\n      <p>Este site utiliza cookies para garantir que você tenha a melhor experiência gourmet. <a href=\"/p/politica-de-privacidade.html\" target=\"_blank\">Saber mais</a></p>\n    </div>\n    <div class=\"btq-cookie-actions\">\n      <button id=\"btq-cookie-accept\" type=\"button\">Aceitar e Continuar</button>\n    </div>\n  </div>\n</div>\n\n<style>\n/* Estilos blindados para evitar conflitos com o tema */\n#btq-cookie-barrier {\n  position: fixed !important;\n  bottom: 20px !important;\n  left: 20px !important;\n  right: 20px !important;\n  z-index: 9999999 !important;\n  display: none;\n}\n\n.btq-cookie-box {\n  background: #ffffff !important;\n  padding: 20px 30px !important;\n  border-radius: 16px !important;\n  box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;\n  border-left: 6px solid #6f42c1 !important; /* Roxo principal */\n  display: flex !important;\n  align-items: center !important;\n  justify-content: space-between !important;\n  gap: 20px !important;\n  max-width: 1000px !important;\n  margin: 0 auto !important;\n}\n\n.btq-cookie-text {\n  display: flex !important;\n  align-items: center !important;\n  gap: 15px !important;\n}\n\n.btq-cookie-icon { font-size: 24px !important; }\n\n.btq-cookie-text p {\n  margin: 0 !important;\n  color: #333 !important;\n  font-family: 'Segoe UI', Roboto, sans-serif !important;\n  font-size: 14px !important;\n  line-height: 1.5 !important;\n}\n\n.btq-cookie-text a {\n  color: #d63384 !important; /* Rosa accent */\n  text-decoration: underline !important;\n  font-weight: 600 !important;\n}\n\n#btq-cookie-accept {\n  background: linear-gradient(135deg, #6f42c1, #d63384) !important;\n  color: #fff !important;\n  border: none !important;\n  padding: 12px 25px !important;\n  border-radius: 50px !important;\n  font-weight: 700 !important;\n  cursor: pointer !important;\n  white-space: nowrap !important;\n  transition: transform 0.2s ease !important;\n}\n\n#btq-cookie-accept:hover {\n  transform: scale(1.05) !important;\n}\n\n/* Responsivo */\n@media (max-width: 768px) {\n  .btq-cookie-box { flex-direction: column !important; text-align: center !important; padding: 20px !important; }\n  #btq-cookie-accept { width: 100% !important; }\n}\n</style>\n\n<script>\n//<![CDATA[\n(function() {\n  const STORAGE_KEY = 'btq_gourmet_cookie_consent';\n  const banner = document.getElementById('btq-cookie-barrier');\n  const btn = document.getElementById('btq-cookie-accept');\n\n  console.log('Softload: Script de Cookies carregado.');\n\n  // Verifica se o consentimento já existe\n  const hasConsent = localStorage.getItem(STORAGE_KEY);\n\n  if (!hasConsent) {\n    // Pequeno delay para garantir que o DOM está pronto e o efeito visual seja suave\n    setTimeout(() => {\n      banner.style.display = 'block';\n      banner.style.transition = 'opacity 0.6s ease';\n      setTimeout(() => banner.style.opacity = '1', 50);\n    }, 1000);\n  }\n\n  btn.addEventListener('click', function() {\n    localStorage.setItem(STORAGE_KEY, 'true');\n    banner.style.opacity = '0';\n    setTimeout(() => {\n      banner.remove();\n      console.log('Softload: Cookies aceitos e banner removido.');\n    }, 600);\n  });\n})();\n//]]]]><![CDATA[>\n</script>]]></b:widget-setting>\n                    </b:widget-settings>\n                    <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n                  </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: featured-small-2"
+    },
+    {
+      "id": "modulo-estilos-gerais",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body {\n      background-color: var(--sd-bg);\n      color: var(--sd-text);\n      font-family: 'Inter', system-ui, -apple-system, sans-serif;\n      -webkit-font-smoothing: antialiased;\n      border-top: 6px solid var(--sd-primary); \n    }\n\na { color: var(--sd-primary); text-decoration: none; transition: all 0.3s ease; }\n\na:hover { color: var(--sd-secondary); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === ESTILOS GERAIS ==="
+    },
+    {
+      "id": "modulo-correcoes-html5-blogger",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body-content img, \n    .post-body-content iframe, \n    .post-body-content object, \n    .post-body-content embed { max-width: 100% !important; height: auto !important; border-radius: 12px; }\n\n.separator a { margin-left: 0 !important; margin-right: 0 !important; }\n\n.post-body-content a { color: var(--sd-secondary); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(232, 62, 140, 0.4); text-underline-offset: 4px; }\n\n.post-body-content a:hover { color: var(--sd-primary); text-decoration-color: var(--sd-primary); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === CORREÇÕES HTML5 BLOGGER ==="
+    },
+    {
+      "id": "modulo-topo-e-rodape",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".top-bar, footer { background-color: var(--sd-dark) !important; color: rgba(255, 255, 255, 0.85); }\n\n.top-bar a, footer a { color: rgba(255, 255, 255, 0.85); }\n\n.top-bar a:hover, footer a:hover { color: var(--sd-secondary); }\n\nfooter { border-top: 6px solid var(--sd-primary) !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === TOPO E RODAPÉ ==="
+    },
+    {
+      "id": "modulo-navegacao-header",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header .navbar {\n      background-color: #ffffff !important;\n      box-shadow: 0 4px 15px rgba(111, 66, 193, 0.08) !important; \n    }\n\n.navbar-brand-wrapper h1, .navbar-brand-wrapper h2 {\n      margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--sd-primary); \n    }\n\n.navbar-nav .nav-link { color: var(--sd-text); font-weight: 600; transition: color 0.3s ease; }\n\n.navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: var(--sd-secondary) !important; }\n\n.navbar-toggler { border: 1px solid rgba(232, 62, 140, 0.5); color: var(--sd-secondary); }\n\n.navbar-toggler:focus { box-shadow: 0 0 0 0.25rem rgba(232, 62, 140, 0.25); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === NAVEGAÇÃO (HEADER) ==="
+    },
+    {
+      "id": "modulo-grid-de-postagens-cards",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".card {\n      border-radius: 16px; \n      overflow: hidden;\n      background-color: #ffffff;\n      border: none !important; \n      box-shadow: 0 4px 12px rgba(0,0,0,0.04);\n      transition: transform 0.4s ease, box-shadow 0.4s ease;\n    }\n\n[data-bs-theme=\"dark\"] .card, [data-bs-theme=\"dark\"] aside .widget {\n      background-color: #1a1a1d; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid #27272a !important;\n    }\n\n[data-bs-theme=\"dark\"] .post-body-content { color: #d4d4d8; }\n\n[data-bs-theme=\"dark\"] header .navbar { background-color: #1a1a1d !important; }\n\n.card:hover {\n      transform: translateY(-6px);\n      box-shadow: 0 15px 25px rgba(111, 66, 193, 0.15) !important; \n    }\n\n.card-title { color: var(--sd-primary); font-weight: 800; line-height: 1.4; }\n\n.post-title-single { border-left: 6px solid var(--sd-secondary); padding-left: 15px; color: var(--bs-emphasis-color); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === GRID DE POSTAGENS (CARDS) ==="
+    },
+    {
+      "id": "modulo-blockquote-estilizado-gourmet-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body-content blockquote {\n      position: relative;\n      background: linear-gradient(90deg, rgba(232, 62, 140, 0.08) 0%, transparent 100%);\n      border-left: 4px solid var(--sd-secondary); \n      padding: 1.8rem 2rem 1.8rem 3rem;\n      margin: 2.5rem 0;\n      font-size: 1.25rem;\n      font-style: italic;\n      color: var(--sd-text);\n      border-radius: 0 12px 12px 0;\n      box-shadow: inset 4px 0 10px -5px rgba(232, 62, 140, 0.2);\n      z-index: 1;\n    }\n\n.post-body-content blockquote::before {\n      content: '\\201C';\n      font-family: 'Inter', serif;\n      font-size: 6.5rem;\n      position: absolute;\n      left: 10px;\n      top: -25px;\n      color: var(--sd-secondary);\n      opacity: 0.15;\n      line-height: 1;\n      z-index: -1;\n    }\n\n[data-bs-theme=\"dark\"] .post-body-content blockquote {\n      background: linear-gradient(90deg, rgba(232, 62, 140, 0.15) 0%, transparent 100%);\n      color: #e2e8f0;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === BLOCKQUOTE ESTILIZADO (GOURMET PREMIUM) ==="
+    },
+    {
+      "id": "modulo-botoes-pilulas",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".btn-primary {\n      background-color: var(--sd-primary); border-color: var(--sd-primary); color: #ffffff;\n      font-weight: 600; border-radius: 25px; padding: 8px 24px;\n    }\n\n.btn-primary:hover {\n      background-color: var(--sd-secondary); border-color: var(--sd-secondary); color: #ffffff; transform: scale(1.03);\n    }\n\n.btn-outline-primary { border-color: var(--sd-primary); color: var(--sd-primary); border-radius: 25px; font-weight: 600; }\n\n.btn-outline-primary:hover { background-color: var(--sd-primary); color: #fff; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === BOTÕES (PÍLULAS) ==="
+    },
+    {
+      "id": "modulo-barra-lateral-e-tags",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "aside .widget {\n      background: #ffffff; padding: 1.8rem; border-radius: 16px; margin-bottom: 1.5rem;\n      box-shadow: 0 4px 12px rgba(0,0,0,0.04);\n    }\n\naside h2 {\n      font-size: 1.2rem; font-weight: 800; color: var(--sd-primary);\n      border-bottom: 2px dashed var(--sd-secondary); padding-bottom: 10px; margin-bottom: 20px;\n    }\n\n.widget { margin: 0 0 2rem 0; }\n\n.status-msg-wrap { display: none; }\n\n.list-label-widget-content ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }\n\n.list-label-widget-content ul li a {\n      background-color: rgba(232, 62, 140, 0.1); color: var(--sd-secondary); padding: 6px 14px;\n      border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center;\n    }\n\n.list-label-widget-content ul li a:hover { background-color: var(--sd-secondary); color: #ffffff; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === BARRA LATERAL E TAGS ==="
+    },
+    {
+      "id": "modulo-botao-subir-ao-topo-vermelho-rosa",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#btnScrollToTop {\n      position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px;\n      border-radius: 50%; display: flex; align-items: center; justify-content: center;\n      z-index: 1050; opacity: 0; visibility: hidden; transform: translateY(30px);\n      background: linear-gradient(135deg, var(--sd-secondary), var(--sd-danger)); \n      border: 2px solid rgba(255, 255, 255, 0.3); color: white; cursor: pointer;\n      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); \n    }\n\n#btnScrollToTop.show { opacity: 1; visibility: visible; transform: translateY(0); animation: pulsePink 2s infinite; }\n\n#btnScrollToTop:hover { transform: translateY(-8px) scale(1.05); animation: none; }\n\n#btnScrollToTop i { font-size: 2.2rem !important; }\n\n@keyframes pulsePink {\n      0% { box-shadow: 0 0 0 0 rgba(232, 62, 140, 0.7); }\n      70% { box-shadow: 0 0 0 15px rgba(232, 62, 140, 0); }\n      100% { box-shadow: 0 0 0 0 rgba(232, 62, 140, 0); }\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === BOTÃO SUBIR AO TOPO (VERMELHO/ROSA) ==="
+    },
+    {
+      "id": "modulo-animacoes",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".animate-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }\n\n.animate-up.visible { opacity: 1; transform: translateY(0); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === ANIMAÇÕES ==="
+    },
+    {
+      "id": "modulo-pagina-de-erro-404-gourmet",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".error-404-wrapper {\n      min-height: 50vh;\n      display: flex;\n      flex-direction: column;\n      justify-content: center;\n      align-items: center;\n      background-color: #ffffff;\n      border-radius: 20px;\n      padding: 3rem;\n      box-shadow: 0 10px 30px rgba(111, 66, 193, 0.05);\n      border: 1px dashed rgba(232, 62, 140, 0.3);\n      margin: 3rem auto;\n      max-width: 800px;\n    }\n\n.error-code {\n      font-size: clamp(5rem, 12vw, 8rem);\n      letter-spacing: -3px;\n      color: var(--sd-primary) !important;\n      line-height: 1;\n      text-shadow: 4px 4px 0 rgba(232, 62, 140, 0.1); /* Sombra Rosa */\n      margin-bottom: 0.5rem;\n    }\n\n.error-icon i {\n      color: var(--sd-secondary) !important;\n      filter: drop-shadow(0 4px 8px rgba(232, 62, 140, 0.3));\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === PÁGINA DE ERRO 404 GOURMET ==="
+    },
+    {
+      "id": "modulo-adaptacao-para-o-dark-mode",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "[data-bs-theme=\"dark\"] .error-404-wrapper {\n      background-color: #1a1a1d;\n      border-color: rgba(232, 62, 140, 0.1);\n      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);\n    }\n\n[data-bs-theme=\"dark\"] .error-code {\n      color: #ffffff !important;\n      text-shadow: 4px 4px 0 rgba(232, 62, 140, 0.2);\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Adaptação para o Dark Mode"
+    },
+    {
+      "id": "modulo-estilizacao-premium-das-tags-boutique-gourmet",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul {\n      list-style: none !important;\n      padding: 0 !important;\n      margin: 0 !important;\n      display: flex;\n      flex-wrap: wrap;\n      gap: 12px;\n    }\n\n.list-label-widget-content ul li {\n      display: inline-flex;\n      align-items: center;\n      margin: 0;\n    }\n\n.list-label-widget-content ul li a,\n    .post-bottom-tags a {\n      display: inline-flex;\n      align-items: center;\n      background: transparent;\n      color: var(--sd-primary);\n      font-size: 0.85rem;\n      font-weight: 700;\n      text-transform: uppercase;\n      letter-spacing: 0.5px;\n      padding: 6px 16px;\n      border-radius: 30px; /* Estilo Pílula Completa */\n      border: 1px solid rgba(111, 66, 193, 0.2); /* Borda roxa suave */\n      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);\n      text-decoration: none !important;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === ESTILIZAÇÃO PREMIUM DAS TAGS (BOUTIQUE GOURMET) ==="
+    },
+    {
+      "id": "modulo-icone-de-tag-bookmark-heart",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul li a::before,\n    .post-bottom-tags a::before {\n      content: '\\F1A4'; /* Código do ícone bi-bookmark-heart */\n      font-family: 'bootstrap-icons';\n      margin-right: 6px;\n      font-size: 0.9rem;\n      color: var(--sd-secondary); /* Ícone Rosa */\n      transition: color 0.3s ease;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Ícone de Tag (Bookmark Heart)"
+    },
+    {
+      "id": "modulo-efeito-flutuante-e-inversao-de-cores-no-hover",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul li a:hover,\n    .post-bottom-tags a:hover {\n      background: var(--sd-primary); /* Fundo Roxo */\n      color: #ffffff !important;\n      border-color: var(--sd-primary);\n      transform: translateY(-4px) scale(1.05); /* Animação \"Salto\" */\n      box-shadow: 0 10px 20px rgba(111, 66, 193, 0.2);\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito Flutuante e Inversão de Cores no Hover"
+    },
+    {
+      "id": "modulo-o-icone-fica-branco-no-hover",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul li a:hover::before,\n    .post-bottom-tags a:hover::before {\n      color: #ffffff;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: O ícone fica branco no hover"
+    },
+    {
+      "id": "modulo-contador-de-posts-charme-culinario",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul li span[dir='ltr'] {\n      background: var(--sd-secondary); /* Fundo Rosa */\n      color: #ffffff;\n      font-size: 0.7rem;\n      padding: 2px 8px;\n      border-radius: 12px;\n      margin-left: -12px; /* Sobrepõe a etiqueta */\n      font-weight: 800;\n      z-index: 2;\n      border: 2px solid var(--sd-bg);\n      box-shadow: 0 2px 4px rgba(232, 62, 140, 0.3);\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Contador de Posts (Charme Culinário)"
+    },
+    {
+      "id": "modulo-adaptacao-para-dark-mode",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "[data-bs-theme=\"dark\"] .list-label-widget-content ul li span[dir='ltr'] {\n      border-color: var(--sd-dark, #1a1a1d);\n    }\n\n[data-bs-theme=\"dark\"] .list-label-widget-content ul li a {\n      color: #e2e8f0;\n      border-color: rgba(255,255,255,0.1);\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Adaptação para Dark Mode"
+    },
+    {
+      "id": "modulo-estilizacao-da-nuvem-de-marcadores-boutique-gourmet",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".cloud-label-widget-content {\n      display: flex;\n      flex-wrap: wrap;\n      gap: 12px;\n    }\n\n.cloud-label-widget-content .label-size {\n      display: inline-flex;\n      align-items: center;\n      margin: 0;\n    }\n\n.cloud-label-widget-content .label-size a {\n      display: inline-flex;\n      align-items: center;\n      background: transparent;\n      color: var(--sd-primary);\n      /* O !important bloqueia a bagunça de tamanhos do Blogger na nuvem */\n      font-size: 0.85rem !important; \n      font-weight: 700;\n      text-transform: uppercase;\n      letter-spacing: 0.5px;\n      padding: 6px 16px;\n      border-radius: 30px;\n      border: 1px solid rgba(111, 66, 193, 0.2);\n      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);\n      text-decoration: none !important;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === ESTILIZAÇÃO DA NUVEM DE MARCADORES (BOUTIQUE GOURMET) ==="
+    },
+    {
+      "id": "modulo-icone-na-nuvem",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".cloud-label-widget-content .label-size a::before {\n      content: '\\F1A4'; /* bi-bookmark-heart */\n      font-family: 'bootstrap-icons';\n      margin-right: 6px;\n      font-size: 0.9rem !important;\n      color: var(--sd-secondary);\n      transition: color 0.3s ease;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Ícone na Nuvem"
+    },
+    {
+      "id": "modulo-efeito-hover-na-nuvem",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".cloud-label-widget-content .label-size a:hover {\n      background: var(--sd-primary);\n      color: #ffffff !important;\n      border-color: var(--sd-primary);\n      transform: translateY(-4px) scale(1.05);\n      box-shadow: 0 10px 20px rgba(111, 66, 193, 0.2);\n    }\n\n.cloud-label-widget-content .label-size a:hover::before {\n      color: #ffffff;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito Hover na Nuvem"
+    },
+    {
+      "id": "modulo-contador-na-nuvem-a-classe-do-blogger-e-diferente-aqui",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".cloud-label-widget-content .label-count {\n      background: var(--sd-secondary);\n      color: #ffffff;\n      font-size: 0.7rem;\n      padding: 2px 8px;\n      border-radius: 12px;\n      margin-left: -12px;\n      margin-top: -15px; /* Puxa para cima para efeito de notificação */\n      font-weight: 800;\n      z-index: 2;\n      border: 2px solid var(--sd-bg);\n      box-shadow: 0 2px 4px rgba(232, 62, 140, 0.3);\n      display: inline-flex;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Contador na Nuvem (A classe do Blogger é diferente aqui)"
+    },
+    {
+      "id": "modulo-adaptacao-dark-mode-nuvem",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "[data-bs-theme=\"dark\"] .cloud-label-widget-content .label-count {\n      border-color: var(--sd-dark, #1a1a1d);\n    }\n\n[data-bs-theme=\"dark\"] .cloud-label-widget-content .label-size a {\n      color: #e2e8f0;\n      border-color: rgba(255,255,255,0.1);\n    }\n\n.navbar-brand img {\n  max-height: 55px; /* Trava a altura no desktop */\n  width: auto;      /* Mantém a proporção exata */\n  object-fit: contain;\n}\n\n@media (max-width: 768px) {\n  .navbar-brand img {\n    max-height: 45px; /* Ajuste sutil para preservar espaço na tela do celular */\n  }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Adaptação Dark Mode - Nuvem"
+    },
+    {
+      "id": "modulo-estilo-personalizado-barra-de-pesquisa-gourmet-engenheiro-re",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".search-wrapper {\n  max-width: 350px;\n  width: 100%;\n  margin-left: auto;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ESTILO PERSONALIZADO: BARRA DE PESQUISA GOURMET\n   Engenheiro responsável: Softload"
+    },
+    {
+      "id": "modulo-esconder-o-titulo-padrao-do-widget-para-manter-a-nav-limpa",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".search-wrapper h2.title {\n  display: none;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Esconder o título padrão do widget para manter a Nav limpa"
+    },
+    {
+      "id": "modulo-responsividade-mobile",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "@media (max-width: 991px) {\n  .search-wrapper {\n    max-width: 100%;\n    margin: 15px 0;\n  }\n}\n\n.post-thumb-img {\n  width: 100%;\n  height: auto;\n  aspect-ratio: 16 / 9; /* Garante a proporção visual no navegador */\n  object-fit: cover;    /* Evita que a imagem fique esticada */\n  border-radius: 12px;  /* Mantém o estilo Gourmet */\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Responsividade Mobile"
+    },
+    {
+      "id": "modulo-css-obrigatorio-para-o-efeito-funcionar",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".btn, .nav-link, .dropdown-item { \n  position: relative !important; \n  overflow: hidden !important; \n}\n\n.ripple-effect {\n  position: absolute;\n  background: rgba(255, 255, 255, 0.4);\n  transform: translate(-50%, -50%);\n  pointer-events: none;\n  border-radius: 50%;\n  animation: ripple-animation 0.6s linear;\n}\n\n@keyframes ripple-animation {\n  from { width: 0px; height: 0px; opacity: 0.5; }\n  to { width: 500px; height: 500px; opacity: 0; }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: CSS obrigatório para o efeito funcionar"
+    },
+    {
+      "id": "scroll-to-top",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "btnScrollToTop"
+      ],
+      "css": "",
+      "html": "<button id='btnScrollToTop' aria-label='Subir ao Topo' title='Subir ao Topo'>\n    <i class='bi bi-arrow-up-short'/>\n  </button>",
+      "js": "const btnScroll = document.getElementById('btnScrollToTop');\nwindow.addEventListener('scroll', () => {\n  if (window.scrollY > 300) {\n    btnScroll.classList.add('show');\n  } else {\n    btnScroll.classList.remove('show');\n  }\n});\n\nbtnScroll.addEventListener('click', () => {\n  window.scrollTo({ top: 0, behavior: 'smooth' });\n});",
+      "descricao": "Botão flutuante de voltar ao topo (recuperado manualmente — vive fora de qualquer b:section no arquivo original)."
+    }
+  ]
+}

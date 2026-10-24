@@ -1,0 +1,60 @@
+{
+  "id": "tema-elearning-academy",
+  "titulo": "E-Learning Academy — Portal de Cursos com Motor de Progresso localStorage, Offcanvas Mobile e Accordions Exclusivos",
+  "categoria": "tema-completo",
+  "nicho": "elearning-curso-online",
+  "descricao": "Template Blogger para plataforma de cursos online (LMS leve). Paleta azul+verde sobre fundo cinza claro (#f8fafc). Header fixo com glassmorphism (backdrop-filter blur). Menu lateral offcanvas customizado (não é o Bootstrap Offcanvas — CSS puro com cubic-bezier). Módulos do curso em <details>/<summary> nativos com accordions exclusivos. Motor de progresso persistente em localStorage: conta aulas concluídas, atualiza barra de progresso em tempo real, persiste entre sessões, suporta reset. Sem slider, sem dark mode, sem Google Fonts CDN obrigatório. Plus Jakarta Sans via Google Fonts. Inline SVG Material Design (sem Bootstrap Icons). Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid col-md-8/col-md-4, card, badge, btn, utility classes)",
+    "Plus Jakarta Sans — Google Fonts (preconnect obrigatório: fonts.googleapis.com + fonts.gstatic.com crossorigin)",
+    "Inline SVG Material Design (sem Bootstrap Icons — ícones são paths SVG inline no HTML)"
+  ],
+  "tokens_css": {
+    "prefixo": "--el-",
+    "light_mode": {
+      "--el-primary": "#2563eb",
+      "--el-success": "#10b981",
+      "--el-bg": "#f8fafc",
+      "--el-text": "#1e293b",
+      "--el-border": "#e2e8f0",
+      "--el-sidebar-bg": "#ffffff",
+      "--el-footer": "#0f172a"
+    },
+    "nota": "Tokens editados DIRETAMENTE no :root dentro do b:skin. Sem Theme Designer bridge (sem Group/Variable). Para trocar cores: editar o b:skin CSS."
+  },
+  "theme_designer_bridge": {
+    "existe": false,
+    "nota": "Este template NÃO usa Group/Variable do Blogger Theme Designer. Os tokens --el-* são hardcoded no b:skin. Usuário precisa editar o CSS diretamente para personalizar cores. Impacto: sem preview de cores no painel do Blogger — compensado pela simplicidade do sistema de tokens."
+  },
+  "post_view_single": {
+    "descricao": "Visualização de aula individual (isSingleItem). Artigo com padding generoso, h1 grande, corpo do post sem restrições visuais.",
+    "html": "<article class=\"card border-0 p-4 p-md-5 rounded-3 shadow-sm bg-white mb-4\">\n  <h1 class=\"fw-bold mb-4\">Título da Aula</h1>\n  <div class=\"post-content\">\n    <!-- Corpo completo do post -->\n  </div>\n</article>"
+  },
+  "widgets_sidebar": {
+    "descricao": "Sidebar col-md-4 com widgets estilizados. Título do widget com border-bottom azul + uppercase + letter-spacing.",
+    "css": ".sidebar .widget {\n  background: #ffffff;\n  padding: 1.5rem;\n  border-radius: 12px;\n  border: 1px solid var(--el-border);\n  margin-bottom: 2rem;\n}\n.widget h2.title {\n  font-size: 1rem;\n  font-weight: 700;\n  color: var(--el-text);\n  border-bottom: 2px solid var(--el-primary);\n  padding-bottom: 0.5rem;\n  margin-bottom: 1rem;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n}"
+  },
+  "scrollbar_customizada": {
+    "descricao": "Scrollbar personalizada para WebKit (Chrome, Edge, Safari). Trilho neutro, thumb cinza que muda para primary ao hover.",
+    "css": "::-webkit-scrollbar { width: 8px; }\n::-webkit-scrollbar-track { background: var(--el-bg); }\n::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }\n::-webkit-scrollbar-thumb:hover { background: var(--el-primary); }"
+  },
+  "layout": {
+    "grid": "container > row g-4 > col-md-8 (main) + col-md-4 (aside sidebar)",
+    "nota": "Usa col-md-8/col-md-4 (breakpoint md = 768px) — não col-lg como outros temas. Sidebar aparece ao lado do conteúdo principal a partir de 768px de largura."
+  },
+  "footer": {
+    "descricao": "Rodapé institucional minimalista. Fundo escuro (Slate-950). Uma coluna centralizada. Sem múltiplas colunas de links.",
+    "css": ".site-footer { background-color: var(--el-footer); color: #94a3b8; }\n.site-footer a { color: #e2e8f0; }\n.site-footer a:hover { color: #ffffff; text-decoration: underline; }",
+    "html": "<footer class=\"site-footer py-5 mt-auto\">\n  <div class=\"container\">\n    <div class=\"row\">\n      <div class=\"col-md-12 text-center\">\n        <div class=\"small\">© 2026 Nome da Academia. Todos os direitos reservados.</div>\n      </div>\n    </div>\n  </div>\n</footer>"
+  },
+  "notas_tecnicas": [
+    "Sem Bootstrap Icons — todos os ícones são SVG inline com paths Material Design. Vantagem: zero dependência CDN de icons. Desvantagem: trocar ícones exige editar o HTML.",
+    "Plus Jakarta Sans tem preconnect duplo obrigatório: <link rel='preconnect' href='https://fonts.googleapis.com'/> e <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin='anonymous'/>. Sem o segundo, a fonte cai para system-ui sem aviso.",
+    "Sem Theme Designer bridge: usuário deve editar o :root CSS manualmente. Adequado para portais institucionais onde o dono do site raramente muda cores.",
+    "O motor de progresso é 100% client-side localStorage — não sincroniza entre dispositivos. Adequado para aprendizado pessoal; para múltiplos dispositivos precisaria de backend.",
+    "Accordion com <details>/<summary> nativo é zero JavaScript para abrir/fechar. O JS exclusivo (fecha outros ao abrir um) é a única intervenção necessária.",
+    "padding-top: 80px no body compensa o fixed-top — valor deve ser idêntico ao height do .site-header. Se o header crescer, atualizar ambos.",
+    "d-none no painel de progresso (#js-elearning-panel) é uma proteção UX — o painel não aparece em páginas sem aulas (ex: página Sobre, página de Contato).",
+    "Les SVG icons do motor de progresso são trocados via innerHTML — o fill:currentColor herda a cor do .lesson-link.completed automaticamente."
+  ]
+}

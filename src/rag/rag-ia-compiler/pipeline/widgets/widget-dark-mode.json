@@ -1,0 +1,38 @@
+{
+  "id": "widget-dark-mode",
+  "titulo": "Dark Mode — Bootstrap 5 data-bs-theme com localStorage e prefers-color-scheme",
+  "categoria": "widget-ui",
+  "nicho": "noticias",
+  "descricao": "Sistema de dark mode blindado para Bootstrap 5. Aplica data-bs-theme no elemento <html> para ativar automaticamente todos os overrides do Bootstrap dark. Persiste preferencia do usuario via localStorage. Respeita prefers-color-scheme do sistema operacional como fallback para novos visitantes. Troca de icone (bi-moon-stars-fill / bi-sun-fill text-warning) em todos os botoes com classe .btn-dark-mode. Extraido do template MAG News.",
+  "dependencias": [
+    "Bootstrap 5.3+ (data-bs-theme dark mode support)",
+    "Bootstrap Icons (bi-moon-stars-fill e bi-sun-fill)"
+  ],
+  "como_funciona": "getTheme() verifica localStorage primeiro. Se ausente, consulta window.matchMedia('prefers-color-scheme: dark'). setTheme(t) aplica o atributo no documentElement, salva no localStorage e troca o icone. Todos os elementos com classe .btn-dark-mode recebem o listener — suporte a multiplos botoes (topo + sidebar).",
+  "css_dark_overrides": {
+    "descricao": "Bloco [data-bs-theme='dark'] no :root substitui os tokens CSS --mag-* para modo escuro",
+    "codigo": "[data-bs-theme=\"dark\"] {\n  --mag-bg: #0f172a;\n  --mag-surface: #1e293b;\n  --mag-text: #cbd5e1;\n  --mag-title: #f8fafc;\n  --mag-border: #334155;\n  --mag-dark: #0f172a;\n}",
+    "nota": "Apenas os tokens que mudam no dark mode precisam ser redeclarados. --mag-primary mantem o azul #2563eb nos dois modos."
+  },
+  "html_botao": "<button class=\"btn btn-link btn-sm text-decoration-none p-0 btn-dark-mode\" title=\"Alternar Tema\">\n  <i class=\"bi bi-moon-stars-fill fs-6\"></i>\n</button>",
+  "html_botao_topbar_variante": "<button class=\"btn btn-link btn-sm text-decoration-none p-0 btn-dark-mode text-white\" title=\"Alternar Tema\">\n  <i class=\"bi bi-moon-stars-fill fs-6\"></i>\n</button>",
+  "javascript": "document.addEventListener('DOMContentLoaded', () => {\n  const setTheme = t => {\n    document.documentElement.setAttribute('data-bs-theme', t);\n    localStorage.setItem('theme', t);\n    const icon = document.querySelector('.btn-dark-mode i');\n    if (icon) icon.className = t === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill';\n  };\n\n  const getTheme = () =>\n    localStorage.getItem('theme') ||\n    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');\n\n  setTheme(getTheme());\n\n  document.querySelectorAll('.btn-dark-mode').forEach(btn => {\n    btn.addEventListener('click', () =>\n      setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark')\n    );\n  });\n});",
+  "personalizacao": {
+    "chave_localstorage": "theme",
+    "valores": "'dark' ou 'light'",
+    "atributo_html": "data-bs-theme no elemento <html>",
+    "classe_botao": ".btn-dark-mode — adicionar esta classe em qualquer botao do layout para que receba o toggle automaticamente",
+    "icone_modo_claro": "bi bi-moon-stars-fill (mostra lua — indica que clicar ativa modo escuro)",
+    "icone_modo_escuro": "bi bi-sun-fill text-warning (mostra sol amarelo — indica que clicar volta ao modo claro)"
+  },
+  "notas_tecnicas": [
+    "document.documentElement = elemento <html> — data-bs-theme nele ativa todos os estilos dark do Bootstrap 5 para toda a pagina",
+    "setTheme() chamado imediatamente com getTheme() no DOMContentLoaded — previne flash of unstyled content (FOUC) ao carregar",
+    "getTheme() usa || para fallback: localStorage primeiro, depois matchMedia — visitantes novos herdam preferencia do SO",
+    "querySelector('.btn-dark-mode i') atualiza apenas o primeiro icone encontrado — se houver multiplos botoes, todos os outros icones precisam ser atualizados via querySelectorAll",
+    "text-warning classe Bootstrap torna o sol laranja/amarelo — contraste visual imediato entre os dois modos",
+    "Bootstrap 5.3+ inclui dark mode nativo via data-bs-theme. Versoes anteriores (5.0-5.2) nao suportam este mecanismo",
+    "Tokens CSS --mag-* no bloco [data-bs-theme='dark'] sao processados pelo browser apenas quando o atributo esta ativo — zero custo de performance em modo claro",
+    "Para blogs com alto trafego: considerar adicionar o script inline no <head> (antes do DOMContentLoaded) para eliminar FOUC completamente"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "poseId": "south_idle",
+  "direction": "south",
+  "frameDurationMs": 220,
+  "joints": {
+    "shoulder_left": {"rotationDegrees": -1.5},
+    "shoulder_right": {"rotationDegrees": 1.5},
+    "elbow_left": {"rotationDegrees": 1.0},
+    "elbow_right": {"rotationDegrees": -1.0},
+    "hip_left": {"rotationDegrees": -0.4},
+    "hip_right": {"rotationDegrees": 0.4}
+  }
+}

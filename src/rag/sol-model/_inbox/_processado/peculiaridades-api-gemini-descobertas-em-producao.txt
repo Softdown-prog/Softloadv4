@@ -1,0 +1,53 @@
+Peculiaridades da API do Gemini descobertas em produção (2 bugs reais)
+
+1) Enum vazio em tool declaration de function-calling é rejeitado
+
+O Gemini passou a recusar (400 Bad Request, mensagem "enum[0]: cannot be
+empty") uma declaração de ferramenta cujo parameters.properties[X].enum
+inclua uma string vazia '' como valor válido. Isso quebrou por completo o
+agente de edição de templates (templateEditAgent.js): o schema
+compartilhado (templateEditSchema.js) tinha COMMENTS_VALUES = ['',
+'nativo', 'disqus'], onde '' representava "sistema de comentários
+desativado". Como esse schema é usado literalmente como o `parameters` da
+tool propor_edicao, TODA chamada do agente de edição do Workspace falhava
+— não só as que mexiam em comentários.
+
+Detalhe importante: o valor '' nunca foi de fato um enum "real" no sentido
+do compilador — compilerWorker.js's COMMENTS_VALIDOS (a fonte de verdade)
+é só ['nativo', 'disqus']; qualquer valor não reconhecido já vira '' por
+default na normalização do manifesto. O schema de edição tinha adicionado
+'' como terceira opção "explícita" por engano, imitando esse
+comportamento em vez de deixar a normalização cuidar disso.
+
+Correção: trocar '' por um valor não-vazio (ex: 'desativado') no enum
+exposto ao Gemini, e mapear esse valor de volta pra '' no validador
+(validarEdicao), antes de aplicar no manifesto. Qualquer schema futuro que
+use SchemaType.STRING + enum precisa evitar string vazia como opção — usar
+um sentinel com nome e traduzir internamente.
+
+2) Histórico de chat precisa começar com role 'user'
+
+model.startChat({history}) do SDK do Gemini exige que o PRIMEIRO elemento
+do array history tenha role 'user' — se começar com 'model' (assistente),
+lança "First content should be with role 'user', got model".
+
+Isso quebrou o chat do Especialista e do Workspace de forma sutil: o
+código cortava o histórico com um simples history.slice(-histLen) antes de
+montar o array pro Gemini. Historico é sempre uma sequência alternada
+começando em 'user' (user, assistant, user, assistant, ...) — mas um corte
+de tamanho fixo pode cair bem no meio de um par e deixar 'assistant' como
+primeiro elemento do array cortado. Isso não acontece sempre — só quando o
+total de mensagens já passou de histLen — mas depois de acontecer, TODA
+mensagem seguinte da mesma sessão falha (o corte continua caindo no mesmo
+lugar errado conforme a conversa cresce).
+
+Correção: um helper (montarHistoricoSeguro, em
+src/routes/dashboard_routes/chat/chatHistory.js) que, depois do slice,
+descarta elementos do início até achar o primeiro 'user' — garante que o
+array final NUNCA comece com 'assistant', não importa onde o corte caiu.
+Usado tanto no Especialista quanto no Workspace.
+
+Lição geral: qualquer 400 do Gemini que não venha claramente de validação
+própria do backend vale a pena checar contra essas duas causas antes de
+procurar em outro lugar — os dois já se repetiram e são fáceis de
+confundir com bug de lógica de negócio.

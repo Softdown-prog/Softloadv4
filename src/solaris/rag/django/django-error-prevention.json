@@ -1,0 +1,287 @@
+{
+  "id": "django-error-prevention",
+  "slug": "django-error-prevention",
+  "categoria": "software-quality-and-best-practices",
+  "descricao": "Boas práticas para prevenir erros durante o desenvolvimento de aplicações Django, abrangendo arquitetura, tipagem, validação, banco de dados, ORM, APIs, testes, segurança, tratamento de erros, logging, tarefas em background, implantação e qualidade de código.",
+  "componentes": [
+    {
+      "nome": "development-principles",
+      "objetivos": [
+        "prevent-runtime-errors",
+        "detect-errors-early",
+        "improve-maintainability",
+        "increase-code-reliability"
+      ],
+      "abordagem": [
+        "fail-fast",
+        "defensive-programming",
+        "small-and-testable-components",
+        "explicit-validation"
+      ]
+    },
+    {
+      "nome": "project-architecture",
+      "padroes-recomendados": [
+        "modular-applications",
+        "service-layer",
+        "repository-pattern",
+        "fat-models-thin-views",
+        "domain-separation"
+      ],
+      "evitar": [
+        "business-logic-in-views",
+        "large-model-classes",
+        "duplicate-business-rules",
+        "tight-coupling-between-apps"
+      ]
+    },
+    {
+      "nome": "type-safety",
+      "recomendacoes": [
+        "python-type-hints",
+        "typed-function-signatures",
+        "typed-model-methods",
+        "typed-service-classes"
+      ],
+      "beneficios": [
+        "better-static-analysis",
+        "autocomplete",
+        "early-error-detection"
+      ]
+    },
+    {
+      "nome": "validation",
+      "camadas": [
+        {
+          "layer": "request-validation",
+          "purpose": "validate-client-input"
+        },
+        {
+          "layer": "serializer-validation",
+          "purpose": "validate-api-data"
+        },
+        {
+          "layer": "model-validation",
+          "purpose": "validate-business-rules"
+        },
+        {
+          "layer": "database-constraints",
+          "purpose": "enforce-data-integrity"
+        }
+      ]
+    },
+    {
+      "nome": "database",
+      "praticas-recomendadas": [
+        "use-transactions",
+        "define-unique-constraints",
+        "create-indexes",
+        "use-foreign-keys",
+        "avoid-n-plus-one-queries"
+      ],
+      "otimizacao-de-queries": [
+        "select-related",
+        "prefetch-related",
+        "only",
+        "defer",
+        "bulk-create",
+        "bulk-update"
+      ]
+    },
+    {
+      "nome": "orm-safety",
+      "recomendacoes": [
+        "always-handle-does-not-exist",
+        "always-handle-multiple-objects-returned",
+        "avoid-raw-sql-when-possible",
+        "parameterize-custom-sql",
+        "never-build-sql-with-string-concatenation"
+      ]
+    },
+    {
+      "nome": "api-development",
+      "recomendacoes": [
+        "validate-all-input",
+        "consistent-error-responses",
+        "http-status-codes",
+        "pagination",
+        "rate-limiting"
+      ]
+    },
+    {
+      "nome": "testing",
+      "niveis": [
+        "unit-tests",
+        "integration-tests",
+        "api-tests",
+        "database-tests",
+        "permission-tests"
+      ],
+      "areas-criticas": [
+        "business-rules",
+        "authentication",
+        "authorization",
+        "critical-workflows"
+      ]
+    },
+    {
+      "nome": "security",
+      "recursos-do-django": [
+        "csrf-protection",
+        "sql-injection-protection",
+        "xss-protection",
+        "secure-password-hashing"
+      ],
+      "praticas-adicionais": [
+        "validate-user-input",
+        "sanitize-uploaded-files",
+        "secure-secret-management",
+        "limit-request-size",
+        "enable-security-headers"
+      ]
+    },
+    {
+      "nome": "error-handling",
+      "recomendacoes": [
+        "custom-exception-classes",
+        "centralized-error-handling",
+        "structured-error-responses",
+        "user-friendly-messages",
+        "detailed-server-logs"
+      ]
+    },
+    {
+      "nome": "logging",
+      "boas-praticas": [
+        "structured-logging",
+        "request-id-tracking",
+        "error-correlation",
+        "audit-logging",
+        "security-event-logging"
+      ]
+    },
+    {
+      "nome": "background-tasks",
+      "recomendacoes": [
+        "retry-failed-tasks",
+        "idempotent-workers",
+        "timeout-control",
+        "dead-letter-queue",
+        "task-monitoring"
+      ]
+    },
+    {
+      "nome": "deployment",
+      "pre-deployment-checklist": [
+        "run-tests",
+        "apply-migrations",
+        "collect-static-files",
+        "validate-environment-variables",
+        "health-check-verification"
+      ]
+    },
+    {
+      "nome": "code-quality",
+      "ferramentas-recomendadas": [
+        "ruff",
+        "black",
+        "isort",
+        "mypy",
+        "bandit",
+        "pytest"
+      ],
+      "continuous-integration": [
+        "linting",
+        "type-checking",
+        "security-scanning",
+        "automated-testing"
+      ]
+    },
+    {
+      "nome": "quality-pipeline",
+      "fluxo-recomendado": [
+        "code-formatting",
+        "static-analysis",
+        "type-checking",
+        "security-analysis",
+        "unit-testing",
+        "integration-testing",
+        "deployment-validation",
+        "production-monitoring"
+      ]
+    }
+  ],
+  "exemplos": [
+    {
+      "erro": "missing-database-migrations",
+      "prevencao": "keep-migrations-synchronized"
+    },
+    {
+      "erro": "n-plus-one-query",
+      "prevencao": "use-select-related-and-prefetch-related"
+    },
+    {
+      "erro": "unhandled-exceptions",
+      "prevencao": "centralized-exception-handling"
+    },
+    {
+      "erro": "invalid-user-input",
+      "prevencao": "multi-layer-validation"
+    },
+    {
+      "erro": "permission-bypass",
+      "prevencao": "object-level-authorization"
+    },
+    {
+      "erro": "hardcoded-secrets",
+      "prevencao": "environment-based-configuration"
+    },
+    {
+      "erro": "long-running-requests",
+      "prevencao": "background-task-processing"
+    }
+  ],
+  "keywords": [
+    "django",
+    "python",
+    "error prevention",
+    "runtime errors",
+    "software quality",
+    "best practices",
+    "architecture",
+    "service layer",
+    "repository pattern",
+    "type hints",
+    "validation",
+    "django validation",
+    "database",
+    "django orm",
+    "select related",
+    "prefetch related",
+    "n plus one",
+    "api development",
+    "testing",
+    "unit tests",
+    "integration tests",
+    "authentication",
+    "authorization",
+    "django security",
+    "csrf",
+    "sql injection",
+    "xss",
+    "exception handling",
+    "logging",
+    "background tasks",
+    "deployment",
+    "migrations",
+    "ruff",
+    "black",
+    "isort",
+    "mypy",
+    "bandit",
+    "pytest",
+    "continuous integration",
+    "static analysis",
+    "security scanning"
+  ]
+}

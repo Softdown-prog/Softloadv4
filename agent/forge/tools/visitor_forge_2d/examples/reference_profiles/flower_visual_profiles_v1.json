@@ -1,0 +1,101 @@
+{
+  "contract": "CH_2D_FLOWER_VISUAL_REFERENCE_V1",
+  "profiles": {
+    "flower_bed_daisy_clustered": {
+      "useFor": ["daisy_bed", "park_flower_cluster", "yellow_white_blooms"],
+      "silhouette": {
+        "shape": "low_dense_oval",
+        "widthToHeight": 2.2,
+        "negativeSpace": "low",
+        "edgeRhythm": "soft_irregular_mound"
+      },
+      "foliage": {
+        "macroMasses": 7,
+        "midClustersPerMass": [4, 7],
+        "leafBrush": "leaf_pair_small",
+        "flowerBrush": "flower_rosette",
+        "budBrush": "flower_bud"
+      },
+      "flowering": {
+        "distribution": "clustered_even",
+        "height": "low_medium",
+        "bloomSize": "medium",
+        "stemCurvature": "soft"
+      },
+      "paletteIntent": {
+        "foliage": "deep_to_fresh_green",
+        "petal": "cream_white_to_warm_yellow",
+        "center": "golden_yellow",
+        "soil": "warm_brown"
+      },
+      "authoring": {
+        "subject": "custom",
+        "template": "flower_bed_daisy_v2.json"
+      }
+    },
+    "flower_bed_wildflower_tall": {
+      "useFor": ["wildflower", "meadow_patch", "tall_park_flowers"],
+      "silhouette": {
+        "shape": "airy_irregular_patch",
+        "widthToHeight": 1.55,
+        "negativeSpace": "medium",
+        "edgeRhythm": "stems_above_foliage"
+      },
+      "foliage": {
+        "macroMasses": 5,
+        "midClustersPerMass": [3, 6],
+        "leafBrush": "leaf_pair_small",
+        "flowerBrush": "flower_star",
+        "budBrush": "flower_bud"
+      },
+      "flowering": {
+        "distribution": "height_varied",
+        "height": "medium_tall",
+        "bloomSize": "small_medium",
+        "stemCurvature": "noticeable"
+      },
+      "paletteIntent": {
+        "foliage": "natural_green",
+        "petal": "yellow_white_pink_mix",
+        "center": "warm_gold",
+        "soil": "muted_earth"
+      },
+      "authoring": {
+        "subject": "custom",
+        "template": "flower_bed_wildflower_v2.json"
+      }
+    },
+    "flower_groundcover_compact": {
+      "useFor": ["groundcover", "small_border_flowers", "compact_bed"],
+      "silhouette": {
+        "shape": "very_low_compact",
+        "widthToHeight": 2.8,
+        "negativeSpace": "very_low",
+        "edgeRhythm": "dense_small_clusters"
+      },
+      "foliage": {
+        "macroMasses": 8,
+        "midClustersPerMass": [5, 9],
+        "leafBrush": "leaf_pair_small",
+        "flowerBrush": "flower_rosette",
+        "budBrush": "flower_bud"
+      },
+      "flowering": {
+        "distribution": "dense_surface",
+        "height": "low",
+        "bloomSize": "small",
+        "stemCurvature": "minimal"
+      },
+      "paletteIntent": {
+        "foliage": "dark_cool_green",
+        "petal": "pink_magenta_white_mix",
+        "center": "soft_yellow",
+        "soil": "mostly_hidden"
+      },
+      "authoring": {
+        "subject": "custom",
+        "template": "flower_bed_groundcover_v2.json"
+      }
+    }
+  }
+}

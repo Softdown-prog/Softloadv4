@@ -1,0 +1,136 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_broadleaf_early_autumn_v1",
+  "pipelineRevision": 11,
+  "sceneryType": "structured_broadleaf",
+  "canvas": [
+    192,
+    256
+  ],
+  "anchor": [
+    96,
+    239
+  ],
+  "seed": 84317,
+  "crownStyle": "broadleaf",
+  "crownCx": 96,
+  "shadowWidth": 94,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "muted autumn gold on discrete upper-left leaf groups",
+    "front": "mixed amber and olive branch-guided clusters",
+    "base": "dark olive interior with visible wood structure",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "branch_guided_groups",
+    "center": [
+      96,
+      117
+    ],
+    "radius": [
+      68,
+      72
+    ],
+    "masses": 48,
+    "negativeSpace": "controlled",
+    "leafDetail": "defined"
+  },
+  "palette": {
+    "ground_shadow": "#2B281B",
+    "trunk_top": "#946037",
+    "trunk_bottom": "#4A2D1C",
+    "trunk_light": "#C98749",
+    "back_top": "#687247",
+    "back_bottom": "#343F2F",
+    "mid_top": "#A49D58",
+    "mid_bottom": "#58623C",
+    "front_top": "#E1B767",
+    "front_bottom": "#887245",
+    "highlight": "#F0CD78",
+    "occlusion": "#303D2B"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {
+      "p0": [
+        96,
+        239
+      ],
+      "p1": [
+        94,
+        192
+      ],
+      "p2": [
+        97,
+        122
+      ],
+      "w0": 17,
+      "w1": 9
+    },
+    {
+      "p0": [
+        96,
+        188
+      ],
+      "p1": [
+        83,
+        159
+      ],
+      "p2": [
+        66,
+        137
+      ],
+      "w0": 8,
+      "w1": 4
+    },
+    {
+      "p0": [
+        97,
+        181
+      ],
+      "p1": [
+        111,
+        151
+      ],
+      "p2": [
+        130,
+        134
+      ],
+      "w0": 8,
+      "w1": 4
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_green_canopy_01",
+  "pipelineRevision": 11,
+  "sceneryType": "structured_broadleaf",
+  "canvas": [256, 320],
+  "anchor": [128, 311],
+  "seed": 6102026,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 104,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": ["south", "west", "north", "east"],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "crisp localized daylight on separated upper-left leaf clusters",
+    "front": "readable clustered broadleaf crown with three distinct depth bands and opaque leaf marks",
+    "base": "deep cool-green interior with short visible trunk and branch forks hidden inside foliage",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "crisp_clustered_depth_groups",
+    "profile": "domed",
+    "center": [128, 176],
+    "radius": [104, 86],
+    "density": 0.98,
+    "species": "oiti",
+    "negativeSpace": "small_valleys_between_clusters",
+    "leafDetail": "opaque_defined",
+    "branchVisibility": "mostly_occluded",
+    "depthBands": 3
+  },
+  "palette": {
+    "ground_shadow": "#263129",
+    "trunk_top": "#73563B",
+    "trunk_bottom": "#38291F",
+    "trunk_light": "#9B7651",
+    "back_top": "#24482F",
+    "back_bottom": "#142F21",
+    "mid_top": "#4D7945",
+    "mid_bottom": "#274C34",
+    "front_top": "#78AA5D",
+    "front_bottom": "#3D6945",
+    "highlight": "#B0CF80",
+    "occlusion": "#203D2B"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {"p0": [128, 311], "p1": [128, 268], "p2": [128, 226], "w0": 18, "w1": 8.0},
+    {"p0": [127, 248], "p1": [110, 219], "p2": [84, 188], "w0": 6.6, "w1": 2.3},
+    {"p0": [129, 248], "p1": [147, 219], "p2": [174, 189], "w0": 6.6, "w1": 2.3},
+    {"p0": [125, 231], "p1": [109, 201], "p2": [99, 163], "w0": 5.2, "w1": 1.8},
+    {"p0": [131, 231], "p1": [148, 201], "p2": [159, 162], "w0": 5.2, "w1": 1.8},
+    {"p0": [128, 224], "p1": [127, 193], "p2": [125, 151], "w0": 4.8, "w1": 1.6},
+    {"p0": [119, 218], "p1": [96, 200], "p2": [72, 180], "w0": 4.2, "w1": 1.4},
+    {"p0": [137, 218], "p1": [159, 199], "p2": [184, 178], "w0": 4.2, "w1": 1.4}
+  ],
+  "paletteId": "green_canopy_city_horizon_v5"
+}

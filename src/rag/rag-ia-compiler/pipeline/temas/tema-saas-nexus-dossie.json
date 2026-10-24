@@ -1,0 +1,49 @@
+{
+  "nicho": "saas-nexus",
+  "versaoDossie": 1,
+  "chassis": "saas",
+  "pageType": "landing-page",
+  "tokensCss": {
+    "light_mode": {
+      "--nexus-primary": "var(--sl-primary)",
+      "--nexus-dark": "#1e293b",
+      "--nexus-light": "#f8fafc",
+      "--nexus-gray": "#64748b"
+    }
+  },
+  "pecas": [
+    {
+      "id": "nexus-typography-override",
+      "tipo": "modulo",
+      "protegida": true,
+      "css": ":root { --sl-font-family: 'Space Grotesk', sans-serif; }",
+      "descricao": "Sobrescreve a fonte sitewide (--sl-font-family, default system-ui no chassis) pra Space Grotesk — identidade tipográfica distintiva do Nexus SaaS. Único diferencial de design deste nicho que o chassis \"saas\" ainda não absorveu (ver nota abaixo)."
+    },
+    {
+      "id": "nexus-hero-strip",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "nexus-hero-strip"
+      ],
+      "html": "<div class=\"nexus-hero-strip\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-dot\"></span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>",
+      "css": ".nexus-hero-strip {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  background: var(--nexus-light);\n  border: 1px solid rgba(0,0,0,0.06);\n  border-radius: 50rem;\n  padding: 10px 22px;\n  margin: 0 auto 1.5rem;\n  max-width: fit-content;\n}\n.nexus-hero-strip-dot {\n  width: 8px; height: 8px;\n  border-radius: 50%;\n  background: var(--nexus-primary);\n  flex-shrink: 0;\n}\n.nexus-hero-strip p {\n  margin: 0;\n  font-size: 0.9rem;\n  font-weight: 600;\n  color: var(--nexus-dark);\n}",
+      "js": "",
+      "descricao": "Faixa fina complementar (pill de anúncio) acima do hero genérico do chassis \"saas\" — mesmo racional de brutalista-appcraft/ac-hero-strip: sem <h1-h3>, só <p> pra heroSubtitle poder customizar. 5 variações estruturais autorais (htmlVariantes/cssVariantes) escolhidas por seed determinístico — pill clara original/barra outline/badge gradiente/ticker sublinhado/badge circular destacado, sempre com exatamente 1 <p> (injetarHeroTexto) e sem h1-3.",
+      "htmlVariantes": [
+        "<div class=\"nexus-hero-strip\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-dot\"></span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>",
+        "<div class=\"nexus-hero-strip nexus-hero-strip--bar\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-icon\" aria-hidden=\"true\">◆</span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>",
+        "<div class=\"nexus-hero-strip nexus-hero-strip--gradient\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-dot\"></span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>",
+        "<div class=\"nexus-hero-strip nexus-hero-strip--ticker\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-arrow\" aria-hidden=\"true\">→</span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>",
+        "<div class=\"nexus-hero-strip nexus-hero-strip--badge\" id=\"nexus-hero-strip\">\n  <span class=\"nexus-hero-strip-dot\"></span>\n  <p>Nexus SaaS — a plataforma que cresce junto com o seu negócio.</p>\n</div>"
+      ],
+      "cssVariantes": [
+        ".nexus-hero-strip {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  background: var(--nexus-light);\n  border: 1px solid rgba(0,0,0,0.06);\n  border-radius: 50rem;\n  padding: 10px 22px;\n  margin: 0 auto 1.5rem;\n  max-width: fit-content;\n}\n.nexus-hero-strip-dot {\n  width: 8px; height: 8px;\n  border-radius: 50%;\n  background: var(--nexus-primary);\n  flex-shrink: 0;\n}\n.nexus-hero-strip p {\n  margin: 0;\n  font-size: 0.9rem;\n  font-weight: 600;\n  color: var(--nexus-dark);\n}",
+        ".nexus-hero-strip--bar {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  width: 100%;\n  background: transparent;\n  border: 1px solid var(--nexus-primary);\n  border-radius: 8px;\n  padding: 10px 22px;\n  margin: 0 auto 1.5rem;\n  max-width: 640px;\n}\n.nexus-hero-strip-icon { color: var(--nexus-primary); font-size: 0.7rem; flex-shrink: 0; }\n.nexus-hero-strip--bar p { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--nexus-dark); }",
+        ".nexus-hero-strip--gradient {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  background: linear-gradient(135deg, var(--nexus-primary), #6366f1);\n  border: none;\n  border-radius: 50rem;\n  padding: 10px 24px;\n  margin: 0 auto 1.5rem;\n  max-width: fit-content;\n}\n.nexus-hero-strip--gradient .nexus-hero-strip-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; flex-shrink: 0; }\n.nexus-hero-strip--gradient p { margin: 0; font-size: 0.9rem; font-weight: 600; color: #fff; }",
+        ".nexus-hero-strip--ticker {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  background: transparent;\n  border: none;\n  border-bottom: 1px solid var(--nexus-primary);\n  padding: 6px 4px 10px;\n  margin: 0 auto 1.5rem;\n  max-width: fit-content;\n}\n.nexus-hero-strip-arrow { color: var(--nexus-primary); font-weight: 700; font-size: 0.85rem; }\n.nexus-hero-strip--ticker p { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--nexus-dark); }",
+        ".nexus-hero-strip--badge {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 12px;\n  background: var(--nexus-light);\n  border: 1px solid rgba(0,0,0,0.06);\n  border-radius: 50rem;\n  padding: 6px 22px 6px 6px;\n  margin: 0 auto 1.5rem;\n  max-width: fit-content;\n}\n.nexus-hero-strip--badge .nexus-hero-strip-dot {\n  width: 26px; height: 26px;\n  border-radius: 50%;\n  background: var(--nexus-primary);\n  flex-shrink: 0;\n}\n.nexus-hero-strip--badge p { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--nexus-dark); }"
+      ]
+    }
+  ]
+}

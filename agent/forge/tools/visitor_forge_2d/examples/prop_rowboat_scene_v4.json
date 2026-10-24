@@ -1,0 +1,96 @@
+{
+  "contract": "CH_2D_SCENE_RECIPE_V4",
+  "id": "prop_rowboat_scene_v4",
+  "canvas": [256, 192],
+  "anchor": [128, 170],
+  "seed": 157,
+  "camera": {"contract": "CH_CAMERA_V1", "tile": [128, 64], "yawDeg": 45, "elevationDeg": 30, "projection": "orthographic_dimetric"},
+  "lighting": {"direction": [-1, -1], "shadowOffset": [4, 6]},
+  "finish": {"edgeBreakupPx": 0.8, "surfaceVariation": 0.10, "brushStamps": 34, "brushOpacity": 0.08},
+  "finishRegions": [
+    {
+      "style": "plank_seams",
+      "mask": {"primitive": "smooth_polygon", "samplesPerSegment": 8, "tension": 0.42,
+        "points": [[39,111],[53,89],[86,76],[130,71],[176,70],[207,89],[218,103],[207,126],[181,147],[132,153],[83,151],[56,132]]},
+      "stamps": 8,
+      "opacity": 0.10,
+      "angleDeg": -5
+    },
+    {
+      "style": "edge_wear",
+      "mask": {"primitive": "smooth_polygon", "samplesPerSegment": 8, "tension": 0.42,
+        "points": [[39,111],[53,89],[86,76],[130,71],[176,70],[207,89],[218,103],[207,126],[181,147],[132,153],[83,151],[56,132]]},
+      "stamps": 34,
+      "opacity": 0.10,
+      "angleDeg": 0
+    },
+    {
+      "style": "scratches",
+      "mask": {"primitive": "smooth_polygon", "samplesPerSegment": 7, "tension": 0.44,
+        "points": [[61,107],[85,92],[125,85],[165,86],[192,102],[176,126],[136,132],[96,130]]},
+      "stamps": 18,
+      "opacity": 0.06,
+      "angleDeg": -4
+    }
+  ],
+  "validation": {"minimumOpaqueHeightPx": 52, "maximumOpaqueHeightPx": 174},
+  "symbols": {
+    "seat": [{
+      "type": "shape", "primitive": "rounded_rect", "box": [-29, -4, 29, 4], "radius": 2,
+      "material": {"type": "wood", "light": "#DAB178", "dark": "#82502E", "grainAngleDeg": -5, "grainSpacing": 4.0, "grainColor": "#4C2B1C3C"},
+      "effects": {"ambientOcclusion": {"width": 2, "strength": 0.18}, "bevel": {"width": 1.1, "strength": 0.30}, "outline": {"width": 0.42, "color": "#4B2E20A0"}}
+    }],
+    "rivet": [{
+      "type": "shape", "primitive": "ellipse", "box": [-1.15, -1.15, 1.15, 1.15],
+      "material": {"type": "painted_metal", "base": "#666A67", "highlight": "#C7C3B4"},
+      "effects": {"bevel": {"width": 0.55, "strength": 0.22}}
+    }]
+  },
+  "layers": [
+    {"type": "shape", "primitive": "ellipse", "box": [48, 137, 208, 178], "material": {"type": "solid", "color": "#11192348"}, "role": "ground_shadow"},
+    {
+      "type": "shape", "primitive": "smooth_polygon", "samplesPerSegment": 8, "tension": 0.42,
+      "points": [[37,111],[52,88],[85,75],[130,70],[177,69],[208,88],[220,103],[208,127],[182,148],[132,155],[82,152],[54,133]],
+      "material": {"type": "wood", "light": "#C6814C", "dark": "#63341F", "grainAngleDeg": -5, "grainSpacing": 4.6, "grainColor": "#31170F48"},
+      "effects": {"shadow": {"offset": [4,7], "blur": 3, "color": "#10151B80"}, "ambientOcclusion": {"width": 3, "strength": 0.18}, "bevel": {"width": 1.2, "strength": 0.27}, "outline": {"width": 0.62, "color": "#382219C8"}},
+      "role": "outer_hull"
+    },
+    {
+      "type": "clip_group",
+      "clip": {"primitive": "smooth_polygon", "samplesPerSegment": 7, "tension": 0.42, "points": [[44,109],[60,88],[91,79],[133,75],[174,74],[202,91],[212,103],[202,122],[178,143],[132,149],[87,147],[62,130]]},
+      "children": [
+        {"type": "shape", "primitive": "line", "points": [[52,90],[202,118]], "width": 0.8, "material": {"type": "solid", "color": "#F0B7763C"}},
+        {"type": "shape", "primitive": "line", "points": [[49,101],[195,132]], "width": 0.7, "material": {"type": "solid", "color": "#3A1E1628"}},
+        {"type": "shape", "primitive": "line", "points": [[58,120],[182,145]], "width": 0.75, "material": {"type": "solid", "color": "#F1B87A2C"}}
+      ],
+      "role": "hull_detail"
+    },
+    {
+      "type": "shape", "primitive": "smooth_polygon", "samplesPerSegment": 8, "tension": 0.44,
+      "points": [[56,108],[72,94],[104,85],[145,82],[169,81],[192,94],[202,104],[191,121],[174,133],[138,138],[98,137],[72,125]],
+      "material": {"type": "wood", "light": "#5D3B2F", "dark": "#241613", "grainAngleDeg": -3, "grainSpacing": 5.1, "grainColor": "#110B0838"},
+      "effects": {"ambientOcclusion": {"width": 4, "strength": 0.34}, "innerShadow": {"offset": [2,2], "blur": 2, "strength": 0.30}, "outline": {"width": 0.46, "color": "#1B110EC8"}},
+      "role": "interior"
+    },
+    {
+      "type": "clip_group",
+      "clip": {"primitive": "smooth_polygon", "samplesPerSegment": 7, "tension": 0.44, "points": [[63,106],[87,91],[126,85],[164,86],[191,102],[176,125],[136,132],[96,130]]},
+      "children": [
+        {"type": "shape", "primitive": "line", "points": [[69,101],[186,101]], "width": 0.6, "material": {"type": "solid", "color": "#A8755128"}},
+        {"type": "shape", "primitive": "line", "points": [[72,111],[180,111]], "width": 0.5, "material": {"type": "solid", "color": "#D5A67618"}},
+        {"type": "shape", "primitive": "line", "points": [[78,121],[171,121]], "width": 0.6, "material": {"type": "solid", "color": "#120A0822"}}
+      ],
+      "role": "interior_detail"
+    },
+    {"type": "shape", "primitive": "cubic", "points": [[59,108],[91,143],[166,146],[202,104]], "width": 3.4,
+      "material": {"type": "wood", "light": "#E0A866", "dark": "#8B5030", "grainAngleDeg": 7, "grainSpacing": 3.6, "grainColor": "#502B1B34"},
+      "effects": {"bevel": {"width": 0.85, "strength": 0.32}, "outline": {"width": 0.4, "color": "#492A1DC4"}}, "role": "gunwale"},
+    {"type": "symbol", "symbol": "seat", "transform": {"translate": [106,106], "rotateDeg": -5}, "role": "seat"},
+    {"type": "symbol", "symbol": "seat", "transform": {"translate": [148,100], "rotateDeg": -5}, "role": "seat"},
+    {"type": "scatter", "symbol": "rivet", "count": 4, "spread": [30,7], "rotationRange": [0,0], "scaleRange": [0.8,1.0], "transform": {"translate": [128,121]}, "role": "hardware"},
+    {"type": "shape", "primitive": "line", "points": [[75,86],[190,143]], "width": 3.5,
+      "material": {"type": "wood", "light": "#D8B273", "dark": "#74502D", "grainAngleDeg": 26, "grainSpacing": 3.2, "grainColor": "#4E341F34"},
+      "effects": {"bevel": {"width": 0.85, "strength": 0.29}, "outline": {"width": 0.4, "color": "#4E361FC0"}}, "role": "oar"},
+    {"type": "shape", "primitive": "ellipse", "box": [184,138,197,145], "material": {"type": "wood", "light": "#C4945B", "dark": "#684527", "grainAngleDeg": 25, "grainSpacing": 3.0}, "effects": {"bevel": {"width": 0.65, "strength": 0.24}}, "role": "oar"}
+  ]
+}

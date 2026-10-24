@@ -1,0 +1,67 @@
+{
+  "nome-framework": "flask",
+  "foco-conteudo": "boas-praticas-arquitetura-jinja2",
+  "estrutura-diretorios-recomendada": {
+    "raiz-projeto": "meu-app-flask",
+    "arquivo-inicializacao": "run-py",
+    "pasta-aplicacao": "app",
+    "componentes-internos": [
+      "app-init-py",
+      "app-models-py",
+      "app-blueprints-auth",
+      "app-blueprints-main"
+    ],
+    "pasta-front-end": {
+      "arquivos-estaticos": "app-static",
+      "sub-pastas-estaticas": [
+        "app-static-css",
+        "app-static-js",
+        "app-static-images"
+      ],
+      "templates-jinja": "app-templates",
+      "estrutura-templates": [
+        "app-templates-layouts-base-html",
+        "app-templates-partials-navbar-html",
+        "app-templates-auth-login-html",
+        "app-templates-main-index-html"
+      ]
+    }
+  },
+  "treinamento-codigos-exemplos": [
+    {
+      "contexto-codigo": "padrao-arquitetura-aplicacao",
+      "exemplo-ruim-monolitico-desorganizado": "from flask import Flask\napp = Flask(__name__)\n@app.route('/')\ndef index(): return 'antipatrao-tudo-no-mesmo-arquivo'\nif __name__ == '__main__': app.run()",
+      "exemplo-bom-factory-pattern": "from flask import Flask\nfrom app.blueprints.main import main_bp\ndef create_app():\n    app = Flask(__name__)\n    app.config.from_object('config.ProductionConfig')\n    app.register_blueprint(main_bp)\n    return app"
+    },
+    {
+      "contexto-codigo": "renderizacao-front-end-jinja2",
+      "exemplo-ruim-codigo-html-embutido": "@main_bp.route('/perfil')\ndef perfil_ruim():\n    return '<html><body><h1>Antipatrao: HTML dentro do Python</h1></body></html>'",
+      "exemplo-bom-template-separado": "@main_bp.route('/perfil')\ndef perfil_bom():\n    dados_usuario = {'nome': 'Ana', 'nivel': 'admin'}\n    return render_template('main/perfil.html', usuario=dados_usuario)"
+    },
+    {
+      "contexto-codigo": "seguranca-e-manipulacao-dados",
+      "exemplo-ruim-vulnerabilidade-xss": "<!-- No HTML jinja desativando escape -->\n<div>{{ usuario_input | safe }}</div>",
+      "exemplo-bom-escape-automatico": "<!-- Padrao seguro do jinja auto-escapado -->\n<div>{{ usuario_input }}</div>"
+    }
+  ],
+  "sintaxe-jinja2-front-end": {
+    "heranca-templates": {
+      "arquivo-pai": "{% extends 'layouts/base.html' %}",
+      "definicao-bloco": "{% block content %}{% endblock %}"
+    },
+    "estruturas-controle": {
+      "condicional-if": "{% if usuario.nivel == 'admin' %}<button>Painel</button>{% endif %}",
+      "loop-for": "<ul>{% for item in produtos %}<li>{{ item.nome }}</li>{% endfor %}</ul>"
+    },
+    "vinculo-arquivos-estaticos": {
+      "tag-css": "<link rel='stylesheet' href='{{ url_for(\"static\", filename=\"css/style.css\") }}'>",
+      "tag-javascript": "<script src='{{ url_for(\"static\", filename=\"js/main.js\") }}'></script>"
+    }
+  },
+  "erros-comuns-evitar": [
+    "armazenar-arquivos-estaticos-fora-da-pasta-static",
+    "escrever-logica-complexa-de-banco-dados-dentro-do-template-jinja",
+    "esquecer-propriedade-enctype-multipart-form-data-no-upload-front-end",
+    "nao-utilizar-filtros-jinja-para-formatar-moedas-e-datas"
+  ]
+}

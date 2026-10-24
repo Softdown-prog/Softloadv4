@@ -1,0 +1,228 @@
+{
+  "nicho": "natureza-bulma-vegan",
+  "versaoDossie": 1,
+  "chassis": "blog",
+  "pageType": "blogger-conteudo",
+  "tokensCss": {
+    "light_mode": {
+      "--nat-primary": "#8FBC8F",
+      "--nat-bg": "#F5F7F8",
+      "--nat-footer": "#121212",
+      "--nat-text": "#333333",
+      "--nat-gadget-title": "#333333",
+      "--nat-surface": "#ffffff",
+      "--nat-border": "rgba(0,0,0,0.08)",
+      "--nat-text-muted": "#6c757d"
+    }
+  },
+  "pecas": [
+    {
+      "id": "secao-widget-html-1",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "nat-hero-slider",
+        "slider-indicators",
+        "slider-inner"
+      ],
+      "css": ".widget h2.title { \n      font: $(gadget.font); \n      color: var(--nat-gadget-title); \n      border-bottom: 2px solid var(--nat-primary); \n      padding-bottom: 0.5rem; \n      margin-bottom: 1rem; \n      text-transform: uppercase; \n      letter-spacing: 0.5px; \n    }\n\n.footer-col .widget h2.title { color: #ffffff; border-bottom-color: #444; }\n\n.widget ul { list-style: none; padding: 0; margin: 0; }\n\n.widget ul li { padding: 0.6rem 0; border-bottom: 1px dashed #e0e0e0; }\n\n.footer-col .widget ul li { border-bottom-color: #333; }\n\n.widget ul li:last-child { border-bottom: none; }\n\n.widget ul li a { color: inherit; text-decoration: none; transition: all 0.2s; }\n\n.widget ul li a:hover { color: var(--nat-primary); padding-left: 5px; }\n\n#comments { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #eaeaea; }\n\n#comments h4 { font-weight: bold; font-size: 1.5rem; margin-bottom: 1.5rem; }\n\n.comment-block { background-color: var(--nat-bg); padding: 1.25rem; border-radius: 0.5rem; margin-left: 55px; margin-bottom: 1.5rem; border-left: 4px solid var(--nat-primary); position: relative; }\n\n.avatar-image-container { position: absolute; left: -55px; top: 0; }\n\n.avatar-image-container img { border-radius: 50%; border: 2px solid var(--nat-primary); width: 40px; height: 40px; }\n\n.comment-author { font-weight: bold; font-size: 1rem; margin-bottom: 0.5rem; }\n\n.comment-author a { color: var(--nat-text); text-decoration: none; }\n\n.comment-body { color: #444; line-height: 1.6; font-size: 0.95rem; }\n\n.comment-footer { margin-top: 0.8rem; font-size: 0.85rem; }\n\n.comment-footer a { color: var(--nat-primary); text-decoration: none; font-weight: 600; }\n\n.comment-thread .comment-thread { margin-left: 1.5rem; }\n\n.comment-form { margin-top: 2rem; }\n\niframe#comment-editor { border: 1px solid #e0e0e0 !important; border-radius: 0.5rem; background: #fff; }\n\n.contact-form-widget { max-width: 100%; margin: 0 auto; }\n\n.contact-form-name, .contact-form-email, .contact-form-email-message { width: 100% !important; max-width: 100% !important; padding: 0.75rem 1rem; margin-bottom: 1.2rem; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 0.5rem; font-family: inherit; color: var(--nat-text); transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }\n\n.contact-form-email-message { min-height: 150px; resize: vertical; }\n\n.contact-form-name:focus, .contact-form-email:focus, .contact-form-email-message:focus { outline: 0; border-color: var(--nat-primary); box-shadow: 0 0 0 0.25rem rgba(143, 188, 143, 0.25); }\n\n.contact-form-button-submit { display: inline-block; font-weight: 600; text-align: center; cursor: pointer; padding: 0.75rem 1.5rem; font-size: 1rem; line-height: 1.5; border-radius: 50rem; color: #121212; background-color: var(--nat-primary); border: 1px solid var(--nat-primary); transition: all 0.2s ease-in-out; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; }\n\n.contact-form-button-submit:hover { background-color: #222222; border-color: #222222; color: #ffffff; }\n\n.contact-form-button-submit:disabled { opacity: 0.6; cursor: not-allowed; }\n\n.contact-form-error-message, .contact-form-success-message { margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; font-weight: 500; text-align: center; clear: both; }\n\n.contact-form-error-message { color: #842029; background-color: #f8d7da; border: 1px solid #f5c2c7; }\n\n.contact-form-success-message { color: #0f5132; background-color: #d1e7dd; border: 1px solid #badbcc; }\n\n.widget.Stats { background-color: var(--nat-bg) !important; padding: 2rem 1rem !important; border-radius: 0.5rem !important; border: 1px dashed #ced4da !important; text-align: center !important; margin-bottom: 2rem !important; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.05) !important; }\n\n.widget.Stats h2.title { border-bottom: none !important; margin-bottom: 0.5rem !important; color: #6c757d !important; font-size: 0.9rem !important; }\n\n.widget.Stats span[dir=\"ltr\"], .widget.Stats .graph-counter-wrapper, .widget.Stats .widget-content > span { display: block !important; font-size: 3.5rem !important; font-weight: 900 !important; color: var(--nat-primary) !important; line-height: 1.1 !important; letter-spacing: -2px !important; }\n\n.widget.Stats span[dir=\"ltr\"]::after { content: \"Visitas no Site\" !important; display: block !important; font-size: 0.85rem !important; font-weight: 700 !important; color: #999999 !important; text-transform: uppercase !important; letter-spacing: 2px !important; margin-top: 10px !important; }\n\n.widget.Stats img { margin-top: 1.5rem !important; max-width: 100% !important; opacity: 0.25 !important; filter: grayscale(100%) !important; transition: all 0.4s ease !important; border-radius: 4px !important; }\n\n.widget.Stats img:hover { opacity: 1 !important; filter: grayscale(0%) !important; }\n\n#Stats1 .widget-content,\n#Stats1 span[dir=\"ltr\"],\n#Stats1 .graph-counter-wrapper,\n#Stats1 .text-counter-wrapper {\n  position: relative;\n  z-index: 1;\n}\n\n#Stats1 span[dir=\"ltr\"],\n#Stats1 .counter-wrapper {\n  display: block !important;\n  font-family: var(--sl-font-family) !important;\n  font-size: clamp(2.5rem, 5vw, 3.5rem) !important;\n  font-weight: 900 !important;\n  color: var(--nat-primary) !important;\n  line-height: 1 !important;\n  letter-spacing: -2px !important;\n  margin-bottom: 5px !important;\n}\n\n#Stats1 .widget-content > span:not([dir=\"ltr\"]):not(.counter-wrapper) {\n  display: none !important;\n}",
+      "html": "<b:widget id='HTML6' locked='false' title='{Seu Ads Aqui}' type='HTML'>\n    <b:widget-settings>\n      <b:widget-setting name='content'><![CDATA[<style>\n  .ad-placeholder-wrapper {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    flex-direction: column;\n    width: 100%;\n    max-width: 300px;\n    height: 250px; /* Padrão Ouro da Indústria */\n    margin: 0 auto;\n    background-color: var(--nat-bg, #f8f9fa);\n    border: 2px dashed #ced4da;\n    border-radius: 0.5rem;\n    color: #adb5bd;\n    text-align: center;\n    transition: all 0.3s ease;\n    text-decoration: none;\n  }\n  \n  .ad-placeholder-wrapper:hover {\n    border-color: var(--nat-primary, #8FBC8F);\n    color: var(--nat-primary, #8FBC8F);\n    background-color: #ffffff;\n    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);\n  }\n\n  .ad-placeholder-icon {\n    font-size: 2.5rem;\n    margin-bottom: 0.5rem;\n  }\n\n  .ad-placeholder-text {\n    font-size: 0.9rem;\n    font-weight: 700;\n    text-transform: uppercase;\n    letter-spacing: 1px;\n  }\n  \n  .ad-placeholder-subtext {\n    font-size: 0.75rem;\n    margin-top: 5px;\n    opacity: 0.8;\n  }\n</style>\n\n<div class=\"ad-placeholder-wrapper\">\n  <i class=\"bi bi-megaphone ad-placeholder-icon\"></i>\n  <span class=\"ad-placeholder-text\">Anuncie Aqui</span>\n  <span class=\"ad-placeholder-subtext\">300 x 250 px</span>\n</div>]]></b:widget-setting>\n    </b:widget-settings>\n    <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n  </b:widget>\n  <b:widget id='HTML4' locked='false' title='' type='HTML'>\n    <b:widget-settings>\n      <b:widget-setting name='content'><![CDATA[<style>\n  /* Estilização Premium do Slider */\n  #nat-hero-slider {\n    border-radius: 0.75rem;\n    overflow: hidden;\n    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);\n    margin-bottom: 2rem;\n  }\n  \n  .nat-slide-img {\n    height: 450px; /* Altura do banner no Desktop */\n    width: 100%;\n    object-fit: cover; /* Garante que a foto não fique esticada */\n  }\n\n  /* Overlay degradê escuro para garantir que o texto branco seja lido em fotos claras */\n  .nat-slide-overlay {\n    position: absolute;\n    top: 0; left: 0; width: 100%; height: 100%;\n    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.8) 100%);\n  }\n\n  .nat-carousel-caption {\n    position: absolute;\n    bottom: 2rem;\n    left: 5%;\n    right: 5%;\n    text-align: center;\n    z-index: 10;\n  }\n\n  .nat-carousel-caption h3 {\n    font-size: 2rem;\n    font-weight: 800;\n    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);\n    margin-bottom: 1rem;\n    color: #ffffff;\n  }\n\n  /* Responsividade para celular */\n  @media (max-width: 768px) {\n    .nat-slide-img { height: 300px; }\n    .nat-carousel-caption h3 { font-size: 1.35rem; }\n    .nat-carousel-caption { bottom: 1rem; }\n  }\n</style>\n\n<div id=\"nat-hero-slider\" class=\"carousel slide\" data-bs-ride=\"carousel\" data-bs-interval=\"4000\">\n  <div class=\"carousel-indicators\" id=\"slider-indicators\"></div>\n  \n  <div class=\"carousel-inner\" id=\"slider-inner\">\n    <div class=\"text-center py-5 bg-light\">\n      <div class=\"spinner-border text-success\" role=\"status\"></div>\n      <p class=\"mt-2 text-muted\">Carregando destaques...</p>\n    </div>\n  </div>\n\n  <button class=\"carousel-control-prev\" type=\"button\" data-bs-target=\"#nat-hero-slider\" data-bs-slide=\"prev\">\n    <span class=\"carousel-control-prev-icon\" aria-hidden=\"true\"></span>\n    <span class=\"visually-hidden\">Anterior</span>\n  </button>\n  <button class=\"carousel-control-next\" type=\"button\" data-bs-target=\"#nat-hero-slider\" data-bs-slide=\"next\">\n    <span class=\"carousel-control-next-icon\" aria-hidden=\"true\"></span>\n    <span class=\"visually-hidden\">Próximo</span>\n  </button>\n</div>\n\n<script>\n  (function() {\n    document.addEventListener(\"DOMContentLoaded\", function() {\n      // Endpoint para pegar os últimos 3 posts\n      const feedUrl = '/feeds/posts/default?alt=json&max-results=3';\n      \n      fetch(feedUrl)\n        .then(response => response.json())\n        .then(data => {\n          const entries = data.feed.entry || [];\n          let innerHtml = '';\n          let indicatorsHtml = '';\n\n          if (entries.length > 0) {\n            entries.forEach((entry, index) => {\n              // Pega o Título\n              const title = entry.title.$t;\n              \n              // Pega o Link\n              let link = '';\n              entry.link.forEach(l => { if(l.rel === 'alternate') link = l.href; });\n\n              // Pega a Imagem e Força Alta Resolução Panorâmica (1200x500 crop)\n              let imgUrl = entry.media$thumbnail ? entry.media$thumbnail.url : 'https://via.placeholder.com/1200x500.png?text=Sem+Imagem';\n              imgUrl = imgUrl.replace(/\\/s[0-9]+(\\-c)?\\//, '/w1200-h500-c/');\n\n              const activeClass = index === 0 ? 'active' : '';\n\n              // Monta as bolinhas indicadoras\n              indicatorsHtml += `<button type=\"button\" data-bs-target=\"#nat-hero-slider\" data-bs-slide-to=\"${index}\" class=\"${activeClass}\" aria-current=\"${index === 0 ? 'true' : 'false'}\"></button>`;\n\n              // Monta o Card do Slide\n              innerHtml += `\n                <div class=\"carousel-item ${activeClass}\">\n                  <img src=\"${imgUrl}\" class=\"d-block nat-slide-img\" alt=\"${title}\">\n                  <div class=\"nat-slide-overlay\"></div>\n                  <div class=\"nat-carousel-caption\">\n                    <h3>${title}</h3>\n                    <a href=\"${link}\" class=\"btn btn-primary rounded-pill px-4 fw-bold\" style=\"background-color: var(--nat-primary); border: none; color: #121212;\">Ler Artigo</a>\n                  </div>\n                </div>\n              `;\n            });\n\n            // Injeta no HTML\n            document.getElementById('slider-indicators').innerHTML = indicatorsHtml;\n            document.getElementById('slider-inner').innerHTML = innerHtml;\n          }\n        })\n        .catch(err => {\n          console.error('Erro ao carregar o Slider:', err);\n          document.getElementById('nat-hero-slider').style.display = 'none';\n        });\n    });\n  })();\n</script>]]></b:widget-setting>\n    </b:widget-settings>\n    <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n  </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: widget-html-1"
+    },
+    {
+      "id": "secao-widget-html-2",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "nat-back-to-top"
+      ],
+      "css": "",
+      "html": "<b:widget id='HTML2' locked='false' title='' type='HTML'>\n    <b:widget-settings>\n      <b:widget-setting name='content'><![CDATA[<style>\n  #nat-back-to-top {\n    position: fixed;\n    bottom: 30px;\n    right: 30px;\n    width: 50px;\n    height: 50px;\n    background-color: var(--nat-primary, #8FBC8F);\n    color: #121212;\n    border: none;\n    border-radius: 50%; /* Deixa perfeitamente redondo */\n    box-shadow: 0 4px 10px rgba(0,0,0,0.15);\n    cursor: pointer;\n    z-index: 1040;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 1.5rem;\n    \n    /* Animação de entrada e saída */\n    opacity: 0;\n    visibility: hidden;\n    transform: translateY(20px); /* Fica levemente abaixado quando escondido */\n    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\n  }\n\n  /* Classe que o JS vai injetar para mostrar o botão */\n  #nat-back-to-top.show-btn {\n    opacity: 1;\n    visibility: visible;\n    transform: translateY(0);\n  }\n\n  #nat-back-to-top:hover {\n    background-color: #222222; /* Fica escuro ao passar o mouse */\n    color: #ffffff;\n    box-shadow: 0 6px 15px rgba(0,0,0,0.25);\n    transform: translateY(-3px) scale(1.05); /* Efeito de elevação magnética */\n  }\n\n  /* Ajuste para não atrapalhar o banner de cookies no mobile */\n  @media (max-width: 767px) {\n    #nat-back-to-top {\n      bottom: 20px;\n      right: 20px;\n      width: 45px;\n      height: 45px;\n      font-size: 1.2rem;\n    }\n  }\n</style>\n\n<button id=\"nat-back-to-top\" aria-label=\"Voltar ao topo\" title=\"Voltar ao topo\">\n  <i class=\"bi bi-arrow-up-short\"></i>\n</button>\n\n<script>\n  (function() {\n    document.addEventListener(\"DOMContentLoaded\", function() {\n      var backToTopBtn = document.getElementById(\"nat-back-to-top\");\n\n      if (backToTopBtn) {\n        // Função para monitorar o scroll da página\n        window.addEventListener(\"scroll\", function() {\n          // Se descer mais de 300px, mostra o botão\n          if (window.scrollY > 300) {\n            backToTopBtn.classList.add(\"show-btn\");\n          } else {\n            // Se voltar pro topo, esconde o botão\n            backToTopBtn.classList.remove(\"show-btn\");\n          }\n        });\n\n        // Ação ao clicar no botão\n        backToTopBtn.addEventListener(\"click\", function() {\n          window.scrollTo({\n            top: 0,\n            behavior: \"smooth\" // Deslizamento suave\n          });\n        });\n      }\n    });\n  })();\n</script>]]></b:widget-setting>\n    </b:widget-settings>\n    <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n  </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: widget-html-2"
+    },
+    {
+      "id": "secao-outros-widgets-html",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "secao-outros-widgets-html"
+      ],
+      "css": ".cloud-label-widget-content {\n      display: flex;\n      flex-wrap: wrap;\n      gap: 0.5rem;\n    }\n\n.cloud-label-widget-content .label-size {\n      font-size: 0.85rem !important;\n      background-color: #ffffff;\n      border: 1px solid #e0e0e0;\n      border-radius: 50rem;\n      transition: all 0.2s ease-in-out;\n    }\n\n.cloud-label-widget-content .label-size a {\n      display: inline-block;\n      padding: 0.4rem 0.85rem;\n      color: var(--nat-text);\n      text-decoration: none;\n      font-weight: 500;\n    }\n\n.cloud-label-widget-content .label-count {\n      color: #888;\n      font-size: 0.75rem;\n      margin-left: 2px;\n    }\n\n.cloud-label-widget-content .label-size:hover {\n      background-color: var(--nat-primary);\n      border-color: var(--nat-primary);\n      transform: translateY(-2px);\n      box-shadow: 0 4px 6px rgba(0,0,0,0.05);\n    }\n\n.cloud-label-widget-content .label-size:hover a,\n    .cloud-label-widget-content .label-size:hover .label-count {\n      color: #121212;\n    }",
+      "html": "<b:widget id='PopularPosts1' locked='false' title='Postagens mais visitadas' type='PopularPosts'>\n    <b:widget-settings>\n      <b:widget-setting name='numItemsToShow'>10</b:widget-setting>\n      <b:widget-setting name='showThumbnails'>true</b:widget-setting>\n      <b:widget-setting name='showSnippets'>true</b:widget-setting>\n      <b:widget-setting name='timeRange'>LAST_YEAR</b:widget-setting>\n    </b:widget-settings>\n    <b:includable id='main'>\n  <b:if cond='data:title != &quot;&quot;'><h2 id='secao-outros-widgets-html'><data:title/></h2></b:if>\n  <div class='widget-content popular-posts'>\n    <ul>\n      <b:loop values='data:posts' var='post'>\n      <li>\n        <b:if cond='!data:showThumbnails'>\n          <b:if cond='!data:showSnippets'>\n            <!-- (1) No snippet/thumbnail -->\n            <a expr:href='data:post.href'><data:post.title/></a>\n          <b:else/>\n            <!-- (2) Show only snippets -->\n            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>\n            <div class='item-snippet'><data:post.snippet/></div>\n          </b:if>\n        <b:else/>\n          <!-- (3) Show only thumbnails or (4) Snippets and thumbnails. -->\n          <div expr:class='data:showSnippets ? &quot;item-content&quot; : &quot;item-thumbnail-only&quot;'>\n            <b:if cond='data:post.featuredImage.isResizable or data:post.thumbnail'>\n              <div class='item-thumbnail'>\n                <a expr:href='data:post.href' target='_blank'>\n                  <b:with value='data:post.featuredImage.isResizable                                  ? resizeImage(data:post.featuredImage, 72, &quot;1:1&quot;)                                  : data:post.thumbnail' var='image'>\n                    <img alt='' border='0' expr:src='data:image'/>\n                  </b:with>\n                </a>\n              </div>\n            </b:if>\n            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>\n            <b:if cond='data:showSnippets'>\n              <div class='item-snippet'><data:post.snippet/></div>\n            </b:if>\n          </div>\n          <div style='clear: both;'/>\n        </b:if>\n      </li>\n      </b:loop>\n    </ul>\n    <b:include name='quickedit'/>\n  </div>\n</b:includable>\n  </b:widget>\n  <b:widget id='Label1' locked='false' title='Marcadores' type='Label'>\n    <b:widget-settings>\n      <b:widget-setting name='sorting'>ALPHA</b:widget-setting>\n      <b:widget-setting name='display'>CLOUD</b:widget-setting>\n      <b:widget-setting name='showFreqNumbers'>true</b:widget-setting>\n    </b:widget-settings>\n    <b:includable id='main'>\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2><data:title/></h2>\n  </b:if>\n  <div expr:class='&quot;widget-content &quot; + data:display + &quot;-label-widget-content&quot;'>\n    <b:if cond='data:display == &quot;list&quot;'>\n      <ul>\n        <b:loop values='data:labels' var='label'>\n          <li>\n            <b:if cond='data:blog.url == data:label.url'>\n              <span expr:dir='data:blog.languageDirection'><data:label.name/></span>\n            <b:else/>\n              <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>\n            </b:if>\n            <b:if cond='data:showFreqNumbers'>\n              <span dir='ltr'>(<data:label.count/>)</span>\n            </b:if>\n          </li>\n        </b:loop>\n      </ul>\n    <b:else/>\n      <b:loop values='data:labels' var='label'>\n        <span expr:class='&quot;label-size label-size-&quot; + data:label.cssSize'>\n          <b:if cond='data:blog.url == data:label.url'>\n            <span expr:dir='data:blog.languageDirection'><data:label.name/></span>\n          <b:else/>\n            <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>\n          </b:if>\n          <b:if cond='data:showFreqNumbers'>\n            <span class='label-count' dir='ltr'>(<data:label.count/>)</span>\n          </b:if>\n        </span>\n      </b:loop>\n    </b:if>\n    <b:include name='quickedit'/>\n  </div>\n</b:includable>\n  </b:widget>",
+      "js": "",
+      "descricao": "Seção customizada: outros-widgets-html"
+    },
+    {
+      "id": "modulo-css-personalizado-base",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body {\n      background: $(body.background);\n      color: var(--nat-text);\n      font: $(body.font);\n      -webkit-font-smoothing: antialiased;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n      CSS PERSONALIZADO BASE\n    -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-aplica-a-fonte-escolhida-no-painel-para-os-titulos",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "h1, h2, h3, .post-title, .hero-content h1 {\n      font: $(heading.font);\n    }\n\n.bg-nature-primary { background-color: var(--nat-primary) !important; }\n\n.text-nature-primary { color: var(--nat-primary) !important; }\n\n.site-header { background-color: #ffffff; border-bottom: 2px solid var(--nat-primary); z-index: 1030; }\n\n.site-footer { background-color: var(--nat-footer); color: #e0e0e0; }\n\n.site-footer a { color: var(--nat-primary); text-decoration: none; }\n\n.site-footer a:hover { color: #ffffff; }\n\nmark { background-color: var(--nat-primary); color: #000; padding: 0.1em 0.3em; border-radius: 4px; font-weight: 500; }\n\n.btn-outline-nature { color: var(--nat-primary); border-color: var(--nat-primary); }\n\n.btn-outline-nature:hover { background-color: var(--nat-primary); color: #fff; }\n\n.post-content blockquote {\n      background-color: var(--nat-bg);\n      border-left: 5px solid var(--nat-primary);\n      margin: 2rem 0; padding: 1.5rem; font-size: 1.1rem; font-style: italic; color: #555555;\n      border-radius: 0 0.5rem 0.5rem 0; position: relative;\n    }\n\n.post-content blockquote p:last-child { margin-bottom: 0; }\n\n.post-content blockquote::before {\n      content: \"\\201C\"; font-family: serif; font-size: 6rem; position: absolute;\n      top: -1rem; left: 1rem; color: var(--nat-primary); opacity: 0.15; line-height: 1; pointer-events: none;\n    }\n\n.sidebar .widget { background: #ffffff; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); margin-bottom: 2rem; }\n\n.footer-col .widget { margin-bottom: 2rem; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Aplica a fonte escolhida no painel para os títulos"
+    },
+    {
+      "id": "modulo-estilos-das-postagens-relacionadas",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".transition-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }\n\n.transition-hover:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }\n\n.hover-primary { transition: color 0.2s; }\n\n.hover-primary:hover { color: var(--nat-primary) !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Estilos das Postagens Relacionadas"
+    },
+    {
+      "id": "modulo-correcao-de-imagens-nas-postagens-responsividade-mobile",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-content img {\n      max-width: 100% !important;\n      height: auto !important;\n      border-radius: 0.5rem;\n      display: block;\n      margin: 1.5rem auto;\n      box-sizing: border-box;\n    }\n\n.post-content .separator,\n    .post-content .separator a {\n      max-width: 100% !important;\n      margin-left: 0 !important;\n      margin-right: 0 !important;\n      text-align: center;\n      display: block;\n    }\n\n.post-content iframe,\n    .post-content object,\n    .post-content embed {\n      max-width: 100%;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n      CORREÇÃO DE IMAGENS NAS POSTAGENS (Responsividade Mobile)\n    -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-marcadores-modo-lista-menu-de-categorias",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul {\n      list-style: none;\n      padding: 0;\n      margin: 0;\n    }\n\n.list-label-widget-content li {\n      display: flex;\n      justify-content: space-between;\n      align-items: center;\n      padding: 0.6rem 0;\n      border-bottom: 1px dashed #e0e0e0;\n    }\n\n.list-label-widget-content li:last-child {\n      border-bottom: none;\n    }\n\n.list-label-widget-content li a {\n      color: var(--nat-text);\n      text-decoration: none;\n      font-weight: 500;\n      display: flex;\n      align-items: center;\n      transition: color 0.2s;\n    }\n\n.list-label-widget-content li a::before {\n      content: \"\\F288\";\n      font-family: \"bootstrap-icons\";\n      margin-right: 0.5rem;\n      color: var(--nat-primary);\n      font-size: 1.1rem;\n    }\n\n.list-label-widget-content li a:hover {\n      color: var(--nat-primary);\n    }\n\n.list-label-widget-content li span {\n      background-color: var(--nat-bg);\n      color: #666666;\n      font-size: 0.75rem;\n      font-weight: 700;\n      padding: 0.15rem 0.6rem;\n      border-radius: 50rem;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n      MARCADORES: MODO LISTA (Menu de Categorias)\n    -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-ajuste-de-tamanho-imagens-das-postagens-relacionadas",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".img-relacionada {\n      width: 100%;\n      height: 220px;\n      object-fit: cover;\n      border-radius: 0.5rem 0.5rem 0 0;\n      transition: all 0.3s ease;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n     AJUSTE DE TAMANHO: IMAGENS DAS POSTAGENS RELACIONADAS\n   -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-responsividade-chave-de-fechamento-corrigida-aqui",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "@media (max-width: 767px) {\n      .img-relacionada {\n        height: 180px; \n      }\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Responsividade: Chave de fechamento corrigida aqui!"
+    },
+    {
+      "id": "modulo-polimento-premium-micro-interacoes-e-ux",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "html {\n      scroll-behavior: smooth !important;\n    }\n\n::-webkit-scrollbar {\n      width: 8px;\n    }\n\n::-webkit-scrollbar-track {\n      background: var(--nat-bg); \n    }\n\n::-webkit-scrollbar-thumb {\n      background: var(--nat-primary);\n      border-radius: 10px;\n    }\n\n::-webkit-scrollbar-thumb:hover {\n      background: #7aa97a;\n    }\n\n::selection {\n      background-color: var(--nat-primary);\n      color: #121212;\n    }\n\n::-moz-selection {\n      background-color: var(--nat-primary);\n      color: #121212;\n    }\n\n.post-content img {\n      transition: transform 0.4s ease, box-shadow 0.4s ease !important;\n    }\n\n.post-content img:hover {\n      transform: scale(1.02) !important;\n      box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n     POLIMENTO PREMIUM (Micro-interações e UX)\n   -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-pagina-de-erro-404-polimento",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".error-page {\n      border: 1px dashed #ced4da !important;\n    }\n\n.error-page .display-1 i {\n      display: inline-block;\n      animation: float404 3s ease-in-out infinite;\n    }\n\n@keyframes float404 {\n      0% { transform: translateY(0px); }\n      50% { transform: translateY(-12px); }\n      100% { transform: translateY(0px); }\n    }\n\n.error-page form input:focus {\n      outline: 0;\n      box-shadow: 0 0 0 0.25rem rgba(143, 188, 143, 0.25) !important;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n     PÁGINA DE ERRO 404 (Polimento)\n   -----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-gadget-de-visualizacoes-stats-forca-maxima",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#Stats1 {\n  background: var(--nat-surface) !important;\n  padding: 35px 20px !important;\n  border-radius: 16px !important;\n  border: 1px solid var(--nat-border) !important;\n  text-align: center !important;\n  box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;\n  position: relative !important;\n  overflow: hidden !important;\n  transition: transform 0.3s ease, box-shadow 0.3s ease !important;\n  margin-bottom: 30px !important;\n}\n\n#Stats1:hover {\n  transform: translateY(-5px);\n  box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;\n  border-color: var(--nat-primary) !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === GADGET DE VISUALIZAÇÕES (STATS): FORÇA MÁXIMA ==="
+    },
+    {
+      "id": "modulo-marca-d-agua-decorativa",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#Stats1::before {\n  content: '\\F3E0' !important; \n  font-family: 'bootstrap-icons' !important;\n  position: absolute !important;\n  top: -20px !important;\n  right: -20px !important;\n  font-size: 6rem !important;\n  color: var(--nat-primary) !important;\n  opacity: 0.03 !important;\n  transform: rotate(15deg) !important;\n  pointer-events: none !important;\n  transition: opacity 0.4s ease !important;\n  z-index: 0;\n}\n\n#Stats1:hover::before {\n  opacity: 0.08 !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Marca d'água decorativa"
+    },
+    {
+      "id": "modulo-titulo-do-gadget",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#Stats1 h2, \n#Stats1 h2.title {\n  font-size: 0.85rem !important;\n  font-weight: 800 !important;\n  color: var(--nat-text-muted) !important;\n  text-transform: uppercase !important;\n  letter-spacing: 2px !important;\n  margin-bottom: 15px !important;\n  border: none !important;\n  display: block !important;\n  position: relative;\n  z-index: 1;\n}\n\n#Stats1 h2.title::before {\n  display: none !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Título do Gadget"
+    },
+    {
+      "id": "modulo-texto-descritivo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#Stats1 span[dir=\"ltr\"]::after,\n#Stats1 .counter-wrapper::after {\n  content: \"Visualizações Totais\" !important;\n  display: block !important;\n  font-size: 0.8rem !important;\n  font-weight: 700 !important;\n  color: var(--nat-text-muted) !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n  margin-top: 8px !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Texto descritivo"
+    },
+    {
+      "id": "modulo-grafico-sparkline",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#Stats1 img {\n  margin-top: 25px !important;\n  max-width: 100% !important;\n  height: auto !important;\n  opacity: 0.3 !important;\n  filter: grayscale(100%) !important;\n  transition: all 0.4s ease !important;\n  border-radius: 8px !important;\n  position: relative;\n  z-index: 1;\n}\n\n#Stats1:hover img {\n  opacity: 1 !important;\n  filter: grayscale(0%) !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Gráfico Sparkline"
+    },
+    {
+      "id": "modulo-dark-mode-seguro",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "[data-bs-theme=\"dark\"] #Stats1 {\n  background: var(--nat-surface) !important;\n}\n\n[data-bs-theme=\"dark\"] #Stats1 img {\n  filter: invert(1) grayscale(100%) opacity(0.3) !important;\n}\n\n[data-bs-theme=\"dark\"] #Stats1:hover img {\n  filter: invert(1) grayscale(0%) opacity(0.8) !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Dark Mode Seguro"
+    },
+    {
+      "id": "modulo-componente-video-responsivo-16-9-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-video-wrapper {\n    position: relative;\n    width: 100%;\n    padding-bottom: 56.25%; /* Matemática exata para a proporção 16:9 */\n    height: 0;\n    border-radius: var(--radius, 12px); /* Arredondamento premium */\n    overflow: hidden;\n    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Sombra elegante */\n    margin: 2rem 0; /* Espaçamento para respirar no texto */\n    background-color: #000; /* Fundo preto enquanto o vídeo carrega */\n}\n\n.mag-video-wrapper iframe {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    border: none;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  COMPONENTE: VÍDEO RESPONSIVO (16:9 PREMIUM)\n-----------------------------------------------------------"
+    },
+    {
+      "id": "widget-cookie-banner",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "nat-cookie-banner"
+      ],
+      "descricao": "Banner de cookies real (localStorage nat_cookie_consent_v1), extraído de exemplos/natureza-bulma-vegan.xml — nunca capturado antes como peça de dossiê (cookieBanner não estava ligado em nichoModuleDefaults.js, site não tinha banner nenhum).",
+      "html": "<style>\n  #nat-cookie-banner {\n    position: fixed;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    background-color: #ffffff;\n    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);\n    z-index: 99999;\n    transform: translateY(100%);\n    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);\n    padding: 1.2rem;\n    border-top: 3px solid var(--nat-primary, #8FBC8F);\n    font-family: inherit;\n    display: none; /* Escondido por padrão para evitar piscar */\n  }\n  \n  #nat-cookie-banner.is-ready {\n    display: block;\n  }\n\n  #nat-cookie-banner.show-banner {\n    transform: translateY(0);\n  }\n\n  #nat-cookie-banner .cookie-wrapper {\n    max-width: 1140px;\n    margin: 0 auto;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: space-between;\n    gap: 15px;\n  }\n\n  @media (min-width: 768px) {\n    #nat-cookie-banner .cookie-wrapper {\n      flex-direction: row;\n    }\n  }\n\n  #nat-cookie-banner p {\n    margin: 0;\n    color: var(--nat-text, #333);\n    font-size: 0.95rem;\n    text-align: center;\n    line-height: 1.5;\n  }\n\n  #nat-cookie-banner a {\n    color: var(--nat-primary, #8FBC8F);\n    font-weight: 700;\n    text-decoration: none;\n  }\n\n  #nat-cookie-btn {\n    background-color: var(--nat-primary, #8FBC8F);\n    color: #121212;\n    border: none;\n    padding: 10px 30px;\n    border-radius: 50px;\n    font-weight: 700;\n    font-size: 0.95rem;\n    cursor: pointer;\n    text-transform: uppercase;\n    letter-spacing: 0.5px;\n    transition: all 0.3s ease;\n    white-space: nowrap;\n  }\n\n  #nat-cookie-btn:hover {\n    background-color: #222222;\n    color: #ffffff;\n  }\n</style>\n\n<div id=\"nat-cookie-banner\">\n  <div class=\"cookie-wrapper\">\n    <p>\n      Utilizamos cookies para personalizar conteúdo e melhorar a sua experiência no site. \n      Ao continuar navegando, você concorda com a nossa \n      <a href=\"/p/politica-de-privacidade.html\">Política de Privacidade</a>.\n    </p>\n    <button id=\"nat-cookie-btn\">Entendi e Aceito</button>\n  </div>\n</div>\n\n<script>\n  // Usa uma IIFE para isolar as variáveis e não causar conflitos com o resto do tema\n  (function() {\n    document.addEventListener(\"DOMContentLoaded\", function() {\n      var banner = document.getElementById(\"nat-cookie-banner\");\n      var btn = document.getElementById(\"nat-cookie-btn\");\n\n      // Verifica no armazenamento local se o usuário já aceitou\n      if (!localStorage.getItem(\"nat_cookie_consent_v1\")) {\n        // Prepara o banner para aparecer\n        banner.classList.add(\"is-ready\");\n        \n        // Pequeno atraso para a animação de subida ficar fluida após o carregamento\n        setTimeout(function() {\n          banner.classList.add(\"show-banner\");\n        }, 800);\n      }\n\n      // Evento de clique no botão\n      btn.addEventListener(\"click\", function() {\n        // Grava o consentimento (o v1 ajuda caso você mude as políticas no futuro e precise que eles aceitem de novo)\n        localStorage.setItem(\"nat_cookie_consent_v1\", \"true\");\n        \n        // Desce o banner\n        banner.classList.remove(\"show-banner\");\n        \n        // Remove do HTML após a animação terminar\n        setTimeout(function() {\n          banner.classList.remove(\"is-ready\");\n        }, 600);\n      });\n    });\n  })();\n</script>"
+    }
+  ]
+}

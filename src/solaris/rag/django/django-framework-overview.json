@@ -1,0 +1,297 @@
+{
+  "id": "django-framework-overview",
+  "slug": "django-framework-overview",
+  "categoria": "python-web-frameworks",
+  "descricao": "Visão geral do Django como framework web full-stack para Python, destacando arquitetura, produtividade, segurança, escalabilidade e integração com aplicações modernas.",
+  "componentes": [
+    {
+      "nome": "framework",
+      "conteudo": {
+        "name": "django",
+        "language": "python",
+        "framework-type": "full-stack-web-framework",
+        "architecture-pattern": "model-view-template",
+        "license": "bsd-3-clause",
+        "primary-goal": "desenvolvimento rápido de aplicações web seguras e escaláveis"
+      }
+    },
+    {
+      "nome": "design-philosophy",
+      "conteudo": {
+        "principles": [
+          "dont-repeat-yourself",
+          "explicit-is-better-than-implicit",
+          "batteries-included",
+          "convention-over-configuration",
+          "security-by-default"
+        ]
+      }
+    },
+    {
+      "nome": "core-components",
+      "conteudo": {
+        "orm": {
+          "name": "django-orm",
+          "purpose": "mapeamento objeto-relacional",
+          "features": [
+            "database-abstraction",
+            "query-builder",
+            "model-relations",
+            "schema-migrations",
+            "transaction-support"
+          ]
+        },
+        "routing": {
+          "component": "url-dispatcher",
+          "purpose": "mapeamento entre URLs e views"
+        },
+        "template-engine": {
+          "component": "django-template-language",
+          "purpose": "renderização dinâmica de páginas HTML"
+        },
+        "admin-panel": {
+          "component": "django-admin",
+          "purpose": "painel administrativo automático",
+          "features": [
+            "crud-interface",
+            "authentication",
+            "search",
+            "filters",
+            "permissions"
+          ]
+        },
+        "authentication": {
+          "component": "auth-system",
+          "features": [
+            "user-management",
+            "groups",
+            "permissions",
+            "password-hashing",
+            "session-management"
+          ]
+        },
+        "migration-system": {
+          "component": "database-migrations",
+          "purpose": "controle de evolução do banco de dados"
+        }
+      }
+    },
+    {
+      "nome": "security",
+      "conteudo": {
+        "built-in-protections": [
+          "csrf-protection",
+          "xss-protection",
+          "sql-injection-protection",
+          "clickjacking-protection",
+          "secure-password-hashing",
+          "session-security"
+        ],
+        "best-practices": [
+          "least-privilege-database-access",
+          "environment-based-secrets",
+          "https-enforcement",
+          "input-validation"
+        ]
+      }
+    },
+    {
+      "nome": "database-support",
+      "conteudo": {
+        "official-support": [
+          "postgresql",
+          "mysql",
+          "sqlite",
+          "oracle"
+        ],
+        "third-party-backends": [
+          "microsoft-sql-server",
+          "cockroachdb",
+          "timescaledb"
+        ]
+      }
+    },
+    {
+      "nome": "async-capabilities",
+      "conteudo": {
+        "supported": true,
+        "features": [
+          "async-views",
+          "asgi-support",
+          "websocket-integration-via-channels",
+          "non-blocking-io"
+        ]
+      }
+    },
+    {
+      "nome": "api-development",
+      "conteudo": {
+        "recommended-tools": [
+          "django-rest-framework"
+        ],
+        "features": [
+          "rest-api",
+          "serialization",
+          "authentication",
+          "pagination",
+          "rate-limiting",
+          "api-documentation"
+        ]
+      }
+    },
+    {
+      "nome": "scalability",
+      "conteudo": {
+        "horizontal-scaling": true,
+        "deployment-models": [
+          "containers",
+          "kubernetes",
+          "cloud-run",
+          "virtual-machines",
+          "serverless-with-asgi"
+        ],
+        "cache-support": [
+          "redis",
+          "memcached",
+          "database-cache",
+          "filesystem-cache"
+        ]
+      }
+    },
+    {
+      "nome": "artificial-intelligence",
+      "conteudo": {
+        "common-use-cases": [
+          "llm-backends",
+          "rag-platforms",
+          "document-management",
+          "agent-dashboards",
+          "ai-admin-portals",
+          "workflow-orchestration"
+        ],
+        "integration-points": [
+          "python-ai-libraries",
+          "vector-databases",
+          "background-workers",
+          "message-queues"
+        ]
+      }
+    },
+    {
+      "nome": "development-workflow",
+      "conteudo": {
+        "typical-flow": [
+          "define-models",
+          "create-migrations",
+          "apply-migrations",
+          "implement-views",
+          "configure-routes",
+          "create-templates-or-api",
+          "run-tests",
+          "deploy"
+        ]
+      }
+    },
+    {
+      "nome": "testing",
+      "conteudo": {
+        "built-in-support": [
+          "unit-tests",
+          "integration-tests",
+          "test-client",
+          "database-isolation",
+          "fixtures"
+        ]
+      }
+    },
+    {
+      "nome": "strengths",
+      "conteudo": [
+        "rapid-development",
+        "complete-ecosystem",
+        "strong-security-defaults",
+        "excellent-admin-interface",
+        "mature-orm",
+        "large-community",
+        "long-term-stability"
+      ]
+    },
+    {
+      "nome": "trade-offs",
+      "conteudo": [
+        "larger-framework-footprint",
+        "more-opinionated-architecture",
+        "less-minimal-than-microframeworks",
+        "may-be-excessive-for-small-services"
+      ]
+    },
+    {
+      "nome": "recommended-use-cases",
+      "conteudo": [
+        "enterprise-web-applications",
+        "business-management-systems",
+        "content-management-platforms",
+        "saas-products",
+        "customer-portals",
+        "administrative-systems",
+        "rest-apis",
+        "ai-management-platforms"
+      ]
+    },
+    {
+      "nome": "comparison",
+      "conteudo": {
+        "django": {
+          "type": "full-stack-framework",
+          "best-for": "large-structured-applications"
+        },
+        "flask": {
+          "type": "microframework",
+          "best-for": "small-services-and-tool-servers"
+        },
+        "fastapi": {
+          "type": "modern-api-framework",
+          "best-for": "high-performance-apis-and-ai-services"
+        }
+      }
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "django-framework-overview",
+    "django",
+    "overview",
+    "python-web-frameworks",
+    "python",
+    "design-philosophy",
+    "philosophy",
+    "core-components",
+    "core",
+    "components",
+    "security",
+    "database-support",
+    "database",
+    "support",
+    "async-capabilities",
+    "async",
+    "capabilities",
+    "api-development",
+    "api",
+    "development",
+    "scalability",
+    "artificial-intelligence",
+    "artificial",
+    "intelligence",
+    "development-workflow",
+    "workflow",
+    "testing",
+    "strengths",
+    "trade-offs",
+    "trade",
+    "offs",
+    "recommended-use-cases",
+    "use",
+    "cases",
+    "comparison"
+  ]
+}

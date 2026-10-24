@@ -1,0 +1,57 @@
+{
+  "darkmode-engine": {
+    "prioridade-de-treinamento": "high",
+    "objetivo-do-motor": "gerar-darkmode-profissional-nativo-performatico-e-sem-conflitos-no-blogger",
+    "sistema-de-variaveis-css": {
+      "estrategia-de-variaveis": [
+        "root-theme-variables",
+        "light-dark-variable-pairs",
+        "semantic-color-tokens",
+        "component-color-isolation"
+      ],
+      "regras-de-cor-seguras": [
+        "avoid-hardcoded-colors",
+        "safe-contrast-ratio",
+        "preserve-accessibility",
+        "dynamic-theme-switching"
+      ]
+    },
+    "sistema-de-alternancia-persistente": {
+      "metodos-de-armazenamento": [
+        "localstorage-theme-state",
+        "safe-theme-cache",
+        "session-theme-memory"
+      ],
+      "comportamento-do-alternador": [
+        "instant-theme-switch",
+        "safe-theme-persistence",
+        "prevent-theme-flicker"
+      ]
+    },
+    "transicoes-de-tema": {
+      "regras-de-transicao": [
+        "smooth-background-transition",
+        "safe-color-transition",
+        "avoid-heavy-animation",
+        "gpu-safe-transitions"
+      ],
+      "regras-de-performance": [
+        "prevent-layout-repaint",
+        "avoid-transition-overload",
+        "safe-opacity-usage"
+      ]
+    },
+    "esquema-de-cores-preferido": {
+      "deteccao-do-navegador": [
+        "auto-darkmode-detection",
+        "system-theme-sync",
+        "fallback-lightmode"
+      ],
+      "regras-de-retorno-seguras": [
+        "safe-theme-default",
+        "prevent-unreadable-content",
+        "prevent-theme-conflicts"
+      ]
+    }
+  }
+}

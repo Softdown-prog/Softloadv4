@@ -1,0 +1,42 @@
+{
+  "id": "ia-balcao-score-arquitetural",
+  "titulo": "Softload Engine v3 - Sistema de Score Arquitetural (Algoritmo de Qualidade)",
+  "categoria": "validacao",
+  "descricao": "Calcula dinamicamente as notas de SEO, Performance, Mobile UX e Complexidade com base nas opções do JSON. Permite à IA alertar o utilizador sobre gargalos antes da compilação do XML.",
+  "classe": "ArchitecturalScore",
+  "scores": {
+    "seo": "0-10 (começa em 10, decrementa por penalizações)",
+    "performance": "0-10 (começa em 10, decrementa por penalizações)",
+    "mobile": "0-10 (começa em 10, decrementa por penalizações)",
+    "complexidade": "0-10 (começa em 0, incrementa por complexidade)"
+  },
+  "penalizacoes_performance": [
+    {"opcao": "heroSection: carousel", "penalidade": -2, "motivo": "O Carrossel atrasa o LCP. Exige carregamento de bibliotecas JS extra."},
+    {"opcao": "menuType: mega-menu", "penalidade": -1, "motivo": "Mega-Menu duplica as tags <li> ocultas, inchando o peso do DOM."},
+    {"opcao": "adSlots: true", "penalidade": -3, "motivo": "Scripts externos de AdSense bloqueiam a thread principal do navegador."},
+    {"opcao": "commentSystem: !blogger-native", "penalidade": -2, "motivo": "Comentários externos geram iframes pesados."},
+    {"opcao": "postModules: related-posts", "penalidade": -1, "motivo": "Artigos relacionados requerem requisições à API (fetch) após o carregamento."}
+  ],
+  "penalizacoes_seo": [
+    {"opcao": "coreFeatures sem seo-premium", "penalidade": -4, "motivo": "Sem Schema.org ou Tags Condicionais, o Google não indexa corretamente."},
+    {"opcao": "paginationStyle: infinite-scroll", "penalidade": -2, "motivo": "Os crawlers do Google não executam scrolls longos para achar links."},
+    {"opcao": "gridLayout: mural/quadrado", "penalidade": -1, "motivo": "Em grelhas de imagens grandes, a falta de título claro penaliza o snippet do Google."},
+    {"opcao": "adSlots: true", "penalidade": -1, "motivo": "CLS risk = SEO risk"}
+  ],
+  "penalizacoes_mobile": [
+    {"opcao": "menuType: simple + sidebarPosition: right", "penalidade": -2, "motivo": "Sem Offcanvas, os menus horizontais esmagam num ecrã pequeno."},
+    {"opcao": "heroSection: grid-mosaic", "penalidade": -1, "motivo": "Grelhas em mosaico viram blocos simples empilhados no telemóvel, perdendo a hierarquia."}
+  ],
+  "incrementos_complexidade": [
+    {"opcao": "menuType: mega-menu", "incremento": 3},
+    {"opcao": "heroSection: carousel", "incremento": 2},
+    {"opcao": "gridLayout: mural", "incremento": 1}
+  ],
+  "recomendacoes_automaticas": [
+    {"condicao": "performance < 6", "recomendacao": "Desative os Anúncios Temporários ou substitua o Carrossel pelo Destaque Estático."},
+    {"condicao": "seo < 8", "recomendacao": "Troque a Paginação Infinita por Botões Clássicos para garantir que os motores de busca rastreiam todos os seus artigos."},
+    {"condicao": "mobile < 8", "recomendacao": "O seu menu está demasiado denso para o telemóvel. Ative a Navegação Offcanvas."},
+    {"condicao": "default", "recomendacao": "Arquitetura Excelente. Este template está otimizado para os mais altos padrões do Core Web Vitals."}
+  ],
+  "codigo": "class ArchitecturalScore {\n    constructor(payload) {\n        this.payload = payload;\n        this.scores = { seo: 10, performance: 10, mobile: 10, complexidade: 0 };\n        this.feedback = [];\n    }\n\n    calculate() {\n        this._evalPerformance();\n        this._evalSEO();\n        this._evalMobile();\n        this._evalComplexity();\n        return {\n            scores: this._normalizeScores(),\n            recommendation: this._generateAutoRecommendation(),\n            feedback: this.feedback\n        };\n    }\n\n    _evalPerformance() {\n        const { heroSection, menuType, adSlots, commentSystem, postModules } = this.payload;\n        if (heroSection === 'carousel') { this.scores.performance -= 2; this.feedback.push('-2 Perf: O Carrossel atrasa o LCP.'); }\n        if (menuType === 'mega-menu') { this.scores.performance -= 1; this.feedback.push('-1 Perf: Mega-Menu duplica as tags <li> ocultas.'); }\n        if (adSlots) { this.scores.performance -= 3; this.feedback.push('-3 Perf: Scripts externos de AdSense bloqueiam a thread principal.'); }\n        if (commentSystem !== 'blogger-native') { this.scores.performance -= 2; this.feedback.push('-2 Perf: Comentários externos geram iframes pesados.'); }\n        if (postModules && postModules.includes('related-posts')) { this.scores.performance -= 1; this.feedback.push('-1 Perf: Artigos relacionados requerem requisições à API após carregamento.'); }\n    }\n\n    _evalSEO() {\n        const { paginationStyle, coreFeatures, gridLayout, adSlots } = this.payload;\n        if (!coreFeatures || !coreFeatures.includes('seo-premium')) { this.scores.seo -= 4; this.feedback.push('-4 SEO: Sem Schema.org, o Google não indexa corretamente.'); }\n        if (paginationStyle === 'infinite-scroll') { this.scores.seo -= 2; this.feedback.push('-2 SEO: Os crawlers do Google odeiam Infinite Scroll.'); }\n        if (gridLayout === 'mural' || gridLayout === 'quadrado') { this.scores.seo -= 1; }\n        if (adSlots) { this.scores.seo -= 1; }\n    }\n\n    _evalMobile() {\n        const { menuType, sidebarPosition, heroSection } = this.payload;\n        if (menuType === 'simple' && sidebarPosition === 'right') { this.scores.mobile -= 2; this.feedback.push('-2 Mobile: Sem Offcanvas, os menus horizontais esmagam num ecrã pequeno.'); }\n        if (heroSection === 'grid-mosaic') { this.scores.mobile -= 1; this.feedback.push('-1 Mobile: Grelhas em mosaico perdem a hierarquia no telemóvel.'); }\n    }\n\n    _evalComplexity() {\n        const { heroSection, menuType, gridLayout } = this.payload;\n        if (menuType === 'mega-menu') this.scores.complexidade += 3;\n        if (heroSection === 'carousel') this.scores.complexidade += 2;\n        if (gridLayout === 'mural') this.scores.complexidade += 1;\n        if (this.scores.complexidade >= 6) { this.feedback.push('[AVISO] Este template exige gestão avançada de Marcadores (Labels) no painel do Blogger.'); }\n    }\n\n    _normalizeScores() {\n        return {\n            seo: Math.max(0, Math.min(10, this.scores.seo)),\n            performance: Math.max(0, Math.min(10, this.scores.performance)),\n            mobile: Math.max(0, Math.min(10, this.scores.mobile)),\n            complexidade: Math.max(0, Math.min(10, this.scores.complexidade))\n        };\n    }\n\n    _generateAutoRecommendation() {\n        const s = this._normalizeScores();\n        if (s.performance < 6) return 'Recomendação Crítica de Performance: Desative os Anúncios ou substitua o Carrossel pelo Destaque Estático.';\n        if (s.seo < 8) return 'Alerta SEO: Troque a Paginação Infinita por Botões Clássicos.';\n        if (s.mobile < 8) return 'Ajuste Mobile: O seu menu está demasiado denso. Ative a Navegação Offcanvas.';\n        return 'Arquitetura Excelente. Este template está otimizado para os mais altos padrões do Core Web Vitals.';\n    }\n}\n\nmodule.exports = ArchitecturalScore;"
+}

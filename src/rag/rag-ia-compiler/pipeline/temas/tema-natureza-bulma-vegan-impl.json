@@ -1,0 +1,35 @@
+{
+  "css_componentes": {
+    "variaveis": ":root { --nat-primary: var(--sl-primary); --nat-bg: var(--sl-bg-body); --nat-text: var(--sl-text-main); --nat-footer-bg: var(--sl-footer-bg); }",
+    "blockquote": ".post-content blockquote { border-left: 5px solid var(--nat-primary, #8FBC8F); padding: 1rem 1.5rem; position: relative; margin: 1.5rem 0; background-color: rgba(143,188,143,0.06); border-radius: 0 0.5rem 0.5rem 0; } .post-content blockquote::before { content: '\\201C'; font-size: 6rem; font-family: Georgia, serif; color: var(--nat-primary, #8FBC8F); opacity: 0.15; position: absolute; top: -1rem; left: 0.5rem; line-height: 1; pointer-events: none; }",
+    "comment_block": ".nat-comment-block { position: relative; padding-left: 70px; border-left: 4px solid var(--nat-primary, #8FBC8F); margin-bottom: 1.5rem; padding-top: 0.5rem; } .nat-comment-block .nat-avatar { position: absolute; left: -55px; top: 0; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; }",
+    "label_cloud": {
+      "css": ".nat-label-cloud { display: flex; flex-wrap: wrap; gap: 0.5rem; } .nat-label-cloud .nat-label-item { padding: 0.35em 0.75em; border-radius: 50rem; background-color: #f0f0f0; color: var(--nat-text, #333); font-size: 0.85rem; text-decoration: none; transition: all 0.2s ease; } .nat-label-cloud .nat-label-item:hover { background-color: var(--nat-primary, #8FBC8F); color: var(--sl-text-main); }"
+    },
+    "label_lista_icone": {
+      "css": ".nat-label-lista li { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; } .nat-label-lista li a::before { font-family: 'Bootstrap Icons'; content: '\\F288'; margin-right: 0.5rem; color: var(--nat-primary, #8FBC8F); }"
+    },
+    "sidebar_widget_card": ".nat-sidebar-card { background-color: var(--sl-card-bg); box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1.5rem; }",
+    "scrollbar": {
+      "css": "::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: var(--nat-primary, #8FBC8F); border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #6aaa6a; }"
+    },
+    "animacao_404": {
+      "css": "@keyframes float404 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } } .nat-404-element { animation: float404 3s ease-in-out infinite; font-size: 5rem; color: var(--nat-primary, #8FBC8F); }"
+    },
+    "ad_placeholder_300x250": {
+      "css": ".nat-ad-wrapper { display: flex; align-items: center; justify-content: center; flex-direction: column; width: 100%; max-width: 300px; height: 250px; background-color: var(--nat-bg, #f8f9fa); border: 2px dashed #ced4da; border-radius: 0.5rem; color: #adb5bd; transition: all 0.3s ease; } .nat-ad-wrapper:hover { border-color: var(--nat-primary, #8FBC8F); color: var(--nat-primary, #8FBC8F); background-color: var(--sl-card-bg); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05); }"
+    },
+    "reading_time_badge": {
+      "css": ".reading-time-badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25em 0.6em; background-color: var(--nat-primary, #8FBC8F); color: var(--sl-text-main); border-radius: 50rem; font-size: 0.78rem; font-weight: 600; }"
+    }
+  },
+  "html_estruturas": {
+    "post_card_grid": "<article class=\"card h-100 shadow-sm border-0\">\n  <a href=\"[URL]\">\n    <img class=\"card-img-top\" alt=\"[TITULO]\" src=\"[IMG_600x337]\" style=\"object-fit: cover; height: 200px;\">\n  </a>\n  <div class=\"card-body d-flex flex-column\">\n    <h2 class=\"card-title h5 fw-bold\"><a class=\"text-dark text-decoration-none\" href=\"[URL]\">[TITULO]</a></h2>\n    <p class=\"card-text text-muted small mb-3\">[SNIPPET]</p>\n    <div class=\"mt-auto d-flex justify-content-between align-items-center\">\n      <span class=\"badge bg-success text-dark\">[AUTOR]</span>\n      <a class=\"btn btn-sm btn-outline-secondary rounded-pill\" href=\"[URL]\">Ler mais</a>\n    </div>\n  </div>\n</article>",
+    "post_full_com_slots": "<article class=\"blog-post bg-white p-4 rounded shadow-sm border-0\">\n  <h1 class=\"fw-bold mb-3\">[TITULO]</h1>\n  <div class=\"post-meta text-muted small mb-4 pb-3 border-bottom\">\n    <i class=\"bi bi-person-circle me-1\"></i> [AUTOR] | <i class=\"bi bi-calendar3 ms-2 me-1\"></i> [DATA]\n  </div>\n  <div class=\"post-content\">[CONTEUDO]</div>\n  <div class=\"related-posts mt-5 pt-4 border-top\" id=\"related-posts-container\">\n    <h4 class=\"fw-bold mb-4\">Você também pode gostar:</h4>\n    <div class=\"row g-4\" id=\"related-posts-grid\"></div>\n  </div>\n</article>",
+    "paginacao_pill": "<div class=\"d-flex justify-content-between mt-5\">\n  <a class=\"btn btn-outline-dark rounded-pill\" href=\"[URL_RECENTES]\"><i class=\"bi bi-arrow-left me-1\"></i> Recentes</a>\n  <a class=\"btn btn-outline-dark rounded-pill\" href=\"[URL_ANTIGAS]\">Antigas <i class=\"bi bi-arrow-right ms-1\"></i></a>\n</div>",
+    "footer_copyright": "<div class=\"text-center text-secondary small\"><p class=\"mb-0\">&copy; [ANO] [NOME_BLOG].</p></div>"
+  },
+  "javascript": {
+    "slot_mover": "try { var isPostPage = document.querySelector('.blog-post'); if (isPostPage) { var slotBefore = document.getElementById('slot-before-post'); var slotAfter = document.getElementById('slot-after-post'); var contentBefore = document.getElementById('before-post-content'); var contentAfter = document.getElementById('after-post-content'); if (slotBefore && contentBefore) slotBefore.appendChild(contentBefore); if (slotAfter && contentAfter) slotAfter.appendChild(contentAfter); } } catch(e) { console.error('slot-mover:', e); }"
+  }
+}

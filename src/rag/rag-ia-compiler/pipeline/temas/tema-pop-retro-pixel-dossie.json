@@ -1,0 +1,193 @@
+{
+  "nicho": "pop-retro-pixel",
+  "versaoDossie": 1,
+  "chassis": "blog",
+  "pageType": "blogger-conteudo",
+  "tokensCss": {
+    "light_mode": {
+      "--primary": "#FF4500",
+      "--secondary": "#00FF41",
+      "--bg-light": "#F4F4F4",
+      "--border-pixel": "4px solid #000000",
+      "--font-pixel": "'Press Start 2P', cursive"
+    }
+  },
+  "pecas": [
+    {
+      "id": "modulo-softload-engine-v6-100-draft-editable",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body { background-color: var(--bg-light); color: #000; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }\n\n.retro-font { font-family: var(--font-pixel); font-size: 0.75rem; line-height: 1.5; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: * SOFTLOAD ENGINE V6 - 100% DRAFT EDITABLE"
+    },
+    {
+      "id": "modulo-sistema-de-animacao-reveal",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".reveal { opacity: 0; transform: translateY(30px); transition: 0.6s steps(5); }\n\n.reveal.active { opacity: 1; transform: translateY(0); }",
+      "html": "",
+      "js": "const typeWriter = (el) => {\n  const text = el.innerHTML;\n  el.innerHTML = '';\n  let i = 0;\n  const interval = setInterval(() => {\n    if (i < text.length) { el.innerHTML += text.charAt(i); i++; }\n    else clearInterval(interval);\n  }, 30);\n};\n\nconst revealObserver = new IntersectionObserver((entries) => {\n  entries.forEach((entry) => {\n    if (entry.isIntersecting) {\n      entry.target.classList.add('active');\n      const tw = entry.target.querySelector('[data-typewriter]');\n      if (tw && !tw.classList.contains('typed')) {\n        typeWriter(tw);\n        tw.classList.add('typed');\n      }\n    }\n  });\n}, { threshold: 0.1 });\n\ndocument.querySelectorAll('.reveal, article').forEach((el) => {\n  el.classList.add('reveal');\n  revealObserver.observe(el);\n});",
+      "descricao": "Estilo + JS: --- SISTEMA DE ANIMAÇÃO REVEAL --- (CSS .reveal/.reveal.active vinha do <Group> extraído; JS do observer/typewriter recuperado do <script> solto no corpo da página do arquivo original — fora de qualquer <b:section>, por isso o extrator automático não pegou como peça candidata. Sem esse JS, .reveal fica opacity:0 pra sempre — o hero usa class=\"pixel-hero reveal\" e ficaria invisível)."
+    },
+    {
+      "id": "modulo-header-logo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header { border-bottom: var(--border-pixel); background: #fff; }\n\n.logo-switcher {\n      width: 150px; height: 150px; margin: 0 auto;\n      background-size: contain; background-repeat: no-repeat; background-position: center;\n      image-rendering: pixelated; cursor: pointer; transition: transform 0.1s steps(2);\n    }\n\n.logo-switcher:hover { transform: scale(1.05); }\n\n.cta-blink { animation: blink 1s steps(2) infinite; color: #777; }\n\n@keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: --- HEADER & LOGO ---"
+    },
+    {
+      "id": "modulo-landing-cards-rpg-ui",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".pixel-card {\n      background: #fff; border: var(--border-pixel);\n      box-shadow: 6px 6px 0px #000; padding: 25px; height: 100%;\n      transition: 0.1s steps(2);\n    }\n\n.pixel-card:hover { transform: translate(-4px, -4px); box-shadow: 10px 10px 0px var(--primary); }\n\n.btn-pixel {\n      background: var(--primary); color: #fff !important;\n      border: var(--border-pixel); box-shadow: 4px 4px 0px #000;\n      padding: 10px 20px; text-decoration: none; display: inline-block;\n      font-family: var(--font-pixel); font-size: 0.6rem;\n    }\n\n.btn-pixel:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px #000; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: --- LANDING CARDS & RPG UI ---"
+    },
+    {
+      "id": "modulo-npc-testimonials",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".npc-dialogue { display: flex; gap: 20px; margin-bottom: 30px; }\n\n.npc-sprite { width: 70px; height: 70px; border: var(--border-pixel); background: #fff; flex-shrink: 0; }\n\n.speech-bubble { \n      background: #fff; border: var(--border-pixel); padding: 15px; \n      position: relative; box-shadow: 4px 4px 0px #000; width: 100%;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: --- NPC TESTIMONIALS ---"
+    },
+    {
+      "id": "modulo-main-post-crt-effect",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".crt-container { position: relative; border: var(--border-pixel); overflow: hidden; background: #000; }\n\n.scanlines {\n      position: absolute; top: 0; left: 0; width: 100%; height: 100%;\n      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);\n      background-size: 100% 4px; z-index: 2; pointer-events: none;\n    }\n\n.glitch-title { cursor: pointer; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: --- MAIN POST CRT EFFECT ---"
+    },
+    {
+      "id": "modulo-cleanup-nativo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header h1, header h2, .widget h2.title, #navbar-iframe, .quickedit { display: none !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: --- CLEANUP NATIVO ---"
+    },
+    {
+      "id": "modulo-1-correcao-ocultar-o-titulo-apenas-no-header-mas-mostrar-no-",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header h1, header h2, header .widget h2.title { display: none !important; }\n\n.sidebar .widget h2.title, main .widget h2.title { display: block !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 1. Correção: Ocultar o título APENAS no header, mas mostrar no resto do blog"
+    },
+    {
+      "id": "modulo-2-o-cartucho-automatico-bordas-e-fundo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".sidebar .widget, .footer .widget {\n      background: #fff;\n      border: var(--border-pixel);\n      box-shadow: 6px 6px 0px #000;\n      padding: 20px;\n      margin-bottom: 30px;\n      overflow: hidden; /* Evita que imagens grandes quebrem a caixa */\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 2. O \"Cartucho\" Automático (Bordas e Fundo)"
+    },
+    {
+      "id": "modulo-3-titulo-do-gadget-estilo-status-screen",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".widget h2.title {\n      font-family: var(--font-pixel);\n      font-size: 0.7rem;\n      color: #000;\n      border-bottom: 4px double #000;\n      padding-bottom: 10px;\n      margin-bottom: 15px;\n      text-transform: uppercase;\n      line-height: 1.4;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 3. Título do Gadget (Estilo Status Screen)"
+    },
+    {
+      "id": "modulo-4-estilizacao-de-menus-listas-nativas-marcadores-arquivos",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".widget-content ul {\n      list-style: none;\n      padding-left: 0;\n      margin: 0;\n    }\n\n.widget-content ul li {\n      padding: 10px 0;\n      border-bottom: 1px dashed #ccc;\n      font-family: 'Segoe UI', sans-serif;\n      font-size: 0.85rem;\n      display: flex;\n      align-items: center;\n    }\n\n.widget-content ul li:last-child {\n      border-bottom: none;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 4. Estilização de Menus/Listas Nativas (Marcadores, Arquivos)"
+    },
+    {
+      "id": "modulo-o-cursor-classico-do-rpg-antes-de-cada-item-do-menu",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".widget-content ul li::before {\n      content: \">\";\n      font-family: var(--font-pixel);\n      color: var(--primary);\n      margin-right: 10px;\n      font-size: 0.6rem;\n      animation: blink 1.5s steps(2) infinite; /* Pisca sutilmente */\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: O cursor clássico do RPG antes de cada item do menu"
+    },
+    {
+      "id": "modulo-5-links-nativos-e-imagens-dentro-dos-gadgets",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".widget-content a {\n      color: #333;\n      text-decoration: none;\n      transition: color 0.2s, padding-left 0.2s;\n    }\n\n.widget-content a:hover {\n      color: var(--primary);\n      padding-left: 5px; /* Efeito de seleção de menu */\n    }\n\n.widget-content img {\n      max-width: 100%;\n      height: auto;\n      border: 2px solid #000;\n      image-rendering: pixelated;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 5. Links Nativos e Imagens dentro dos Gadgets"
+    },
+    {
+      "id": "modulo-componente-video-responsivo-16-9-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-video-wrapper {\n    position: relative;\n    width: 100%;\n    padding-bottom: 56.25%; /* Matemática exata para a proporção 16:9 */\n    height: 0;\n    border-radius: var(--radius, 12px); /* Arredondamento premium */\n    overflow: hidden;\n    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Sombra elegante */\n    margin: 2rem 0; /* Espaçamento para respirar no texto */\n    background-color: #000; /* Fundo preto enquanto o vídeo carrega */\n}\n\n.mag-video-wrapper iframe {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    border: none;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  COMPONENTE: VÍDEO RESPONSIVO (16:9 PREMIUM)\n-----------------------------------------------------------"
+    },
+    {
+      "id": "pixel-hero-banner",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "pixel-hero-banner"
+      ],
+      "html": "<div class=\"pixel-hero reveal\" id=\"pixel-hero-banner\">\n  <span class=\"pixel-hero-label\">PLAYER 1 START</span>\n  <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n  <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n  <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n</div>",
+      "css": ".pixel-hero {\n  background-color: #ffffff;\n  border: var(--border-pixel);\n  box-shadow: 8px 8px 0px #000;\n  padding: 3rem 2rem;\n  margin-bottom: 2rem;\n  text-align: center;\n}\n.pixel-hero-label {\n  display: inline-block;\n  font-family: var(--font-pixel);\n  font-size: 0.6rem;\n  color: var(--secondary);\n  background: #000;\n  padding: 6px 14px;\n  margin-bottom: 1.5rem;\n}\n.pixel-hero h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1.1rem, 3vw, 1.8rem);\n  line-height: 1.6;\n  color: #111;\n  margin-bottom: 1.25rem;\n}\n.pixel-hero-sub {\n  font-size: 1rem;\n  color: #333;\n  max-width: 480px;\n  margin: 0 auto 1.75rem;\n}",
+      "js": "",
+      "descricao": "Hero pixel-art com moldura grossa e sombra deslocada, reaproveita .reveal + efeito typewriter (data-typewriter) já existentes na peça typewriter-reveal-combinado, e .btn-pixel já definido em pixel-utilities. 5 variações estruturais autorais (htmlVariantes/cssVariantes) escolhidas por seed determinístico — cartão branco original/invertido neon/CRT com cantos em colchete/cartucho tracejado/split lateral bicolor. Sempre \"pixel-hero reveal\" consecutivo (regressão do nicho grepa essa substring literal), data-typewriter=\"true\" no h1, .btn-pixel na CTA. Corrigido de brinde: seletor .pixel-hero h2 nunca batia com o <h1> real.",
+      "htmlVariantes": [
+        "<div class=\"pixel-hero reveal\" id=\"pixel-hero-banner\">\n  <span class=\"pixel-hero-label\">PLAYER 1 START</span>\n  <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n  <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n  <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n</div>",
+        "<div class=\"pixel-hero reveal pixel-hero--inverted\" id=\"pixel-hero-banner\">\n  <span class=\"pixel-hero-label\">PLAYER 1 START</span>\n  <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n  <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n  <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n</div>",
+        "<div class=\"pixel-hero reveal pixel-hero--crt\" id=\"pixel-hero-banner\">\n  <span class=\"pixel-hero-label pixel-hero-label--corner\">PLAYER 1 START</span>\n  <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n  <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n  <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n</div>",
+        "<div class=\"pixel-hero reveal pixel-hero--cartridge\" id=\"pixel-hero-banner\">\n  <span class=\"pixel-hero-label\">★ PLAYER 1 START</span>\n  <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n  <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n  <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n</div>",
+        "<div class=\"pixel-hero reveal pixel-hero--split\" id=\"pixel-hero-banner\">\n  <div class=\"pixel-hero-split-band\"></div>\n  <div class=\"pixel-hero-split-body\">\n    <span class=\"pixel-hero-label\">PLAYER 1 START</span>\n    <h1 data-typewriter=\"true\">Bem-vindo à zona retro</h1>\n    <p class=\"pixel-hero-sub\">Games, cultura pixel e nostalgia 8-bit em cada post.</p>\n    <a class=\"btn-pixel\" href=\"#main\">JOGAR AGORA</a>\n  </div>\n</div>"
+      ],
+      "cssVariantes": [
+        ".pixel-hero {\n  background-color: #ffffff;\n  border: var(--border-pixel);\n  box-shadow: 8px 8px 0px #000;\n  padding: 3rem 2rem;\n  margin-bottom: 2rem;\n  text-align: center;\n}\n.pixel-hero-label {\n  display: inline-block;\n  font-family: var(--font-pixel);\n  font-size: 0.6rem;\n  color: var(--secondary);\n  background: #000;\n  padding: 6px 14px;\n  margin-bottom: 1.5rem;\n}\n.pixel-hero h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1.1rem, 3vw, 1.8rem);\n  line-height: 1.6;\n  color: #111;\n  margin-bottom: 1.25rem;\n}\n.pixel-hero-sub {\n  font-size: 1rem;\n  color: #333;\n  max-width: 480px;\n  margin: 0 auto 1.75rem;\n}",
+        ".pixel-hero--inverted {\n  background-color: #0a0a0a;\n  border: var(--border-pixel);\n  border-color: var(--secondary);\n  box-shadow: 8px 8px 0px var(--primary);\n  padding: 3rem 2rem;\n  margin-bottom: 2rem;\n  text-align: center;\n}\n.pixel-hero--inverted .pixel-hero-label {\n  display: inline-block;\n  font-family: var(--font-pixel);\n  font-size: 0.6rem;\n  color: #000;\n  background: var(--secondary);\n  padding: 6px 14px;\n  margin-bottom: 1.5rem;\n}\n.pixel-hero--inverted h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1.1rem, 3vw, 1.8rem);\n  line-height: 1.6;\n  color: var(--secondary);\n  text-shadow: 0 0 8px var(--secondary);\n  margin-bottom: 1.25rem;\n}\n.pixel-hero--inverted .pixel-hero-sub { font-size: 1rem; color: #ccc; max-width: 480px; margin: 0 auto 1.75rem; }",
+        ".pixel-hero--crt {\n  position: relative;\n  background-color: #ffffff;\n  border: none;\n  box-shadow: none;\n  padding: 3rem 2rem;\n  margin-bottom: 2rem;\n  text-align: center;\n}\n.pixel-hero--crt::before,\n.pixel-hero--crt::after {\n  content: '';\n  position: absolute;\n  width: 24px; height: 24px;\n  border: 4px solid #000;\n}\n.pixel-hero--crt::before { top: 0; left: 0; border-right: none; border-bottom: none; }\n.pixel-hero--crt::after { bottom: 0; right: 0; border-left: none; border-top: none; }\n.pixel-hero-label--corner {\n  position: absolute;\n  top: 14px;\n  left: 14px;\n  font-family: var(--font-pixel);\n  font-size: 0.55rem;\n  color: var(--secondary);\n  background: #000;\n  padding: 5px 10px;\n}\n.pixel-hero--crt h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1.1rem, 3vw, 1.8rem);\n  line-height: 1.6;\n  color: #111;\n  margin: 2rem 0 1.25rem;\n}\n.pixel-hero--crt .pixel-hero-sub { font-size: 1rem; color: #333; max-width: 480px; margin: 0 auto 1.75rem; }",
+        ".pixel-hero--cartridge {\n  background-color: var(--bg-light);\n  border: 4px dashed #000;\n  box-shadow: none;\n  padding: 3rem 2rem;\n  margin-bottom: 2rem;\n  text-align: center;\n}\n.pixel-hero--cartridge .pixel-hero-label {\n  display: inline-block;\n  font-family: var(--font-pixel);\n  font-size: 0.6rem;\n  color: #000;\n  background: #fff;\n  border: 2px solid #000;\n  padding: 6px 14px;\n  margin-bottom: 1.5rem;\n}\n.pixel-hero--cartridge h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1.1rem, 3vw, 1.8rem);\n  line-height: 1.6;\n  color: var(--primary);\n  margin-bottom: 1.25rem;\n}\n.pixel-hero--cartridge .pixel-hero-sub { font-size: 1rem; color: #333; max-width: 480px; margin: 0 auto 1.75rem; }",
+        ".pixel-hero--split {\n  display: flex;\n  background-color: #ffffff;\n  border: var(--border-pixel);\n  box-shadow: 8px 8px 0px #000;\n  margin-bottom: 2rem;\n  padding: 0;\n  overflow: hidden;\n  text-align: left;\n}\n.pixel-hero-split-band { width: 16px; background: var(--primary); flex-shrink: 0; }\n.pixel-hero-split-body { padding: 2.5rem 2rem; }\n.pixel-hero--split .pixel-hero-label {\n  display: inline-block;\n  font-family: var(--font-pixel);\n  font-size: 0.6rem;\n  color: var(--secondary);\n  background: #000;\n  padding: 6px 14px;\n  margin-bottom: 1.5rem;\n}\n.pixel-hero--split h1 {\n  font-family: var(--font-pixel);\n  font-size: clamp(1rem, 2.8vw, 1.6rem);\n  line-height: 1.6;\n  color: #111;\n  margin-bottom: 1.25rem;\n}\n.pixel-hero--split .pixel-hero-sub { font-size: 1rem; color: #333; max-width: 480px; margin: 0 0 1.75rem; }"
+      ]
+    },
+    {
+      "id": "widget-cookie-banner",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "retro-cookie-banner"
+      ],
+      "descricao": "Banner de cookies real (localStorage 'softload_cookie_accepted'), extraído de exemplos/pop-retro-pixel.xml — nunca capturado antes como peça de dossiê (cookieBanner não estava ligado em nichoModuleDefaults.js, site não tinha banner nenhum). position:fixed — renderizado só via [[NICHO_WIDGETS_HTML]], nunca embutido à mão (duplicaria).",
+      "html": "<style>\n  .cookie-banner-pixel {\n    position: fixed;\n    bottom: -150px; /* Escondido inicialmente para a animação */\n    left: 0;\n    width: 100%;\n    background: #ffffff;\n    border-top: 4px solid #000000;\n    box-shadow: 0px -6px 0px rgba(0,0,0,0.1);\n    padding: 20px 0;\n    z-index: 9999;\n    transition: bottom 0.4s steps(4); /* Animação em quadros (8-bit) */\n  }\n\n  /* Classe que o JS adiciona para fazer a barra subir */\n  .cookie-banner-pixel.show-banner {\n    bottom: 0;\n  }\n\n  .cookie-icon {\n    font-size: 1.5rem;\n    animation: pulseCookie 1s steps(2) infinite;\n  }\n\n  @keyframes pulseCookie {\n    0% { transform: scale(1); }\n    50% { transform: scale(1.1); }\n    100% { transform: scale(1); }\n  }\n</style>\n\n<div id=\"retro-cookie-banner\" class=\"cookie-banner-pixel\" style=\"display: none;\">\n  <div class=\"container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3\">\n    \n    <div class=\"d-flex align-items-center gap-3\">\n      <div class=\"cookie-icon\">🍪</div>\n      <div class=\"retro-font small\" style=\"line-height: 1.6;\">\n        <span style=\"color: var(--primary);\">[SYSTEM_ALERT]:</span> \n        Nós usamos cookies de dados para salvar o seu XP e melhorar a sua navegação na nossa guilda. \n      </div>\n    </div>\n    \n    <button id=\"accept-cookies-btn\" class=\"btn-pixel flex-shrink-0\">ACCEPT_ALL</button>\n    \n  </div>\n</div>\n\n<script>\n  (function() {\n    const cookieBanner = document.getElementById('retro-cookie-banner');\n    const acceptBtn = document.getElementById('accept-cookies-btn');\n    const storageKey = 'softload_cookie_accepted'; // Nome da chave no navegador\n\n    const initCookieSystem = () => {\n      // Verifica se o usuário já aceitou os cookies no passado\n      if (!localStorage.getItem(storageKey)) {\n        // Se não aceitou, mostra a barra após 1.5 segundos\n        setTimeout(() => {\n          cookieBanner.style.display = 'block';\n          // Pequeno delay para a animação CSS de 'subida' funcionar\n          setTimeout(() => {\n            cookieBanner.classList.add('show-banner');\n          }, 50);\n        }, 1500);\n      }\n\n      // Lógica do botão de aceitar\n      acceptBtn.addEventListener('click', () => {\n        // Salva a permissão no Local Storage do navegador\n        localStorage.setItem(storageKey, 'true');\n        \n        // Faz a barra descer\n        cookieBanner.classList.remove('show-banner');\n        \n        // Remove do HTML após a animação terminar (para liberar memória)\n        setTimeout(() => {\n          cookieBanner.style.display = 'none';\n        }, 500);\n\n        console.log('SYSTEM: Cookies accepted. State saved in localStorage.');\n      });\n    };\n\n    if (document.readyState === \"loading\") {\n      document.addEventListener(\"DOMContentLoaded\", initCookieSystem);\n    } else {\n      initCookieSystem();\n    }\n  })();\n</script>"
+    }
+  ]
+}

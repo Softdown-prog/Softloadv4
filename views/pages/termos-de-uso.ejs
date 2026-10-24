@@ -1,0 +1,330 @@
+<%- include('../partials/header') %>
+
+<main class="sl-pt-nav py-5" style="min-height:100vh;background:var(--sl-bg-900)">
+    <div class="container">
+        <div class="mx-auto" style="max-width:760px">
+
+            <%# ── Cabeçalho ───────────────────────────────────────────────── %>
+            <p class="text-uppercase fw-bolder mb-2" style="font-size:11px;letter-spacing:0.18em;color:var(--sl-primary)">
+                Documento Legal
+            </p>
+            <h1 class="fw-bold text-white mb-1" style="letter-spacing:-0.02em">Termos de Uso</h1>
+            <p class="mb-4" style="color:var(--sl-text-500);font-size:0.85rem">
+                Última atualização: Maio de 2026
+            </p>
+            <p style="color:var(--sl-text-400);font-size:0.95rem;line-height:1.85">
+                Bem-vindo à <strong class="text-white">Softload</strong>. Ao acessar ou utilizar a plataforma,
+                você concorda integralmente com os presentes Termos de Uso. Caso não concorde com qualquer cláusula,
+                recomendamos não utilizar os serviços.
+            </p>
+
+            <%# ── Índice ─────────────────────────────────────────────────── %>
+            <div class="sl-card mt-4 mb-2" style="background:var(--sl-bg-800)">
+                <p class="text-uppercase fw-bolder mb-3" style="font-size:10px;letter-spacing:0.18em;color:var(--sl-primary)">Índice</p>
+                <ol class="mb-0" style="color:var(--sl-text-400);font-size:0.88rem;line-height:2;padding-left:1.2rem">
+                    <li><a href="#sobre" style="color:var(--sl-text-400);text-decoration:none">Sobre a Plataforma</a></li>
+                    <li><a href="#conta" style="color:var(--sl-text-400);text-decoration:none">Conta do Usuário</a></li>
+                    <li><a href="#creditos" style="color:var(--sl-text-400);text-decoration:none">Créditos e Consumo de IA</a></li>
+                    <li><a href="#planos" style="color:var(--sl-text-400);text-decoration:none">Planos e Assinaturas</a></li>
+                    <li><a href="#responsabilidade" style="color:var(--sl-text-400);text-decoration:none">Limitações de Responsabilidade</a></li>
+                    <li><a href="#ia" style="color:var(--sl-text-400);text-decoration:none">Conteúdo Gerado por Inteligência Artificial</a></li>
+                    <li><a href="#workspace" style="color:var(--sl-text-400);text-decoration:none">Workspace e Memória Contextual</a></li>
+                    <li><a href="#proibido" style="color:var(--sl-text-400);text-decoration:none">Uso Proibido</a></li>
+                    <li><a href="#disponibilidade" style="color:var(--sl-text-400);text-decoration:none">Disponibilidade dos Serviços</a></li>
+                    <li><a href="#terceiros" style="color:var(--sl-text-400);text-decoration:none">Serviços de Terceiros</a></li>
+                    <li><a href="#propriedade" style="color:var(--sl-text-400);text-decoration:none">Propriedade Intelectual</a></li>
+                    <li><a href="#alteracoes" style="color:var(--sl-text-400);text-decoration:none">Alterações nos Termos</a></li>
+                    <li><a href="#contato" style="color:var(--sl-text-400);text-decoration:none">Contato</a></li>
+                </ol>
+            </div>
+
+            <%# ── 1. Sobre a Plataforma ───────────────────────────────────── %>
+            <div class="sl-card mt-3" id="sobre">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    1. Sobre a Plataforma
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A Softload é uma plataforma SaaS especializada em criação, assistência e gerenciamento
+                    de projetos para <strong class="text-white">Blogger/Blogspot</strong>. Seu núcleo é um
+                    compilador inteligente que gera templates XML prontos para importação direta no painel do Blogger,
+                    configurados com presets de cores, tipografia, grid e módulos escolhidos pelo usuário.
+                </p>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.75rem">
+                    Além do compilador, a plataforma oferece:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li><strong class="text-white">Chat IA Especialista Blogger</strong> — suporte técnico por inteligência artificial com base de conhecimento RAG específica para Blogger/Blogspot (SEO, XML, CSS, snippets, AdSense).</li>
+                    <li><strong class="text-white">Compiler de Templates</strong> — geração automatizada de templates XML completos com layout responsivo, dark mode, tipografia via Google Fonts e integração com JSON Feed do Blogger.</li>
+                    <li><strong class="text-white">Workspace</strong> — ambiente de projetos e sessões para usuários do plano Studio, com vínculo direto entre template compilado e chat IA (memória contextual persistente).</li>
+                    <li><strong class="text-white">Histórico e Cloud Storage</strong> — compilações salvas em cloud com opção de download do arquivo ZIP contendo o XML final.</li>
+                    <li><strong class="text-white">Gerenciamento de créditos</strong> — sistema de tokens para controle de consumo dos modelos de IA.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Os serviços podem ser alterados, atualizados ou removidos a qualquer momento para fins de melhoria, estabilidade ou segurança.
+                </p>
+            </div>
+
+            <%# ── 2. Conta do Usuário ─────────────────────────────────────── %>
+            <div class="sl-card mt-3" id="conta">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    2. Conta do Usuário
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    O acesso às funcionalidades da plataforma requer criação de conta com e-mail e senha,
+                    autenticados via <strong class="text-white">Firebase Authentication</strong>.
+                    O usuário é integralmente responsável por:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Manter a confidencialidade de suas credenciais de acesso.</li>
+                    <li>Toda atividade realizada sob sua conta, incluindo uso de IA, compilações e gerenciamento do workspace.</li>
+                    <li>Manter as informações cadastrais atualizadas.</li>
+                    <li>Reportar imediatamente qualquer acesso não autorizado suspeito.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    A Softload não se responsabiliza por acessos indevidos decorrentes de negligência do próprio usuário.
+                    Contas podem ser encerradas pelo usuário a qualquer momento em Configurações.
+                </p>
+            </div>
+
+            <%# ── 3. Créditos e Consumo de IA ────────────────────────────── %>
+            <div class="sl-card mt-3" id="creditos">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    3. Créditos e Consumo de IA
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A plataforma utiliza um sistema de créditos para controlar o consumo dos modelos de inteligência
+                    artificial disponíveis: <strong class="text-white">Gemini Flash</strong> (padrão). Outros modelos podem ser adicionados futuramente.
+                    Cada mensagem enviada ao chat ou operação de IA consome créditos proporcionalmente ao número
+                    de tokens processados (entrada + saída).
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li><strong class="text-white">Plano Free:</strong> 5 créditos gratuitos para experimentação, com validade limitada. Após esgotamento, é necessário assinar um plano pago.</li>
+                    <li><strong class="text-white">Planos pagos (Starter, Pro e Studio):</strong> o acesso às IAs é controlado pela vigência da assinatura, não por saldo de créditos. Créditos funcionam como contadores de uso analítico.</li>
+                    <li>Créditos não representam moeda, saldo bancário ou ativo financeiro.</li>
+                    <li>Créditos promocionais ou bônus podem expirar sem aviso prévio.</li>
+                    <li>O consumo é debitado independentemente da qualidade percebida da resposta, pois reflete o custo real de processamento junto às APIs externas.</li>
+                </ul>
+            </div>
+
+            <%# ── 4. Planos e Assinaturas ────────────────────────────────── %>
+            <div class="sl-card mt-3" id="planos">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    4. Planos e Assinaturas
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A Softload oferece os seguintes planos:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li><strong class="text-white">Free:</strong> acesso ao dashboard com 5 créditos de IA para experimentação. Compilador e funcionalidades avançadas não disponíveis.</li>
+                    <li><strong class="text-white">Starter:</strong> Chat IA Especialista completo (suporte técnico Blogger, SEO, snippets), histórico de conversas e 100 MB de armazenamento. Não inclui o Workspace nem o compilador de templates.</li>
+                    <li><strong class="text-white">Pro:</strong> os mesmos benefícios do Starter, com um volume maior de créditos Gemini por ciclo. Também não inclui o Workspace nem o compilador de templates.</li>
+                    <li><strong class="text-white">Studio:</strong> todos os benefícios do Pro acrescidos do <strong class="text-white">Workspace</strong> — único plano com acesso ao compilador de templates (geração, compilação, download e histórico de versões), além de 500 MB de armazenamento.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    O plano <strong class="text-white">Premium</strong> não está mais disponível para novas assinaturas — é mantido apenas para usuários já assinantes dessa configuração legada, com benefícios equivalentes ao Starter/Pro. Assim como Starter e Pro, o plano Premium não inclui o Workspace nem o compilador de templates, exclusivos do Studio.
+                </p>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Os pagamentos são processados pelo <strong class="text-white">Mercado Pago</strong>.
+                    Valores, limites e benefícios de cada plano podem ser alterados sem obrigação de manutenção das
+                    condições anteriores. O cancelamento interrompe futuras cobranças, mas não gera reembolso automático
+                    de períodos já utilizados. Em casos de abuso, fraude ou violação destes termos, a plataforma
+                    poderá suspender ou encerrar contas sem aviso prévio.
+                </p>
+            </div>
+
+            <%# ── 5. Limitações de Responsabilidade ──────────────────────── %>
+            <div class="sl-card mt-3" id="responsabilidade">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    5. Limitações de Responsabilidade
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A Softload é uma ferramenta de auxílio tecnológico. Não garantimos:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Aprovação de templates no painel do Blogger ou compatibilidade com futuras mudanças na plataforma do Google.</li>
+                    <li>Aprovação ou manutenção de conta no Google AdSense.</li>
+                    <li>Posicionamento em mecanismos de busca ou resultados de SEO.</li>
+                    <li>Ausência total de erros no XML gerado, especialmente após modificações realizadas pelo próprio usuário fora da plataforma.</li>
+                    <li>Resultados financeiros decorrentes do uso dos templates ou conteúdos gerados.</li>
+                    <li>Funcionamento contínuo e sem interrupções, dado que a plataforma depende de APIs externas (Google Gemini, Firebase, Google Cloud Storage).</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    <strong class="text-white">O usuário é integralmente responsável por validar o template gerado
+                    no editor de XML do Blogger antes de publicá-lo em produção.</strong>
+                </p>
+            </div>
+
+            <%# ── 6. Conteúdo Gerado por IA ──────────────────────────────── %>
+            <div class="sl-card mt-3" id="ia">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    6. Conteúdo Gerado por Inteligência Artificial
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    As respostas geradas pelo Chat IA possuem caráter assistivo e automatizado. A plataforma utiliza
+                    um sistema de recuperação de conhecimento (<strong class="text-white">RAG — Retrieval-Augmented Generation</strong>)
+                    com base de dados técnica especializada em Blogger, SEO, XML e Adsense. Ainda assim, os conteúdos
+                    gerados podem conter:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Inconsistências técnicas ou interpretações incorretas de cenários específicos.</li>
+                    <li>Código XML com tags, atributos ou estruturas que precisem de ajuste manual.</li>
+                    <li>Respostas desatualizadas em relação a mudanças recentes no Blogger ou APIs do Google.</li>
+                    <li>Resultados que podem variar conforme a versão do modelo Gemini em operação.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Recomenda-se sempre revisão humana antes de publicar ou utilizar o conteúdo gerado em ambiente de produção.
+                </p>
+            </div>
+
+            <%# ── 7. Workspace e Memória Contextual ──────────────────────── %>
+            <div class="sl-card mt-3" id="workspace">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    7. Workspace e Memória Contextual
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    O <strong class="text-white">Workspace</strong> é uma funcionalidade exclusiva do plano Studio que
+                    permite organizar projetos e sessões de trabalho, vinculando templates compilados diretamente ao
+                    Chat IA Especialista. Ao abrir uma sessão no chat a partir do Workspace, o sistema injeta
+                    automaticamente o contexto do template (nome do site, preset de cores, variáveis CSS, tipografia
+                    e grid layout) no prompt do assistente — permitindo suporte técnico personalizado sem necessidade
+                    de repassar essas informações manualmente.
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Os dados de projetos, sessões e snapshots de template são armazenados no <strong class="text-white">Firebase Firestore</strong> vinculados ao e-mail do usuário.</li>
+                    <li>A memória contextual é carregada por sessão de chat; conversas iniciadas fora do Workspace não possuem esse contexto.</li>
+                    <li>O usuário pode excluir projetos e sessões a qualquer momento, o que remove os dados correspondentes do Firestore.</li>
+                    <li>Arquivos de template (XML) armazenados no Cloud Storage são mantidos até exclusão manual ou cancelamento do plano.</li>
+                </ul>
+            </div>
+
+            <%# ── 8. Uso Proibido ─────────────────────────────────────────── %>
+            <div class="sl-card mt-3" id="proibido">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    8. Uso Proibido
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    É expressamente proibido utilizar a Softload para:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Atividades ilegais, phishing, spam ou engenharia social.</li>
+                    <li>Distribuição de malware ou conteúdo que viole direitos autorais de terceiros.</li>
+                    <li>Automações abusivas que sobrecarreguem indevidamente a infraestrutura da plataforma ou das APIs externas.</li>
+                    <li>Tentativas de engenharia reversa, clonagem, scraping ou extração não autorizada do sistema, templates ou base de conhecimento RAG.</li>
+                    <li>Compartilhamento, revenda ou transferência de credenciais de acesso a terceiros.</li>
+                    <li>Exploração de vulnerabilidades ou tentativas de invasão à plataforma.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Contas que violem estas regras poderão ser suspensas ou removidas permanentemente sem aviso prévio.
+                </p>
+            </div>
+
+            <%# ── 9. Disponibilidade ──────────────────────────────────────── %>
+            <div class="sl-card mt-3" id="disponibilidade">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    9. Disponibilidade dos Serviços
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A Softload depende de infraestrutura e APIs externas para operar, incluindo
+                    Firebase Authentication, Firestore, Google Cloud Storage e Google Gemini API.
+                    Portanto, a plataforma <strong class="text-white">não garante disponibilidade contínua e ininterrupta</strong>.
+                    Interrupções podem ocorrer devido a:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Manutenções programadas ou emergenciais da plataforma.</li>
+                    <li>Instabilidades, limites de uso ou mudanças de política das APIs de terceiros.</li>
+                    <li>Eventos de infraestrutura fora do controle da Softload.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Nos esforçamos para comunicar manutenções com antecedência sempre que possível.
+                </p>
+            </div>
+
+            <%# ── 10. Serviços de Terceiros ───────────────────────────────── %>
+            <div class="sl-card mt-3" id="terceiros">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    10. Serviços de Terceiros
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    A plataforma integra e depende dos seguintes serviços externos, cada um sujeito aos seus próprios termos:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li><strong class="text-white">Google Blogger/Blogspot</strong> — plataforma de destino dos templates gerados. Mudanças no Blogger podem impactar a compatibilidade dos templates.</li>
+                    <li><strong class="text-white">Google Gemini API</strong> — modelo de linguagem padrão (Gemini Flash) utilizado no Chat IA.</li>
+                    <li><strong class="text-white">OpenAI API</strong> — integração técnica mantida, porém indisponível no chat enquanto não houver orçamento para seu uso.</li>
+                    <li><strong class="text-white">Firebase (Google)</strong> — autenticação de usuários e banco de dados Firestore para armazenamento de sessões, compilações e workspace.</li>
+                    <li><strong class="text-white">Google Cloud Storage</strong> — armazenamento dos arquivos ZIP e XML gerados pelo compilador.</li>
+                    <li><strong class="text-white">Mercado Pago</strong> — processamento de pagamentos e assinaturas. Os dados de pagamento são tratados exclusivamente pelo Mercado Pago e não ficam armazenados na Softload.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    A Softload não possui controle sobre alterações, limitações, indisponibilidades ou mudanças de política desses serviços externos.
+                </p>
+            </div>
+
+            <%# ── 11. Propriedade Intelectual ────────────────────────────── %>
+            <div class="sl-card mt-3" id="propriedade">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    11. Propriedade Intelectual
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    Todo o sistema da Softload — incluindo o compilador de templates XML, a base de conhecimento RAG
+                    (ia-de-balcão), a identidade visual, a arquitetura do Workspace e o código-fonte da plataforma —
+                    é protegido por direitos autorais e de propriedade intelectual. É expressamente proibido:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Revenda não autorizada dos serviços ou templates gerados com fins comerciais sem consentimento.</li>
+                    <li>Clonagem, cópia ou reprodução parcial ou integral da plataforma.</li>
+                    <li>Engenharia reversa do compilador, sistema RAG ou qualquer outro componente.</li>
+                    <li>Uso da marca Softload sem autorização expressa.</li>
+                </ul>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
+                    Os templates XML gerados pelo compilador e baixados pelo usuário podem ser utilizados livremente
+                    nos próprios blogs do usuário.
+                </p>
+            </div>
+
+            <%# ── 12. Alterações nos Termos ──────────────────────────────── %>
+            <div class="sl-card mt-3" id="alteracoes">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    12. Alterações nos Termos
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    Os presentes Termos de Uso poderão ser modificados a qualquer momento para adequação legal,
+                    técnica ou operacional. Sempre que houver alteração relevante, atualizaremos a data de
+                    "Última atualização" no topo deste documento. O uso contínuo da plataforma após as alterações
+                    implica concordância automática com a versão atualizada.
+                    Recomendamos revisitar esta página periodicamente.
+                </p>
+            </div>
+
+            <%# ── 13. Contato ────────────────────────────────────────────── %>
+            <div class="sl-card mt-3" id="contato">
+                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">
+                    13. Contato
+                </h2>
+                <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
+                    Dúvidas, suporte ou solicitações relacionadas a estes termos podem ser realizados
+                    pelos canais oficiais da plataforma:
+                </p>
+                <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
+                    <li>Formulário de contato em <strong class="text-white">/contato</strong></li>
+                    <li>Site oficial: <strong class="text-white">softload.analysepro.com</strong></li>
+                </ul>
+            </div>
+
+            <%# ── Rodapé da página ───────────────────────────────────────── %>
+            <div class="d-flex align-items-center gap-3 mt-4 flex-wrap">
+                <a href="/contato" class="btn btn-sl-primary fw-bold">Falar com a Softload</a>
+                <a href="/privacidade" class="btn btn-outline-secondary fw-semibold" style="color:var(--sl-text-400);border-color:var(--sl-border)">
+                    Política de Privacidade
+                </a>
+            </div>
+
+            <p class="mt-4 mb-5" style="color:var(--sl-text-600);font-size:0.8rem">
+                Softload &#169; 2026 &#8212; Todos os direitos reservados.
+            </p>
+
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

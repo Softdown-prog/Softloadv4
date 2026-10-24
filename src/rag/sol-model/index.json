@@ -1,0 +1,196 @@
+{
+  "rota": "rag-sol-model",
+  "descricao": "Base de conhecimento operacional de manutenção da Softload Engine (como migrar, operar, cobrar, fazer deploy etc) — diferente de rag-sol-conhecimento/ (referência técnica externa). Populada por curadoria manual — cada entrada nova aqui passa por PR antes de virar conteúdo ativo.",
+  "ficheiros": [
+    {
+      "arquivo": "chat-workspace-rota-dedicada.json",
+      "palavras_chave": [
+        "chat workspace",
+        "rota dedicada",
+        "workspaceChat.js",
+        "especialista blogger",
+        "desacoplamento",
+        "modo edição",
+        "modo geração",
+        "chat-suporte"
+      ]
+    },
+    {
+      "arquivo": "design-package-suprime-hero-protegido-do-dossie.json",
+      "palavras_chave": [
+        "design package",
+        "dossiê",
+        "hero protegido",
+        "compilerWorker.js",
+        "temHeroDesignPackage",
+        "dossieIntegrityChecker",
+        "conflito visual",
+        "nicho migrado"
+      ]
+    },
+    {
+      "arquivo": "manifesto-ausente-causa-fallback-para-geracao.json",
+      "palavras_chave": [
+        "workspace",
+        "snapshot",
+        "manifesto",
+        "modo geração",
+        "modo edição",
+        "bug",
+        "firestore",
+        "backfill"
+      ]
+    },
+    {
+      "arquivo": "peculiaridades-api-gemini-descobertas-em-producao.json",
+      "palavras_chave": [
+        "gemini",
+        "function calling",
+        "enum vazio",
+        "tool declaration",
+        "histórico de chat",
+        "role user",
+        "startChat",
+        "400 bad request"
+      ]
+    },
+    {
+      "arquivo": "runbook-template-nao-chega-no-chat.json",
+      "palavras_chave": [
+        "runbook",
+        "template não chega",
+        "falha silenciosa",
+        "dossiê integridade",
+        "cota de armazenamento",
+        "gemini error",
+        "diagnóstico",
+        "chatGenerationFlow"
+      ]
+    },
+    {
+      "arquivo": "snapshot-vs-manifesto-no-workspace.json",
+      "palavras_chave": [
+        "workspace",
+        "snapshot",
+        "manifesto",
+        "firestore",
+        "compilação",
+        "sessão",
+        "chatTemplateCompiler"
+      ]
+    },
+    {
+      "arquivo": "arquitetura-dois-canos-compilador.json",
+      "palavras_chave": [
+        "dois canos",
+        "cano legado",
+        "cano dossiê",
+        "nichoBlocks.js",
+        "montarNichoDeDossie",
+        "montarNichoLegado",
+        "workers determinísticos",
+        "dossieIntegrityChecker"
+      ]
+    },
+    {
+      "arquivo": "chat-workspace-agentico.json",
+      "palavras_chave": [
+        "templateEditAgent.js",
+        "tool calling",
+        "chat workspace",
+        "propor_edicao",
+        "aplicar_edicao_pendente",
+        "engajou",
+        "TokenBudget",
+        "confirmacao"
+      ]
+    },
+    {
+      "arquivo": "deploy-e-verificacao-producao.json",
+      "palavras_chave": [
+        "deploy",
+        "github actions",
+        "webhook",
+        "cloud run",
+        "GIT_SHA",
+        "sharp-stub",
+        "variaveis de ambiente",
+        "producao"
+      ]
+    },
+    {
+      "arquivo": "migrar-nicho-para-dossie.json",
+      "palavras_chave": [
+        "migração de nicho",
+        "dossiê",
+        "tema-dossie.json",
+        "tokens_css",
+        "chassis",
+        "pageType",
+        "validarDossie",
+        "seletores órfãos"
+      ]
+    },
+    {
+      "arquivo": "sistema-de-creditos-e-billing.json",
+      "palavras_chave": [
+        "creditService.js",
+        "debitarCreditos",
+        "is_active",
+        "billing_logs",
+        "verificarSaldo",
+        "debitoManual",
+        "transacao firestore",
+        "creditos negativos"
+      ]
+    },
+    {
+      "arquivo": "sol-parafraseou-tool-em-vez-de-chamar.json",
+      "palavras_chave": [
+        "sol",
+        "alucinação",
+        "status_nichos",
+        "anti-hallucination",
+        "SOL_SYSTEM_PROMPT",
+        "tool calling",
+        "verificação",
+        "migração de nicho"
+      ]
+    },
+    {
+      "arquivo": "telemetria-e-biblioteca-pecas-migradas-pro-firestore.json",
+      "palavras_chave": [
+        "telemetria",
+        "bibliotecaPecas",
+        "firestore",
+        "filesystem efêmero",
+        "cloud run",
+        "pecaOrchestrator",
+        "persistência",
+        "testabilidade"
+      ]
+    },
+    {
+      "arquivo": "parsers-fase-1-css-parser-postcss.json",
+      "palavras_chave": [
+        "parser",
+        "postcss",
+        "parse5",
+        "acorn",
+        "fast-xml-parser",
+        "src/core/parser",
+        "cssParser",
+        "htmlParser",
+        "jsParser",
+        "xmlParser",
+        "analisar_css",
+        "analisar_html",
+        "analisar_js",
+        "analisar_xml",
+        "sol ferramenta",
+        "AST",
+        "fora do pipeline de compilação"
+      ]
+    }
+  ]
+}

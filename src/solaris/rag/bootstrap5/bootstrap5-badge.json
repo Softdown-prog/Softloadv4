@@ -1,0 +1,30 @@
+{
+  "titulo": "bootstrap5 — badge",
+  "categoria": "topico",
+  "descricao": "Rótulo pequeno pra destacar contagem, status ou categoria, geralmente ancorado dentro ou sobre outro elemento (botão, ícone, texto). Suporta formato pill (bordas totalmente arredondadas).",
+  "componentes": [
+    "badge",
+    "bg-primary",
+    "rounded-pill",
+    "position-absolute",
+    "translate-middle",
+    "visually-hidden"
+  ],
+  "exemplos": [
+    "<button class=\"btn btn-primary position-relative\">Notificações<span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\">9<span class=\"visually-hidden\">notificações não lidas</span></span></button>"
+  ],
+  "boas_praticas": [
+    "Badge de notificação sobre ícone/botão precisa de position-relative no pai + position-absolute + translate-middle.",
+    "Incluir texto em visually-hidden quando o badge é só um número, pra leitor de tela dar contexto.",
+    "Usar a cor de fundo certa pro significado (bg-danger pra alerta, bg-success pra positivo etc)."
+  ],
+  "keywords": [
+    "contador",
+    "etiqueta",
+    "tag",
+    "selo",
+    "rótulo de status"
+  ],
+  "id": "bootstrap5-badge",
+  "slug": "bootstrap5-badge"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "supabase-fundamentos-cliente-consultas",
+  "slug": "supabase-fundamentos-cliente-consultas",
+  "categoria": "supabase",
+  "descricao": "Fundamentos do Supabase (backend-as-a-service sobre PostgreSQL) em JavaScript — criação do cliente via createClient com URL e chave anônima vindas de variáveis de ambiente, consulta básica com .from().select(), e o mapa de tópicos essenciais do produto: autenticação, CRUD, Row Level Security, storage, edge functions, realtime e funções RPC.",
+  "componentes": [
+    "supabase-createclient",
+    "supabase-from-select",
+    "row-level-security"
+  ],
+  "exemplos": [
+    "import { createClient } from '@supabase/supabase-js';\nconst supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);",
+    "const { data, error } = await supabase.from('users').select('*');"
+  ],
+  "boas_praticas": [
+    "Sempre checar o campo error do retorno antes de usar data",
+    "Preferir selecionar colunas específicas em vez de select('*') em produção",
+    "Nunca hardcodar SUPABASE_URL/SUPABASE_ANON_KEY — usar variáveis de ambiente"
+  ],
+  "keywords": [
+    "supabase createclient",
+    "supabase javascript",
+    "supabase select",
+    "supabase row level security",
+    "supabase postgresql"
+  ]
+}

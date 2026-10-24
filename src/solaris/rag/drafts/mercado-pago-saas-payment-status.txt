@@ -1,0 +1,34 @@
+{
+  "id": "mercado-pago-saas-payment-status",
+  "slug": "mercado-pago-saas-payment-status",
+  "categoria": "pagamentos-saas",
+  "descricao": "Ensina a modelar o estado de pagamentos de forma explícita para impedir que uma aplicação SaaS confunda pagamento criado com pagamento aprovado.",
+  "componentes": [
+    "payment_id",
+    "external_reference",
+    "status",
+    "status_detail",
+    "user_id",
+    "plan_id",
+    "banco de dados",
+    "webhook"
+  ],
+  "exemplos": [
+    "Um pagamento criado não deve ser tratado automaticamente como aprovado.",
+    "O backend deve armazenar o identificador do pagamento e seu estado atual.",
+    "Estados como pendente, aprovado, recusado ou cancelado devem ser tratados conforme a resposta oficial do provedor.",
+    "A aplicação deve atualizar o estado quando receber informações novas.",
+    "A autorização de recursos do SaaS deve depender do estado de pagamento definido pela regra de negócio."
+  ],
+  "keywords": [
+    "mercado-pago",
+    "payment-status",
+    "status",
+    "approved",
+    "pending",
+    "rejected",
+    "cancelled",
+    "pagamento",
+    "saas"
+  ]
+}

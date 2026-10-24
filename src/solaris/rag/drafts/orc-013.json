@@ -1,0 +1,19 @@
+{
+  "id": "orc-013",
+  "slug": "politica-seguranca-orquestracao",
+  "categoria": "orquestracao",
+  "descricao": "Regras de segurança que o orquestrador deve aplicar antes de qualquer execução: validação de paths, restrição de comandos shell, limites de recursos, proteção contra path traversal e command injection",
+  "componentes": [
+    "path-validator",
+    "command-whitelist",
+    "resource-limiter",
+    "sandbox-enforcer",
+    "audit-logger"
+  ],
+  "exemplos": [
+    "Path traversal bloqueado: ação tenta escrever em ../../../etc → validador rejeita → erro de segurança",
+    "Comando não permitido: shell.execute com 'rm -rf /' → whitelist bloqueia → ação rejeitada",
+    "Limite de recurso: ação excede 512MB memória → limiter mata processo → reporta OOM"
+  ],
+  "keywords": ["seguranca", "politica", "validacao", "path", "comando", "sandbox", "auditoria", "whitelist"]
+}

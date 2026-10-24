@@ -1,0 +1,5 @@
+{
+  "rota": "rag-sol-conhecimento",
+  "descricao": "Base de conhecimento técnico externo pro Sol (assistente interno da Softload) — documentação de frameworks/bibliotecas usadas no projeto (Node.js, Express, EJS, etc), NÃO conhecimento sobre o código-fonte da própria Softload (isso o Sol já lê direto via ler_arquivo_codigo/buscar_no_codigo). Cada ficheiro é um .md avulso com referência técnica de um tema. Cresce por curadoria manual — nunca gerado automaticamente.",
+  "ficheiros": []
+}

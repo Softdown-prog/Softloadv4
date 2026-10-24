@@ -1,0 +1,16 @@
+{
+  "id": "firebase-deploy-token-github-actions",
+  "slug": "firebase-deploy-token-github-actions",
+  "categoria": "firebase",
+  "descricao": "Fluxo completo pra automatizar deploy do Firebase via GitHub Actions — gerar o token CI com firebase login:ci, cadastrar como secret FIREBASE_TOKEN no repositório, e usá-lo no workflow do deploy sem nunca expor a credencial em texto no código versionado.",
+  "componentes": ["firebase-login-ci", "github-secrets", "firebase-deploy-token"],
+  "exemplos": [
+    "firebase login:ci — gera o token alfanumérico de autenticação CI no terminal.",
+    "- name: Executar Deploy no Firebase\n  env:\n    FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}\n  run: firebase deploy --non-interactive --token \"$FIREBASE_TOKEN\""
+  ],
+  "boas_praticas": [
+    "Nunca escreva o token diretamente no código do workflow ou em arquivos comitados no git — use exclusivamente os Secrets do GitHub",
+    "Se o token for exposto, execute firebase logout passando o token pra invalidá-lo imediatamente nos servidores do Google"
+  ],
+  "keywords": ["firebase login ci", "firebase token github actions", "firebase deploy ci cd", "github secrets firebase"]
+}

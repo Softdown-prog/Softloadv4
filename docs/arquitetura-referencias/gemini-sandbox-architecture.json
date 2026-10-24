@@ -1,0 +1,222 @@
+{
+  "architecture-model": {
+    "title": "gemini-sandbox-architecture",
+    "mental-model": {
+      "analogy": "architect-and-construction-worker",
+      "description": "Gemini atua como arquiteto tomando decisões, enquanto o backend Node.js executa as ações físicas dentro da sandbox."
+    },
+    "components": {
+      "gemini-ai": {
+        "role": "brain",
+        "responsibility": [
+          "analisar pedidos do usuário",
+          "planejar ações",
+          "emitir intenções estruturadas em JSON"
+        ],
+        "limitations": [
+          "não possui acesso direto ao disco",
+          "não executa comandos no terminal",
+          "não acessa arquivos diretamente",
+          "não executa código"
+        ],
+        "output-format": {
+          "type": "structured-json",
+          "example": {
+            "tool": "create_file",
+            "parameters": {
+              "file-path": "login.php",
+              "content": "generated-code"
+            }
+          }
+        }
+      },
+      "node-js-backend": {
+        "role": "executor",
+        "responsibility": [
+          "receber intenções do Gemini",
+          "validar segurança",
+          "executar operações físicas",
+          "retornar resultados para a IA"
+        ],
+        "execution-layer": {
+          "environment": "isolated-container",
+          "storage": "/tmp/sandbox/session-id"
+        }
+      }
+    }
+  },
+
+  "action-lifecycle": {
+    "name": "feedback-loop",
+    "steps": [
+      {
+        "step": 1,
+        "actor": "user",
+        "action": "send-request",
+        "example": "Crie um login em PHP"
+      },
+      {
+        "step": 2,
+        "actor": "gemini",
+        "action": "generate-tool-intent",
+        "output": {
+          "tool": "create_file",
+          "file-name": "login.php",
+          "content": "php-code"
+        }
+      },
+      {
+        "step": 3,
+        "actor": "node-js-backend",
+        "action": "security-validation",
+        "checks": [
+          {
+            "component": "PathGuard",
+            "purpose": "validar caminho do arquivo",
+            "questions": [
+              "o caminho tenta sair da sessão?",
+              "existe tentativa de acessar arquivos proibidos?"
+            ]
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "actor": "node-js-backend",
+        "action": "physical-execution",
+        "operations": [
+          "criar arquivo dentro da sandbox",
+          "salvar conteúdo gerado"
+        ],
+        "target": "/tmp/sandbox/session-123/login.php"
+      },
+      {
+        "step": 5,
+        "actor": "executor",
+        "action": "syntax-validation",
+        "command": {
+          "language": "php",
+          "command": "php -l login.php"
+        },
+        "result-example": "Arquivo criado. Sintaxe PHP OK!"
+      },
+      {
+        "step": 6,
+        "actor": "gemini",
+        "action": "receive-feedback",
+        "purpose": "decidir próximo passo do projeto"
+      },
+      {
+        "step": 7,
+        "actor": "user",
+        "response": "Arquivo login.php criado e validado com sucesso"
+      }
+    ]
+  },
+
+  "security-layer": {
+    "components": {
+      "path-guard": {
+        "role": "filesystem-security-barrier",
+        "responsibilities": [
+          "impedir path traversal",
+          "isolar sessões",
+          "bloquear acesso fora da sandbox"
+        ],
+        "validation-example": {
+          "input": "login.php",
+          "allowed": true
+        }
+      },
+
+      "session-manager": {
+        "role": "sandbox-lifecycle-manager",
+        "analogy": "hotel-room-cleaning-system",
+        "responsibilities": [
+          "criar ambiente único por usuário",
+          "gerenciar UUID da sessão",
+          "remover arquivos temporários"
+        ],
+        "session-model": {
+          "session-id": "uuid",
+          "storage": "/tmp/sandbox/session-id"
+        }
+      }
+    }
+  },
+
+  "sandbox-isolation-model": {
+    "cloud-run": {
+      "analogy": "hotel",
+      "rules": {
+        "room": {
+          "identifier": "unique-session-uuid"
+        },
+        "walls": {
+          "component": "PathGuard",
+          "purpose": "impedir acesso entre sessões"
+        },
+        "cleaning": {
+          "component": "SessionManager",
+          "purpose": "remover arquivos após uso"
+        }
+      }
+    },
+    "memory-management": {
+      "temporary-storage": "/tmp",
+      "location": "RAM-backed-storage",
+      "risk": {
+        "name": "memory-leak",
+        "cause": "arquivos temporários não removidos",
+        "effect": "Out Of Memory"
+      }
+    }
+  },
+
+  "security-principles": {
+    "title": "sandbox-invulnerability-model",
+    "security-walls": [
+      {
+        "layer": 1,
+        "name": "ai-execution-isolation",
+        "description": "Gemini apenas gera texto estruturado, nunca executa código.",
+        "protection": "código malicioso permanece apenas como texto."
+      },
+      {
+        "layer": 2,
+        "name": "passive-validation",
+        "description": "Compiladores apenas analisam sintaxe.",
+        "examples": [
+          "php -l",
+          "python py_compile"
+        ],
+        "protection": "nenhuma função interna do código é executada."
+      },
+      {
+        "layer": 3,
+        "name": "restricted-container-user",
+        "description": "Processos executam com usuário Linux limitado.",
+        "user": "sandboxuser",
+        "restrictions": [
+          "sem privilégios root",
+          "sem acesso à internet",
+          "sem acesso às variáveis secretas da API"
+        ]
+      }
+    ]
+  },
+
+  "complete-flow": {
+    "pipeline": [
+      "user-request",
+      "gemini-planning",
+      "json-tool-call",
+      "node-backend-validation",
+      "pathguard-security-check",
+      "sandbox-file-operation",
+      "passive-code-validation",
+      "feedback-to-gemini",
+      "final-user-response"
+    ]
+  }
+}

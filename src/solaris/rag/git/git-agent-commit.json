@@ -1,0 +1,98 @@
+{
+  "id": "git-agent-commit",
+  "slug": "git-agent-commit",
+  "categoria": "git",
+  "descricao": "Ensina o agente a transformar uma alteração revisada em um commit pequeno, rastreável e semanticamente descritivo.",
+  "quando_usar": [
+    "quando uma unidade coerente de trabalho estiver concluída",
+    "depois da revisão do diff",
+    "depois das validações relevantes",
+    "quando a alteração precisar ser registrada no histórico Git"
+  ],
+  "instrucao": [
+    "Confirme que as alterações pertencem à tarefa atual.",
+    "Revise o conteúdo que será incluído no commit.",
+    "Execute as validações aplicáveis antes de registrar a alteração.",
+    "Use uma mensagem de commit curta e descritiva.",
+    "Evite misturar alterações independentes no mesmo commit.",
+    "Após criar o commit, verifique o resultado e registre o identificador quando necessário."
+  ],
+  "padrao": [
+    "verificar_status",
+    "revisar_diff",
+    "executar_validacoes",
+    "preparar_alteracoes",
+    "criar_commit",
+    "verificar_commit"
+  ],
+  "exemplo": {
+    "contexto": "O Solaris corrigiu uma falha no PathGuard e os testes relevantes passaram.",
+    "resposta": "Revisar o diff, confirmar os testes, criar um commit descrevendo a correção e verificar o commit produzido antes de avançar para o push."
+  },
+  "anti_padroes": [
+    "Criar commits sem revisar as alterações.",
+    "Usar mensagens vagas como 'update' ou 'changes'.",
+    "Misturar correções não relacionadas em um único commit.",
+    "Afirmar que o commit foi criado sem verificar o resultado da operação."
+  ],
+  "keywords": [
+    "git-commit",
+    "git",
+    "commit",
+    "commit-message",
+    "message",
+    "changeset",
+    "validation",
+    "history",
+    "agent",
+    "git-agent-commit"
+  ],
+  "componentes": [
+    {
+      "nome": "quando_usar",
+      "itens": [
+        "quando uma unidade coerente de trabalho estiver concluída",
+        "depois da revisão do diff",
+        "depois das validações relevantes",
+        "quando a alteração precisar ser registrada no histórico Git"
+      ]
+    },
+    {
+      "nome": "instrucao",
+      "itens": [
+        "Confirme que as alterações pertencem à tarefa atual.",
+        "Revise o conteúdo que será incluído no commit.",
+        "Execute as validações aplicáveis antes de registrar a alteração.",
+        "Use uma mensagem de commit curta e descritiva.",
+        "Evite misturar alterações independentes no mesmo commit.",
+        "Após criar o commit, verifique o resultado e registre o identificador quando necessário."
+      ]
+    },
+    {
+      "nome": "padrao",
+      "itens": [
+        "verificar_status",
+        "revisar_diff",
+        "executar_validacoes",
+        "preparar_alteracoes",
+        "criar_commit",
+        "verificar_commit"
+      ]
+    },
+    {
+      "nome": "anti_padroes",
+      "itens": [
+        "Criar commits sem revisar as alterações.",
+        "Usar mensagens vagas como 'update' ou 'changes'.",
+        "Misturar correções não relacionadas em um único commit.",
+        "Afirmar que o commit foi criado sem verificar o resultado da operação."
+      ]
+    }
+  ],
+  "exemplos": [
+    {
+      "contexto": "O Solaris corrigiu uma falha no PathGuard e os testes relevantes passaram.",
+      "resposta": "Revisar o diff, confirmar os testes, criar um commit descrevendo a correção e verificar o commit produzido antes de avançar para o push."
+    }
+  ]
+}

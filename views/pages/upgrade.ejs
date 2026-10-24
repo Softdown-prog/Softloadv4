@@ -1,0 +1,337 @@
+<%- include('../partials/header') %>
+
+<div class="min-vh-100 sl-pt-nav" style="background:var(--sl-bg-950);color:var(--sl-text-300)">
+
+    <!-- Topbar -->
+    <div class="sticky-top border-bottom px-3 py-2 d-flex align-items-center gap-3"
+         style="background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);border-color:var(--sl-bg-800)!important;z-index:30">
+        <a href="/dashboard" class="btn btn-link p-1 rounded-3" style="color:var(--sl-text-400);text-decoration:none">
+            <%- include('../partials/icon', { name: 'arrow-left', style: 'font-size:1.2rem' }) %>
+        </a>
+        <span class="flex-grow-1 fw-bolder text-uppercase small" style="letter-spacing:-0.02em">Planos</span>
+    </div>
+
+    <div class="mx-auto px-3 py-5" style="max-width:960px">
+
+        <!-- Feedback de retorno (status?=success/pending/failure) -->
+        <% if (typeof query !== 'undefined' && query.status) { %>
+        <% var _st = query.status; %>
+        <div class="rounded-3 p-3 mb-4 d-flex align-items-start gap-3
+            <%= _st === 'success' ? 'border border-success-subtle' : _st === 'pending' ? 'border border-warning-subtle' : 'border border-danger-subtle' %>"
+             style="<%= _st === 'success' ? 'background:rgba(34,197,94,0.08);color:#4ade80' : _st === 'pending' ? 'background:rgba(234,179,8,0.08);color:#facc15' : 'background:rgba(239,68,68,0.08);color:#f87171' %>">
+            <% var _stIcon = _st === 'success' ? 'check-circle' : _st === 'pending' ? 'hourglass' : 'x-circle'; %>
+            <%- include('../partials/icon', { name: _stIcon, cls: 'flex-shrink-0 mt-1' }) %>
+            <div>
+                <% if (_st === 'success') { %>
+                <p class="fw-bold mb-1">Pagamento recebido! Ativando seu plano...</p>
+                <p class="mb-0 small" style="opacity:.8">Será ativado em instantes. <a href="/dashboard" class="fw-bold" style="color:inherit">Voltar ao painel</a></p>
+                <% } else if (_st === 'pending') { %>
+                <p class="fw-bold mb-1">Pagamento em processamento.</p>
+                <p class="mb-0 small" style="opacity:.8">Pix/boleto pode levar alguns minutos. Você receberá acesso assim que confirmado.</p>
+                <% } else { %>
+                <p class="fw-bold mb-1">Pagamento não finalizado.</p>
+                <p class="mb-0 small" style="opacity:.8">Ocorreu um erro ou foi cancelado. Tente novamente abaixo.</p>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Hero -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder text-white mb-3" style="font-size:clamp(1.6rem,4vw,2.4rem);letter-spacing:-0.03em;font-weight:900">
+                Escolha seu <span style="color:var(--sl-primary)">Plano</span>
+            </h1>
+            <p class="mx-auto mb-0" style="max-width:480px;color:var(--sl-text-400);font-size:1rem;line-height:1.7">
+                Créditos de IA renovados mensalmente. Sem fidelidade — cancele quando quiser.
+            </p>
+        </div>
+
+        <!-- Cards de plano -->
+        <div class="row g-4 mb-4" id="planCards">
+
+            <!-- Free -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="rounded-4 border p-4 h-100"
+                     style="background:rgba(15,23,42,0.4);border-color:var(--sl-bg-800)!important">
+                    <div class="mb-4">
+                        <span class="fw-bolder text-uppercase font-monospace" style="font-size:9px;letter-spacing:0.2em;color:var(--sl-text-400)">Gratuito</span>
+                        <p class="fw-bolder text-white mt-1 mb-0" style="font-size:1.5rem">R$ 0</p>
+                        <p class="small mb-0" style="color:var(--sl-text-400)">para sempre</p>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-2 mb-4 small" style="color:var(--sl-text-400)">
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-text-400)' }) %>
+                            Acesso ao painel
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-text-400)' }) %>
+                            5 créditos Gemini
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'x-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-bg-700)' }) %>
+                            <span style="opacity:.5">Ferramentas premium</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'x-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-bg-700)' }) %>
+                            <span style="opacity:.5">Workspace (geração de templates)</span>
+                        </li>
+                    </ul>
+                    <span class="d-block text-center small py-2 rounded-3 fw-bold text-uppercase"
+                          style="font-size:0.7rem;letter-spacing:0.1em;color:var(--sl-text-400);border:1px solid var(--sl-bg-800)">
+                        Plano atual
+                    </span>
+                </div>
+            </div>
+
+            <!-- Starter -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="plan-card rounded-4 border p-4 h-100 position-relative"
+                     data-plano="starter" data-preco="49.00"
+                     style="background:rgba(15,23,42,0.6);border-color:var(--sl-bg-700)!important;cursor:pointer;transition:border-color .2s,box-shadow .2s">
+                    <div class="mb-4">
+                        <span class="fw-bolder text-uppercase font-monospace" style="font-size:9px;letter-spacing:0.2em;color:#a78bfa">Starter</span>
+                        <div class="d-flex align-items-end gap-1 mt-1">
+                            <p class="fw-bolder text-white mb-0" style="font-size:1.5rem">R$ 49</p>
+                            <span class="small mb-1" style="color:var(--sl-text-400)">/mês</span>
+                        </div>
+                        <p class="small mb-0 font-monospace" style="font-size:0.7rem;color:var(--sl-text-400)">500 créditos Gemini / mês</p>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-2 mb-4 small" style="color:var(--sl-text-300)">
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:#a78bfa' }) %>
+                            Chat IA Especialista completo
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:#a78bfa' }) %>
+                            Histórico de conversas
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:#a78bfa' }) %>
+                            100 MB armazenamento
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'x-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-bg-700)' }) %>
+                            <span style="opacity:.5">Workspace (geração de templates)</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-starter w-100 fw-bolder text-uppercase plan-btn"
+                            style="font-size:0.75rem;letter-spacing:0.15em"
+                            ontouchstart="this.style.opacity='.75';this.style.transform='scale(.98)'"
+                            ontouchend="this.style.opacity='1';this.style.transform=''"
+                            onclick="selecionarPlano('starter', 49.00, this)">
+                        Assinar Starter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pro -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="plan-card rounded-4 border p-4 h-100 position-relative"
+                     data-plano="pro" data-preco="119.00"
+                     style="background:rgba(15,23,42,0.6);border-color:var(--sl-bg-700)!important;cursor:pointer;transition:border-color .2s,box-shadow .2s">
+                    <div class="mb-4">
+                        <span class="fw-bolder text-uppercase font-monospace" style="font-size:9px;letter-spacing:0.2em;color:var(--sl-primary)">Pro</span>
+                        <div class="d-flex align-items-end gap-1 mt-1">
+                            <p class="fw-bolder text-white mb-0" style="font-size:1.5rem">R$ 119</p>
+                            <span class="small mb-1" style="color:var(--sl-text-400)">/mês</span>
+                        </div>
+                        <p class="small mb-0 font-monospace" style="font-size:0.7rem;color:var(--sl-text-400)">2.000 créditos Gemini / mês</p>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-2 mb-4 small" style="color:var(--sl-text-300)">
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            Chat IA Especialista completo
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            Histórico de conversas
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            100 MB armazenamento
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'x-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-bg-700)' }) %>
+                            <span style="opacity:.5">Workspace (geração de templates)</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-sl-primary w-100 fw-bolder text-uppercase plan-btn"
+                            style="font-size:0.75rem;letter-spacing:0.15em;border:none;transition:background .2s,box-shadow .2s,opacity .15s,transform .1s"
+                            ontouchstart="this.style.opacity='.75';this.style.transform='scale(.98)'"
+                            ontouchend="this.style.opacity='1';this.style.transform=''"
+                            onclick="selecionarPlano('pro', 119.00, this)">
+                        Assinar Pro
+                    </button>
+                </div>
+            </div>
+
+            <!-- Studio -->
+            <div class="col-12 col-sm-6 col-lg-3 position-relative">
+                <div class="position-absolute top-0 start-50 translate-middle" style="z-index:1">
+                    <span class="fw-bolder text-uppercase text-white px-3 py-1 rounded-pill"
+                          style="font-size:9px;letter-spacing:0.2em;background:var(--sl-primary)">Mais Popular</span>
+                </div>
+                <div class="plan-card rounded-4 border p-4 h-100 shadow-lg"
+                     data-plano="studio" data-preco="249.00"
+                     style="border:2px solid var(--sl-primary)!important;background:rgba(15,23,42,0.6);box-shadow:0 20px 60px -10px rgba(14,165,233,0.12)!important;cursor:pointer;transition:box-shadow .2s">
+                    <div class="mb-4">
+                        <span class="fw-bolder text-uppercase font-monospace" style="font-size:9px;letter-spacing:0.2em;color:var(--sl-primary)">Studio</span>
+                        <div class="d-flex align-items-end gap-1 mt-1">
+                            <p class="fw-bolder text-white mb-0" style="font-size:1.5rem">R$ 249</p>
+                            <span class="small mb-1" style="color:var(--sl-text-400)">/mês</span>
+                        </div>
+                        <p class="small mb-0 font-monospace" style="font-size:0.7rem;color:var(--sl-text-400)">5.500 créditos Gemini / mês</p>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-2 mb-4 small" style="color:var(--sl-text-300)">
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            Tudo do Pro
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            <strong>Workspace</strong> — geração e compilação de templates
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            500 MB armazenamento
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <%- include('../partials/icon', { name: 'check-circle', cls: 'flex-shrink-0', style: 'color:var(--sl-primary)' }) %>
+                            Suporte prioritário
+                        </li>
+                    </ul>
+                    <button class="btn btn-sl-primary w-100 fw-bolder text-uppercase plan-btn"
+                            style="font-size:0.75rem;letter-spacing:0.15em;border:none;transition:background .2s,box-shadow .2s,opacity .15s,transform .1s"
+                            ontouchstart="this.style.opacity='.75';this.style.transform='scale(.98)'"
+                            ontouchend="this.style.opacity='1';this.style.transform=''"
+                            onclick="selecionarPlano('studio', 249.00, this)">
+                        Assinar Studio
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Aviso expiração -->
+        <p class="text-center small mb-5" style="color:var(--sl-text-400)">
+            <%- include('../partials/icon', { name: 'info', cls: 'me-1' }) %>
+            Créditos não utilizados expiram ao final do ciclo de 30 dias e são renovados com o próximo pagamento.
+        </p>
+
+        <!-- FAQ -->
+        <div class="rounded-4 border overflow-hidden mb-5"
+             style="background:rgba(15,23,42,0.4);border-color:var(--sl-bg-800)!important">
+            <div class="px-4 py-3 border-bottom" style="border-color:var(--sl-bg-800)!important">
+                <span class="fw-bolder text-uppercase font-monospace" style="font-size:9px;letter-spacing:0.2em;color:var(--sl-text-400)">Perguntas Frequentes</span>
+            </div>
+
+            <div class="border-bottom" style="border-color:var(--sl-bg-800)!important">
+                <button class="w-100 px-4 py-3 d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                        style="color:var(--sl-text-300)" onclick="slFaqToggle(this, 'faq1')">
+                    <span class="small fw-semibold">O que são créditos?</span>
+                    <%- include('../partials/icon', { name: 'chevron-down', cls: 'faq-chevron small flex-shrink-0 ms-3', style: 'color:var(--sl-text-400);transition:transform 0.2s' }) %>
+                </button>
+                <div id="faq1" style="display:none">
+                    <p class="px-4 pb-3 mb-0 small" style="color:var(--sl-text-400);line-height:1.7">Créditos são a unidade de uso das ferramentas de IA da plataforma. Cada interação com o Chat IA (Especialista ou Workspace) consome créditos proporcionalmente ao uso. Seu saldo é exibido no painel.</p>
+                </div>
+            </div>
+
+            <div class="border-bottom" style="border-color:var(--sl-bg-800)!important">
+                <button class="w-100 px-4 py-3 d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                        style="color:var(--sl-text-300)" onclick="slFaqToggle(this, 'faq2')">
+                    <span class="small fw-semibold">O que acontece com créditos não usados?</span>
+                    <%- include('../partials/icon', { name: 'chevron-down', cls: 'faq-chevron small flex-shrink-0 ms-3', style: 'color:var(--sl-text-400);transition:transform 0.2s' }) %>
+                </button>
+                <div id="faq2" style="display:none">
+                    <p class="px-4 pb-3 mb-0 small" style="color:var(--sl-text-400);line-height:1.7">Créditos expiram ao final do ciclo de 30 dias. No próximo pagamento, sua cota é renovada com o total do plano. Não há acúmulo entre ciclos.</p>
+                </div>
+            </div>
+
+            <div class="border-bottom" style="border-color:var(--sl-bg-800)!important">
+                <button class="w-100 px-4 py-3 d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                        style="color:var(--sl-text-300)" onclick="slFaqToggle(this, 'faq3')">
+                    <span class="small fw-semibold">Quando meu acesso é liberado?</span>
+                    <%- include('../partials/icon', { name: 'chevron-down', cls: 'faq-chevron small flex-shrink-0 ms-3', style: 'color:var(--sl-text-400);transition:transform 0.2s' }) %>
+                </button>
+                <div id="faq3" style="display:none">
+                    <p class="px-4 pb-3 mb-0 small" style="color:var(--sl-text-400);line-height:1.7">Pix é confirmado em segundos a minutos. Cartão geralmente é instantâneo. Boleto pode levar até 3 dias úteis. O acesso é liberado automaticamente via webhook do Mercado Pago — sem necessidade de contato.</p>
+                </div>
+            </div>
+
+            <div>
+                <button class="w-100 px-4 py-3 d-flex align-items-center justify-content-between text-start border-0 bg-transparent"
+                        style="color:var(--sl-text-300)" onclick="slFaqToggle(this, 'faq4')">
+                    <span class="small fw-semibold">Posso cancelar?</span>
+                    <%- include('../partials/icon', { name: 'chevron-down', cls: 'faq-chevron small flex-shrink-0 ms-3', style: 'color:var(--sl-text-400);transition:transform 0.2s' }) %>
+                </button>
+                <div id="faq4" style="display:none">
+                    <p class="px-4 pb-3 mb-0 small" style="color:var(--sl-text-400);line-height:1.7">Sim. O plano não renova automaticamente — cada mês você decide se quer continuar. Se não renovar, seu acesso continua até o vencimento do ciclo atual.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/logout" class="small text-uppercase fw-bold text-decoration-none"
+               style="color:var(--sl-text-400);letter-spacing:0.15em"
+               onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='var(--sl-text-400)'">
+                <%- include('../partials/icon', { name: 'log-out', cls: 'me-1' }) %> Encerrar Sessão
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── Checkout redirect — abre a página de pagamento do Mercado Pago ──
+async function selecionarPlano(plano, preco, btnEl) {
+    if (btnEl) {
+        btnEl.disabled    = true;
+        btnEl.textContent = 'Aguarde...';
+    }
+
+    try {
+        var res  = await fetch('/dashboard/checkout-create', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ plano: plano }),
+        });
+        var data = await res.json();
+
+        if (data.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+            return;
+        }
+
+        // Erro retornado pelo backend
+        alert(data.erro || 'Erro ao gerar link de pagamento. Tente novamente.');
+
+    } catch (err) {
+        alert('Não foi possível conectar ao servidor. Tente novamente.');
+    }
+
+    // Restaura botão em caso de erro
+    if (btnEl) {
+        var labels = { starter: 'Assinar Starter', pro: 'Assinar Pro', studio: 'Assinar Studio' };
+        btnEl.disabled    = false;
+        btnEl.textContent = labels[plano] || 'Assinar';
+    }
+}
+
+// ── FAQ toggle ──
+function slFaqToggle(btn, id) {
+    var panel = document.getElementById(id);
+    var icon  = btn.querySelector('.faq-chevron');
+    var isOpen = panel.style.display !== 'none';
+    document.querySelectorAll('[id^="faq"]').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('.faq-chevron').forEach(function(el) {
+        el.style.transform = '';
+    });
+    if (!isOpen) {
+        panel.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+</script>
+
+<%- include('../partials/footer') %>

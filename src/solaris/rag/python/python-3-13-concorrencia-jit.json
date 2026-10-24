@@ -1,0 +1,26 @@
+{
+  "id": "python-3-13-concorrencia-jit",
+  "slug": "python-3-13-concorrencia-jit",
+  "categoria": "python",
+  "descricao": "Evolução do runtime Python 3.13+ — free-threading pra melhor aproveitamento de processadores multicore (reduzindo dependência de múltiplos processos), JIT nativo integrado ao interpretador com ganho de desempenho sem alterar sintaxe, e o papel consolidado do Python como linguagem principal de infraestrutura de agentes de IA (pipelines RAG, conectores de banco vetorial, servidores de ferramentas, orquestração de agentes).",
+  "componentes": [
+    "free-threading",
+    "native-jit",
+    "rag-pipelines",
+    "agent-orchestration"
+  ],
+  "exemplos": [
+    "Usos comuns de Python em infraestrutura de IA: rag-pipelines, vector-database-connectors, tool-servers, sandbox-analysis, agent-orchestration."
+  ],
+  "boas_praticas": [
+    "Aproveitar free-threading para workloads computacionais paralelos em vez de multiplicar processos",
+    "Contar com o JIT nativo para otimização transparente, sem precisar reescrever código crítico"
+  ],
+  "keywords": [
+    "python 3.13",
+    "python free threading",
+    "python jit nativo",
+    "python agentes de ia",
+    "python rag pipeline"
+  ]
+}

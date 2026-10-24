@@ -1,0 +1,21 @@
+{
+  "id": "firebase-panorama-mercado-2026",
+  "slug": "firebase-panorama-mercado-2026",
+  "categoria": "firebase",
+  "descricao": "Panorama do Firebase em 2026 como plataforma serverless de nível corporativo impulsionada por IA — inclui o Firebase Studio integrado ao Gemini para geração de código, o SQL Connect para conectar o backend a PostgreSQL gerenciado via Cloud SQL, e a comparação entre Cloud Firestore, Realtime Database e SQL Connect por paradigma e caso de uso.",
+  "componentes": [
+    "firebase-studio-gemini",
+    "firebase-sql-connect-postgresql",
+    "app-check-avancado",
+    "cloud-firestore",
+    "realtime-database"
+  ],
+  "exemplos": [
+    "Matriz de decisão: Cloud Firestore para coleções complexas/e-commerce; Realtime Database para chat/feeds/jogos multiplayer básicos; SQL Connect (PostgreSQL) para ERPs, relatórios complexos e transações ACID estritas."
+  ],
+  "boas_praticas": [
+    "Avaliar risco de vendor lock-in antes de acoplar a arquitetura inteira ao ecossistema Firebase",
+    "Usar App Check avançado para bloquear requisições automatizadas antes que gerem custo"
+  ],
+  "keywords": ["firebase 2026", "firebase studio", "firebase sql connect", "firestore vs realtime database", "firebase serverless", "firebase ia"]
+}

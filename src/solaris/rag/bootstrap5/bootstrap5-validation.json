@@ -1,0 +1,30 @@
+{
+  "titulo": "bootstrap5 — validation",
+  "categoria": "topico",
+  "descricao": "Feedback visual de validação de formulário — classes que mudam a cor da borda e exibem mensagem de erro/sucesso, combinadas com a Constraint Validation API nativa do navegador ou validação customizada via JS.",
+  "componentes": [
+    "was-validated",
+    "is-valid",
+    "is-invalid",
+    "valid-feedback",
+    "invalid-feedback",
+    "novalidate",
+    "form-check-input.is-invalid"
+  ],
+  "exemplos": [
+    "<form class=\"needs-validation\" novalidate><input type=\"text\" class=\"form-control\" required><div class=\"invalid-feedback\">Campo obrigatório.</div></form>"
+  ],
+  "boas_praticas": [
+    "A classe was-validated no <form> precisa ser adicionada via JS após tentativa de submit (checkValidity()) — não é automática.",
+    "invalid-feedback só aparece se o elemento anterior tiver is-invalid ou o form tiver was-validated.",
+    "Nunca depender só da validação client-side — sempre revalidar no backend."
+  ],
+  "keywords": [
+    "validação de formulário",
+    "campo obrigatório",
+    "mensagem de erro",
+    "form inválido"
+  ],
+  "id": "bootstrap5-validation",
+  "slug": "bootstrap5-validation"
+}

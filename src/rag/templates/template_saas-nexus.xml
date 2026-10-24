@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho saas-nexus — ver plano "esqueleto por
+     nicho" (/root/.claude/plans/indexed-jumping-treehouse.md), Fase 2
+     (4/11): quarto dos 11 nichos restantes com exemplos/ real, escolhido
+     por resolver um compartilhamento de chassis ATIVO hoje ('saas',
+     dividido com brutalista-appcraft) e por ser de baixo risco — o
+     dossiê já documentava que o chassis "saas" foi construído a partir
+     do design REAL deste nicho (comentários no chassis diziam "nexus:
+     #saas-cards .widget" etc), então a maior parte da estrutura já
+     bate 1:1, sem remapeamento de seletor.
+
+     A estrutura física abaixo foi extraída de exemplos/saas-nexus.xml
+     (arquivo hand-authored real). Diferenças estruturais reais vs.
+     template_saas.xml compartilhado:
+       - 'top-bar': no arquivo real, o b:widget HTML1 dentro dessa seção
+         tem o conteúdo de um CARTÃO DE PREÇOS COMPLETO ("Plano Pro",
+         lista de benefícios, CTA) — mas o CSS do próprio arquivo real
+         define '.top-bar-wrapper .widget' como uma barra fina colorida
+         de aviso (padding 8px, h2 escondido). O conteúdo não bate com o
+         estilo da seção — cartão de preços idêntico ao de 'pricing-
+         cards' (mesmo texto "99"/"A solução completa..."), claramente
+         colado no lugar errado na autoria original. Deixado como slot
+         nativo vazio (mesmo tratamento de conteúdo remanescente/
+         inconsistente já usado em outras migrações).
+       - 'header-logo': Header1 do arquivo real tem displayUrl apontando
+         pra uma imagem REAL já hospedada
+         (blogger.googleusercontent.com/img/a/AVvXsE...) do dono
+         original — dado real, não reutilizável por outro usuário.
+         Substituído por HEADER_WIDGET genérico.
+       - 'menu-links': PageList99 do arquivo real tem pageListJson com
+         URL do blog real do dono original (tjtestehj.blogspot.com) +
+         1 link pessoal do Google Drive — mesmo padrão de dado real
+         encontrado em tecnologia-techwind. Substituído por NAV_WIDGET
+         genérico (data:pages dinâmico); o CTA extra real "Fale Conosco"
+         (âncora #contato, não dado do dono) foi mantido como link
+         estático ao lado do menu.
+       - 'hero-text'/'hero-media': widgets reais mantidos verbatim — são
+         HTML/Image nativos com título/conteúdo editáveis pelo painel de
+         Layout do Blogger (filosofia "Full-Gadget"), copy genérica o
+         bastante pra qualquer produto SaaS (não amarrada a um negócio
+         específico). CTA real "Ver Planos" (âncora #planos) mantido.
+       - 'saas-cards'/'pricing-cards'/'testimonials': widgets nativos
+         Text/HTML reais mantidos verbatim (mesmo motivo acima). CTAs de
+         pricing (href="#" morto no arquivo real) trocados por âncora
+         #contato real, em vez de link morto em todo site gerado.
+       - 'main-blog' (não 'main'): Blog1 real extraído verbatim (feed
+         .post-card, post único com h1/post-body reais, mesmas classes
+         já documentadas no chassis compartilhado — .post-card/.post-
+         title/.post-snippet/.post-body batem 1:1). Renomeado pra id
+         LITERAL 'main' (marcador canônico do Design Package), name=
+         guarda o nome real. widget-settings trimmados pra lista válida
+         (mesmo achado já descoberto em noticias-mag-news/tecnologia-
+         techwind: style.*/showAuthorProfile/showLocation/timestampLabel
+         com valor literal são rejeitados pelo Blogger hoje).
+       - 'pre-footer': Stats1 nativo → STATS_WIDGET genérico (match
+         exato de tipo). HTML3 "{Como Instalar Seu Template}" (iframe
+         promocional de vídeo do vendedor do tema) NÃO extraído — mesmo
+         achado já fechado em tecnologia-techwind/noticias-mag-news.
+         FEATURED_POST_WIDGET adicionado aqui (nichoModuleDefaults.js já
+         ligava featuredPostWidget:true sem seção real pra receber).
+       - 'footer-about': Text95 real ("Nexus SaaS" + missão) mantido
+         verbatim — conteúdo genérico o bastante, editável via Layout.
+       - 'footer-links' (novo, sem correspondente no arquivo real):
+         nichoModuleDefaults.js já ligava blogArchiveWidget:true e
+         socialLinksWidget:true sem seção real pra receber — ganhou
+         seção própria.
+       - 'footer-contact': ContactForm1 real tinha includable customizado
+         (classes Bootstrap form-control) — mapeado pro token
+         CONTACT_FORM genérico, mesmo padrão já usado em todas as
+         migrações anteriores (nunca extraído verbatim, mesmo quando o
+         includable real difere um pouco do gerador genérico).
+       - Copyright do rodapé: "Nexus Tech" hardcoded no arquivo real →
+         data:blog.title (nome real do site gerado).
+       - backToTop:true/error404:true/cookieBanner:true em
+         nichoModuleDefaults.js não tinham nenhuma peça própria de
+         dossiê pra cobrir (diferente de tecnologia-techwind, que já
+         tinha scroll-to-top autoral) — cobertos aqui pelos módulos
+         genéricos BACK_TO_TOP_MODULE/ERROR_404_MODULE/COOKIE_MODULE.
+     Ver nichoDossie.saas-nexus.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /* === VARIÁVEIS DO PAINEL DO BLOGGER (arquivo real, preservadas
+     verbatim — permitem o dono do site trocar as 4 cores pelo painel
+     "Personalizar" do Blogger) === */
+  <Group description="Cores do Tema (Nexus SaaS)" selector=":root">
+    <Variable name="cor.primaria" description="Cor Principal" type="color" default="#0d6efd" value="#0d6efd"/>
+    <Variable name="cor.escura" description="Cor Escura (Textos e Títulos)" type="color" default="#1e293b" value="#1e293b"/>
+    <Variable name="cor.clara" description="Cor de Fundo Secundário" type="color" default="#f8fafc" value="#f8fafc"/>
+    <Variable name="cor.cinza" description="Cor dos Textos Menores" type="color" default="#64748b" value="#64748b"/>
+  </Group>
+
+  :root {
+    --nexus-primary: $(cor.primaria);
+    --nexus-dark: $(cor.escura);
+    --nexus-light: $(cor.clara);
+    --nexus-gray: $(cor.cinza);
+  }
+
+  [[DYNAMIC_CSS]]
+
+  body { font-family: 'Space Grotesk', sans-serif; background-color: var(--nexus-light); color: var(--nexus-dark); overflow-x: hidden; }
+
+  a { text-decoration: none; transition: all 0.3s ease; }
+  .fade-in-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+  .fade-in-up.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* AVISO TOPO */
+  .top-bar-wrapper .widget { background: var(--nexus-primary); color: #fff; text-align: center; padding: 8px 15px; font-size: 0.9rem; font-weight: 500; }
+  .top-bar-wrapper .widget h2 { display: none; }
+
+  /* NAVBAR */
+  .navbar-nexus { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; padding: 1rem 0; }
+  .navbar-nexus .Header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--nexus-dark); }
+  .navbar-nexus .Header img { max-height: 40px; }
+  .navbar-nexus .sl-header-brand { font-size: 1.5rem; font-weight: 700; color: var(--nexus-dark); }
+
+  /* HERO SECTION */
+  .hero-strip-wrapper { padding-top: 100px; text-align: center; background: #ffffff; }
+  .hero-section { padding: 40px 0 80px 0; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+  .hero-text-area { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+  .hero-text-area .widget h2.title { font-size: 3.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 1.5rem; line-height: 1.2; color: var(--nexus-dark); }
+  .hero-text-area .widget .widget-content { font-size: 1.25rem; color: var(--nexus-gray); line-height: 1.6; margin-bottom: 2rem; }
+  .hero-media-area .widget img { width: 100%; max-width: 600px; height: auto; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+  .hero-media-area .widget h2.title { display: none; }
+
+  @media (max-width: 768px) {
+    .hero-text-area .widget h2.title { font-size: 2.5rem; text-align: center; }
+    .hero-text-area .widget .widget-content { text-align: center; }
+    .hero-text-area .btn-hero-wrapper { text-align: center; }
+  }
+
+  /* CARDS DE FUNCIONALIDADES */
+  .cards-wrapper { padding: 80px 0; }
+  #saas-cards .widget {
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 40px 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.4s ease; height: 100%; display: flex; flex-direction: column;
+  }
+  #saas-cards .widget:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(13, 110, 253, 0.1); border-color: var(--nexus-primary); }
+  #saas-cards .widget h2.title { font-size: 1.5rem; font-weight: 700; color: var(--nexus-dark); margin-bottom: 15px; border-bottom: none; }
+  #saas-cards .widget h2.title::before { content: "\F287"; font-family: "bootstrap-icons"; display: block; font-size: 2.5rem; color: var(--nexus-primary); margin-bottom: 15px; }
+  #saas-cards .widget .widget-content { color: var(--nexus-gray); font-size: 1rem; line-height: 1.7; flex-grow: 1; }
+
+  /* CARDS DE PREÇOS */
+  .pricing-wrapper { background: var(--nexus-light); padding: 80px 0; }
+  #pricing-cards .widget {
+    background: #ffffff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 50px 40px; text-align: center;
+    transition: all 0.4s ease; height: 100%; display: flex; flex-direction: column; align-items: center;
+  }
+  #pricing-cards .widget:hover { border-color: var(--nexus-primary); box-shadow: 0 20px 40px rgba(13, 110, 253, 0.08); transform: scale(1.02); }
+  #pricing-cards .widget h2.title { font-size: 1.5rem; font-weight: 700; color: var(--nexus-dark); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; border: none; }
+  #pricing-cards .widget .widget-content { color: var(--nexus-gray); font-size: 1.1rem; line-height: 1.6; flex-grow: 1; display: flex; flex-direction: column; }
+  #pricing-cards .widget .widget-content .btn { margin-top: auto !important; }
+  #pricing-cards .widget .widget-content p:first-of-type::before { content: "R$ "; font-size: 1.2rem; vertical-align: super; color: var(--nexus-gray); }
+  #pricing-cards .widget .widget-content p:first-of-type { font-size: 3.5rem; font-weight: 800; color: var(--nexus-dark); margin-bottom: 5px; line-height: 1; }
+
+  /* CARDS DE DEPOIMENTOS */
+  #testimonials .widget { background: #ffffff; border-radius: 16px; padding: 30px; border: 1px solid #e2e8f0; font-style: italic; color: var(--nexus-gray); }
+  #testimonials .widget h2.title { font-size: 1.1rem; font-weight: 700; color: var(--nexus-dark); margin-top: 20px; font-style: normal; border: none; }
+  #testimonials .widget h2.title::before { content: "\F6B0"; font-family: "bootstrap-icons"; display: block; font-size: 2rem; color: #ffc107; margin-bottom: 10px; }
+
+  /* BLOG / ARTIGOS */
+  .blog-section { padding: 80px 0; background: #ffffff; border-top: 1px solid #e2e8f0; }
+  .post-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; height: 100%; transition: all 0.3s; }
+  .post-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+  .post-card-img { width: 100%; height: 220px; object-fit: cover; background: #f1f5f9; }
+  .post-card-body { padding: 25px; }
+  .post-title a { color: var(--nexus-dark); font-weight: 700; font-size: 1.25rem; }
+  .post-title a:hover { color: var(--nexus-primary); }
+  .post-snippet { color: var(--nexus-gray); margin-top: 10px; font-size: 0.95rem; }
+
+  /* PRÉ-RODAPÉ */
+  .pre-footer-wrapper { padding: 20px 0; }
+
+  /* FOOTER */
+  .footer-nexus { background: var(--nexus-dark); color: #94a3b8; padding: 60px 0 30px 0; }
+  .footer-nexus .widget h2.title { color: #ffffff; font-weight: 700; margin-bottom: 20px; border: none; }
+
+  /* === CSS DO NICHO (peças do dossiê: nexus-typography-override + nexus-hero-strip) === */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <div class='top-bar-wrapper'>
+    <b:section id='top-bar' maxwidgets='1' name='Barra de Aviso (Topo)' showaddelement='yes'/>
+  </div>
+
+  <nav class='navbar navbar-expand-lg navbar-nexus fixed-top mt-auto'>
+    <div class='container'>
+      <b:section id='header-logo' maxwidgets='1' name='Logotipo da Empresa' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+
+      <button aria-controls='navbarNav' aria-expanded='false' aria-label='Toggle navigation' class='navbar-toggler border-0 shadow-none' data-bs-target='#navbarNav' data-bs-toggle='collapse' type='button'>
+        <i class='bi bi-list fs-1 text-dark'/>
+      </button>
+
+      <div class='collapse navbar-collapse' id='navbarNav'>
+        <b:section class='ms-auto' id='menu-links' maxwidgets='1' name='Links do Menu' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+        <a class='btn btn-primary rounded-pill px-4 fw-bold ms-lg-3' href='#contato'>Fale Conosco</a>
+      </div>
+    </div>
+  </nav>
+
+  <b:if cond='data:view.isHomepage'>
+
+    <div class='hero-strip-wrapper'>
+      <b:section id='hero-area' maxwidgets='1' name='Faixa de Anúncio (Hero)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+    </div>
+
+    <section class='hero-section'>
+      <div class='container'>
+        <div class='row align-items-center g-5'>
+          <div class='col-lg-6 hero-text-area fade-in-up'>
+            <b:section id='hero-text' maxwidgets='1' name='Texto do Hero' showaddelement='yes'>
+              <b:widget id='HTML90' locked='false' title='Revolucione a sua Gestão' type='HTML' version='2' visible='true'>
+                <b:widget-settings>
+                  <b:widget-setting name='content'>A plataforma SaaS mais completa do mercado. Escale os seus resultados com automação inteligente e dados em tempo real sem precisar de escrever código.</b:widget-setting>
+                </b:widget-settings>
+                <b:includable id='main'>
+                  <h2 class='title'><data:title/></h2>
+                  <div class='widget-content'><data:content/></div>
+                  <div class='btn-hero-wrapper mt-3'>
+                    <a class='btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm' href='#planos'>Ver Planos</a>
+                  </div>
+                </b:includable>
+              </b:widget>
+            </b:section>
+          </div>
+
+          <div class='col-lg-6 hero-media-area fade-in-up text-center'>
+            <b:section id='hero-media' maxwidgets='1' name='Imagem/Vídeo do Hero' showaddelement='yes'>
+              <b:widget id='Image99' locked='false' title='Imagem do Hero' type='Image' version='2' visible='true'>
+                <b:includable id='main'>
+                  <b:if cond='data:sourceUrl'>
+                    <img expr:alt='data:title' expr:src='data:sourceUrl'/>
+                  <b:else/>
+                    <img alt='Imagem do Hero' src='https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&amp;fit=crop&amp;w=800&amp;q=80'/>
+                  </b:if>
+                </b:includable>
+                <b:includable id='content'>
+                  <div class='widget-content'>
+                    <b:tag cond='data:link' expr:href='data:link' name='a'>
+                      <img expr:alt='data:title' expr:height='data:height' expr:id='data:widget.instanceId + &quot;_img&quot;' expr:src='data:sourceUrl' expr:width='data:width'>
+                        <b:attr cond='data:sourceSet' expr:value='data:sourceSet' name='srcset'/>
+                      </img>
+                    </b:tag>
+                    <br/>
+                    <b:if cond='data:caption'>
+                      <span class='caption'><data:caption/></span>
+                    </b:if>
+                  </div>
+                </b:includable>
+              </b:widget>
+            </b:section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class='cards-wrapper' id='funcionalidades'>
+      <div class='container'>
+        <div class='text-center mb-5 fade-in-up'>
+          <span class='text-primary fw-bold text-uppercase tracking-wide'>Vantagens</span>
+          <h2 class='display-6 fw-bold text-dark mt-2'>Tudo o que a sua empresa precisa</h2>
+        </div>
+
+        <b:section class='cards-grid fade-in-up' id='saas-cards' name='Cartões de Funcionalidades' showaddelement='yes'>
+          <b:widget id='Text91' locked='false' title='Automação Rápida' type='Text' version='1'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Elimine o trabalho manual da sua equipa e deixe o nosso sistema tratar das tarefas repetitivas automaticamente.</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+          <b:widget id='Text92' locked='false' title='Relatórios em Tempo Real' type='Text'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Tome decisões precisas com dashboards dinâmicos que atualizam os dados de vendas da sua empresa a cada segundo.</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+          <b:widget id='Text93' locked='false' title='Segurança de Nível Bancário' type='Text'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Os dados dos seus clientes protegidos por criptografia militar. Conformidade total com a LGPD e a GDPR.</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+        </b:section>
+      </div>
+    </section>
+
+    <section class='pricing-wrapper' id='planos'>
+      <div class='container'>
+        <div class='text-center mb-5 fade-in-up'>
+          <h2 class='display-6 fw-bold text-dark'>Escolha o plano ideal</h2>
+          <p class='text-muted fs-5'>Sem fidelização. Cancele quando quiser.</p>
+        </div>
+
+        <b:section class='cards-grid fade-in-up' id='pricing-cards' name='Cartões de Preços (HTML)' showaddelement='yes'>
+          <b:widget id='HTML91' locked='false' title='Plano Starter' type='HTML' version='1'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<p>29</p><p>Ideal para pequenos negócios em crescimento.</p><ul class="list-unstyled mt-4 text-start"><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Até 5 utilizadores</li><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Suporte por email</li></ul><a href="#contato" class="btn btn-outline-primary w-100 rounded-pill mt-4 fw-bold">Começar Agora</a>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+          <b:widget id='HTML92' locked='false' title='Plano Pro' type='HTML'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<p>99</p><p>A solução completa para escalar as suas vendas.</p><ul class="list-unstyled mt-4 text-start"><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Utilizadores ilimitados</li><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Suporte Prioritário 24/7</li></ul><a href="#contato" class="btn btn-primary w-100 rounded-pill mt-4 fw-bold">Assinar Pro</a>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+        </b:section>
+      </div>
+    </section>
+
+    <section class='cards-wrapper'>
+      <div class='container'>
+        <div class='text-center mb-5 fade-in-up'>
+          <h2 class='display-6 fw-bold text-dark'>O que dizem os nossos clientes</h2>
+        </div>
+        <b:section class='cards-grid fade-in-up' id='testimonials' name='Cartões de Depoimentos (Texto)' showaddelement='yes'>
+          <b:widget id='Text94' locked='false' title='João Silva, CEO da TechCorp' type='Text'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA["Desde que implementámos o Nexus, a nossa produtividade aumentou 40%. A facilidade de uso da plataforma é simplesmente incomparável."]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+        </b:section>
+      </div>
+    </section>
+
+  </b:if>
+
+  <section class='blog-section'>
+    <div class='container fade-in-up'>
+      <b:if cond='data:view.isMultipleItems'>
+        <div class='text-center mb-5'>
+          <h2 class='fw-bold text-dark'>Atualizações e Novidades</h2>
+        </div>
+      </b:if>
+
+      <!-- id LITERAL 'main' preservado de propósito — marcador canônico
+           que injetarDesignPackage() (compilerWorker.js) busca pra
+           staticSections/heroHtml do chat de edição. Nome real do
+           arquivo era 'main-blog' (ver name= abaixo, decorativo). -->
+      <b:section id='main' name='Postagens do Blog' showaddelement='no'>
+        <b:widget id='Blog1' locked='false' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+          <!-- Settings limitados à lista válida pro tipo Blog
+               (gerarDiagnostico() rejeita style.*/showAuthorProfile/
+               showLocation — mesmo achado já descoberto em noticias-mag-
+               news/tecnologia-techwind; presentes no arquivo real mas
+               fora do schema que o Blogger aceita hoje). -->
+          <b:widget-settings>
+            <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+            <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+            <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+            <b:widget-setting name='showAuthor'>false</b:widget-setting>
+            <b:widget-setting name='showLabels'>true</b:widget-setting>
+            <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+            <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+            <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+            <b:widget-setting name='showReactions'>false</b:widget-setting>
+          </b:widget-settings>
+
+          <!-- ════════ MAIN includable ════════ -->
+          <!-- Extraído verbatim de exemplos/saas-nexus.xml: feed em grid
+               (.post-card), post único com h1/post-body reais. -->
+          <b:includable id='main' var='top'>
+            <b:if cond='data:view.isMultipleItems'>
+              <div class='row g-4'>
+                <b:loop values='data:posts' var='post'>
+                  <div class='col-md-6 col-lg-4'>
+                    <article class='post-card'>
+                      <a expr:href='data:post.url'>
+                        <b:if cond='data:post.featuredImage'>
+                          <img class='post-card-img' expr:alt='data:post.title' expr:src='data:post.featuredImage'/>
+                        <b:else/>
+                          <div class='post-card-img d-flex align-items-center justify-content-center text-muted'>
+                            <i class='bi bi-image fs-1'/>
+                          </div>
+                        </b:if>
+                      </a>
+                      <div class='post-card-body'>
+                        <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
+                        <p class='post-snippet'><data:post.snippet/></p>
+                      </div>
+                    </article>
+                  </div>
+                </b:loop>
+              </div>
+              <b:include name='nextprev'/>
+            <b:else/>
+              <b:loop values='data:posts' var='post'>
+                <article class='mx-auto' style='max-width: 800px;'>
+                  <h1 class='fw-bold mb-4 display-5'><data:post.title/></h1>
+                  <div class='text-muted mb-4 pb-4 border-bottom'>
+                    <i class='bi bi-calendar3'/> <data:post.date/>
+                  </div>
+                  <div class='post-body fs-5 text-secondary' style='line-height: 1.8;'>
+                    <data:post.body/>
+                  </div>
+                </article>
+              </b:loop>
+            </b:if>
+          </b:includable>
+
+          <!-- ════════ POST includable ════════ -->
+          <b:includable id='post' var='post'><div/></b:includable>
+
+          <!-- ════════ PAGINAÇÃO ════════ -->
+          <b:includable id='nextprev'>
+            [[PAGINATION_MODULE]]
+          </b:includable>
+
+          [[BLOGGER_INCLUDABLES_PADRAO]]
+
+        </b:widget>
+      </b:section>
+    </div>
+  </section>
+
+  <div class='container pre-footer-wrapper'>
+    <b:section id='pre-footer' maxwidgets='3' name='Área Pré-Rodapé (Banners)' showaddelement='yes'>[[STATS_WIDGET]][[FEATURED_POST_WIDGET]]</b:section>
+  </div>
+
+  <footer class='footer-nexus' id='contato'>
+    <div class='container'>
+      <div class='row g-5 mb-5'>
+        <div class='col-md-4'>
+          <b:section id='footer-about' maxwidgets='1' name='Sobre (Rodapé)' showaddelement='yes'>
+            <b:widget id='Text95' locked='false' title='Nexus SaaS' type='Text'>
+              <b:widget-settings>
+                <b:widget-setting name='content'>A nossa missão é democratizar a alta tecnologia para pequenas e médias empresas através de uma plataforma robusta e intuitiva.</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2 class='title'><data:title/></h2>
+                </b:if>
+                <div class='widget-content'>
+                  <data:content/>
+                </div>
+                <b:include name='quickedit'/>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-links' maxwidgets='2' name='Links (Rodapé)' showaddelement='yes'>[[BLOG_ARCHIVE_WIDGET]][[SOCIAL_LINKS_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-contact' maxwidgets='1' name='Formulário de Contato' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <div class='text-center pt-4 border-top border-secondary'>
+        <small>&#169; <script>document.write(new Date().getFullYear())</script> <data:blog.title/>. Todos os direitos reservados.</small>
+      </div>
+    </div>
+  </footer>
+
+  [[ERROR_404_MODULE]]
+  [[DARK_MODE_MODULE]]
+  [[BACK_TO_TOP_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+  <script>
+  //<![CDATA[
+  document.addEventListener('DOMContentLoaded', () => {
+    const scrollObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in-up').forEach(el => scrollObserver.observe(el));
+  });
+  //]]>
+  </script>
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "id": "orc-004",
+  "slug": "orquestracao-multi-acao",
+  "categoria": "orquestracao",
+  "descricao": "Padrão para orquestrar múltiplas ações sequenciais ou paralelas dentro de uma mesma request. Ações podem depender do output de ações anteriores. O task-runner gerencia o fluxo e rollback em caso de falha",
+  "componentes": [
+    "sequenciador-acoes",
+    "resolvedor-dependencias",
+    "executor-paralelo",
+    "rollback-handler",
+    "contexto-compartilhado",
+    "barreira-sincronizacao"
+  ],
+  "exemplos": [
+    "Fluxo clone-edit-commit: ação 1 clone repo → ação 2 edita arquivo (usa path do clone) → ação 3 commit (usa path e mudanças) → ação 4 push",
+    "Fluxo paralelo: ação 1 build CSS + ação 2 build JS executam em paralelo → ação 3 empacota artefatos (depende de ambas)",
+    "Rollback: ação 1 ok, ação 2 ok, ação 3 falha → rollback desfaz ações 1 e 2 → retorna erro consolidado"
+  ],
+  "keywords": ["multi-acao", "sequencial", "paralelo", "dependencia", "rollback", "contexto", "sincronizacao"]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "tema-natureza-bulma-vegan",
+  "titulo": "Tema Natureza / Vegan — Design Tokens e Padroes CSS",
+  "categoria": "tema-nicho",
+  "nicho": "natureza",
+  "versao_fonte": "Bulma Vegan Template",
+  "descricao": "Design tokens, componentes CSS e estruturas HTML extraidos de template real de blog natureza/vegan. Zero tags Blogger. Paleta verde-sabia, tipografia humanista, Bootstrap 5 col-lg-8 + sidebar col-lg-4.",
+  "atributos_html_raiz": {
+    "b_css": "false",
+    "b_defaultmarkups": "true",
+    "b_layoutsVersion": "3",
+    "nota": "b:css=false desativa bundle CSS legado do Blogger. b:defaultmarkups=true preserva markups padrao de widgets nativos."
+  },
+  "tokens_css": {
+    "prefixo": "--nat-",
+    "bridge_tema_designer": "--nat-primary: $(theme.color.primary);",
+    "nota_bridge": "$(theme.color.primary) conecta ao painel Blogger Theme Designer — troca de cor primaria sem editar CSS",
+    "valores_padrao": {
+      "--nat-primary": "#8FBC8F",
+      "--nat-bg": "#F5F7F8",
+      "--nat-footer": "#121212",
+      "--nat-text": "#333333"
+    },
+    "fontes": {
+      "corpo": "PT Sans, sans-serif",
+      "titulos_display": "Allerta Stencil, sans-serif",
+      "sidebar_gadgets": "Philosopher, serif",
+      "google_fonts_query": "PT+Sans:wght@400,700|Allerta+Stencil|Philosopher"
+    }
+  },
+  "layout": {
+    "estrutura": "container > row: col-lg-8 (posts) + col-lg-4 (sidebar direita)",
+    "header": "sticky-top, border-bottom: 2px solid var(--nat-primary)",
+    "footer": "3 colunas col-md-4 sobre fundo --nat-footer (#121212): contadores | logo+contato | arquivo"
+  },
+  "regras_nicho": [
+    "Cor primaria verde-sabia (#8FBC8F) — sem azuis sinteticos ou paletas neon",
+    "Tipografia humanista: PT Sans corpo, Allerta Stencil titulos de impacto, Philosopher sidebar",
+    "Imagens sempre object-fit cover — proporcao 600x337 (16:9) para cards do grid",
+    "Footer escuro #121212 com texto claro — contraste terra/folha natural",
+    "Labels em cloud pill (border-radius: 50rem), nunca tags quadradas no nicho natureza/organico",
+    "Icone bi-leaf (\\F288 Bootstrap Icons) em listas de labels reforca identidade organica"
+  ],
+  "widgets_complementares": [
+    "widget-cookie-lgpd",
+    "widget-slider-carousel",
+    "widget-relacionados-json-feed",
+    "widget-back-to-top",
+    "widget-menu-dropdown-prefixo"
+  ]
+}

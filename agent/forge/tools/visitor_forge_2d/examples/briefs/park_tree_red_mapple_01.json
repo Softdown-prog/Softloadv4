@@ -1,0 +1,25 @@
+{
+  "contract": "CH_2D_ART_BRIEF_V1",
+  "id": "park_tree_red_mapple_01",
+  "subject": "custom",
+  "template": "park_tree_red_mapple_golden_v1.json",
+  "seed": 41527,
+  "recipeUpdates": {
+    "mapleStyle": {
+      "center": [128, 126],
+      "crownRadius": [90, 105],
+      "leafScalePx": [2.8, 5.0],
+      "branchLeafSteps": [0.46, 0.62, 0.78, 0.92, 1.06],
+      "definedLeaves": true,
+      "preserveBranchGaps": true
+    },
+    "broadleafStructure": {
+      "layout": "painted_canopy",
+      "profile": "branching",
+      "center": [128, 126],
+      "radius": [90, 105],
+      "density": 1.04
+    },
+    "shadowWidth": 92
+  }
+}

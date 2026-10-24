@@ -1,0 +1,155 @@
+'use strict';
+const express = require('express');
+const router  = express.Router();
+const fs      = require('fs');
+const os      = require('os');
+const path    = require('path');
+const multer  = require('multer');
+const rateLimit = require('express-rate-limit');
+
+const { exigirLogin, verificarSaldo } = require('../../middlewares/authGuard');
+const chatStorage       = require('../../services/chatStorageService');
+const { db, admin }     = require('../../services/firebase');
+const { debitarCreditos, PLAN_CREDITS } = require('../../services/creditService');
+const { criarSolarisChat } = require('../../solaris/chat/solarisChat');
+const { detectarMarcador, removerMarcadorTruncado } = require('../../solaris/chat/solarisGenerationTrigger');
+const { criarOrquestrador } = require('../../solaris/pipeline/orchestrator');
+const { buscarConhecimentoMisto } = require('../../../scripts/codeCorpus/codeSearchService');
+const { criarModelRouter }  = require('../../solaris/llm/modelRouter');
+const { getAgent }          = require('../../services/agentBridge');
+const { inspecionarProjeto } = require('../../solaris/pipeline/projectInspector');
+const { responderOuEditarProjeto } = require('../../solaris/pipeline/projectEditor');
+const { criarZip, criarArquivo, deletarArquivo, listarProjeto, lerArquivo } = require('../../solaris/tools/fileTools');
+const { extrairZipViaSandbox } = require('../../solaris/tools/archiveExtractClient');
+const { detectarFramework } = require('../../solaris/tools/frameworkDetector');
+const { salvarProjeto, carregarProjeto } = require('../../solaris/tools/projectStorage');
+const { lerProjetoParaPersistir } = require('../../solaris/tools/fileTools');
+const { criarHandlerChatSolaris } = require('../../solaris/http/solarisChatHandler');
+const { criarHandlerUploadSolaris } = require('../../solaris/http/solarisUploadHandler');
+
+// ──────────────────────────────────────────────────────────────────────────
+// CHAT DO SOLARIS CODE — rota + view próprias, motor totalmente separado
+// do Blogger Engine (ver src/solaris/README.md). Mesma separação
+// estrutural que o Sol (/eu/sol, admin) e o Especialista Blogger
+// (/dashboard/chat) já têm — sem misturar histórico/contexto entre eles.
+//
+// Créditos: Solaris é Gemini-only (mesmo pool "creditos"/"creditos_expira_em"
+// do Especialista Blogger) — verificarSaldo já resolve o pool certo sozinho
+// (só olha req.body.model === 'gpt-5.4', que o Solaris nunca envia). Cobra
+// pelos tokens reais do usageMetadata do Gemini (mesma fonte de
+// src/services/geminiService.js), nunca por chamada fixa.
+//
+// Fase 3: confirmação do manifesto → geração de verdade. O marcador
+// [[SOLARIS_GERAR:{...}]] (ver solarisGenerationTrigger.js) dispara
+// orchestrator.gerarProjeto() num diretório temporário — o ZIP resultante
+// volta em base64 no evento "done" (projetos do Solaris são pequenos o
+// bastante pra isso, sem precisar de upload/rota de download própria) e
+// nunca é persistido em disco além do request (fs.rmSync no finally do
+// diretório temp). Sem link de download no histórico — a sessão salva só
+// o texto da conversa, mesmo escopo documentado em src/solaris/README.md.
+// ──────────────────────────────────────────────────────────────────────────
+const SOLARIS_CHAT_SESSION_TYPE = 'solaris-chat';
+
+// Sem URL do serviço de embeddings, o RAG por palavras-chave continua sozinho.
+const buscarConhecimento = process.env.EMBEDDINGS_SERVICE_URL
+    ? ({ query, topK }) => buscarConhecimentoMisto({ query, topK, db, codeSearchEnabled: process.env.SOLARIS_CODE_SEARCH_ENABLED === 'true' })
+    : null;
+const solarisChat = criarSolarisChat({ buscarConhecimento });
+const modelRouter  = criarModelRouter();
+const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
+
+let solarisAgent = null;
+async function getSolarisAgent() {
+    if (!solarisAgent) {
+        solarisAgent = await getAgent('solaris-chat');
+        await solarisAgent.start();
+    }
+    return solarisAgent;
+}
+
+router.get('/dashboard/solaris', exigirLogin, (req, res) => {
+    res.render('pages/react-test', {
+        activePage: 'solaris',
+        user: req.session.user
+    });
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// POST /dashboard/solaris/chat/stream — mesmo protocolo de eventos SSE
+// genérico usado em todo o projeto (status/chunk/done/error). Streaming
+// real (Fase 2) via solarisChat.perguntarStream — cada trecho de texto
+// do Gemini vira um evento "chunk" assim que chega.
+// ──────────────────────────────────────────────────────────────────────────
+router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarSaldo, criarHandlerChatSolaris({
+    chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador,
+    carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo,
+    criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador,
+}));
+
+// ──────────────────────────────────────────────────────────────────────────
+// POST /dashboard/solaris/upload — detector de framework a partir de
+// upload (ver src/solaris/README.md). Princípio de segurança: todo
+// arquivo enviado pelo usuário é tratado como malicioso até prova em
+// contrário — o conteúdo extraído NUNCA é executado, NUNCA passa por
+// eval/require/child_process. Ele só vira TEXTO puro, lido como string
+// pra alimentar frameworkDetector.js (regex/sinal estrutural, mesmo
+// jeito que um humano leria o código colado num chat). O diretório
+// temporário de extração é sempre apagado no finally, nunca persiste
+// além da vida do request — mesmo padrão já usado pro ZIP de geração
+// (Fase 3, ver mais acima neste arquivo).
+//
+// multer (memoryStorage) faz o parse do multipart — nunca escreve o
+// upload bruto em disco antes da validação. Quem de fato decide se o
+// conteúdo é seguro é o serviço isolado sandbox-efemoro/ (via
+// tools/archiveExtractClient.js, POST /extract-zip): o parsing do ZIP
+// não-confiável roda FORA do processo do app principal, no container
+// separado que já faz essa validação pro agent/ (mesmo endpoint, ver
+// agent/src/capabilities/archive.js) — zip-slip, zip bomb, symlink,
+// profundidade, tamanho/contagem, tudo antes de qualquer byte voltar
+// pra cá. Os arquivos de texto extraídos voltam prontos (não é mais
+// preciso escrever em disco pra depois ler de volta) e são gravados no
+// baseDir local via criarArquivo() só pra manter o resto do pipeline
+// (listarProjeto/lerArquivo/detectarFramework/inspecionarProjeto)
+// funcionando exatamente como antes, sem precisar mudar nada nele.
+//
+// Fase 2b: depois da detecção determinística, um loop de tool-calling
+// (pipeline/projectInspector.js, Gemini Pro) lê/lista/busca de verdade
+// nos arquivos extraídos — SOMENTE LEITURA, mesmo baseDir, mesma vida
+// de requisição — e devolve um resumo em texto (`analiseIA`). Cobra
+// crédito real (verificarSaldo/debitarCreditos, mesmo pool do resto do
+// Solaris) só quando a inspeção de fato roda; falha da IA nunca derruba
+// a resposta — a detecção de framework é sempre determinística.
+// ──────────────────────────────────────────────────────────────────────────
+const UPLOAD_MAX_BYTES = 15 * 1024 * 1024; // 15MB no arquivo .zip em si (compactado)
+
+const uploadLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => res.status(429).json({ error: 'Muitos envios. Aguarde alguns minutos antes de tentar de novo.' }),
+});
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: UPLOAD_MAX_BYTES, files: 1 },
+    fileFilter: (req, file, cb) => {
+        // Gate de UX, não de segurança — mimetype/nome vêm do cliente,
+        // trivialmente falsificável. A validação de verdade é o serviço
+        // isolado sandbox-efemoro/ tentando abrir o buffer como zip real.
+        if (!/\.zip$/i.test(file.originalname || '')) {
+            cb(new Error('Envie um arquivo .zip.'));
+            return;
+        }
+        cb(null, true);
+    },
+});
+
+router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarSaldo, criarHandlerUploadSolaris({
+    upload, chatStorage, extrairZipViaSandbox, criarArquivo, listarProjeto, lerArquivo, detectarFramework,
+    inspecionarProjeto, modelRouter, debitarCreditos, salvarProjeto,
+}));
+
+router.SOLARIS_CHAT_SESSION_TYPE = SOLARIS_CHAT_SESSION_TYPE;
+module.exports = router;
+

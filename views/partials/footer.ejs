@@ -1,0 +1,56 @@
+<footer class="sl-footer">
+    <div class="container-xl">
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-6">
+                <a href="/" class="fw-black text-white text-decoration-none d-block mb-3 sl-brand" style="font-size:1.25rem">
+                    SOFTLOAD<span class="sl-accent">ENGINE</span>
+                </a>
+                <p class="mb-0 small" style="color:var(--sl-text-400);max-width:360px;line-height:1.7">
+                    Fundição industrial de alta performance para templates XML. Blindagem, velocidade e conversão para projetos exigentes.
+                </p>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <h6 class="text-white fw-black text-uppercase mb-3" style="font-size:11px;letter-spacing:0.15em">Acesso Restrito</h6>
+                <ul class="list-unstyled small fw-semibold mb-0">
+                    <li class="mb-2"><a href="/register" class="sl-footer-link">Registre-se</a></li>
+                    <li class="mb-2"><a href="/login" class="sl-footer-link">Painel de Controle</a></li>
+                    <li class="mb-2"><a href="/#features" class="sl-footer-link">A Arquitetura</a></li>
+                </ul>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <h6 class="text-white fw-black text-uppercase mb-3" style="font-size:11px;letter-spacing:0.15em">Protocolos</h6>
+                <ul class="list-unstyled small fw-semibold mb-0">
+                    <li class="mb-2"><a href="/contato" class="sl-footer-link">Contato</a></li>
+                    <li class="mb-2"><a href="https://suporte.analysepro.com/" class="sl-footer-link" target="_blank" rel="noopener">Blog e Dúvidas</a></li>
+                    <li class="mb-2"><a href="/termos-de-uso" class="sl-footer-link">Termos de Uso</a></li>
+                    <li class="mb-2"><a href="/privacidade" class="sl-footer-link">Privacidade de Dados</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 pt-3"
+             style="border-top:1px solid var(--sl-bg-800)">
+            <p class="mb-0 font-monospace text-uppercase"
+               style="font-size:11px;color:var(--sl-text-500);letter-spacing:0.15em">
+                &copy; 2026 Softload Engine. Todos os direitos reservados.
+            </p>
+            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded"
+                 style="background:var(--sl-bg-900);border:1px solid var(--sl-bg-800)">
+                <span class="rounded-circle sl-pulse"
+                      style="width:8px;height:8px;background:#22c55e;display:inline-block;box-shadow:0 0 8px rgba(34,197,94,0.8)"></span>
+                <span class="font-monospace text-uppercase"
+                      style="font-size:10px;color:var(--sl-text-300);letter-spacing:0.15em">Sistemas Operacionais</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<%- include('./cookies') %>
+
+<%# Bootstrap 5.3.3 JS Bundle (inclui Popper) — vendorizado localmente, ver header.ejs %>
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js?v=<%= gitSha %>"></script>
+
+</body>
+</html>

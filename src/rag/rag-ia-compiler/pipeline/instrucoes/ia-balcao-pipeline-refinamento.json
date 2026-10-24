@@ -1,0 +1,55 @@
+{
+  "id": "ia-balcao-pipeline-refinamento",
+  "titulo": "Pipeline de Refinamento Progressivo",
+  "categoria": "processo",
+  "descricao": "O Processo Iterativo de 6 Fases para Geração Zero Bugs de Templates Blogger.",
+  "diretiva": "A IA é ESTRITAMENTE PROIBIDA de gerar a arquitetura inteira numa única iteração. O projeto DEVE ser construído de forma sequencial, fase após fase.",
+  "fases": [
+    {
+      "numero": 1,
+      "nome": "Arquitetura Base (Estrutura e Esqueleto)",
+      "objetivo": "Definir os pilares do template. Não falar de cor nem de performance aqui.",
+      "topicos": ["headerStyle", "menuType", "sidebarPosition", "heroSection"],
+      "acao": "A IA apresenta as opções de estrutura. Após a escolha, o utilizador aprova o Esqueleto."
+    },
+    {
+      "numero": 2,
+      "nome": "O Motor do Feed (Grids e Paginação)",
+      "objetivo": "Definir a geometria de como os artigos serão organizados.",
+      "topicos": ["gridLayout", "paginationStyle"],
+      "acao": "A IA analisa a escolha da Fase 1. Se a estrutura tem uma Sidebar ativa, só oferece Grids compatíveis (não oferece Grid de 4 colunas)."
+    },
+    {
+      "numero": 3,
+      "nome": "Componentes de Engajamento (Widgets e Posts)",
+      "objetivo": "Ferramentas sociais e de usabilidade do visitante.",
+      "topicos": ["postModules", "commentSystem"],
+      "acao": "A IA orienta sobre as melhores escolhas para retenção, alertando sobre o impacto de widgets de terceiros no Blogger."
+    },
+    {
+      "numero": 4,
+      "nome": "O Design System (CSS e Identidade)",
+      "objetivo": "Aplicar a camada estética (presets.js).",
+      "topicos": ["colorPreset", "typography", "elementRadius", "darkMode"],
+      "acao": "A IA alinha a identidade visual com as escolhas anteriores. Ex: Layout Revista fica melhor com tipografia Sans-Serif moderna e cantos retos."
+    },
+    {
+      "numero": 5,
+      "nome": "Motor Oculto (SEO e Otimização)",
+      "objetivo": "Preparar as tags Meta e funcionalidades de performance.",
+      "topicos": ["coreFeatures", "adSlots", "footerStyle"],
+      "acao": "A IA faz o alerta final do Score Arquitetural: Esta é a camada que faz o seu site rankear."
+    },
+    {
+      "numero": 6,
+      "nome": "O Handoff de Compilação",
+      "objetivo": "Empacotar e fechar o projeto. Nenhuma pergunta extra é feita.",
+      "acao": "A IA compila as escolhas feitas nas 5 fases, apresenta o Resumo do Projeto e, após confirmação, gera APENAS O COMANDO CLI."
+    }
+  ],
+  "regras_de_seguranca": [
+    "Estado Contínuo (State Tracking): A IA NÃO DEVE esquecer a escolha do menuType quando chegar à Fase 4.",
+    "Impedimento de Pulos (No-Skip Policy): Se o utilizador pular fases, registar a preferência e responder com a pergunta da Fase 1 mesmo assim.",
+    "Validação Intermédia: Se na Fase 2 o utilizador escolher um Grid incompatível com a Fase 1, a IA corrige no momento (Micro-Correção)."
+  ]
+}

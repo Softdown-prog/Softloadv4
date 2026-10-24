@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho appstore-bulma-mobile — ver plano
+     "esqueleto por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md),
+     Fase 1b: o alvo real citado pelo usuário ("isso resolve o problema do
+     Bulma mobile"). A estrutura física (b:section, ids, ordem) abaixo foi
+     extraída de exemplos/appstore-bulma-mobile.xml (arquivo hand-authored
+     real) — não é mais o chassis genérico 'blog' compartilhado com
+     gamer-playerone/culinaria-boutique-gourmet/natureza-bulma-vegan/
+     pop-retro-pixel/elearning-academy. Toda a maquinaria interna
+     (includables padrão do Blogger, widget-settings do Blog1, tokens de
+     compile.js, CSS/skin, mecanismo de menu mobile genérico) continua vindo
+     do chassis de família — só o esqueleto de seções muda. Diferenças
+     estruturais reais vs. template_blog.xml:
+       - sem 'header-right' (o arquivo real não tem 2º slot de header).
+       - 'before-post': slot nativo vazio, novo (não existe no chassis
+         genérico) — no arquivo real tinha um widget "tempo de leitura"
+         hand-rolled (classes .post-content/.post-meta, variáveis CSS com
+         prefixo "nat" nunca declaradas — mesmo padrão de copy-paste de
+         outro nicho já visto em natureza-bulma-vegan). Nota: .post-content
+         voltou a ser usada de verdade nesta migração — ver "CORREÇÃO"
+         abaixo — mas não é a mesma coisa: aquele widget morto era um
+         parágrafo isolado antes do post, isto aqui é a classe real do
+         corpo do post dentro do Blog1.
+       - 'swipe-categories': seção PRÓPRIA e real pro menu de categorias
+         mobile (era a peça 'swipe-menu-categorias', já existente no
+         dossiê como hero, mas forçada a reusar o slot genérico de
+         hero-area com gating isMultipleItems — ponto de injeção mais
+         próximo disponível ANTES desta migração). Agora tem seção real,
+         gated por 'not data:view.isPost' (igual ao arquivo original —
+         mais abrangente que isMultipleItems, aparece em qualquer página
+         que não seja post individual, incluindo busca/label/páginas
+         estáticas).
+       - 'after-post': slot nativo vazio, novo — no arquivo real tinha um
+         widget HTML "{Seu Ads Aqui}" (placeholder de anúncio de exemplo
+         do próprio dono, mesmo padrão do hero-top de viral-magazine).
+       - sidebar colapsada pra 1 única seção 'sidebar' (era 6:
+         sidebar-author/sidebar-top/sidebar/sidebar-bottom/post-sidebar-top/
+         post-sidebar, com split list-view/post-view) — SEM split: no
+         arquivo real a mesma sidebar aparece em toda página (list E post),
+         com só FeaturedPost1 como widget nativo real (os outros widgets
+         HTML da sidebar real eram: heurística de detecção de 404 morta —
+         já excluída há muito, achado antigo documentado — CSS de
+         popular-posts-ranking-style já global via NICHO_CSS, e o cookie
+         banner que já é injetado à parte via NICHO_WIDGETS_HTML).
+       - footer continua 3 colunas (igual ao chassis), mas o conteúdo real
+         é diferente: footer-1 (PopularPosts1+Stats1 →
+         popularPostsRanking+statsWidget), footer-2 (Label1 →
+         labelCloudWidget), footer-3 (Translate1+ContactForm1 →
+         translateWidget+contactForm — contactForm não existia nos
+         defaults antes, achado novo). Sem blogArchiveWidget/
+         socialLinksWidget — não existem em lugar nenhum do arquivo real
+         (nichoModuleDefaults.js reauditado).
+       - 2 blocos de CSS/JS órfãos removidos na mesma migração (copy-paste
+         de outro nicho, mortos desde sempre, sem elemento correspondente
+         em lugar nenhum do arquivo real): #nat-hero-slider (estava
+         "grudado" na seção footer-1 do arquivo original) e
+         #nat-back-to-top (estava "grudado" na footer-3) — o backToTop
+         real do nicho já vem do módulo genérico BACK_TO_TOP_MODULE
+         (nichoModuleDefaults.js já tinha backToTop:true), que usa seus
+         próprios ids, nunca '#nat-back-to-top'.
+
+     CORREÇÃO (achado 8, mesmo tipo já aplicado em viral-magazine): a
+     versão original desta migração (acima) tratou só o b:section como
+     "estrutura real" e manteve o b:widget id='Blog1' (main/post — feed/
+     card de posts, maior área visual da página) herdado verbatim do
+     chassis 'blog' genérico: grade com post-destacado + grid de
+     news-card, view de post único rica (breadcrumb, meta bar, imagem
+     separada, tags, compartilhar, author box, relacionados). A peça
+     'app-list-card-style' do dossiê (CSS de .app-list-card/.app-list-icon/
+     .btn-baixar-pill) já documentava o problema: essas classes eram
+     coladas por cima do grid do chassis como remendo de compatibilidade,
+     nunca a estrutura real. Comparação direta com
+     exemplos/appstore-bulma-mobile.xml (achado provocado por feedback
+     direto do usuário: "não chegou nem a vez do buzz isso não é meu
+     padrão de design ainda, compara com os templates da pasta exemplos")
+     confirmou: a listagem real é uma lista chata (sem post-destacado, sem
+     grid) — cada item é ícone-esquerda + título/autor/label + botão
+     "Baixar"-à-direita, exatamente as classes que a peça já estilizava. A
+     view de post único real é radicalmente mais simples que a do chassis:
+     h1 (só em página avulsa/Page) + corpo em '.post-content' — sem
+     breadcrumb, meta bar, imagem separada, tags, compartilhar, comentários
+     visíveis ou relacionados. As widget-settings do Blog1 ligam comentário
+     (showCommentLink/commentLabel), mas o includable 'main' real nunca
+     chama nada que os renderize — configuração morta no arquivo original,
+     mesmo padrão de "flag ligada sem elemento real" do bug $(nav.font) já
+     corrigido em viral-magazine. nichoModuleDefaults.js reauditado de
+     novo: readingTime/shareButtons removidos (sem token/elemento real
+     onde renderizar). A peça 'blockquote-appstore' do dossiê tinha um
+     "conserto" anterior que trocava o seletor real '.post-content
+     blockquote' pelo do chassis '.blog-post-body blockquote' — revertido
+     de volta pro seletor real agora que o elemento existe de verdade.
+     gridLayout:'quadrado' mantido em nichoModuleDefaults.js mas sem efeito
+     visual (mesmo trade-off documentado em viral-magazine) — a lista real
+     nunca usa grid.
+
+     b:section id='main-nav' mantido com esse nome (não 'header-menu', como
+     o arquivo real chama) de propósito — é o mesmo id fixo que o módulo
+     global MENU_DROPDOWN_PREFIXO usa (document.querySelector('#main-nav
+     ul'), hardcoded em modules.js, compartilhado por todo nicho que liga
+     esse módulo) — renomear quebraria o mecanismo sem ganho real (é só
+     diferença de nome, não de estrutura). Ver
+     nichoDossie.appstore-bulma-mobile.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+    <b:if cond='data:view.featuredImage'>
+      <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+    </b:if>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /*
+  <Group description="Fundo e Cores Base" selector="body">
+    <Variable name="body.background" description="Fundo Geral" type="background" color="#f8fafc" default="$(color) none repeat scroll top left" value="$(color) none repeat scroll top left"/>
+    <Variable name="main.color" description="Cor Principal" type="color" default="#6366f1" value="#6366f1"/>
+    <Variable name="theme.text" description="Cor do Texto" type="color" default="#1e293b" value="#1e293b"/>
+    <Variable name="header.bg" description="Fundo do Cabeçalho" type="color" default="#ffffff" value="#ffffff"/>
+    <Variable name="footer.bg" description="Fundo do Rodapé" type="color" default="#1e293b" value="#1e293b"/>
+  </Group>
+  <Group description="Tipografia" selector="body">
+    <Variable name="body.font" description="Fonte do Texto" type="font" default="normal normal 16px system-ui,-apple-system,sans-serif" value="normal normal 16px system-ui,-apple-system,sans-serif"/>
+  </Group>
+  */
+
+  :root {
+    --sl-bg-body:        $(body.background);
+    --sl-text-main:      $(theme.text);
+    --sl-primary:        $(main.color);
+    --sl-card-bg:        #ffffff;
+    --sl-footer-bg:      #1e293b;
+    --sl-radius-lg:      14px;
+    --sl-radius-sm:      7px;
+    --sl-transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+    --sl-btn-radius:     8px;
+    --sl-btn-shadow:     0 2px 6px rgba(0,0,0,0.15);
+    --sl-font-family:    system-ui,-apple-system,sans-serif;
+    --sl-heading-weight: 700;
+  }
+
+  [[DYNAMIC_CSS]]
+
+  body {
+    background-color: var(--sl-bg-body,#f8fafc);
+    color: var(--sl-text-main);
+    font-family: var(--sl-font-family,system-ui,sans-serif);
+    margin:0; padding:0; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  img { max-width:100%; height:auto; display:block; }
+  a { color:var(--sl-primary); text-decoration:none; transition:var(--sl-transition); }
+  a:hover { filter:brightness(0.85); }
+  h1,h2,h3,h4,h5,h6 { font-weight:var(--sl-heading-weight); }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  /* Wrapper .site-header (não .sl-header) — classe real de
+     exemplos/appstore-bulma-mobile.xml (achado, mesma correção já
+     aplicada em noticias-mag-news: .sl-header só fazia sentido enquanto
+     o nicho usava o chassis compartilhado). .sl-header-brand mantida —
+     classe real do token HEADER_WIDGET genérico (gerarHeaderWidget(),
+     widgets.js), nunca .mag-header-content ou similar. */
+  .site-header {
+    background: var(--sl-card-bg);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    padding: .875rem 0;
+  }
+  .sl-header-brand { font-size:1.4rem; font-weight:800; color:var(--sl-text-main); letter-spacing:-.02em; }
+  .sl-header-brand:hover { color:var(--sl-primary); filter:none; }
+  .site-header-search { max-width:260px; }
+  @media (max-width:575.98px) { .site-header-search { display:none !important; } }
+
+  /* ── NAV ─────────────────────────────────────────────── */
+  .sl-nav {
+    background: var(--sl-primary);
+    padding: 0;
+  }
+  .sl-nav ul { list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; }
+  .sl-nav ul li { position:relative; }
+  .sl-nav ul li a {
+    display:block; padding:10px 16px;
+    color:rgba(255,255,255,0.9); font-size:.875rem; font-weight:600;
+    transition:var(--sl-transition);
+  }
+  .sl-nav ul li a:hover { background:rgba(0,0,0,0.15); color:#fff; filter:none; }
+  .sl-nav ul ul {
+    position:absolute; top:100%; left:0; display:none;
+    background:var(--sl-card-bg); min-width:200px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:99;
+    border-radius:0 0 var(--sl-radius-sm) var(--sl-radius-sm);
+  }
+  .sl-nav ul ul li a { color:var(--sl-text-main); padding:9px 16px; }
+  .sl-nav ul ul li a:hover { background:color-mix(in srgb,var(--sl-primary) 8%,transparent); color:var(--sl-primary); }
+  .sl-nav ul li:hover > ul { display:block; }
+  @media (max-width:768px) {
+    .sl-nav ul ul { position:static; box-shadow:none; background:rgba(0,0,0,0.15); }
+    .sl-nav ul ul li a { color:rgba(255,255,255,.9); }
+  }
+
+  /* ── SWIPE CATEGORIES (real: seção própria 'swipe-categories') ────── */
+  .swipe-menu-container {
+    display: flex; overflow-x: auto; gap: 0.75rem; padding: .75rem 0;
+    scrollbar-width: none;
+  }
+  .swipe-menu-container::-webkit-scrollbar { display: none; }
+  .swipe-menu-item {
+    white-space: nowrap; background: var(--sl-card-bg); border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 50px; padding: 0.4rem 1.2rem; color: var(--sl-text-main);
+    font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: var(--sl-transition);
+  }
+  .swipe-menu-item:hover, .swipe-menu-item.active {
+    background: var(--sl-primary); color: #ffffff; border-color: var(--sl-primary); filter: none;
+  }
+
+  /* Cards do feed antigo (post-destacado + grid, layout herdado do
+     chassis genérico) removidos aqui (achado 8) — nunca existiram no
+     arquivo real. A listagem de posts real usa app-list-card (CSS
+     própria na peça app-list-card-style do dossiê) — lista chata, sem
+     post-destacado nem grid. */
+
+  /* ── SIDEBAR WIDGETS ─────────────────────────────────── */
+  .blog-widget {
+    background: var(--sl-card-bg);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--sl-radius-lg);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .blog-widget-header {
+    padding: 12px 16px;
+    font-weight: 800;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items:center; gap:8px;
+  }
+  .blog-widget-header::before { content:''; width:3px; height:14px; background:var(--sl-primary); border-radius:2px; }
+  .blog-widget-body { padding:14px 16px; }
+
+  /* Popular posts list */
+  .blog-popular-list { list-style:none; padding:0; margin:0; }
+  .blog-popular-list li {
+    display:flex; gap:10px; align-items:center;
+    padding:9px 0;
+    border-bottom:1px solid rgba(0,0,0,0.05);
+  }
+  .blog-popular-list li:last-child { border-bottom:none; }
+  .blog-popular-list .blog-pop-thumb {
+    width:56px; height:42px; flex-shrink:0;
+    border-radius:var(--sl-radius-sm); overflow:hidden;
+  }
+  .blog-popular-list .blog-pop-thumb img { width:100%; height:100%; object-fit:cover; }
+  .blog-popular-list a { color:var(--sl-text-main); font-size:.82rem; font-weight:600; line-height:1.3; }
+  .blog-popular-list a:hover { color:var(--sl-primary); filter:none; }
+
+  /* Label pills */
+  .sl-label-widget ul { padding:0; margin:0; list-style:none; display:flex; flex-wrap:wrap; gap:7px; }
+  .sl-label-list a {
+    display:inline-block; padding:5px 13px;
+    background:color-mix(in srgb,var(--sl-primary) 10%,transparent);
+    color:var(--sl-primary); border-radius:50px;
+    font-size:.8rem; font-weight:700; transition:var(--sl-transition);
+  }
+  .sl-label-list a:hover { background:var(--sl-primary); color:#fff; filter:none; }
+  .sl-label-cloud a {
+    display:inline-block; padding:4px 12px;
+    border:1px solid var(--sl-primary); color:var(--sl-text-main);
+    border-radius:var(--sl-radius-lg); font-size:.88rem; transition:var(--sl-transition);
+  }
+  .sl-label-cloud a:hover { background:var(--sl-primary); color:#fff; transform:translateY(-2px); filter:none; }
+
+  /* ── AUTO-TOC (single post sidebar) ─────────────────── */
+  .blog-toc-widget { position:sticky; top:16px; }
+  .blog-toc-list { list-style:none; padding:0; margin:0; }
+  .blog-toc-list li { border-left:2px solid rgba(0,0,0,0.08); padding:.25rem 0 .25rem .75rem; transition:border-color .2s; }
+  .blog-toc-list li.active { border-left-color:var(--sl-primary); }
+  .blog-toc-list li.toc-h3 { padding-left:1.25rem; font-size:.8rem; }
+  .blog-toc-list a { color:#64748b; font-size:.83rem; line-height:1.4; display:block; }
+  .blog-toc-list a:hover,.blog-toc-list li.active a { color:var(--sl-primary); filter:none; }
+
+  /* ── SINGLE POST TYPOGRAPHY ──────────────────────────── */
+  /* Imagem hero separada, meta bar, author box e relacionados do post
+     único (layout antigo herdado do chassis genérico) removidos aqui
+     (achado 8): a view de post único real
+     (exemplos/appstore-bulma-mobile.xml) é minimalista — h1 (só em
+     Page) + corpo em post-content, sem nenhum desses elementos.
+     Tipografia do corpo mantida (não é estrutura de chassis, é
+     legibilidade de conteúdo), só retargetada pra classe real
+     post-content. Blockquote específico vem da peça blockquote-appstore
+     do dossiê, corrigida pra alvejar o seletor real também. */
+  .post-content { font-size:1.06rem; line-height:1.85; }
+  .post-content h2 { margin-top:2.5rem; padding-bottom:.5rem; border-bottom:2px solid rgba(0,0,0,0.07); }
+  .post-content h3 { margin-top:2rem; }
+  .post-content p { margin-bottom:1.4rem; }
+  .post-content img { border-radius:var(--sl-radius-sm); margin:1rem auto; }
+  .post-content a { text-decoration:underline; text-decoration-color:color-mix(in srgb,var(--sl-primary) 50%,transparent); text-underline-offset:3px; }
+  .post-content iframe,.post-content object,.post-content embed { max-width:100%; }
+  .sl-share-buttons a.btn { flex-shrink:0; }
+
+  /* ── BUTTONS ──────────────────────────────────────────── */
+  .btn-primary,.btn-outline-primary { border-radius:var(--sl-btn-radius); box-shadow:var(--sl-btn-shadow); }
+  .btn-outline-primary { color:var(--sl-primary); border-color:var(--sl-primary); }
+  .btn-outline-primary:hover,.btn-outline-primary:focus,.btn-outline-primary:active,.btn-outline-primary.active {
+    background-color:var(--sl-primary); border-color:var(--sl-primary); color:#fff; filter:none;
+  }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  /* Wrapper .site-footer (não .sl-footer) — classe real do arquivo,
+     mesmo achado do header acima. --sl-footer-bg (variável, não classe)
+     mantida — token global compartilhado entre nichos. */
+  .site-footer { background:var(--sl-footer-bg,#1e293b); color:#94a3b8; }
+  .site-footer h6 { color:#f1f5f9; font-weight:700; text-transform:uppercase; letter-spacing:.06em; font-size:.75rem; margin-bottom:1rem; }
+  .site-footer a { color:#94a3b8; font-size:.875rem; }
+  .site-footer a:hover { color:#f1f5f9; filter:none; }
+  .site-footer-divider { border-color:rgba(255,255,255,0.08) !important; }
+
+  /* ── DARK MODE ────────────────────────────────────────── */
+  [data-bs-theme="dark"] body { background-color:#0d1117; color:#e2e8f0; }
+  [data-bs-theme="dark"] .site-header { background:#161c2d; border-bottom-color:rgba(255,255,255,0.07); }
+  [data-bs-theme="dark"] .sl-header-brand { color:#e2e8f0; }
+  [data-bs-theme="dark"] .blog-widget { background:#1e2535; border-color:rgba(255,255,255,0.06); }
+  [data-bs-theme="dark"] .blog-popular-list li { border-bottom-color:rgba(255,255,255,0.06); }
+  [data-bs-theme="dark"] .blog-toc-list li { border-left-color:rgba(255,255,255,0.1); }
+  [data-bs-theme="dark"] .post-content h2 { border-bottom-color:rgba(255,255,255,0.08); }
+  [data-bs-theme="dark"] .blog-post-article { background:#1e2535 !important; }
+  [data-bs-theme="dark"] .blog-widget-header { background:rgba(255,255,255,0.04); border-bottom-color:rgba(255,255,255,0.07); }
+  [data-bs-theme="dark"] .app-list-card { background:#1e2535 !important; border-color:rgba(255,255,255,0.06) !important; }
+
+  /* ── RESPONSIVE ────────────────────────────────────────── */
+  @media (max-width:575.98px) {
+    .post-content { font-size:.97rem; }
+  }
+
+  /* GRID LAYOUTS (lista/dupla/revista/quadrado/mural/coluna-unica/zigzag) —
+     centralizado em gerarGridCardCss() (designTokensCss.js), injetado via
+     DYNAMIC_CSS. */
+
+  /* === CSS DO NICHO ===================================== */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+
+<body class='[[BODY_LAYOUT_CLASS]]'>
+
+  <!-- HEADER — sem 'header-right' (o arquivo real não tem 2º slot). -->
+  <header class='site-header'>
+    <div class='container'>
+      <div class='row align-items-center g-3'>
+        <div class='col-sm-6'>
+          <b:section id='header-logo' maxwidgets='1' name='Logótipo / Brand' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+        </div>
+        <div class='col-sm-6 d-flex align-items-center justify-content-sm-end gap-2'>
+          <form action='/search' class='site-header-search d-none d-sm-flex' method='get'>
+            <div class='input-group input-group-sm'>
+              <input class='form-control' name='q' placeholder='Pesquisar...' type='search'/>
+              <button aria-label='Pesquisar' class='btn btn-primary px-2' type='submit'><i class='bi bi-search'/></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV PRINCIPAL — id 'main-nav' mantido de propósito (ver comentário
+       do topo do arquivo, MENU_DROPDOWN_PREFIXO depende desse id exato). -->
+  <nav class='sl-nav'>
+    <div class='container d-flex align-items-center justify-content-between'>
+      <div>
+        [[MOBILE_MENU_TYPE]]
+        <b:section class='d-none d-lg-flex' id='main-nav' maxwidgets='1' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN + SIDEBAR — 1 <div class='row'> só, com <main> (before-post +
+       swipe-categories + feed do Blog1 + after-post) e <aside> (sidebar)
+       como IRMÃS diretas — igual à estrutura real do arquivo original
+       (</main> só fecha depois de after-post, <aside> vem em seguida).
+       Continua batendo com a regra de schema documentada em
+       template_blog.xml: b:section de sidebar precisa ser IRMÃ do
+       b:widget Blog1 (nunca filha do includable dele) e b:widget precisa
+       ser filho DIRETO de b:section — nenhuma das duas violada aqui, só
+       muda o wrapper HTML por fora (main/aside em vez de aside solto). -->
+  <div class='container my-4'>
+    <div class='row'>
+      <main class='col-lg-8'>
+
+        <!-- BEFORE-POST — slot nativo vazio, estrutura real (não existe
+             no chassis genérico). No arquivo original tinha um widget
+             "tempo de leitura" hand-rolled e morto (classes que não
+             batem com o chassis) — substituído pelo módulo genérico
+             readingTime. -->
+        <b:section id='before-post' showaddelement='yes'/>
+
+        <!-- SWIPE-CATEGORIES — seção própria e real pro menu de
+             categorias mobile (peça 'swipe-menu-categorias' do dossiê,
+             já existente). Gated por 'not data:view.isPost' — igual ao
+             arquivo original, mais abrangente que isMultipleItems
+             (aparece em busca/label/páginas estáticas também, só não em
+             posts individuais). -->
+        <b:if cond='not data:view.isPost'>
+          <b:section class='mb-3' id='swipe-categories' maxwidgets='1' name='Categorias (Mobile Swipe)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+        </b:if>
+        [[SLIDER_JSON]]
+        [[NICHO_EXTRA_SECTIONS]]
+
+      <b:section id='main' name='Feed de Postagens' showaddelement='yes'>
+          <b:widget id='Blog1' locked='true' title='Postagens' type='Blog' version='2'>
+
+        <!-- Sem esta declaração, o Blogger aplica os defaults do painel
+             (share buttons, comment link, author, etc.) e tenta acionar
+             sua própria máquina interna de bylines — cadeia que aponta
+             pra ícones nunca definidos neste tema. -->
+        <b:widget-settings>
+          <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+          <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+          <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+          <b:widget-setting name='showAuthor'>false</b:widget-setting>
+          <b:widget-setting name='showLabels'>false</b:widget-setting>
+          <b:widget-setting name='showTimestamp'>false</b:widget-setting>
+          <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+          <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+          <b:widget-setting name='showReactions'>false</b:widget-setting>
+        </b:widget-settings>
+
+        <!-- ════════ MAIN includable ════════ -->
+        <!-- CORREÇÃO (achado 8, mesmo tipo já aplicado em viral-magazine):
+             a versão anterior deste esqueleto preservava só o b:section
+             (ids/ordem/nesting) e mantinha o Blog1 (main/post — feed/card,
+             maior área visual da página) herdado verbatim do chassis
+             'blog' genérico — grade com post-destacado + grid de
+             news-card, view de post único rica (breadcrumb, meta bar,
+             hero, tags, share, author box, relacionados). Comparação
+             direta com exemplos/appstore-bulma-mobile.xml mostrou que o
+             arquivo real nunca usa esse desenho: a peça
+             'app-list-card-style' do dossiê (CSS de .app-list-card/
+             .app-list-icon/.btn-baixar-pill) já documentava isso — as
+             classes eram coladas por cima do grid do chassis como
+             remendo de compatibilidade, não a estrutura real. O arquivo
+             real é uma lista chata (sem grid, sem post-destacado): cada
+             item é uma linha ícone-esquerda + título/autor/label +
+             botão baixar-à-direita. A view de post único real é
+             minimalista: h1 só em página avulsa (Page) + corpo — sem
+             breadcrumb/meta/imagem separada/tags/compartilhar/
+             comentários/relacionados (settings do widget ligam
+             comentário, mas o includable nunca chama nada que os
+             renderize — configuração morta no arquivo original, mesmo
+             padrão de "flag ligada sem elemento real" já visto no bug do
+             font do nav em viral-magazine). nichoModuleDefaults.js
+             reauditado: shareButtons/readingTime removidos daqui (sem
+             onde renderizar na view real de post único). -->
+        <b:includable id='main' var='top'>
+          <b:loop values='data:posts' var='post'>
+            <b:if cond='data:view.isSingleItem'>
+              <article class='blog-post-article bg-white p-3 p-md-4 rounded-4 border shadow-sm mb-4' itemscope='itemscope' itemtype='https://schema.org/BlogPosting'>
+                <b:if cond='data:view.isPage'>
+                  <h1 class='h3 fw-bold mb-4 pb-3 border-bottom' itemprop='headline' style='color: var(--bulma-text);'><data:post.title/></h1>
+                </b:if>
+                <div class='post-content' itemprop='articleBody'><data:post.body/></div>
+              </article>
+            <b:else/>
+              <div class='app-list-card d-flex align-items-center justify-content-between p-3 mb-3 bg-white border rounded-4 shadow-sm'>
+                <div class='d-flex align-items-center gap-3 overflow-hidden' expr:onclick='&quot;window.location=\&quot;&quot; + data:post.url + &quot;\&quot;;&quot;' style='cursor: pointer;'>
+                  <a class='flex-shrink-0' expr:href='data:post.url'>
+                    <b:if cond='data:post.featuredImage'>
+                      <img [[LAZY_LOAD_TOGGLE]] class='app-list-icon' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 512, &quot;1:1&quot;)'/>
+                    <b:else/>
+                      <img alt='Sem imagem' class='app-list-icon' src='[[PLACEHOLDER_IMG]]'/>
+                    </b:if>
+                  </a>
+                  <div class='overflow-hidden'>
+                    <h2 class='h6 fw-bold mb-1 text-truncate'>
+                      <a class='text-dark text-decoration-none' expr:href='data:post.url'><data:post.title/></a>
+                    </h2>
+                    <div class='small text-muted text-truncate'><data:post.author.name/></div>
+                    <b:if cond='data:post.labels and data:post.labels.first'>
+                      <div class='small mt-1 fw-bold' style='color: var(--bulma-primary); font-size: 0.8rem;'>
+                        <i class='bi bi-tag-fill me-1'/> <data:post.labels.first.name/>
+                      </div>
+                    </b:if>
+                  </div>
+                </div>
+                [[APP_DOWNLOAD_CTA]]
+              </div>
+            </b:if>
+          </b:loop>
+
+          <div class='d-flex justify-content-between mt-4'>
+            <b:if cond='data:newerPageUrl'>
+              <a class='btn btn-outline-dark rounded-pill' expr:href='data:newerPageUrl'><i class='bi bi-arrow-left me-1'/> Anterior</a>
+            <b:else/><span/></b:if>
+            <b:if cond='data:olderPageUrl'>
+              <a class='btn btn-outline-dark rounded-pill' expr:href='data:olderPageUrl'>Próxima <i class='bi bi-arrow-right ms-1'/></a>
+            </b:if>
+          </div>
+        </b:includable>
+
+
+        <!-- ════════ POST includable ════════ -->
+        <!-- Não usado pelo main (achado 8): o main real trata o post único
+             inline dentro do b:loop, sem b:include name='post'. Mantido
+             (idêntico ao includable padrão do Blogger, nunca customizado
+             no arquivo real) só porque outros includables padrão o
+             referenciam por nome (comentários, JSON-LD) — ver
+             blogger-includables-padrao.xml. -->
+        <b:includable id='post' var='post'>
+  <div class='post'>
+    <b:include data='post' name='postMeta'/>
+    <b:include data='post' name='postTitle'/>
+    <b:include name='headerByline'/>
+    <b:if cond='data:view.isSingleItem'>
+      <b:include data='post' name='postBody'/>
+    <b:else/>
+      <b:include data='post' name='postBodySnippet'/>
+      <b:include data='post' name='postJumpLink'/>
+    </b:if>
+    <b:include data='post' name='postFooter'/>
+  </div>
+</b:includable>
+
+
+        <!-- ════════ PAGINAÇÃO ════════ -->
+        <b:includable id='nextprev'>
+          [[PAGINATION_MODULE]]
+        </b:includable>
+
+        [[BLOGGER_INCLUDABLES_PADRAO]]
+
+      </b:widget>
+      </b:section>
+
+        <!-- AFTER-POST — slot nativo vazio, estrutura real (não existe no
+             chassis genérico). No arquivo original tinha um widget HTML
+             "{Seu Ads Aqui}" (placeholder de anúncio de exemplo do
+             próprio dono). Ainda dentro de <main> (igual ao arquivo real:
+             </main> só fecha depois desta seção). -->
+        <b:section id='after-post' showaddelement='yes'/>
+      </main>
+
+      <!-- SIDEBAR — 1 única seção 'sidebar' (era 6 no chassis genérico:
+           sidebar-author/sidebar-top/sidebar/sidebar-bottom/
+           post-sidebar-top/post-sidebar, com split list-view/post-view).
+           No arquivo real a MESMA sidebar aparece em toda página (list E
+           post) — sem split. Único widget nativo real: FeaturedPost1 (os
+           outros widgets HTML da sidebar real já estão tratados:
+           heurística de 404 morta, já excluída há muito; CSS de ranking
+           já global via NICHO_CSS; cookie banner injetado à parte via
+           NICHO_WIDGETS_HTML). -->
+      <aside class='col-lg-4 mt-4 mt-lg-0'>
+        <b:section id='sidebar' name='Sidebar' showaddelement='yes'>[[FEATURED_POST_WIDGET]]</b:section>
+      </aside>
+    </div>
+  </div>
+
+
+  <!-- FOOTER (3 colunas, igual ao chassis — conteúdo real diferente) -->
+  <footer class='site-footer mt-5 py-5'>
+    [[FOOTER_NEWSLETTER]]
+    <div class='container'>
+      <div class='row g-4'>
+        <div class='col-md-4'>
+          <b:section id='footer-1' maxwidgets='2' name='Rodapé Coluna 1' showaddelement='yes'>[[POPULAR_POSTS_RANKING]][[STATS_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-2' maxwidgets='2' name='Rodapé Coluna 2' showaddelement='yes'>[[LABEL_CLOUD_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-3' maxwidgets='2' name='Rodapé Coluna 3' showaddelement='yes'>[[TRANSLATE_WIDGET]][[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <hr class='site-footer-divider my-4'/>
+      <div class='text-center'>
+        <small>© <data:blog.title/> — Powered by Softload Engine</small>
+      </div>
+    </div>
+  </footer>
+
+
+  [[ERROR_404_MODULE]]
+  [[DARK_MODE_MODULE]]
+  [[BACK_TO_TOP_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+  [[READING_PROGRESS]]
+  [[MENU_DROPDOWN_PREFIXO]]
+
+
+  <!-- Related posts (single post) — script removido (achado 8): alvejava
+       um container do layout antigo, herdado do chassis genérico. A view
+       de post único real (exemplos/appstore-bulma-mobile.xml) nunca teve
+       seção de posts relacionados. -->
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "id": "supabase-pipelines-bigquery-sync",
+  "slug": "supabase-pipelines-bigquery-sync",
+  "categoria": "data-infrastructure",
+  "pasta": "supabase",
+  "titulo": "Supabase Pipelines para Sincronização PostgreSQL e BigQuery",
+  "descricao": "O Supabase Pipelines permite sincronizar dados PostgreSQL com plataformas analíticas como Google BigQuery, reduzindo a necessidade de construir pipelines ETL personalizados para movimentação de dados.",
+  "componentes": [
+    {
+      "nome": "technology",
+      "conteudo": "supabase"
+    },
+    {
+      "nome": "feature-type",
+      "conteudo": "data-replication"
+    },
+    {
+      "nome": "year",
+      "conteudo": 2026
+    },
+    {
+      "nome": "release-status",
+      "conteudo": "available"
+    },
+    {
+      "nome": "confidence-score",
+      "conteudo": 0.8
+    },
+    {
+      "nome": "related-concepts",
+      "conteudo": [
+        "data-engineering",
+        "analytics-platform",
+        "warehouse"
+      ]
+    },
+    {
+      "nome": "sources",
+      "conteudo": [
+        {
+          "type": "external",
+          "provider": "community-report",
+          "reference": "Supabase Pipelines announcement"
+        }
+      ]
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "supabase-pipelines-bigquery-sync",
+    "supabase",
+    "pipelines",
+    "bigquery",
+    "sync",
+    "Supabase Pipelines para Sincronização PostgreSQL e BigQuery",
+    "para",
+    "sincronização",
+    "postgresql",
+    "data-infrastructure",
+    "data",
+    "infrastructure",
+    "data-replication",
+    "replication",
+    "etl",
+    "data-sync",
+    "analytics",
+    "data-engineering",
+    "engineering",
+    "analytics-platform",
+    "platform",
+    "warehouse"
+  ]
+}

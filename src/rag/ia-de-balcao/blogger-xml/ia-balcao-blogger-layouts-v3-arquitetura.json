@@ -1,0 +1,93 @@
+{
+  "id": "ia-balcao-blogger-layouts-v3-arquitetura",
+  "categoria": "blogger-xml-syntax",
+  "titulo": "Blogger Layouts Version 3 — Arquitetura Completa: Declaração, Hierarquia, b:loop, expr: e Tags Descontinuadas",
+
+  "contexto_plataforma": "Blogger Layouts Version 3 (Widgets v3) — sintaxe XML moderna com suporte nativo a expressões lógicas avançadas e remoção de códigos redundantes e obsoletos.",
+
+  "declaracao_raiz": {
+    "atributos_obrigatorios": {
+      "b:layoutsVersion": "3",
+      "b:defaultWidgetVersion": "2"
+    },
+    "exemplo": "<html b:layoutsVersion='3' b:defaultWidgetVersion='2' ...>",
+    "nota": "b:defaultWidgetVersion='2' indica a segunda geração de marcação interna dos gadgets do Blogger — é o formato MODERNO que acompanha layoutsVersion='3'. Não confundir com versão legada: '1' é que é legado, '2' é o atual.",
+    "atributos_complementares_comuns": {
+      "b:css": "'false' — desativa a injeção automática de CSS do Blogger (obrigatório em temas customizados)",
+      "b:defaultmessages": "'true' — mantém mensagens padrão do Blogger (ex: 'Nenhum post')",
+      "b:responsive": "'true' — ativa meta viewport automático do Blogger",
+      "expr:dir": "'data:blog.languageDirection' — direção do texto baseada no idioma",
+      "expr:lang": "'data:blog.locale' — idioma do blog via expressão dinâmica"
+    }
+  },
+
+  "hierarquia_estrutural": {
+    "regras": {
+      "b:section": "Funciona exclusivamente como container organizador para o painel de Layout. Aceita apenas tags b:widget em seu interior. Tags HTML soltas, b:loop ou b:if diretos são proibidos.",
+      "b:widget": "Exige obrigatoriamente os atributos únicos 'id' e 'type'. Toda a lógica visual e estrutural deve residir obrigatoriamente dentro de sub-tags b:includable."
+    },
+    "estrutura_correta": "<b:section id='sidebar' showaddelement='yes'>\n  <b:widget id='HTML1' locked='false' title='Meu Bloco' type='HTML'>\n    <b:includable id='main'>\n      <!-- Todo o código HTML e b:loop deve morar aqui dentro -->\n    </b:includable>\n  </b:widget>\n</b:section>",
+    "erro_comum": {
+      "errado": "<b:widget id='HTML1' type='HTML'>\n  <ul>\n    <b:loop var='p' values='data:pages'><li><data:p.title/></li></b:loop>\n  </ul>\n</b:widget>",
+      "correto": "<b:widget id='HTML1' type='HTML'>\n  <b:includable id='main'>\n    <ul>\n      <b:loop var='p' values='data:pages'><li><data:p.title/></li></b:loop>\n    </ul>\n  </b:includable>\n</b:widget>",
+      "consequencia": "Conteúdo diretamente em b:widget sem b:includable é silenciosamente ignorado pelo engine V3 — widget renderiza em branco."
+    }
+  },
+
+  "melhorias_b_loop": {
+    "loop_numerico": {
+      "descricao": "V3 permite intervalo numérico direto sem necessidade de array de dados prévia.",
+      "exemplo": "<b:loop values='1 to 5' var='i'>\n  <p>Repetição número: <data:i/></p>\n</b:loop>"
+    },
+    "acesso_a_objetos": {
+      "descricao": "Acesso limpo a propriedades de objetos aninhados via notação de ponto no dicionário de dados.",
+      "exemplo": "<b:loop values='data:posts' var='post'>\n  <img expr:src='data:post.featuredImage' />\n</b:loop>"
+    }
+  },
+
+  "prefixo_expr": {
+    "conceito": "Substituição de concatenações complexas pelo prefixo 'expr:' — combina o atributo com strings entre aspas simples e operadores lógicos.",
+    "padrao_legado_v1_v2": "<a href='data:post.url'>Link</a>",
+    "padroes_modernos_v3": [
+      {
+        "tipo": "expressão simples",
+        "exemplo": "<a expr:href='data:post.url'>Link</a>"
+      },
+      {
+        "tipo": "expressão com concatenação",
+        "exemplo": "<div expr:class='\"classe-global \" + data:post.class'>"
+      }
+    ]
+  },
+
+  "tags_descontinuadas": {
+    "nota": "V3 rejeita com erro de validação qualquer tag condicional ou atributo de versões anteriores.",
+    "substituicoes": [
+      {
+        "legado": "<b:if cond='data:blog.pageType == \"item\"'>",
+        "moderno": "<b:if cond='data:view.isPost'>",
+        "motivo": "data:blog.pageType é a API antiga — data:view.* é a API moderna e tipada do V3"
+      }
+    ],
+    "recursos_removidos": [
+      "Tags antigas de inclusão automática de JavaScript e CSS injetados pelo Blogger que poluíam o código gerado"
+    ]
+  },
+
+  "palavras_chave": [
+    "b:layoutsVersion 3",
+    "b:defaultWidgetVersion 2",
+    "blogger v3",
+    "layouts version 3",
+    "widget v3 blogger",
+    "b:includable id main",
+    "b:loop numerico",
+    "expr: blogger",
+    "data:view.isPost",
+    "data:blog.pageType depreciado",
+    "hierarquia b:section b:widget",
+    "estrutura v3 blogger",
+    "declaração html blogger",
+    "gadgets modernos blogger"
+  ]
+}

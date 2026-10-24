@@ -1,0 +1,41 @@
+{
+  "id": "ia-balcao-grid-sidebar-condicional",
+  "categoria": "padrão-estrutural",
+  "conceito": "Grid Bootstrap col-lg-8 + col-lg-4 com sidebar condicional: em lista (isMultipleItems) exibe bloco institucional 'Sobre o Portal'; em post único (isPost) exibe 'Artigos Relacionados' via JSON Feed. Padrão validado em produção.",
+  "palavras_chave": [
+    "grid", "sidebar", "col-lg-8", "col-lg-4", "isMultipleItems", "isPost",
+    "condicional", "related posts", "artigos relacionados", "layout dois colunas",
+    "bootstrap", "blog list", "single post"
+  ],
+  "main_condicional": {
+    "descricao": "Bloco <main> com dois estados condicionais baseados em isMultipleItems vs isPost",
+    "lista_xml": "<b:if cond='data:view.isMultipleItems'>\n  <div class='row g-4'>\n    <b:loop values='data:posts' var='post'>\n      <div class='col-md-6'>\n        <div class='card h-100 border-0 shadow-sm'>\n          <div class='card-body'>\n            <span class='badge bg-primary mb-2'><data:post.labels.first.name/></span>\n            <h3 class='h5 fw-bold'><data:post.title/></h3>\n            <p class='text-muted small'><data:post.snippet/></p>\n            <a expr:href='data:post.url' class='btn btn-outline-primary btn-sm rounded-pill'>Ler mais</a>\n          </div>\n        </div>\n      </div>\n    </b:loop>\n  </div>\n</b:if>",
+    "single_xml": "<b:if cond='data:view.isPost'>\n  <article class='post-content bg-white p-4 rounded-3 shadow-sm'>\n    <h1 class='display-5 fw-bold mb-3'><data:post.title/></h1>\n    <div class='text-muted small mb-4'>\n      <span><data:post.author/></span> &bull;\n      <span><data:post.dateHeader/></span>\n    </div>\n    <div class='entry-content'><data:post.body/></div>\n  </article>\n</b:if>"
+  },
+  "aside_condicional": {
+    "descricao": "Sidebar com dois estados — institucional em lista, relacionados em post único",
+    "lista_html": "<aside class='col-lg-4'>\n  <div class='card border-0 shadow-sm p-4'>\n    <h2 class='h5 fw-bold mb-3'>Sobre o Portal</h2>\n    <p class='text-muted small'><data:blog.metaDescription/></p>\n    <a expr:href='data:blog.url' class='btn btn-outline-secondary btn-sm mt-2'>Conheça</a>\n  </div>\n</aside>",
+    "single_html": "<aside class='col-lg-4'>\n  <div class='card border-0 shadow-sm p-4'>\n    <h2 class='h5 fw-bold mb-3'>Artigos Relacionados</h2>\n    <div id='related-posts-container'><p class='text-muted small'>Carregando...</p></div>\n  </div>\n</aside>",
+    "nota_id": "O id='related-posts-container' é o ponto de injeção para o script de JSON Feed que carrega posts relacionados via label do post atual."
+  },
+  "html_simulado_lista": {
+    "descricao": "Saída de preview com isMultipleItems=true (2 posts mock)",
+    "html": "<div class='row g-4'>\n  <div class='col-md-6'>\n    <div class='card h-100 border-0 shadow-sm'>\n      <div class='card-body'>\n        <span class='badge bg-primary mb-2'>Tecnologia</span>\n        <h3 class='h5 fw-bold'>Como escolher seu primeiro drone</h3>\n        <p class='text-muted small'>Guia completo para iniciantes no universo dos drones...</p>\n        <a href='#' class='btn btn-outline-primary btn-sm rounded-pill'>Ler mais</a>\n      </div>\n    </div>\n  </div>\n  <div class='col-md-6'>\n    <div class='card h-100 border-0 shadow-sm'>\n      <div class='card-body'>\n        <span class='badge bg-primary mb-2'>Review</span>\n        <h3 class='h5 fw-bold'>DJI Mini 4 Pro: vale a pena?</h3>\n        <p class='text-muted small'>Testamos o novo modelo por 30 dias e aqui está o veredicto...</p>\n        <a href='#' class='btn btn-outline-primary btn-sm rounded-pill'>Ler mais</a>\n      </div>\n    </div>\n  </div>\n</div>"
+  },
+  "html_simulado_single": {
+    "descricao": "Saída de preview com isPost=true",
+    "html": "<article class='post-content bg-white p-4 rounded-3 shadow-sm'>\n  <h1 class='display-5 fw-bold mb-3'>DJI Mini 4 Pro: vale a pena?</h1>\n  <div class='text-muted small mb-4'>\n    <span>João Silva</span> &bull;\n    <span>28 de maio de 2026</span>\n  </div>\n  <div class='entry-content'>\n    <p>Testamos o DJI Mini 4 Pro por 30 dias em condições variadas...</p>\n  </div>\n</article>"
+  },
+  "estrutura_completa_xml": {
+    "descricao": "Estrutura do row principal com main + aside condicionais",
+    "xml": "<div class='row g-4 g-lg-5'>\n  <div class='col-lg-8'>\n    <!-- estado lista -->\n    <!-- estado post único -->\n  </div>\n  <aside class='col-lg-4'>\n    <!-- sidebar lista: Sobre o Portal -->\n    <!-- sidebar single: Artigos Relacionados -->\n  </aside>\n</div>"
+  },
+  "notas_tecnicas": [
+    "sidebar precisa de dois estados para evitar 'sidebar poluída' em post único — bloco institucional irrelevante no contexto de leitura.",
+    "id='related-posts-container' é o ponto de injeção do script JSON Feed: fetch('/feeds/posts/default/-/' + labelAtual + '?alt=json&max-results=4') e renderiza cards.",
+    "isMultipleItems cobre: home, página de label, página de busca, arquivo mensal.",
+    "isPost cobre: permalink de post e página estática (isPage também usa esse estado).",
+    "col-lg-8 + col-lg-4 = 12 colunas Bootstrap. Em mobile (< 992px) o sidebar cai abaixo do conteúdo principal — considerar order-lg-last no aside para reflow correto.",
+    "O grid g-4 g-lg-5 dá gutter de 1.5rem em mobile e 3rem em desktop — balança espaçamento sem overcrowding."
+  ]
+}

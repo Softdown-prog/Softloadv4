@@ -1,0 +1,63 @@
+{
+  "id": "ia-balcao-topicos-suporte-blogger",
+  "titulo": "IA de Balcão: Tópicos de Suporte ao Blogger",
+  "categoria": "suporte",
+  "descricao": "Guia de Resolução Rápida para a IA de Atendimento Geral do Softload",
+  "topicos": [
+    {
+      "id": 1,
+      "nome": "O Pesadelo do Domínio Personalizado e HTTPS",
+      "gatilhos": ["domínio", "fora do ar", "não seguro", "HTTPS"],
+      "dor": "Comprei o meu domínio mas o site está fora do ar / O meu blog diz que não é seguro (Falta HTTPS)",
+      "resolucao": [
+        "Propagação de DNS (CNAME e Registos A da Google) pode demorar até 24h.",
+        "Caminho: Definições > Domínio Personalizado > Ativar Redirecionamento de Domínio.",
+        "Para HTTPS: Definições > Disponibilidade de HTTPS (Ativar). Certificado SSL demora 15-30 minutos na primeira vez."
+      ]
+    },
+    {
+      "id": 2,
+      "nome": "O Fantasma do Mobile (?m=1)",
+      "gatilhos": ["telemóvel", "quebrado no mobile", "site antigo", "?m=1"],
+      "dor": "O template está quebrado no telemóvel / Aparece um site antigo quando abro no telemóvel",
+      "resolucao": [
+        "O Blogger tem uma função legada que sobrepõe os templates novos.",
+        "Painel do Blogger > Tema > seta ao lado de Personalizar > Definições para Dispositivos Móveis > Computador (Desktop) > Guardar.",
+        "Os templates Softload já são 100% responsivos por si próprios."
+      ]
+    },
+    {
+      "id": 3,
+      "nome": "Indexação e SEO",
+      "gatilhos": ["Google não indexa", "Search Console", "sitemap", "ranquear"],
+      "dor": "O Google não indexa os meus artigos / Erro no Search Console",
+      "resolucao": [
+        "Diferença entre publicar e ser rastreado.",
+        "Configurar robots.txt corretamente (NUNCA bloquear a pasta /search).",
+        "Sitemap nativo no Google Search Console: /sitemap.xml ou atom.xml?redirect=false&start-index=1&max-results=500"
+      ]
+    },
+    {
+      "id": 4,
+      "nome": "O Código Sujo das Postagens (Efeito Microsoft Word)",
+      "gatilhos": ["fonte diferente", "formatação quebrada", "Word", "copy-paste"],
+      "dor": "A fonte do meu artigo está diferente do resto do site / O layout entortou quando publiquei um texto",
+      "resolucao": [
+        "Inline CSS (estilos embutidos) injetados pelo Word ou outros sites de forma invisível.",
+        "Solução: Ctrl+A no editor do Blogger > ícone T com traço (Remover Formatação).",
+        "Prevenção: Colar com Ctrl + Shift + V (Colar sem formatação)."
+      ]
+    },
+    {
+      "id": 5,
+      "nome": "Monetização e ads.txt (AdSense)",
+      "gatilhos": ["AdSense", "ads.txt", "anúncios em branco", "monetização"],
+      "dor": "O AdSense diz que o meu ficheiro ads.txt não foi encontrado / Os blocos de anúncios estão em branco",
+      "resolucao": [
+        "Blocos em branco são normais nas primeiras horas após aprovação.",
+        "Configurar: Definições > Rentabilização > Ativar ads.txt personalizado.",
+        "String da Google: google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0"
+      ]
+    }
+  ]
+}

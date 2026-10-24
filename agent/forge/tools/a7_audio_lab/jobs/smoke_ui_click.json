@@ -1,0 +1,21 @@
+{
+  "contract": "CH_AUDIO_GENERATION_V1",
+  "id": "a7_ui_click_smoke",
+  "kind": "effect",
+  "prompt": "Deterministic short UI click test sound, not a production effect",
+  "durationSeconds": 0.45,
+  "provider": {
+    "type": "synthetic_smoke",
+    "profile": "ui_click",
+    "seed": 1234,
+    "channels": 1
+  },
+  "mastering": {
+    "normalize": false,
+    "channels": 1,
+    "quality": 4
+  },
+  "target": {
+    "register": false
+  }
+}

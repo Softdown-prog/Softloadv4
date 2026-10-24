@@ -1,0 +1,18 @@
+{
+  "id": "sol-parafraseou-tool-em-vez-de-chamar",
+  "categoria": "sol-agent",
+  "palavras_chave": [
+    "sol",
+    "alucinação",
+    "status_nichos",
+    "anti-hallucination",
+    "SOL_SYSTEM_PROMPT",
+    "tool calling",
+    "verificação",
+    "migração de nicho"
+  ],
+  "titulo": "Sol afirmou status de migração de nicho errado, sem chamar a ferramenta que existe pra isso",
+  "conteudo": "## O que aconteceu\n\nO dono do produto perguntou sobre o estado de migração dos nichos e o Sol respondeu que \"todos os nichos listados ainda estão no cano legado (heurística antiga)\" — informação falsa: os 14 nichos da taxonomia já estavam 100% migrados pro dossiê (cano novo) na época da pergunta. Confirmado programaticamente chamando `_statusNichos()` diretamente: `migrados: 14, totalNichos: 14`.\n\n## Causa raiz mais provável\n\nA frase usada pelo Sol (\"cano legado (heurística antiga)\") é quase idêntica à descrição literal da ferramenta `status_nichos` no código (`solAgent.js`, `TOOL_DECLARATIONS`): *\"se já foi migrado pro dossiê (cano novo) ou ainda está no cano legado (heurística antiga)\"*. Isso é forte indício de que o modelo **parafraseou a descrição da própria ferramenta** em vez de efetivamente chamá-la e ler o resultado real — a ferramenta em si nunca teve bug (testado isoladamente, sempre devolveu dado correto).\n\n## Gap real encontrado no prompt\n\n`SOL_SYSTEM_PROMPT` tinha uma regra anti-alucinação, mas escopada só pra CITAÇÃO DE CÓDIGO: \"NUNCA cite caminho de arquivo, nome de constante, número de linha ou trecho de código como fato sem tê-lo lido NESTA MESMA conversa\". Fatos sobre ESTADO DO SISTEMA (status de migração de nicho, números de telemetria) não estavam cobertos por essa regra — tecnicamente o modelo podia responder sobre migração \"de memória\" sem violar a instrução escrita.\n\n## Correção aplicada\n\nA regra foi generalizada pra cobrir qualquer fato verificável (não só código): status de migração de nicho e números de telemetria/produção entraram explicitamente na lista, junto com uma cláusula nova — nunca reafirmar algo só porque \"já foi mencionado antes\", nem pela descrição de uma ferramenta, nem por uma resposta própria em turno passado da MESMA conversa (o estado real pode ter mudado desde então).\n\n## Lição geral\n\nQualquer regra de \"sempre verifique antes de afirmar\" escrita de forma NARROW (só pra um tipo de fato, ex: código) deixa uma classe inteira de alucinação sem proteção — todo fato que uma ferramenta existe pra checar (migração, telemetria, cota, storage etc.) devia estar coberto pela mesma regra, não só o que motivou a regra originalmente.",
+  "origem": "curadoria-manual",
+  "geradoEm": "2026-07-23T00:00:00.000Z"
+}

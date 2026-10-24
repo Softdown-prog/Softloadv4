@@ -1,0 +1,26 @@
+{
+  "id": "ia-balcao-seo-contexto-2026",
+  "categoria": "seo-contexto-temporal",
+  "titulo": "SEO e Blogger em 2026 — Contexto, Atualizações e Nova Caixa de Busca",
+  "eventos_algoritmo_2026": {
+    "marco_core_update": "Encerrado em 8 de abril de 2026",
+    "abril_core_update": "Iniciado imediatamente após o March Core Update",
+    "impacto_comunidade": "Abril marcado por crise técnica de infraestrutura e pânico de indexação na comunidade de usuários do Blogger"
+  },
+  "plataforma_blogger_2026": {
+    "ajuste_interno": "Blogger ajustou internamente a forma como robôs estruturam conteúdo dos posts para facilitar leitura por rastreadores de IA",
+    "sitemap_llm": "Geração automática do sitemap.xml foi atualizada para facilitar leitura por Googlebot e Google-Extended",
+    "resultado": "Artigos publicados no Blogger podem alimentar AI Overviews e Gemini de forma mais eficiente"
+  },
+  "nova_caixa_de_busca_google": {
+    "nome": "AI Mode / AI Overview integrado",
+    "descricao": "Google expandiu a caixa de busca com agentes de IA que respondem diretamente sem redirecionar para sites",
+    "impacto_blogger": "Blogs que antes apareciam na posição 3-5 podem perder cliques mesmo mantendo ranking — a resposta é dada diretamente",
+    "adaptacao": "Conteúdo deve ser escrito para ser CITADO pela IA, não apenas ranqueado — usar dados únicos, fontes primárias e formato de perguntas-e-respostas"
+  },
+  "contexto_temporal": {
+    "data_referencia": "2026 — dados de desempenho no GSC de abril/maio 2026 já refletem os novos algoritmos",
+    "tendencia_impressoes": "Queda de impressões em abril/maio 2026 pode ser bug de registro do GSC, não perda real de tráfego"
+  },
+  "palavras_chave": ["2026", "core update", "abril 2026", "contexto", "ai overviews", "ai mode", "agentes ia", "caixa de busca", "google 2026", "blogger 2026", "sitemap llm"]
+}

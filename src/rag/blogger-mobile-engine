@@ -1,0 +1,79 @@
+{
+  "blogger-mobile-engine": {
+    "prioridade-de-treinamento": "critical",
+    "objetivo-do-motor": "garantir-templates-blogger-mobile-first-com-performance-estabilidade-e-experiencia-premium",
+    "fundamentos-mobile": {
+      "estrategia-de-layout": [
+        "mobile-first",
+        "touch-first-interface",
+        "responsive-grid-system",
+        "adaptive-spacing",
+        "thumb-friendly-navigation"
+      ],
+      "regras-de-viewport": [
+        "safe-mobile-padding",
+        "dynamic-content-flow",
+        "overflow-protection",
+        "safe-horizontal-scroll-control"
+      ]
+    },
+    "widgets-responsivos": {
+      "regras-de-comportamento": [
+        "stack-on-mobile",
+        "prevent-widget-overflow",
+        "safe-image-scaling",
+        "dynamic-widget-spacing",
+        "responsive-widget-padding"
+      ],
+      "regras-seguras-do-parser": [
+        "avoid-fixed-widths",
+        "avoid-absolute-breakpoints",
+        "avoid-inline-dimension-conflicts"
+      ]
+    },
+    "tipografia-responsiva": {
+      "sistema-de-escala-de-fontes": [
+        "fluid-typography",
+        "clamp-based-font-sizing",
+        "safe-line-height",
+        "responsive-headings",
+        "adaptive-reading-density"
+      ],
+      "regras-de-legibilidade": [
+        "avoid-text-overflow",
+        "prevent-micro-fonts",
+        "safe-content-width",
+        "mobile-reading-priority"
+      ]
+    },
+    "menus-responsivos": {
+      "tipos-de-menu": [
+        "swipe-menu",
+        "offcanvas-menu",
+        "collapse-menu",
+        "sticky-mobile-navigation",
+        "bottom-navigation"
+      ],
+      "regras-de-navegacao-segura": [
+        "prevent-layout-shift",
+        "safe-z-index-control",
+        "safe-touch-spacing",
+        "prevent-scroll-lock-conflicts"
+      ]
+    },
+    "colapso-seguro-de-sidebar": {
+      "estrategias-de-colapso": [
+        "sidebar-to-bottom-stack",
+        "accordion-sidebar",
+        "widget-priority-collapse",
+        "mobile-auto-collapse"
+      ],
+      "regras-de-estabilidade": [
+        "prevent-content-jump",
+        "preserve-reading-flow",
+        "safe-widget-reordering",
+        "parser-safe-collapse"
+      ]
+    }
+  }
+}

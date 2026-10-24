@@ -1,0 +1,79 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_structured_green_02",
+  "pipelineRevision": 1,
+  "sceneryType": "structured_broadleaf",
+  "canvas": [256, 320],
+  "anchor": [128, 311],
+  "seed": 6102037,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 114,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": ["south", "west", "north", "east"],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "soft warm daylight over discrete upper-left leaf groups",
+    "front": "branch-guided fresh green broadleaf masses with readable tapered leaves",
+    "base": "deep cool-green interior with visible branching wood",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "branch_guided_groups",
+    "profile": "natural_rounded",
+    "center": [128, 148],
+    "radius": [92, 80],
+    "density": 1.02,
+    "species": "generic_broadleaf",
+    "negativeSpace": "controlled",
+    "leafDetail": "defined"
+  },
+  "palette": {
+    "ground_shadow": "#263129",
+    "trunk_top": "#806043",
+    "trunk_bottom": "#432F21",
+    "trunk_light": "#B28B62",
+    "back_top": "#295339",
+    "back_bottom": "#153525",
+    "mid_top": "#4E7B47",
+    "mid_bottom": "#285039",
+    "front_top": "#78A65D",
+    "front_bottom": "#3F7049",
+    "highlight": "#A7C878",
+    "occlusion": "#123223"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {"p0": [128, 311], "p1": [126, 248], "p2": [128, 184], "w0": 17, "w1": 6.8},
+    {"p0": [125, 225], "p1": [101, 192], "p2": [75, 159], "w0": 7.8, "w1": 2.8},
+    {"p0": [131, 224], "p1": [155, 190], "p2": [184, 158], "w0": 7.5, "w1": 2.7},
+    {"p0": [122, 202], "p1": [99, 162], "p2": [91, 119], "w0": 6.0, "w1": 2.1},
+    {"p0": [134, 201], "p1": [157, 161], "p2": [169, 120], "w0": 5.9, "w1": 2.1},
+    {"p0": [128, 188], "p1": [124, 150], "p2": [119, 108], "w0": 5.3, "w1": 1.8},
+    {"p0": [116, 194], "p1": [92, 175], "p2": [67, 145], "w0": 4.8, "w1": 1.6},
+    {"p0": [140, 191], "p1": [165, 173], "p2": [191, 143], "w0": 4.8, "w1": 1.6}
+  ],
+  "paletteId": "structured_green_city_horizon"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ia-balcao-tag-sanitizacao-antilegado",
+  "titulo": "Tag de Sanitização Antilegado (Blogger Anti-Bloat)",
+  "categoria": "infraestrutura-xml",
+  "tags": ["sanitizacao", "blindagem", "performance", "anti-bloat"],
+  "descricao": "Técnica de blindagem estrutural para o Blogger que impede a injeção de códigos e inputs legados do Google, prevenindo destruição do Core Web Vitals (LCP e CLS) e conflitos com frameworks modernos como o Bootstrap 5.3.",
+  "logica": {
+    "interceptacao_compilacao": "Atributos booleanos inseridos na tag <html> instruem o servidor do Google a desativar os pacotes de estilo automáticos.",
+    "anulacao_dom": "Seletores CSS de prioridade máxima (!important) escondem e removem do fluxo de renderização qualquer elemento estrutural legado."
+  },
+  "html_base": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<!DOCTYPE html>\n<html b:css='false' b:defaultmarkups='false' b:layoutsVersion='3' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>\n<head>\n  <meta charset='utf-8'/>\n  <meta content='width=device-width, initial-scale=1, shrink-to-fit=no' name='viewport'/>\n  <b:skin><![CDATA[\n    /* 1. Esconde a barra de ferramentas nativa do Blogger */\n    #navbar-iframe, .navbar-iframe, .b-navbar { display: none !important; visibility: hidden !important; height: 0 !important; }\n    /* 2. Reseta margens forçadas pelo motor de layouts antigos */\n    body { margin: 0 !important; padding: 0 !important; }\n    /* 3. Remove ícones de edição rápida (QuickEdit) que quebram o CLS */\n    .quickedit, .widget-item-control { display: none !important; }\n  ]]></b:skin>\n</head>\n<body></body>\n</html>",
+  "atributos_mestre": [
+    {
+      "atributo": "b:css='false'",
+      "funcao": "O Desativador de Carga",
+      "descricao": "Avisa o back-end do Google para NÃO injetar o arquivo widget_css_bundle.css. Sem este atributo, o Blogger insere mais de 50 KB de CSS legado com seletores antigos que competem diretamente com o Bootstrap."
+    },
+    {
+      "atributo": "b:defaultmarkups='false'",
+      "funcao": "A Folha Limpa",
+      "descricao": "Proíbe o Blogger de carregar os layouts padrão de widgets antigos. Qualquer <b:section> declarada nascerá 100% vazia, sem estruturas fantasmas que o Google costumava embutir nas versões 1 e 2 do motor."
+    },
+    {
+      "atributo": "b:layoutsVersion='3'",
+      "funcao": "Garantia de API Atual",
+      "descricao": "Força o motor a operar estritamente na versão 3 da API de dados. Suporta tags modernas como data:view.* e eliminação completa dos estilos nativos, fornecendo controle total ao desenvolvedor."
+    }
+  ]
+}

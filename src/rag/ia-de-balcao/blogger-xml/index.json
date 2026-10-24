@@ -1,0 +1,34 @@
+{
+  "grupo": "blogger-xml",
+  "descricao": "Blogger XML: gadgets, b:skin, condicionais, labels, URLs e parser",
+  "ficheiros": [
+    {
+      "arquivo": "ia-balcao-blogger-gadgets-parser-xml.json",
+      "palavras_chave": ["b:widget", "gadget", "widget", "PopularPosts", "Profile", "Label", "LinkList", "ContactForm", "PageList", "parser xml", "SAXParseException", "auto-fechamento", "&amp;", "locked", "sidebar pronta", "formulário contato blogger", "plug and play"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-bskin-variaveis-designer.json",
+      "palavras_chave": ["b:skin", "CDATA", "Variable", "Group", "designer de tema", "personalizar blogger", "variável css blogger", "b:layoutsVersion", "tema skin", "b:css false", "cor de fundo", "adicionar css"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-condicionais-loops-includes.json",
+      "palavras_chave": ["b:if", "b:loop", "b:includable", "b:include", "b:else", "data:view", "isHomepage", "isPost", "isMultipleItems", "isLabelSearch", "expr:", "condicional", "loop", "posts dinâmicos", "data:posts", "reutilização"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-labels-sliders.json",
+      "palavras_chave": ["labels", "marcadores", "slider", "carrossel", "widget em branco", "case sensitive", "maiúsculas", "acentos", "layout", "configuração widget", "label blogger", "tag blogger"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-url-e-mobile.json",
+      "palavras_chave": ["?m=1", "parâmetro mobile", "url duplicada", "permalink", "data url", "remover data url", "history.replaceState", "blogger url", "slug", "url canônica", "url blogger"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-estrutura-widget-v3.json",
+      "palavras_chave": ["b:includable id main", "estrutura widget v3", "conteúdo fora de includable", "b:widget type HTML", "b:section showaddelement", "widget em branco blogger", "b:widget-setting", "gadget blogger estrutura", "b:loop dentro de widget", "b:section b:widget"]
+    },
+    {
+      "arquivo": "ia-balcao-blogger-layouts-v3-arquitetura.json",
+      "palavras_chave": ["b:layoutsVersion 3", "b:defaultWidgetVersion 2", "blogger v3", "layouts version 3", "widget v3", "b:loop numerico", "expr: blogger", "data:view.isPost", "data:blog.pageType depreciado", "hierarquia b:section", "declaração html blogger", "gadgets modernos blogger"]
+    }
+  ]
+}

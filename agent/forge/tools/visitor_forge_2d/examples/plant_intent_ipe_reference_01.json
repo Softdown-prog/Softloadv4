@@ -1,0 +1,22 @@
+{
+  "contract": "A7_PLANT_INTENT_V1",
+  "id": "ipe_amarelo_reference_01",
+  "species": "ipe_amarelo",
+  "age": "adult",
+  "crown": "wide_irregular",
+  "style": "classic_tycoon_pre_rendered",
+  "flowering": {
+    "amount": 0.96,
+    "color": "#FFD21A",
+    "leafRetention": 0.04
+  },
+  "seed": 2026100207,
+  "canvas": [
+    256,
+    320
+  ],
+  "anchor": [
+    128,
+    310
+  ]
+}

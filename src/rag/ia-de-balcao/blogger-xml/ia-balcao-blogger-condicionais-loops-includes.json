@@ -1,0 +1,103 @@
+{
+  "id": "ia-balcao-blogger-condicionais-loops-includes",
+  "categoria": "blogger-xml-core",
+  "titulo": "Blogger XML: Condicionais, Loops e Includables — Lógica de Exibição e Organização",
+  "fonte": "Guia de Treinamento LLM para Blogger XML (documento interno Softload)",
+
+  "filosofia_full_gadget": {
+    "principio": "Código estático é apenas esqueleto. Toda informação visual (texto, links, imagens) deve ser injetada via Gadgets, permitindo ao usuário alterar tudo sem tocar em código.",
+    "criterios_validacao": [
+      "Se o usuário quiser mudar o nome do blog, consegue pelo painel Layout? (Se sim, correto)",
+      "b:layoutsVersion é '3'? Garante interruptor de visibilidade em todos os gadgets",
+      "Se o usuário quiser esconder o Copyright, pode usar o botão 'Mostrar este widget' (OFF)?"
+    ]
+  },
+
+  "sistema_condicionais": {
+    "tag_base": "<b:if cond='CONDIÇÃO'> ... </b:if>",
+    "descricao": "Guarda de trânsito: mostra ou oculta blocos conforme onde o usuário está. O Blogger usa o mesmo template para todas as páginas — as condicionais separam o que aparece em cada contexto.",
+
+    "views_disponiveis": {
+      "data:view.isHomepage":   "Página inicial",
+      "data:view.isPost":       "Página de postagem (artigo completo)",
+      "data:view.isPage":       "Página estática (Sobre, Contato, etc.)",
+      "data:view.isLabelSearch":"Página de marcadores/categorias",
+      "data:view.isSearch":     "Página de resultados de busca",
+      "data:view.isMultipleItems": "Qualquer listagem (home, label, busca) — oposto de isPost/isPage",
+      "data:view.isError":      "Página 404"
+    },
+
+    "exemplos": {
+      "banner_apenas_na_home": "<b:if cond='data:view.isHomepage'>\n  <div class='banner-boas-vindas'><h1>Bem-vindo!</h1></div>\n</b:if>",
+      "botao_compartilhar_so_no_post": "<b:if cond='data:view.isPost'>\n  <div class='botoes-compartilhar'>...</div>\n</b:if>",
+      "cabecalho_adaptativo": "<b:if cond='data:view.isHomepage'>\n  <header class='cabecalho-grande'>...</header>\n<b:else/>\n  <header class='cabecalho-pequeno'>...</header>\n</b:if>",
+      "conteudo_lista_vs_single": "<b:if cond='data:view.isMultipleItems'>\n  <!-- Grid de cards -->\n<b:else/>\n  <!-- Artigo completo -->\n</b:if>"
+    },
+
+    "performance": "Usar condicionais corretamente evita que o navegador carregue todos os módulos (comentários, banners, botões) na página inicial. Controlar o que aparece onde é o segredo de um design limpo e SEO saudável."
+  },
+
+  "sistema_loops": {
+    "tag_base": "<b:loop values='LISTA' var='APELIDO'> ... </b:loop>",
+    "descricao": "Carimbo automático — define o molde uma vez, o Blogger repete para cada item da lista. Sem loop, ter 50 posts exigiria copiar e colar HTML 50 vezes.",
+
+    "atributos": {
+      "values": "De onde vêm os dados (ex: data:posts, data:post.labels, data:links)",
+      "var":    "Apelido para o item atual dentro do loop (convenção: 'post', 'label', 'link')"
+    },
+
+    "prefixo_expr": {
+      "problema": "Se escrever <a href='data:post.url'>, o navegador interpreta literalmente 'data:post.url' como texto — link inválido.",
+      "solucao":   "Usar expr: para qualquer atributo que receba dado dinâmico: expr:href, expr:src, expr:alt, expr:class, expr:id",
+      "regra":     "Atributo estático → aspas normais. Atributo dinâmico → expr: obrigatório"
+    },
+
+    "exemplos": {
+      "card_post_basico": "<b:loop values='data:posts' var='post'>\n  <article class='card'>\n    <img expr:src='data:post.featuredImage' expr:alt='data:post.title' loading='lazy'/>\n    <h2><a expr:href='data:post.url'><data:post.title/></a></h2>\n    <p><data:post.snippet/></p>\n  </article>\n</b:loop>",
+      "labels_no_post": "<b:loop values='data:post.labels' var='label'>\n  <a expr:href='data:label.url'><data:label.name/></a>\n</b:loop>",
+      "links_do_menu": "<b:loop values='data:links' var='link'>\n  <a expr:href='data:link.href'><data:link.title/></a>\n</b:loop>"
+    },
+
+    "usos_comuns": [
+      "Lista de postagens na página inicial (data:posts)",
+      "Lista de comentários no final do artigo",
+      "Lista de marcadores/categorias na sidebar",
+      "Links de menu de navegação (data:links)"
+    ]
+  },
+
+  "sistema_includables": {
+    "conceito": "Gavetas de código — guardam pedaços do template com um nome único. Não renderizam nada por si sós; apenas organizam o código para ser chamado onde necessário.",
+
+    "b_includable": {
+      "funcao":  "Guarda um bloco de código com um id único",
+      "regra_obrigatoria": "Todo widget DEVE ter um includable com id='main'. Sem ele, o Blogger dará erro e não salvará o template.",
+      "estrutura": "<b:widget id='Blog1' type='Blog'>\n  <b:includable id='main'>\n    <!-- código principal aqui -->\n  </b:includable>\n</b:widget>"
+    },
+
+    "b_include": {
+      "funcao": "Chama o código guardado em uma gaveta e o renderiza naquele ponto",
+      "sintaxe": "<b:include name='NOME_DA_GAVETA'/>",
+      "vantagem": "Alterar o código uma vez na gaveta atualiza todos os pontos onde foi incluído"
+    },
+
+    "exemplo_reutilizacao": {
+      "descricao": "Mesmo botão de compartilhamento no topo e no final do artigo — alteração única",
+      "codigo": "<b:widget id='Blog1' type='Blog'>\n  <b:includable id='main'>\n    <b:include name='botaoCompartilhar'/>\n    <div class='post-content'>...</div>\n    <b:include name='botaoCompartilhar'/>\n  </b:includable>\n  <b:includable id='botaoCompartilhar'>\n    <div class='share-btn'>\n      <button>WhatsApp</button>\n    </div>\n  </b:includable>\n</b:widget>"
+    },
+
+    "includables_blogger_padrao": {
+      "descricao": "No V3 com b:defaultmarkups='true', o Google já provê dezenas de includables invisíveis prontos (comentários, formatação de data, etc.). Permite criar blogs funcionais com muito menos código.",
+      "includables_nulos_obrigatorios": "Para desativar funcionalidades do Blogger sem erros, declare includables vazios: <b:includable id='comments' var='post'><div/></b:includable>"
+    }
+  },
+
+  "dados_dinamicos_possiveis": {
+    "post": ["data:post.title", "data:post.url", "data:post.snippet", "data:post.body", "data:post.featuredImage", "data:post.date", "data:post.author.name", "data:post.author.profileUrl", "data:post.author.avatarUrl", "data:post.labels", "data:post.labels.first.name"],
+    "blog": ["data:blog.title", "data:blog.homepageUrl", "data:blog.pageTitle", "data:blog.locale"],
+    "navegacao": ["data:newerPageUrl", "data:olderPageUrl", "data:newerPageTitle", "data:olderPageTitle"],
+    "view": ["data:view.isHomepage", "data:view.isPost", "data:view.isPage", "data:view.isLabelSearch", "data:view.isSearch", "data:view.isMultipleItems", "data:view.search.query"]
+  },
+
+  "palavras_chave": ["b:if", "b:loop", "b:includable", "b:include", "b:else", "data:view", "isHomepage", "isPost", "isMultipleItems", "expr:", "condicional", "loop", "gaveta", "reutilização", "blogger xml", "template logic"]
+}

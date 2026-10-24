@@ -1,0 +1,1931 @@
+/* ─── Softload Engine — Custom Stylesheet ──────────────────────────────────
+   Complementa o Bootstrap 5.3.3. Não depende de Tailwind nem Alpine.js.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── 0. Mobile Touch Reset Global ──────────────────────────────────────── */
+/* Remove delay 300ms e tap highlight em TODOS os elementos interativos */
+a,
+button,
+input,
+select,
+textarea,
+label,
+[role="button"],
+[onclick] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch targets: garantir 44px min em botões e links de ação */
+button:not(.btn-close):not(.form-check-input),
+.btn:not(.btn-close),
+a.btn,
+input[type="submit"],
+input[type="button"] {
+    min-height: 44px;
+}
+
+/* Inputs de texto: 16px font-size previne zoom iOS */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="color"],
+textarea,
+select {
+    font-size: 16px;
+    min-height: 44px;
+}
+
+/* Checkboxes e radios — área mínima de toque 44px (iOS HIG) */
+.form-check {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+.form-check-input {
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer;
+    touch-action: manipulation;
+    flex-shrink: 0;
+    /* Wrapper de toque expandido via padding do .form-check */
+}
+.form-check-label {
+    cursor: pointer;
+    padding-left: 8px;
+}
+
+/* Color picker: garantir 44px no mínimo */
+input[type="color"] {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+/* ── 1. Design Tokens ──────────────────────────────────────────────────── */
+:root {
+    /* Cores */
+    --sl-primary:        #0ea5e9;
+    --sl-primary-hover:  #0284c7;
+    --sl-primary-light:  #38bdf8;
+    --sl-bg-950:         #020617;
+    --sl-bg-900:         #0f172a;
+    --sl-bg-800:         #1e293b;
+    --sl-text-300:       #cbd5e1;
+    --sl-text-400:       #94a3b8;
+    --sl-text-500:       #64748b;
+
+    /* ── Responsividade Mobile-First (DESKTOP defaults) ── */
+    --sl-touch-target:        44px;          /* iOS HIG mínimo */
+    --sl-touch-padding:       12px 16px;     /* botões padrão */
+    --sl-input-font-size:     16px;          /* previne zoom iOS */
+    --sl-color-picker-width:  70px;          /* width do color picker em desktop */
+    --sl-section-padding:     24px;          /* padding interno de cards */
+    --sl-section-gap:         16px;          /* gap entre seções */
+    --sl-badge-gap:           12px;          /* gap entre badges */
+    --sl-card-radius:         12px;          /* border radius */
+}
+
+/* ── 1b. Acessibilidade — fonte e escala (aba "Acessibilidade" em
+   Configurações) ────────────────────────────────────────────────────────
+   Escopado a `.sl-dash-wrapper` (só o dashboard logado, não as páginas
+   públicas) via atributos em <html> (data-font-scale/data-font-family),
+   aplicados por frontend/utils/accessibilityPrefs.js. `zoom` (em vez de
+   `font-size: %` no root) é intencional: este CSS mistura declarações em
+   `rem` e `px`, e `rem` só responde a mudança no font-size do próprio
+   <html> (afetaria as páginas públicas também) -- `zoom` rescala ambas as
+   unidades de forma uniforme, escopado só ao wrapper do dashboard. */
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/atkinson-hyperlegible/atkinson-hyperlegible-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/atkinson-hyperlegible/atkinson-hyperlegible-700.woff2') format('woff2');
+}
+
+html[data-font-scale="115"] .sl-dash-wrapper { zoom: 1.15; }
+html[data-font-scale="130"] .sl-dash-wrapper { zoom: 1.3; }
+
+html[data-font-family="legivel"] .sl-dash-wrapper {
+    font-family: 'Atkinson Hyperlegible', var(--bs-body-font-family, system-ui, -apple-system, sans-serif);
+}
+
+/* ── Mobile (< 768px) — Override tokens ──────────────────────────────── */
+@media (max-width: 767.98px) {
+    :root {
+        --sl-touch-padding:       12px 14px;
+        --sl-color-picker-width:  100%;       /* full width em mobile */
+        --sl-section-padding:     14px;
+        --sl-section-gap:         12px;
+        --sl-badge-gap:           8px;
+    }
+}
+
+/* Bootstrap dark-mode vars customizados */
+[data-bs-theme="dark"] {
+    --bs-body-bg:          var(--sl-bg-950);
+    --bs-body-color:       var(--sl-text-300);
+    --bs-border-color:     var(--sl-bg-800);
+    --bs-secondary-bg:     var(--sl-bg-900);
+    --bs-tertiary-bg:      var(--sl-bg-800);
+    --bs-card-bg:          rgba(15, 23, 42, 0.6);
+    --bs-card-border-color: var(--sl-bg-800);
+    /* --sl-text-500 (#64748b, ~4.76:1 sobre #fff) foi calibrado pro fundo
+       claro; sobre --sl-bg-900/950, onde é usado na esmagadora maioria dos
+       casos (dark mode é o padrão do app), o contraste cai pra ~3.7-4.2:1,
+       abaixo do mínimo AA (4.5:1). Sobrescreve só no dark mode. */
+    --sl-text-500:         #8b98ac;
+}
+
+[data-bs-theme="light"] {
+    --bs-body-bg:     #f0f5fa;
+    --bs-card-bg:     #ffffff;
+}
+
+/* ── 2. Navbar ─────────────────────────────────────────────────────────── */
+.sl-navbar {
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+}
+
+.sl-navbar .nav-link {
+    color: var(--sl-text-400);
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+.sl-navbar .nav-link:hover { color: var(--sl-primary-light); }
+
+.sl-brand { letter-spacing: -0.05em; }
+.sl-brand .sl-accent { color: var(--sl-primary); }
+
+/* Offset do navbar fixo */
+.sl-pt-nav { padding-top: 64px; }
+
+/* ── 3. Botões customizados ────────────────────────────────────────────── */
+.btn-sl-primary {
+    background: var(--sl-primary);
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 0 15px -3px rgba(56, 189, 248, 0.4);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-sl-primary:hover {
+    background: var(--sl-primary-hover);
+    box-shadow: 0 0 20px -2px rgba(56, 189, 248, 0.6);
+    color: #fff;
+}
+
+.btn-starter {
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 0 15px -3px rgba(124, 58, 237, 0.4);
+    transition: background 0.2s, box-shadow 0.2s, opacity 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: rgba(124, 58, 237, 0.3);
+}
+.btn-starter:hover {
+    background: #6d28d9;
+    box-shadow: 0 0 20px -2px rgba(124, 58, 237, 0.6);
+    color: #fff;
+}
+.btn-starter:active {
+    opacity: 0.75;
+    transform: scale(0.98);
+}
+
+.btn-sl-outline {
+    background: transparent;
+    color: var(--sl-primary-light);
+    border: 1px solid rgba(14, 165, 233, 0.5);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+.btn-sl-outline:hover {
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--sl-primary-light);
+}
+
+/* ── 4. Dashboard — layout base ─────────────────────────────────────────── */
+.sl-dash-wrapper {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 64px; /* altura do navbar */
+}
+
+/* ── 5. Sidebar ────────────────────────────────────────────────────────── */
+.sl-sidebar {
+    width: 256px;
+    min-width: 256px;
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+[data-bs-theme="dark"] .sl-sidebar {
+    background: var(--sl-bg-900);
+    border-right-color: var(--sl-bg-800);
+}
+
+/* Itens de navegação da sidebar */
+.sl-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sl-text-500);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+}
+.sl-nav-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+[data-bs-theme="dark"] .sl-nav-item { color: var(--sl-text-400); }
+[data-bs-theme="dark"] .sl-nav-item:hover {
+    background: var(--sl-bg-800);
+    color: #fff;
+}
+.sl-nav-item.active {
+    background: #0f172a;
+    color: #fff;
+}
+[data-bs-theme="dark"] .sl-nav-item.active {
+    background: #fff;
+    color: #0f172a;
+}
+
+.sl-nav-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sl-nav-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* ── 6. Topbar mobile do dashboard ────────────────────────────────────── */
+.sl-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(2, 6, 23, 0.9);
+    backdrop-filter: blur(8px);
+}
+[data-bs-theme="light"] .sl-topbar {
+    background: rgba(240, 245, 250, 0.9);
+}
+@media (min-width: 768px) {
+    .sl-topbar {
+        padding: 10px 16px;
+        gap: 12px;
+    }
+}
+
+/* ── 7. Cards do compilador ─────────────────────────────────────────────── */
+.sl-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+}
+@media (min-width: 768px) {
+    .sl-card {
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+}
+[data-bs-theme="dark"] .sl-card {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--sl-bg-800);
+}
+
+.sl-section-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--sl-text-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    display: block;
+}
+@media (min-width: 768px) {
+    .sl-section-label {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        margin-bottom: 16px;
+    }
+}
+
+/* Botão de opção (paletas, tipografia, etc.) */
+.sl-opt-btn {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    text-align: left;
+    background: #f8fafc;
+    outline: none;
+    touch-action: manipulation;       /* remove delay 300ms em iOS */
+    -webkit-tap-highlight-color: transparent; /* remove flash azul no Android */
+    user-select: none;
+    -webkit-user-select: none;
+}
+/* Elementos filhos não capturam eventos de toque — o botão pai captura tudo */
+.sl-opt-btn * {
+    pointer-events: none;
+}
+.sl-opt-btn:focus { outline: none; }
+.sl-opt-btn:focus-visible {
+    outline: none;
+    /* Substitui o outline nativo (removido acima pra não conflitar com o
+       box-shadow do estado --active) por um anel visível só na navegação
+       por teclado — sem isso o foco ficava totalmente invisível. */
+    box-shadow: 0 0 0 2px #0ea5e9, 0 0 0 4px rgba(14, 165, 233, .3);
+}
+[data-bs-theme="dark"] .sl-opt-btn {
+    border-color: var(--sl-bg-800);
+    background: rgba(15, 23, 42, 0.4);
+}
+
+/* Estado ativo — usa box-shadow pois outline conflita com outline:none do button base */
+.sl-opt-btn--active {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px #0ea5e9;
+}
+[data-bs-theme="dark"] .sl-opt-btn--active {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px #0ea5e9;
+    background: rgba(14, 165, 233, 0.08);
+}
+.sl-opt-btn--active .bi-check-circle-fill { display: inline !important; }
+
+/* Checkbox modular */
+.sl-module-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    margin-bottom: 0;
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+@media (min-width: 768px) {
+    .sl-module-check {
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+    }
+}
+.sl-module-check:hover { border-color: #94a3b8; }
+[data-bs-theme="dark"] .sl-module-check {
+    border-color: var(--sl-bg-800);
+    background: rgba(15, 23, 42, 0.3);
+}
+.sl-module-check * { pointer-events: none; }
+.sl-module-check input[type="checkbox"] { pointer-events: auto; }
+
+.sl-module-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #334155;
+    display: block;
+}
+[data-bs-theme="dark"] .sl-module-title { color: var(--sl-text-300); }
+
+.sl-module-desc {
+    font-size: 10px;
+    color: var(--sl-text-400);
+    margin-top: 2px;
+    display: block;
+}
+
+/* ── 8. Terminal ────────────────────────────────────────────────────────── */
+.sl-terminal {
+    background: var(--sl-bg-900);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.sl-terminal-header {
+    background: var(--sl-bg-800);
+    padding: 12px 16px;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sl-terminal-dots { display: flex; gap: 6px; }
+.sl-terminal-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+}
+.sl-terminal-body {
+    padding: 12px;
+    flex-grow: 1;
+    min-height: 150px;
+}
+@media (min-width: 768px) {
+    .sl-terminal-body {
+        padding: 16px;
+        min-height: 220px;
+    }
+}
+.sl-terminal-pre {
+    font-family: monospace;
+    font-size: 11px;
+    color: #4ade80;
+    white-space: pre-wrap;
+    margin: 0;
+    line-height: 1.4;
+}
+@media (min-width: 768px) {
+    .sl-terminal-pre {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+}
+.sl-terminal-pre.error  { color: #f87171; }
+.sl-terminal-pre.idle   { color: var(--sl-text-400); }
+
+.sl-terminal-download {
+    padding: 12px 16px;
+    background: var(--sl-bg-800);
+    border-top: 1px solid #334155;
+}
+.sl-terminal-summary {
+    padding: 12px 16px;
+    border-top: 1px solid var(--sl-bg-800);
+}
+.sl-terminal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.sl-terminal-row:last-child { margin-bottom: 0; }
+.sl-terminal-key { font-size: 10px; color: var(--sl-text-500); }
+.sl-terminal-val { font-size: 10px; font-family: monospace; color: var(--sl-primary-light); }
+
+/* ── 9. Footer ──────────────────────────────────────────────────────────── */
+.sl-footer {
+    background: #080c17;
+    border-top: 1px solid rgba(30, 41, 59, 0.8);
+    padding-top: 48px;
+    padding-bottom: 32px;
+    margin-top: 64px;
+}
+.sl-footer-link {
+    color: var(--sl-text-400);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.sl-footer-link:hover { color: var(--sl-primary-light); }
+
+/* ── 10. Form controls — override Bootstrap no dark mode ─────────────────── */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: rgba(15, 23, 42, 0.6);
+    border-color: var(--sl-bg-800);
+    color: var(--sl-text-300);
+    cursor: pointer;
+    pointer-events: auto;
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    border-color: var(--sl-primary);
+    box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+    background-color: rgba(15, 23, 42, 0.8);
+    color: #fff;
+    pointer-events: auto;
+    outline: none;
+}
+[data-bs-theme="dark"] .form-check-input {
+    background-color: transparent;
+    border-color: var(--sl-bg-800);
+}
+[data-bs-theme="dark"] .form-check-input:checked {
+    background-color: var(--sl-primary);
+    border-color: var(--sl-primary);
+}
+
+/* Light mode form controls */
+.form-control,
+.form-select {
+    cursor: pointer;
+    pointer-events: auto;
+}
+.form-control:focus,
+.form-select:focus {
+    pointer-events: auto;
+    outline: none;
+}
+
+/* ── 11. Submit button do compilador ─────────────────────────────────────── */
+.sl-submit-btn {
+    width: 100%;
+    height: 56px;
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 14px;
+    border-radius: 12px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+.sl-submit-btn:hover { background: #1e293b; }
+[data-bs-theme="dark"] .sl-submit-btn {
+    background: var(--sl-primary);
+}
+[data-bs-theme="dark"] .sl-submit-btn:hover {
+    background: var(--sl-primary-light);
+    color: #0f172a;
+}
+.sl-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ── 12. Pulse animation para status ─────────────────────────────────────── */
+@keyframes sl-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+.sl-pulse { animation: sl-pulse 1.5s ease-in-out infinite; }
+
+/* ── 12.5. Badges de Categorias (CSS Variables) ────────────────────────── */
+.softload-badge {
+    display: inline-block;
+    padding: 0.35em 0.8em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 20px; /* Estilo pílula */
+    background-color: var(--badge-bg, #e0e0e0);
+    color: var(--badge-text, #333333);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+}
+.softload-badge:focus {
+    outline: 2px solid var(--sl-primary, #0ea5e9);
+    outline-offset: 2px;
+}
+
+/* Mobile: tamanho de fonte maiores para leitura */
+@media (max-width: 767.98px) {
+    .softload-badge {
+        font-size: 0.9rem;
+        padding: 0.4em 0.9em;
+    }
+}
+
+/* ── 13. Mobile-First Improvements ──────────────────────────────────────── */
+
+/* Form controls responsivos — font-size 16px evita zoom automático em iOS */
+.form-control,
+.form-select {
+    font-size: 16px;
+}
+
+/* Imagens responsivas */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Prevent scroll horizontal — html (não body) para não travar position:fixed no iOS Safari */
+html {
+    overflow-x: hidden;
+}
+
+/* #react-root nasce vazio até o bundle React (main.js) baixar/parsear/montar —
+   sem altura mínima, a div colapsa pra 0px durante essa janela e, nas
+   páginas públicas (react-landing.ejs/react-public.ejs), o <footer> estático
+   que vem logo depois no HTML (fora do react-root, sempre renderizado pelo
+   servidor) "sobe" e aparece colado no navbar até o React montar — bug real
+   relatado: rodapé aparecendo primeiro na home. Reserva o espaço da viewport
+   até o conteúdo real assumir; inofensivo nas páginas sem footer logo após
+   (dashboard/admin), só evita um flash de página vazia mais curta ali. */
+#react-root {
+    min-height: 100vh;
+}
+
+/* Botões de ação principais — área de toque mínima 44px (iOS HIG) */
+.btn-sl-primary,
+.btn-sl-outline,
+.sl-submit-btn {
+    min-height: 44px;
+}
+
+/* ── 14. Compiler — Sistema de Tokens Responsivos ──────────────────────── */
+/* Classes utilitárias que usam CSS variables — funcionam em desktop e mobile */
+
+.sl-compiler-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #475569;
+    border-radius: var(--sl-card-radius);
+    padding: var(--sl-section-padding);
+    margin-bottom: var(--sl-section-gap);
+}
+
+.sl-compiler-label {
+    display: block;
+    font-weight: 900;
+    color: var(--sl-text-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.sl-compiler-input {
+    background: rgba(15, 23, 42, 0.5);
+    color: #fff;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    font-size: var(--sl-input-font-size);
+    min-height: var(--sl-touch-target);
+    padding: 10px 14px;
+    width: 100%;
+    cursor: pointer;
+    pointer-events: auto;
+}
+.sl-compiler-input:focus {
+    border-color: var(--sl-primary);
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+    outline: none;
+    pointer-events: auto;
+}
+.sl-compiler-input:hover {
+    border-color: var(--sl-primary);
+}
+
+/* Color picker dual-input wrapper: empilha no mobile, lado a lado no desktop */
+.sl-color-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+@media (min-width: 768px) {
+    .sl-color-row {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+.sl-color-row input[type="color"] {
+    flex: 0 0 var(--sl-color-picker-width);
+    height: var(--sl-touch-target);
+    min-height: var(--sl-touch-target);
+    width: var(--sl-color-picker-width);
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: rgba(15, 23, 42, 0.5);
+}
+.sl-color-row input[type="text"] {
+    flex: 1;
+    font-family: monospace;
+}
+
+/* Botão primário do compiler */
+.sl-compiler-btn {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #fff;
+    border: none;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: var(--sl-touch-padding);
+    min-height: var(--sl-touch-target);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.sl-compiler-btn:hover { opacity: 0.9; color: #fff; }
+.sl-compiler-btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* Blur decorativo do compiler — responsivo com clamp() */
+.sl-compiler-blur {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(280px, 80vw, 800px);
+    height: clamp(160px, 40vw, 300px);
+    background: rgba(2, 132, 199, 0.1);
+    filter: blur(80px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+@media (min-width: 768px) {
+    .sl-compiler-blur { filter: blur(150px); }
+}
+
+/* Badge controls: grid responsivo */
+.sl-badge-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sl-section-gap);
+}
+@media (min-width: 768px) {
+    .sl-badge-controls {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Badge wrapper na lista (com botão remover) */
+.sl-badge-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+}
+.sl-badge-wrapper .btn-remove {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    min-height: 32px;
+    min-width: 32px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+.sl-badge-wrapper .btn-remove:hover {
+    background: #dc2626;
+}
+
+/* ── 15. Select dropdown fixes — ensure dropdown is fully interactive ──── */
+select,
+.form-select {
+    appearance: auto !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    position: relative;
+    z-index: auto;
+    overflow: visible !important;
+}
+
+select:focus,
+.form-select:focus {
+    pointer-events: auto !important;
+}
+
+/* Color picker — garantir interação total */
+input[type="color"] {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+input[type="color"]:focus {
+    pointer-events: auto !important;
+}
+
+/* Bootstrap form-select: ensure dropdown appears above other content */
+.form-select[disabled] {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.65;
+}
+
+/* Ensure form-select options are visible */
+.form-select optgroup,
+.form-select option {
+    color: inherit;
+    padding: 6px 8px;
+}
+
+/* ── 16. Chat IA ──────────────────────────────────────────────────────────── */
+/* ── Chat message rows ──────────────────────────────────────────────────── */
+@keyframes sl-bubble-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.sl-msg-row {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    animation: sl-bubble-in .22s ease;
+    margin-bottom: 18px;
+}
+.sl-msg-row:last-child { margin-bottom: 0; }
+.sl-msg-row.user  { align-items: flex-end; }
+.sl-msg-row.assistant { align-items: flex-start; width: 100%; }
+
+/* User bubble — gradient pill */
+.sl-msg-row.user .sl-msg-content {
+    max-width: 76%;
+    padding: 10px 15px;
+    border-radius: 18px 18px 4px 18px;
+    background: linear-gradient(135deg, #6366f1, #0ea5e9);
+    color: #fff;
+    font-size: .875rem;
+    line-height: 1.6;
+    word-break: break-word;
+    box-shadow: 0 4px 20px rgba(99,102,241,.22);
+}
+
+/* Assistant — model header */
+.sl-msg-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--sl-primary);
+    opacity: .65;
+    margin-bottom: 7px;
+    flex-shrink: 0;
+}
+
+/* Assistant — content (no box, clean text) */
+.sl-msg-row.assistant .sl-msg-content {
+    font-size: .875rem;
+    line-height: 1.72;
+    word-break: break-word;
+    color: var(--sl-text-200);
+    width: 100%;
+}
+[data-bs-theme="light"] .sl-msg-row.assistant .sl-msg-content { color: #1e293b; }
+
+/* Message footer — copy + sources (fade in on hover) */
+.sl-msg-footer {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity .18s;
+}
+.sl-msg-row:hover .sl-msg-footer { opacity: 1; }
+.sl-msg-sources {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .67rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--sl-text-500);
+    background: rgba(99,102,241,.08);
+    border: 1px solid rgba(99,102,241,.16);
+    border-radius: 20px;
+    padding: 2px 9px;
+}
+.sl-msg-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .67rem;
+    font-weight: 600;
+    color: var(--sl-text-500);
+    background: transparent;
+    border: 1px solid rgba(148,163,184,.15);
+    border-radius: 20px;
+    padding: 2px 9px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+    margin-left: auto;
+}
+.sl-msg-copy-btn:hover {
+    color: var(--sl-text-200);
+    border-color: rgba(148,163,184,.4);
+    background: rgba(148,163,184,.06);
+}
+
+.sl-chat-typing {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--sl-bg-800);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+    flex-shrink: 0;
+}
+[data-bs-theme="light"] .sl-chat-typing { background: #f1f5f9; }
+.sl-chat-typing span {
+    width: 7px;
+    height: 7px;
+    background: var(--sl-text-400);
+    border-radius: 50%;
+    display: inline-block;
+    animation: sl-typing-dot 1.4s infinite ease-in-out;
+}
+.sl-chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.sl-chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes sl-typing-dot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30%           { transform: translateY(-5px); opacity: 1; }
+}
+
+.sl-chat-suggestion {
+    background: linear-gradient(135deg, rgba(99,102,241,.07), rgba(14,165,233,.07));
+    border: 1px solid rgba(99, 102, 241, .25);
+    color: var(--sl-primary-light);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .15s, box-shadow .2s;
+    text-align: left;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.sl-chat-suggestion:hover {
+    background: linear-gradient(135deg, rgba(99,102,241,.17), rgba(14,165,233,.17));
+    border-color: rgba(99, 102, 241, .5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, .2);
+}
+
+.sl-chat-input-area {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.sl-chat-textarea {
+    flex: 1;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+    resize: none;
+    max-height: 120px;
+    overflow-y: auto;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+    /* 16px evita o zoom automático do iOS ao focar o campo */
+    font-size: 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.sl-chat-textarea:focus {
+    outline: none;
+    border-color: var(--sl-primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+.sl-chat-send-btn {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #0ea5e9);
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: box-shadow .2s, transform .1s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 2px 14px rgba(99, 102, 241, .4);
+}
+.sl-chat-send-btn:hover:not(:disabled) {
+    box-shadow: 0 4px 22px rgba(99, 102, 241, .65);
+    transform: translateY(-1px);
+}
+.sl-chat-send-btn:active:not(:disabled) { transform: scale(0.93); }
+.sl-chat-send-btn:disabled { opacity: 0.38; cursor: not-allowed; box-shadow: none; }
+
+/* ── Chat IA — controles compactos mobile (sem padding wrapper, sem título duplicado) ── */
+@media (max-width: 991.98px) {
+    /* Barra de controles (model selector + botões) — separador visual do card */
+    .sl-chat-controls-bar {
+        border-bottom: 1px solid var(--bs-border-color);
+        background: var(--sl-card-bg, var(--sl-bg-body));
+    }
+    /* Card ocupa toda a largura sem bordas laterais/arredondamento */
+    #sl-chat-area > .sl-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+}
+
+/* ── Chat IA — escala maior no mobile (legibilidade + alvos de toque) ────── */
+@media (max-width: 767.98px) {
+    /* Texto das mensagens: 14px → 16px para leitura confortável no celular */
+    .sl-msg-row.user .sl-msg-content,
+    .sl-msg-row.assistant .sl-msg-content {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    /* Bolha do usuário ocupa mais largura da tela */
+    .sl-msg-row.user .sl-msg-content {
+        max-width: 88%;
+        padding: 11px 16px;
+    }
+    /* Cabeçalho do assistente (nome do modelo) um pouco maior */
+    .sl-msg-header { font-size: .72rem; }
+    /* Espaçamento maior entre mensagens */
+    .sl-msg-row { margin-bottom: 20px; }
+
+    /* Campo de entrada maior e mais tocável */
+    .sl-chat-textarea {
+        padding: 13px 16px;
+        border-radius: 14px;
+    }
+    /* Botão de envio com alvo de toque maior */
+    .sl-chat-send-btn {
+        width: 48px;
+        height: 48px;
+        min-height: 48px;
+        border-radius: 14px;
+    }
+    .sl-chat-send-btn i { font-size: 1.05rem !important; }
+
+    /* Chips de sugestão maiores */
+    .sl-chat-suggestion {
+        font-size: .9rem;
+        padding: 10px 16px;
+    }
+}
+
+@keyframes sl-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+.sl-spin { display: inline-block; animation: sl-spin 0.75s linear infinite; }
+
+/* ── 17. Chat IA — botão de download de template gerado ─────────────────── */
+.sl-chat-download-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: rgba(34, 197, 94, .12);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, .3);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    transition: background .15s;
+}
+.sl-chat-download-btn:hover {
+    background: rgba(34, 197, 94, .22);
+    color: #4ade80;
+}
+
+/* ── Chat IA — Streaming cursor ─────────────────────────────────────────── */
+.sl-stream-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.sl-stream-cursor::after {
+    content: '▋';
+    color: var(--sl-primary);
+    font-size: .85em;
+    margin-left: 1px;
+    animation: sl-blink .65s step-start infinite;
+}
+@keyframes sl-blink {
+    50% { opacity: 0; }
+}
+
+/* Cada trecho novo de texto que chega via streaming entra num span próprio
+   com fade-in — só opacidade (sem translateY) pra não gerar jitter de
+   reflow inline em texto que quebra linha no meio de uma sentença. */
+.sl-chunk {
+    display: inline;
+    animation: sl-chunk-fade-in .4s ease-out;
+}
+@keyframes sl-chunk-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Gerador IA — mobile full-screen ────────────────────────────────────── */
+@media (max-width: 575.98px) {
+    .sl-ai-chat-outer {
+        padding: 0 !important;
+    }
+    .sl-ai-chat-outer .sl-ai-chat-header {
+        padding: 10px 14px !important;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .sl-ai-chat-outer .sl-card {
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+    }
+}
+
+/* ── Gerador IA — Token counter ─────────────────────────────────────────── */
+.sl-token-bar {
+    width: 76px;
+    height: 3px;
+    background: rgba(99,102,241,.12);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.sl-token-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #22c55e, #6366f1);
+    width: 0%;
+    transition: width .55s ease, background .55s ease;
+}
+
+/* ── Gerador IA — Agent status indicator ─────────────────────────────────── */
+@keyframes sl-status-sweep {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+@keyframes sl-status-out {
+    to { opacity: 0; transform: translateY(-6px); }
+}
+.sl-agent-status {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 8px 12px;
+    border-radius: 20px;
+    background: rgba(99,102,241,.09);
+    border: 1px solid rgba(99,102,241,.3);
+    font-size: .775rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: #818cf8;
+    flex-shrink: 0;
+    width: fit-content;
+    position: relative;
+    overflow: hidden;
+    animation: sl-bubble-in .22s ease;
+}
+.sl-agent-status::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 35%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(129,140,248,.22), transparent);
+    animation: sl-status-sweep 2s ease-in-out infinite;
+}
+.sl-agent-status i { font-size: .9rem; position: relative; flex-shrink: 0; }
+.sl-status-label { position: relative; }
+.sl-status-dots { display: flex; gap: 3px; position: relative; margin-left: 2px; }
+.sl-status-dots span {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: #818cf8;
+    animation: sl-typing-dot 1.2s ease-in-out infinite;
+}
+.sl-status-dots span:nth-child(2) { animation-delay: .2s; }
+.sl-status-dots span:nth-child(3) { animation-delay: .4s; }
+.sl-agent-status.sl-status-exit {
+    animation: sl-status-out .28s ease forwards;
+    pointer-events: none;
+}
+
+/* ── Gerador IA — Welcome screen (first visit of the day) ───────────────── */
+@keyframes sl-welcome-fade-in  { from{opacity:0}                              to{opacity:1}                         }
+@keyframes sl-welcome-slide-up { from{opacity:0;transform:translateY(28px)}   to{opacity:1;transform:translateY(0)} }
+@keyframes sl-welcome-float    { 0%,100%{transform:translateY(0)}             50%{transform:translateY(-10px)}      }
+@keyframes sl-welcome-ring     { 0%{transform:scale(.85);opacity:.65}         100%{transform:scale(1.7);opacity:0}  }
+@keyframes sl-welcome-spin     { to{transform:rotate(360deg)}                                                       }
+@keyframes sl-welcome-orb-a    { 0%,100%{transform:translate(0,0)}            50%{transform:translate(40px,-30px)}  }
+@keyframes sl-welcome-orb-b    { 0%,100%{transform:translate(0,0)}            50%{transform:translate(-30px,20px)}  }
+@keyframes sl-welcome-shimmer  { 0%{background-position:-200% center}         100%{background-position:200% center} }
+
+.sl-ai-welcome {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: #020617; overflow: hidden;
+    animation: sl-welcome-fade-in .35s ease;
+}
+.sl-ai-welcome.sl-welcome-exit {
+    animation: none;
+    transition: opacity .45s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+.sl-welcome-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+        linear-gradient(rgba(99,102,241,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,.055) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+.sl-welcome-orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none; opacity: .3;
+}
+.sl-welcome-orb-a {
+    width: 520px; height: 520px; top: -160px; left: -120px;
+    background: radial-gradient(circle, rgba(99,102,241,.55), transparent 70%);
+    animation: sl-welcome-orb-a 14s ease-in-out infinite;
+}
+.sl-welcome-orb-b {
+    width: 420px; height: 420px; bottom: -110px; right: -90px;
+    background: radial-gradient(circle, rgba(14,165,233,.45), transparent 70%);
+    animation: sl-welcome-orb-b 17s ease-in-out infinite;
+}
+.sl-welcome-card {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 48px 40px;
+    max-width: 480px; width: 90%;
+    border-radius: 24px;
+    background: rgba(10,12,22,.92);
+    border: 1px solid rgba(99,102,241,.22);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 80px rgba(99,102,241,.12), 0 32px 80px rgba(0,0,0,.6);
+}
+.sl-welcome-icon-ring {
+    position: relative; width: 88px; height: 88px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px;
+    animation: sl-welcome-slide-up .5s .05s both;
+}
+.sl-welcome-icon-ring::before,
+.sl-welcome-icon-ring::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px solid rgba(99,102,241,.45);
+    animation: sl-welcome-ring 2.5s ease-out infinite;
+}
+.sl-welcome-icon-ring::after { animation-delay: 1.25s; }
+.sl-welcome-icon-inner {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(14,165,233,.2));
+    border: 1px solid rgba(99,102,241,.3);
+    animation: sl-welcome-float 3.5s ease-in-out infinite;
+}
+.sl-welcome-icon-inner i {
+    font-size: 2.1rem;
+    background: linear-gradient(135deg, #818cf8, #38bdf8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.sl-welcome-hello {
+    font-size: 2rem; font-weight: 900; letter-spacing: -.04em;
+    color: #f1f5f9; margin-bottom: 8px;
+    animation: sl-welcome-slide-up .55s .2s both;
+}
+.sl-welcome-hello span {
+    background: linear-gradient(90deg, #818cf8, #38bdf8, #818cf8);
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: sl-welcome-shimmer 3.5s linear infinite;
+}
+.sl-welcome-badge {
+    display: inline-block;
+    font-size: .6rem; font-weight: 900; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--sl-primary);
+    background: rgba(14,165,233,.1);
+    border: 1px solid rgba(14,165,233,.25);
+    border-radius: 999px; padding: 3px 14px;
+    margin-bottom: 16px;
+    animation: sl-welcome-slide-up .55s .35s both;
+}
+.sl-welcome-desc {
+    font-size: .875rem; line-height: 1.7; color: #94a3b8;
+    max-width: 360px; margin-bottom: 36px;
+    animation: sl-welcome-slide-up .55s .5s both;
+}
+.sl-welcome-desc strong { color: #cbd5e1; }
+.sl-welcome-start {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 32px; border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1, #0ea5e9);
+    border: none; color: #fff;
+    font-size: .85rem; font-weight: 900; letter-spacing: .06em;
+    text-transform: uppercase; cursor: pointer;
+    box-shadow: 0 6px 28px rgba(99,102,241,.4);
+    transition: transform .18s, box-shadow .18s;
+    animation: sl-welcome-slide-up .55s .65s both;
+}
+.sl-welcome-start:hover  { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(99,102,241,.55); }
+.sl-welcome-start:active { transform: translateY(0); }
+.sl-welcome-loader {
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    animation: sl-welcome-fade-in .3s ease;
+}
+.sl-welcome-spinner {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 3px solid rgba(99,102,241,.2); border-top-color: #6366f1;
+    animation: sl-welcome-spin .8s linear infinite;
+}
+.sl-welcome-loader-txt {
+    font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: #64748b; margin: 0;
+}
+
+/* ── Especialista Blogger — Code blocks ─────────────────────────────────── */
+.sl-code-block {
+    margin: .75em 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(148,163,184,.18);
+    background: #0f172a;
+}
+.sl-code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(148,163,184,.08);
+    border-bottom: 1px solid rgba(148,163,184,.12);
+}
+.sl-code-lang {
+    font-family: monospace;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #94a3b8;
+}
+.sl-code-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid rgba(148,163,184,.2);
+    border-radius: 5px;
+    color: #94a3b8;
+    font-size: .7rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+}
+.sl-code-copy-btn:hover {
+    color: #e2e8f0;
+    border-color: rgba(148,163,184,.45);
+    background: rgba(148,163,184,.08);
+}
+.sl-code-pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    background: transparent;
+}
+.sl-code-pre code {
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: .8rem;
+    line-height: 1.65;
+    color: #e2e8f0;
+    white-space: pre;
+}
+
+/* Highlight.js — tokens dos blocos de código do chat (CodeBlock.jsx),
+   paleta alinhada às cores já usadas no resto da UI em vez de um tema
+   genérico importado do pacote. */
+.hljs-comment, .hljs-quote { color: var(--sl-text-500); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-tag, .hljs-name, .hljs-built_in { color: #38bdf8; }
+.hljs-string, .hljs-attr, .hljs-symbol, .hljs-bullet, .hljs-addition { color: #4ade80; }
+.hljs-number, .hljs-literal { color: #fbbf24; }
+.hljs-title, .hljs-section, .hljs-selector-id, .hljs-selector-class { color: #818cf8; font-weight: 700; }
+.hljs-variable, .hljs-template-variable, .hljs-attribute, .hljs-regexp { color: #f472b6; }
+.hljs-deletion { color: #f87171; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+
+/* ── Diagramas Mermaid (```mermaid``` no chat) ──────────────────────────── */
+.sl-mermaid-block {
+    margin: .75em 0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid rgba(148,163,184,.18);
+    background: #0f172a;
+}
+.sl-mermaid-block .mermaid {
+    display: flex;
+    justify-content: center;
+}
+
+/* ── Code generation pill (inline no stream, enquanto fence ``` está aberto) */
+.sl-code-gen-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    margin: .6em 0 .2em;
+    border-radius: 8px;
+    border: 1px solid rgba(99,102,241,.22);
+    background: rgba(15,23,42,.7);
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--sl-text-400);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    animation: sl-bubble-in .15s ease;
+}
+.sl-code-gen-pill strong { color: #94a3b8; font-weight: 700; }
+
+/* ── Badge "Corrigido automaticamente" — aparece no header do code block ── */
+.sl-code-fix-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: .69rem;
+    font-weight: 700;
+    color: #4ade80;
+    background: rgba(74,222,128,.07);
+    border-bottom: 1px solid rgba(74,222,128,.18);
+    letter-spacing: .01em;
+    animation: sl-bubble-in .25s ease;
+    transition: opacity .5s ease, max-height .5s ease, padding .5s ease;
+}
+.sl-code-fix-badge i { font-size: .82rem; flex-shrink: 0; }
+.sl-code-fix-badge .sl-code-fix-lang {
+    margin-left: auto;
+    font-family: monospace;
+    font-size: .65rem;
+    text-transform: uppercase;
+    opacity: .55;
+    letter-spacing: .06em;
+}
+.sl-code-fix-badge--out {
+    opacity: 0;
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden;
+}
+
+/* ── Especialista Blogger — Status pills (animated reasoning trail) ─────── */
+.sl-status-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+    flex-shrink: 0;
+    margin-bottom: 4px;
+}
+.sl-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px 5px 8px;
+    border-radius: 30px;
+    border: 1px solid rgba(99,102,241,.2);
+    background: rgba(99,102,241,.05);
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--sl-text-400);
+    position: relative;
+    overflow: hidden;
+    animation: sl-bubble-in .2s ease;
+    white-space: nowrap;
+}
+.sl-status-pill.sl-status-past {
+    opacity: .38;
+    border-color: rgba(99,102,241,.1);
+    background: transparent;
+}
+.sl-status-scan {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(99,102,241,.14) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: sl-scan-shimmer 1.6s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes sl-scan-shimmer {
+    0%   { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+}
+.sl-status-pill-icon {
+    font-size: .78rem;
+    color: var(--sl-primary);
+    opacity: .9;
+    flex-shrink: 0;
+    position: relative;
+}
+.sl-status-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+}
+.sl-status-dots span {
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: var(--sl-primary);
+    display: inline-block;
+    animation: sl-dot-bounce .85s ease-in-out infinite;
+    opacity: .7;
+}
+.sl-status-dots span:nth-child(2) { animation-delay: .14s; }
+.sl-status-dots span:nth-child(3) { animation-delay: .28s; }
+@keyframes sl-dot-bounce {
+    0%, 80%, 100% { transform: translateY(0);    opacity: .35; }
+    40%           { transform: translateY(-3px); opacity: 1;   }
+}
+
+/* ── Especialista Blogger — Model Selector ──────────────────────────────── */
+.sl-model-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    font-size: .76rem;
+    font-weight: 700;
+    color: var(--sl-text-400);
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .18s, border-color .18s, color .18s;
+    -webkit-tap-highlight-color: transparent;
+}
+.sl-model-btn:hover,
+.sl-model-btn[aria-expanded="true"] {
+    background: var(--sl-bg-800);
+    border-color: var(--sl-primary);
+    color: var(--sl-primary);
+}
+.sl-model-chevron {
+    font-size: .58rem;
+    transition: transform .2s;
+}
+.sl-model-btn[aria-expanded="true"] .sl-model-chevron { transform: rotate(180deg); }
+
+.sl-model-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--sl-bg-700);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    padding: 5px;
+    min-width: 165px;
+    z-index: 300;
+    box-shadow: 0 8px 28px rgba(0,0,0,.28);
+    animation: sl-bubble-in .15s ease;
+}
+[data-bs-theme="light"] .sl-model-dropdown { background: #fff; }
+.sl-model-dropdown.open { display: block; }
+
+.sl-model-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    font-size: .81rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sl-text-300);
+    cursor: pointer;
+    text-align: left;
+    transition: background .13s;
+}
+.sl-model-option:hover:not([disabled]) { background: var(--sl-bg-800); color: var(--sl-text-100); }
+[data-bs-theme="light"] .sl-model-option:hover:not([disabled]) { background: #f1f5f9; }
+.sl-model-option[disabled] { opacity: .4; cursor: not-allowed; }
+.sl-model-option.is-active { color: var(--sl-primary); }
+.sl-model-option .sl-model-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: transparent;
+}
+.sl-model-option.is-active .sl-model-dot { background: var(--sl-primary); }
+.sl-model-icon { font-size: .85rem; flex-shrink: 0; opacity: .85; }
+.sl-model-option.is-active .sl-model-icon { opacity: 1; }
+
+/* Brand letter badges — fallback para modelos sem ícone Bootstrap Icons */
+.sl-model-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.sl-model-badge svg { display: block; }
+.sl-model-badge--gpt    { background: #111; color: #fff; }
+.sl-model-badge--claude { background: linear-gradient(135deg, #cc785c, #e8956d); color: #fff; }
+
+/* ── Especialista Blogger — Confirm dialog (trocar modelo) ──────────────── */
+.sl-model-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1060;
+    animation: sl-bubble-in .2s ease;
+}
+.sl-model-confirm-card {
+    background: var(--sl-bg-700);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    padding: 22px 24px 20px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,.45);
+}
+[data-bs-theme="light"] .sl-model-confirm-card { background: #fff; }
+
+/* ── Workspace ───────────────────────────────────────────────────────────── */
+.ws-projeto-card {
+    transition: box-shadow .2s;
+}
+.ws-projeto-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+.ws-projeto-header:hover .ws-folder-icon {
+    filter: brightness(1.2);
+}
+.ws-sessao-row {
+    transition: background .13s;
+}
+.ws-sessao-row:hover {
+    background: var(--sl-bg-800);
+}
+[data-bs-theme="light"] .ws-sessao-row:hover {
+    background: #f8fafc;
+}
+.ws-snapshot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--sl-primary);
+    font-weight: 600;
+}
+.ws-sessao-input {
+    background: var(--sl-bg-800) !important;
+    border-color: var(--bs-border-color) !important;
+    color: var(--sl-text-300) !important;
+}
+[data-bs-theme="light"] .ws-sessao-input {
+    background: #fff !important;
+    color: #0f172a !important;
+}
+.ws-sessao-input:focus {
+    border-color: var(--sl-primary) !important;
+    box-shadow: 0 0 0 2px rgba(14,165,233,.15) !important;
+}
+.ws-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1060;
+    animation: sl-bubble-in .18s ease;
+}
+.ws-modal-card {
+    background: var(--sl-bg-700);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    padding: 22px 24px 20px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,.45);
+}
+[data-bs-theme="light"] .ws-modal-card { background: #fff; }
+.ws-diag-score {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid var(--sl-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.05rem;
+    color: var(--sl-primary);
+}
+
+/* ── 18. Admin (/eu/*) — consolidado dos 4 documentos EJS que cada um
+   redefinia (quase) o mesmo bloco. Usado por frontend/layouts/AdminLayout.jsx
+   e frontend/pages/admin/*.jsx. ──────────────────────────────────────────── */
+body.sl-admin-body { background: var(--sl-bg-950); color: var(--sl-text-300); }
+.admin-topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1050;
+    height: 56px;
+    background: rgba(15,23,42,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--sl-bg-800);
+    display: flex; align-items: center; padding: 0 1.5rem; gap: 1rem;
+}
+.admin-badge {
+    font-size: 9px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.18em; color: var(--sl-text-500);
+    border: 1px solid var(--sl-bg-800); padding: 2px 8px; border-radius: 4px;
+}
+.kpi-card {
+    background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+    border-radius: 1rem; padding: 1.25rem;
+}
+.section-card {
+    background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+    border-radius: 1rem;
+}
+.section-label {
+    font-size: 10px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.18em; color: var(--sl-text-400);
+}
+.status-badge {
+    font-size: 9px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.1em; padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+}
+.status-premium { background: rgba(34,197,94,0.1); color: #4ade80; }
+.status-free { background: var(--sl-bg-800); color: var(--sl-text-500); }
+.plan-badge {
+    font-size: 9px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+}
+.plan-studio  { background: rgba(139,92,246,0.15); color: #a78bfa; }
+.plan-pro     { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.plan-premium { background: rgba(245,158,11,.12);  color: #fbbf24; }
+.plan-starter { background: rgba(124,58,237,0.12); color: #c4b5fd; }
+.plan-free    { background: var(--sl-bg-800); color: var(--sl-text-500); }
+.finance-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 0; border-bottom: 1px solid var(--sl-bg-800);
+}
+.finance-row:last-child { border-bottom: none; }
+.admin-pulse-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #22c55e; display: inline-block; animation: admin-pulse 2s infinite;
+}
+@keyframes admin-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.workers-link {
+    font-size: 10px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--sl-primary);
+    text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+}
+.workers-link:hover { opacity: .8; }
+
+/* ── 19. Landing (/) — migrado de views/pages/index.ejs (bloco <style>
+   inline) pro app React (frontend/pages/Landing.jsx). Fica aqui porque
+   depende de :hover e @keyframes, que o atributo style inline do React
+   não suporta. ──────────────────────────────────────────────────────── */
+@keyframes heroFloat   { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-8px)} }
+@keyframes compileFlash{ 0%,100%{opacity:1}                50%{opacity:.4}                 }
+@keyframes cursorBlink { 0%,100%{opacity:1}                50%{opacity:0}                  }
+.hero-float    { animation: heroFloat    6s ease-in-out infinite; }
+.compile-pulse { animation: compileFlash 1.4s ease-in-out infinite; }
+.cursor        { animation: cursorBlink  1s step-end infinite; }
+.chip-item { transition: border-color .2s, background .2s; }
+.chip-item:hover { border-color:rgba(56,189,248,.4)!important; background:rgba(56,189,248,.06)!important; }
+.feat-card:hover { border-color:rgba(56,189,248,.25)!important; box-shadow:0 0 30px -10px rgba(56,189,248,.2); }
+
+/* [data-hero="panel"] (desktop, d-lg-flex) recebe transform contínuo pra
+   sempre via GSAP (flutuação, ver Landing.jsx) e tem box-shadow duplo
+   pesado (glow desfocado) — sem will-change o navegador tende a repintar
+   a sombra a cada frame da animação infinita em vez de só compositar. */
+[data-hero="panel"] { will-change: transform; }
+
+/* ── Terminal chat ─────────────────────────────────────────────────── */
+@keyframes termFade  { to { opacity:1; transform:translateY(0); } }
+.term-line { opacity:0; transform:translateY(5px); animation:termFade .28s ease forwards; }
+@keyframes thinkDot  { 0%,60%,100%{opacity:.2;transform:translateY(0)} 30%{opacity:1;transform:translateY(-3px)} }
+.think-dot:nth-child(1){ animation:thinkDot 1.1s ease-in-out       infinite; }
+.think-dot:nth-child(2){ animation:thinkDot 1.1s ease-in-out  .15s  infinite; }
+.think-dot:nth-child(3){ animation:thinkDot 1.1s ease-in-out  .30s  infinite; }
+
+/* ── Demo indicator dots ───────────────────────────────────────────── */
+.demo-dot { width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s;cursor:pointer;flex-shrink:0; }
+.demo-dot.active { background:#38bdf8;width:18px;border-radius:3px; }
+
+/* ── Cap items (JS define opacity/transform via IntersectionObserver) ── */
+.cap-item { transition: border-color .2s, background .2s; }
+.cap-item:hover { border-color:rgba(56,189,248,.2)!important; background:rgba(15,23,42,.8)!important; }
+.cap-icon { transition:transform .2s; }
+.cap-item:hover .cap-icon { transform:scale(1.1); }
+
+/* ── Ticker ────────────────────────────────────────────────────────── */
+@keyframes tickerMove { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-track { display:flex; width:max-content; animation:tickerMove 32s linear infinite; }
+.ticker-wrap:hover .ticker-track { animation-play-state:paused; }
+
+/* ── Chat fade transition ──────────────────────────────────────────── */
+#iaChatArea { transition:opacity .35s ease; }
+
+/* ── Hero clip-mask (revelação linha-a-linha) ──────────────────────── */
+/* padding-bottom no mask: (1) cria respiro visual entre as duas linhas
+   do h1 em todos os tamanhos, (2) evita corte de descenders no
+   overflow:hidden durante a animação. */
+.hero-mask        { display:block; padding-bottom:0.18em; }
+.hero-mask__inner { display:block; }
+
+/* ── Anti-FOUC ─────────────────────────────────────────────────────────
+   Estados iniciais aplicados SÓ quando .js-anim está no <html> (armado
+   por script síncrono antes do paint, ver Landing.jsx). Sem JS de
+   animação, sem GSAP ou com prefers-reduced-motion → a classe nunca
+   entra/é removida e tudo aparece imediatamente. O GSAP assume o
+   controlo via estilos inline. */
+.js-anim .hero-mask                       { overflow:hidden; }
+.js-anim .hero-mask__inner                { transform:translateY(110%); }
+.js-anim [data-hero="badge"],
+.js-anim [data-hero="lead"],
+.js-anim [data-hero="cta"],
+.js-anim [data-hero="trust"],
+.js-anim [data-hero="panel"]              { opacity:0; }
+
+/* ── 20. Ícones inline (views/partials/icon.ejs) ──────────────────────────
+   Substituem as tags <i class="bi bi-*"> (bootstrap-icons via CDN, removido
+   — ver header.ejs). vertical-align alinha o SVG com o texto ao redor como
+   uma fonte de ícone faria; width/height ficam em 1em (icon.ejs) pra herdar
+   o font-size do contexto sem precisar declarar tamanho em cada uso. */
+.sl-icon { display: inline-block; vertical-align: -0.125em; flex-shrink: 0; }
+.js-anim [data-hero="chips"] .chip-item   { opacity:0; }

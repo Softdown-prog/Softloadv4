@@ -1,0 +1,66 @@
+{
+  "id": "ia-balcao-imagens-responsivas-blogger",
+  "categoria": "otimizacao-imagens",
+  "conceito": "resizeImage() do Blogger é estático (parâmetro no servidor Google); JS interceptor extrai URL original e remonta parâmetros em runtime baseado em window.innerWidth — 3 breakpoints, 2 formatos de URL Blogger. SVG placeholder 16:9 evita layout shift antes do carregamento.",
+  "palavras_chave": [
+    "imagens responsivas", "resize", "lazy load", "LCP", "layout shift",
+    "placeholder SVG", "breakpoints", "window.innerWidth", "IIFE", "JSON Feed",
+    "otimização", "performance", "data-src", "img-loaded"
+  ],
+  "placeholder_xml": {
+    "descricao": "Atributo data-src com URL dinâmica do Blogger + src com SVG placeholder 16:9",
+    "xml": "<img\n  expr:data-src='data:post.featuredImage'\n  src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3C/svg%3E\"\n  class='card-img-top'\n  expr:alt='data:post.title'\n  loading='lazy'\n  width='800'\n  height='450'\n/>",
+    "nota": "O src SVG tem aspect-ratio 16:9 embutido — o navegador reserva espaço antes de carregar a imagem real, eliminando layout shift (CLS)."
+  },
+  "javascript_iife": {
+    "descricao": "IIFE completa com detecção de breakpoint e reescrita de URL do servidor de imagens Google",
+    "js": "(function () {\n  function resizeBloggerImages() {\n    var w = window.innerWidth;\n    var params;\n    if (w < 576) {\n      params = 'w480-h360-c';   // mobile 4:3\n    } else if (w < 992) {\n      params = 'w800-h450-c';   // tablet 16:9\n    } else {\n      params = 'w1200-h675-c';  // desktop 16:9\n    }\n    document.querySelectorAll('img[data-src]').forEach(function (img) {\n      var src = img.getAttribute('data-src');\n      if (!src) return;\n      var rewritten = src\n        .replace(/\\/s\\d+(-[^/]+)?\\//, '/' + params + '/')\n        .replace(/=s0$/, '=' + params);\n      img.src = rewritten;\n      img.removeAttribute('data-src');\n      img.classList.add('img-loaded');\n    });\n  }\n  if (document.readyState === 'loading') {\n    document.addEventListener('DOMContentLoaded', resizeBloggerImages);\n  } else {\n    resizeBloggerImages();\n  }\n})();"
+  },
+  "breakpoints": {
+    "mobile": {
+      "condicao": "window.innerWidth < 576",
+      "params": "w480-h360-c",
+      "aspecto": "4:3",
+      "uso": "feeds mobile, cards em coluna única"
+    },
+    "tablet": {
+      "condicao": "window.innerWidth >= 576 e < 992",
+      "params": "w800-h450-c",
+      "aspecto": "16:9",
+      "uso": "grid 2 colunas, cards médios"
+    },
+    "desktop": {
+      "condicao": "window.innerWidth >= 992",
+      "params": "w1200-h675-c",
+      "aspecto": "16:9",
+      "uso": "hero, destaque, grid 3 colunas"
+    }
+  },
+  "formatos_url_blogger": {
+    "descricao": "O servidor de imagens Google usa dois formatos de URL — ambos precisam ser detectados e reescritos",
+    "formato_s": {
+      "exemplo": "https://blogger.googleusercontent.com/.../s1600/foto.jpg",
+      "padrao_regex": "/\\/s\\d+(-[^/]+)?\\//",
+      "reescrita": "Substitui /s1600/ por /w1200-h675-c/"
+    },
+    "formato_eq": {
+      "exemplo": "https://blogger.googleusercontent.com/.../foto.jpg=s0",
+      "padrao_regex": "/=s0$/",
+      "reescrita": "Substitui =s0 por =w1200-h675-c"
+    },
+    "nota": "Imagens de posts antigos usam =s0; uploads recentes usam /s1600/. O interceptor detecta ambos via chain de .replace()."
+  },
+  "html_saida_simulado": {
+    "descricao": "Exemplo com URL mock reescrita para viewport de 425px (mobile)",
+    "antes": "data-src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/foto.jpg=s0'",
+    "depois": "src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/foto.jpg=w480-h360-c' class='card-img-top img-loaded'"
+  },
+  "notas_tecnicas": [
+    "LCP impact: imagem de destaque é frequentemente o LCP element — servir no tamanho exato do viewport reduz TTFB parcial e bytes transferidos.",
+    "SVG placeholder evita layout shift (CLS): o viewBox='0 0 16 9' reserva o aspect-ratio correto antes do src real ser definido.",
+    "img-loaded como state marker: permite CSS transition suave (opacity 0 → 1) e scripts de analytics detectarem carregamento concluído.",
+    "document.readyState check garante execução imediata quando IIFE é colocada no fim do body — sem esperar DOMContentLoaded desnecessariamente.",
+    "O parâmetro -c no final (w1200-h675-c) ativa crop centralizado do Google — sem ele a imagem é apenas redimensionada, podendo ter proporção diferente do container.",
+    "Não usar IntersectionObserver neste padrão — o script reescreve todas as imagens visíveis e não visíveis de uma vez. Para lazy load real, combinar com loading='lazy' nativo do HTML."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "postgresql-nodejs-express-api-segura",
+  "slug": "postgresql-nodejs-express-api-segura",
+  "categoria": "postgresql",
+  "descricao": "Endpoint REST GET em Node.js + Express consultando PostgreSQL de forma segura — usa query parametrizada, nunca retorna o erro do banco diretamente pro cliente, e sempre valida a entrada do usuário antes de montar a consulta.",
+  "componentes": ["express-router", "query-parametrizada-postgresql", "http-status-500-tratado"],
+  "exemplos": [
+    "router.get('/users', async (req, res) => {\n  try {\n    const result = await db.query('SELECT id, name, email FROM users');\n    res.json(result.rows);\n  } catch (error) {\n    res.status(500).json({error:'internal-server-error'});\n  }\n});"
+  ],
+  "boas_praticas": [
+    "Nunca retornar erros de banco de dados diretamente na resposta HTTP",
+    "Sempre usar queries parametrizadas em vez de concatenação de string (prevenção de SQL injection)",
+    "Validar entrada do usuário antes de montar qualquer consulta"
+  ],
+  "keywords": ["postgresql express", "postgresql nodejs api rest", "sql injection prevencao", "query parametrizada postgresql"]
+}

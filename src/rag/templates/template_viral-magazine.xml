@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho viral-magazine — ver plano "esqueleto por
+     nicho" (/root/.claude/plans/indexed-jumping-treehouse.md). A estrutura
+     física (b:section, ids, ordem) abaixo foi extraída de
+     exemplos/viral-magazine.xml (arquivo hand-authored real do usuário) —
+     não é mais o chassis genérico 'magazine' compartilhado com
+     noticias-mag-news/tecnologia-mag-tech/tecnologia-techwind.
+
+     CORREÇÃO IMPORTANTE (achado real, comparação direta com exemplos/ pós
+     Fase 1a original): só extrair os ids de <b:section> não bastava — o
+     b:widget Blog1 continuava usando os includables 'main'/'post' do
+     CHASSIS (feed em grid + 3-post-destaque + card vertical .news-card),
+     nada a ver com o feed REAL do arquivo (lista simples .blog-posts.hfeed
+     + card horizontal .mag-card, imagem 5 col + conteúdo 7 col). Como o
+     feed/card é a maior área visual da página, o site continuava
+     "parecendo o mesmo" mesmo com a estrutura de seções já corrigida. Os
+     includables 'main'/'post' abaixo agora são extraídos verbatim
+     (adaptados só pra plugar nos tokens de compile.js — LAZY_LOAD_TOGGLE/
+     ICON_AUTHOR/READING_TIME/etc) de exemplos/viral-magazine.xml, não mais
+     do chassis de família. O resto da maquinaria interna (includables
+     padrão do Blogger, widget-settings do Blog1, demais tokens de
+     compile.js, CSS/skin) continua vindo do chassis — só o feed de posts e
+     o esqueleto de seções mudam. Diferenças estruturais reais vs.
+     template_magazine.xml:
+       - feed sem grid — o arquivo real não usa grid nenhum (mag-card é
+         sempre largura cheia, empilhado), diferente da família magazine;
+         gridLayout não tem efeito visual aqui, de propósito (fidelidade
+         estrutural, não ausência de recomendação — ver comentário no
+         includable 'main' abaixo).
+       - sem 'header-banner' (não existe no arquivo real).
+       - 'hero-top': slot de anúncio nativo vazio (era um widget HTML de
+         placeholder de anúncio no arquivo original — conteúdo de exemplo do
+         próprio dono, não faz sentido herdar pra outros usuários do nicho).
+       - hero-area continua com wrapper de b:section (mecanismo genérico do
+         compile.js/nichoBlocks.js — o slot de hero do nicho sempre resolve
+         pra um b:widget completo, precisa do wrapper independente do
+         arquivo real, senão o Blogger rejeita "is not within a section");
+         dentro dele, a peça 'hero-grid' já existente no dossiê injeta seu
+         próprio div (mesmo id "js-hero-grid" usado no arquivo real, só que
+         agora dentro do widget em vez de solto).
+       - 'mag-block-1'/'mag-block-2': 2 slots nativos vazios (showaddelement)
+         — no arquivo real, mag-block-1 tinha um widget HTML autoral (slider
+         "cyber-slider"); o CSS/JS dessa peça já existe no dossiê como
+         'cyber-slider-css-js' (tipo modulo, sem html) — remontar o html e
+         religar num secao/widget real fica pra um follow-up dedicado (fora
+         do escopo desta prova de mecanismo), documentado no PR.
+       - sidebar única 'sidebar-right' (não 3 sub-seções sidebar-top/
+         sidebar/sidebar-bottom) — no arquivo real tem Translate1 + Stats1 +
+         PopularPosts1 (mapeados aqui pros slots de translateWidget +
+         statsWidget + popularPostsRanking, nessa ordem real). Sem Label/
+         social — não existem no sidebar do arquivo real (só no footer, ver
+         abaixo). Widget "Em Alta" hardcoded do chassis (id de sidebar
+         "trending" + JS de fetch de posts recentes) removido — não existe
+         no arquivo real.
+       - footer de 3 colunas (não 4) — footer-1 (Label1 → slot de
+         labelCloudWidget), footer-2 (FeaturedPost1 → slot de
+         featuredPostWidget), footer-3 (ContactForm1 → slot de contactForm).
+         Sem blogArchiveWidget/socialLinksWidget — não existem no footer do
+         arquivo real (nichoModuleDefaults.js reauditado nesta mesma
+         migração).
+       - header/nav com marcação de '.site-header'/'.search-bar'/'.navbar'
+         (em vez de '.sl-header'/'.sl-nav' do chassis) — bate com a peça
+         'header-style' JÁ EXISTENTE no dossiê (CSS que hoje não tinha
+         nenhum elemento real pra colar, documentado no próprio texto da
+         peça: "fica como decisão de arquitetura separada").
+     Ver nichoDossie.viral-magazine.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+    <b:if cond='data:view.featuredImage'>
+      <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+    </b:if>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /*
+  <Group description="Fundo e Cores Base" selector="body">
+    <Variable name="body.background" description="Fundo Geral" type="background" color="#f1f5f9" default="$(color) none repeat scroll top left" value="$(color) none repeat scroll top left"/>
+    <Variable name="main.color" description="Cor Principal" type="color" default="#e53e3e" value="#e53e3e"/>
+    <Variable name="theme.text" description="Cor do Texto" type="color" default="#1a202c" value="#1a202c"/>
+    <Variable name="header.bg" description="Fundo do Cabeçalho" type="color" default="#ffffff" value="#ffffff"/>
+    <Variable name="footer.bg" description="Fundo do Rodapé" type="color" default="#0f172a" value="#0f172a"/>
+  </Group>
+  <Group description="Tipografia" selector="body">
+    <Variable name="body.font" description="Fonte do Texto" type="font" default="normal normal 16px system-ui,-apple-system,sans-serif" value="normal normal 16px system-ui,-apple-system,sans-serif"/>
+  </Group>
+  */
+
+  :root {
+    --sl-bg-body:        $(body.background);
+    --sl-text-main:      $(theme.text);
+    --sl-primary:        $(main.color);
+    --sl-card-bg:        #ffffff;
+    --sl-footer-bg:      #0f172a;
+    --sl-nav-bg:         #ffffff;
+    --sl-radius-lg:      12px;
+    --sl-radius-sm:      6px;
+    --sl-transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+    --sl-btn-radius:     8px;
+    --sl-btn-shadow:     0 2px 6px rgba(0,0,0,0.15);
+    --sl-font-family:    system-ui,-apple-system,sans-serif;
+    --sl-heading-weight: 700;
+  }
+
+  [[DYNAMIC_CSS]]
+
+  body {
+    background-color: var(--sl-bg-body,#f1f5f9);
+    color: var(--sl-text-main);
+    font-family: var(--sl-font-family,system-ui,sans-serif);
+    margin:0; padding:0; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  img { max-width:100%; height:auto; display:block; }
+  a { color:var(--sl-primary); text-decoration:none; transition:var(--sl-transition); }
+  a:hover { filter:brightness(0.85); }
+  h1,h2,h3,h4,h5,h6 { font-weight:var(--sl-heading-weight); }
+
+  /* ── TICKER ─────────────────────────────────────────── */
+  .mag-ticker-bar {
+    background: var(--sl-primary);
+    color: #fff;
+    padding: 7px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    overflow: hidden;
+    position: relative;
+    z-index: 1040;
+  }
+  .mag-ticker-label {
+    background: rgba(0,0,0,0.22);
+    padding: 2px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .mag-ticker-track { flex:1; overflow:hidden; margin-left:12px; }
+  .mag-ticker-content {
+    display: inline-flex;
+    gap: 3rem;
+    white-space: nowrap;
+    animation: mag-ticker 40s linear infinite;
+  }
+  .mag-ticker-content a { color:#fff; }
+  @keyframes mag-ticker {
+    0%   { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .mag-ticker-content { animation:none; white-space:normal; flex-wrap:wrap; gap:.5rem; }
+  }
+
+  /* ── HEADER / NAV (marcação real do nicho — .site-header/.search-bar/
+       .navbar, não .sl-header/.sl-nav do chassis genérico) ─────────── */
+  .site-header {
+    background: var(--sl-card-bg);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+  }
+  .search-bar { max-width: 300px; }
+  .site-header .navbar {
+    border-bottom: 3px solid var(--sl-primary);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .site-header .navbar ul { list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:4px; }
+  .site-header .navbar ul li { position:relative; }
+  .site-header .navbar ul ul {
+    position:absolute; top:100%; left:0; display:none;
+    background:var(--sl-card-bg); min-width:200px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.12); z-index:99;
+    border-top:2px solid var(--sl-primary);
+    border-radius:0 0 var(--sl-radius-sm) var(--sl-radius-sm);
+  }
+  .site-header .navbar ul li:hover > ul { display:block; }
+  @media (max-width:768px) {
+    .site-header .navbar ul ul { position:static; box-shadow:none; padding-left:16px; border-top:none; }
+  }
+
+  /* ── LABEL WIDGETS ────────────────────────────────────── */
+  .sl-label-widget ul { padding:0; margin:0; list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
+  .sl-label-list a {
+    display:inline-block; padding:5px 13px;
+    background:color-mix(in srgb,var(--sl-primary) 10%,transparent);
+    color:var(--sl-primary); border-radius:50px;
+    font-size:0.8rem; font-weight:700; transition:var(--sl-transition);
+  }
+  .sl-label-list a:hover { background:var(--sl-primary); color:#fff; filter:none; }
+  .sl-label-cloud a {
+    display:inline-block; padding:4px 12px;
+    border:1px solid var(--sl-primary); color:var(--sl-text-main);
+    border-radius:var(--sl-radius-lg); font-size:0.88rem; transition:var(--sl-transition);
+  }
+  .sl-label-cloud a:hover { background:var(--sl-primary); color:#fff; transform:translateY(-2px); filter:none; }
+
+  /* ── SINGLE POST ──────────────────────────────────────── */
+  .post-body { font-size:1.05rem; line-height:1.85; }
+  .post-body h2 { margin-top:2.5rem; padding-bottom:.5rem; border-bottom:2px solid rgba(0,0,0,0.08); }
+  .post-body p { margin-bottom:1.5rem; }
+  .post-body a { text-decoration:underline; text-decoration-color:color-mix(in srgb,var(--sl-primary) 50%,transparent); text-underline-offset:3px; }
+  .post-body iframe,.post-body object,.post-body embed { max-width:100%; }
+  .post-body blockquote {
+    margin:2rem 0; padding:1.5rem 2rem;
+    background:color-mix(in srgb,var(--sl-primary) 5%,transparent);
+    border-left:5px solid var(--sl-primary);
+    border-radius:0 var(--sl-radius-lg) var(--sl-radius-lg) 0;
+    font-style:italic; font-size:1.1rem; line-height:1.6;
+  }
+  .post-body blockquote p { margin-bottom:0; }
+
+  /* ── SHARE ─────────────────────────────────────────────── */
+  .sl-share-buttons a.btn { flex-shrink:0; }
+
+  /* ── BUTTONS ──────────────────────────────────────────── */
+  .btn-primary,.btn-outline-primary { border-radius:var(--sl-btn-radius); box-shadow:var(--sl-btn-shadow); }
+  .btn-outline-primary { color:var(--sl-primary); border-color:var(--sl-primary); }
+  .btn-outline-primary:hover,.btn-outline-primary:focus,.btn-outline-primary:active,.btn-outline-primary.active {
+    background-color:var(--sl-primary); border-color:var(--sl-primary); color:#fff; filter:none;
+  }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  .sl-footer { background:var(--sl-footer-bg,#0f172a); color:#94a3b8; }
+  .sl-footer h6 { color:#f1f5f9; font-weight:700; text-transform:uppercase; letter-spacing:.06em; font-size:.75rem; margin-bottom:1rem; }
+  .sl-footer a { color:#94a3b8; font-size:.875rem; }
+  .sl-footer a:hover { color:#f1f5f9; filter:none; }
+  .sl-footer-divider { border-color:rgba(255,255,255,0.08) !important; }
+
+  /* ── DARK MODE ────────────────────────────────────────── */
+  [data-bs-theme="dark"] body { background-color:#0f1117; color:#e2e8f0; }
+  [data-bs-theme="dark"] .site-header { background:#161b27; border-bottom-color:rgba(255,255,255,0.06); }
+  [data-bs-theme="dark"] .site-header .navbar { background:#161b27 !important; border-bottom-color:var(--sl-primary); }
+  [data-bs-theme="dark"] .post-body h2 { border-bottom-color:rgba(255,255,255,0.08); }
+
+  /* GRID LAYOUTS (lista/dupla/revista/quadrado/mural/coluna-unica/zigzag) —
+     centralizado em gerarGridCardCss() (designTokensCss.js), injetado via
+     DYNAMIC_CSS. Sem efeito visual neste nicho (feed real não usa grid,
+     ver comentário no includable 'main') — o token continua resolvido
+     normalmente pelo compile.js, só não há seletor .news-card/.sl-grid-*
+     nesta página pra essas regras alcançarem. Não vale a pena mudar o
+     mecanismo compartilhado (designTokensCss.js) só por causa deste 1
+     nicho — CSS morta, inofensiva, mesma decisão já documentada em
+     nichoModuleDefaults.js pra outros casos de "campo genérico sem efeito
+     neste pageType". */
+
+  /* === CSS DO NICHO ===================================== */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+
+<body class='[[BODY_LAYOUT_CLASS]]'>
+
+  <!-- BREAKING NEWS TICKER -->
+  [[BREAKING_NEWS_BAR]]
+
+  <!-- HEADER (marcação real: .site-header sticky, busca + toggle de tema +
+       toggle mobile na mesma linha do logo — bate com a peça 'header-style'
+       já existente no dossiê) -->
+  <header class='site-header'>
+    <div class='container py-3 d-flex justify-content-between align-items-center'>
+
+      <b:section id='header-logo' maxwidgets='1' name='Logótipo / Brand' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+
+      <div class='d-flex align-items-center gap-2 gap-md-3'>
+        <form action='/search' class='search-bar d-none d-lg-flex' method='get'>
+          <div class='input-group'>
+            <input class='form-control form-control-sm' name='q' placeholder='Pesquisar...' type='text'/>
+            <button aria-label='Pesquisar' class='btn btn-outline-primary btn-sm' type='submit'><i class='bi bi-search'/></button>
+          </div>
+        </form>
+        [[MOBILE_MENU_TYPE]]
+      </div>
+    </div>
+
+    <nav class='navbar navbar-expand-lg py-0 border-top'>
+      <div class='container'>
+        <div class='collapse navbar-collapse' id='mobileMenu'>
+          <form action='/search' class='d-flex d-lg-none mt-3 mb-2' method='get'>
+            <div class='input-group'>
+              <input class='form-control' name='q' placeholder='Buscar notícias...' type='text'/>
+              <button aria-label='Pesquisar' class='btn btn-primary' type='submit'><i class='bi bi-search'/></button>
+            </div>
+          </form>
+
+          <b:section class='d-none d-lg-flex' id='main-nav' maxwidgets='1' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class='container my-4'>
+    <div class='row'>
+
+      <!-- Slot de anúncio nativo — vazio por padrão (o arquivo real tinha
+           um placeholder de anúncio de exemplo do próprio dono, não faz
+           sentido herdar pra outros usuários do nicho). -->
+      <b:section class='col-12 mb-4' id='hero-top' name='Destaques Topo' showaddelement='yes'/>
+
+      <!-- HERO — o slot de hero do nicho sempre resolve pra um b:widget completo
+           (nichoBlocks.js/compile.js, mecanismo genérico pra todo nicho —
+           mesmo quando, como aqui, a peça de hero do dossiê já é só um div
+           solto no arquivo original), então precisa do wrapper de
+           b:section por fora independente do que o arquivo real tinha
+           (schema Blogger: widget só é aceito dentro de section). Só na
+           home/listagens: o hero quase sempre tem H1 próprio, que
+           colidiria com o H1 do post fora deste b:if. -->
+      <b:if cond='data:view.isMultipleItems'>
+        <b:section id='hero-area' maxwidgets='2' name='Área Hero' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+        [[SLIDER_JSON]]
+      </b:if>
+
+      <main class='col-lg-8'>
+
+        <!-- mag-block-1: NÃO vazio — no arquivo real tinha o widget HTML
+             autoral do slider "cyber-slider" (fetch de posts recentes,
+             rotação automática). CORREÇÃO: a peça do dossiê (agora
+             'mag-block-1', tipo secao) veio pra cá completa via
+             NICHO_EXTRA_SECTIONS — não é mais um slot nativo vazio, é o
+             widget real extraído verbatim do arquivo original, unconditional
+             (não gated por isMultipleItems, igual ao arquivo real: aparece
+             em toda página, não só na home/listagem). mag-block-2 continua
+             slot nativo vazio de propósito — no arquivo real também é uma
+             b:section sem widget nenhum dentro, disponível pra o usuário
+             adicionar algo pelo painel do Blogger se quiser. -->
+        [[NICHO_EXTRA_SECTIONS]]
+        <b:section id='mag-block-2' name='Magazine Block 2' showaddelement='yes'/>
+
+        <!-- A row embrulha a b:section 'main' (feed) e a sidebar como
+             IRMÃS — nunca um <div> entre a b:section e o b:widget Blog1.
+             Mesma regra de schema documentada em template_magazine.xml:
+             (1) b:section de sidebar precisa ser IRMÃ do b:widget Blog1,
+             nunca filha do includable dele — Blogger rejeita com "The
+             theme does not define a section with id X".
+             (2) b:widget precisa ser filho DIRETO de b:section — um <div>
+             no meio faz o Blogger rejeitar com "is not within a section". -->
+        <div class='row'>
+        <b:section id='main' class='col-lg-8' name='Feed de Postagens' showaddelement='yes'>
+            <b:widget id='Blog1' locked='true' title='Postagens' type='Blog' version='2'>
+
+          <!-- Desliga os defaults do Blogger (share/comment/author/etc) —
+               evita que o Blogger acione internamente bylineByName/
+               postShareButtons, cadeia que aponta pra ícones nunca
+               definidos neste tema. -->
+          <b:widget-settings>
+            <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+            <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+            <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+            <b:widget-setting name='showAuthor'>false</b:widget-setting>
+            <b:widget-setting name='showLabels'>false</b:widget-setting>
+            <b:widget-setting name='showTimestamp'>false</b:widget-setting>
+            <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+            <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+            <b:widget-setting name='showReactions'>false</b:widget-setting>
+          </b:widget-settings>
+
+          <!-- ════════ MAIN includable — real, extraída de
+               exemplos/viral-magazine.xml (ver achado "esqueleto por nicho
+               não basta — feed/card do Blog1 também precisa ser real",
+               documentado no topo do arquivo e em
+               nichoDossie.viral-magazine.test.js). Feed simples, empilhado
+               — o arquivo real não usa grid nenhum (mag-card é sempre
+               largura cheia, horizontal), diferente de outros nichos desta
+               família. gridLayout não tem efeito visual aqui, de propósito
+               (mesma lógica documentada em nichoModuleDefaults.js pra
+               pageTypes onde a tabela de gridLayout não recomenda um valor
+               — aqui o motivo é fidelidade estrutural ao arquivo real, não
+               ausência de recomendação). ════════ -->
+          <b:includable id='main' var='top'>
+            <b:if cond='data:view.isMultipleItems'>
+              <b:if cond='data:view.search.query'>
+                <h3 class='mb-4 pb-2 border-bottom'>Resultados para: &quot;<data:view.search.query/>&quot;</h3>
+              </b:if>
+              <div class='blog-posts hfeed'>
+                <b:loop values='data:posts' var='post'>
+                  <b:include data='post' name='post'/>
+                </b:loop>
+              </div>
+              <b:include name='nextprev'/>
+            <b:else/>
+              <b:loop values='data:posts' var='post'>
+                <b:include data='post' name='post'/>
+              </b:loop>
+            </b:if>
+          </b:includable>
+
+
+          <!-- ════════ POST includable — real, extraída de
+               exemplos/viral-magazine.xml (b:widget Blog1, b:includable
+               id='post'). Card horizontal (.mag-card, imagem 5 col +
+               conteúdo 7 col) na listagem; artigo completo com
+               #vm-related-posts no post único — mesmo id que a peça
+               'posts-relacionados-js' do dossiê já usa (JS que ficou
+               morto desde a migração original porque esse container nunca
+               existiu em nenhum esqueleto até agora). ════════ -->
+          <b:includable id='post' var='post'>
+            <div class='post hentry mb-5' itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+              <a expr:name='data:post.id'/>
+
+              <b:if cond='data:view.isMultipleItems'>
+                <article class='mag-card border-0 shadow-sm h-100' style='overflow: visible; transition: transform 0.3s ease, box-shadow 0.3s ease;'>
+                  <div class='row g-0 align-items-center'>
+
+                    <b:if cond='data:post.featuredImage'>
+                      <div class='col-md-5'>
+                        <a class='d-block position-relative' expr:href='data:post.url' style='overflow: hidden; border-radius: 8px 0 0 8px;'>
+                          <b:if cond='data:post.labels'>
+                            <span class='mag-badge bg-primary text-white position-absolute' style='top: 15px; left: 15px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border-radius: 4px; z-index: 3;'><data:post.labels.first.name/></span>
+                          </b:if>
+                          <img [[LAZY_LOAD_TOGGLE]] class='img-fluid w-100 mag-img' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 600, "4:3")' style='object-fit: cover; height: 260px; transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);'/>
+                        </a>
+                      </div>
+                    </b:if>
+
+                    <div expr:class='data:post.featuredImage ? &quot;col-md-7&quot; : &quot;col-12&quot;'>
+                      <div class='p-4 mag-content'>
+                        <h2 class='mag-title-dark fs-3 fw-bold mb-3'>
+                          <a class='text-decoration-none' expr:href='data:post.url'><data:post.title/></a>
+                        </h2>
+
+                        <p class='mag-excerpt text-muted mb-4' style='display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 1rem; line-height: 1.6;'>
+                          <data:post.snippets.long/>...
+                        </p>
+
+                        <div class='mag-meta d-flex justify-content-between align-items-center border-top pt-3 mt-3'>
+                          <div class='d-flex align-items-center gap-3 text-secondary small fw-medium'>
+                            <span><i class='bi [[ICON_AUTHOR]]'/> <data:post.author/></span>
+                            <span><i class='bi bi-calendar3'/> <data:post.date/></span>
+                          </div>
+                          <a class='btn btn-outline-primary btn-sm fw-bold rounded-pill px-4' expr:href='data:post.url' style='text-transform: uppercase; letter-spacing: 0.5px;'>Ler Mais <i class='bi bi-arrow-right ms-1'/></a>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </article>
+
+              <b:else/>
+                <header class='post-header mb-5 border-bottom pb-4'>
+                  <b:if cond='data:post.labels'>
+                    <div class='mb-3'>
+                      <b:loop values='data:post.labels' var='label'>
+                        <a class='badge bg-primary text-decoration-none me-1' expr:href='data:label.url' style='text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem;'><data:label.name/></a>
+                      </b:loop>
+                    </div>
+                  </b:if>
+
+                  <h1 class='post-title entry-title fw-bolder mb-3' itemprop='headline' style='font-size: 2.5rem; line-height: 1.2;'><data:post.title/></h1>
+
+                  <div class='d-flex align-items-center gap-3 text-muted small fw-medium'>
+                    <span><i class='bi [[ICON_AUTHOR]]'/> Por <strong><data:post.author/></strong></span>
+                    <span><i class='bi bi-calendar3'/> Publicado em <data:post.date/></span>
+                  </div>
+                  [[READING_TIME]]
+                  [[REVIEW_ENGINE]]
+                </header>
+
+                <div class='sl-before-content'>[[SLOT_BEFORE_INJECTION]]</div>
+
+                [[TOC_MODULE]]
+
+                <div class='post-body entry-content fs-5' expr:id='&quot;post-body-&quot; + data:post.id' itemprop='articleBody' style='line-height: 1.8; color: var(--vm-text);'>
+                  <data:post.body/>
+                  <div style='clear: both;'/>
+                </div>
+
+                [[SHARE_BUTTONS]]
+
+                <footer class='post-footer mt-5 pt-4 border-top'>
+                  <b:if cond='data:post.labels'>
+                    <div class='d-flex align-items-center gap-2 mb-5'>
+                      <i class='bi bi-tags-fill text-primary fs-5'/>
+                      <span class='fw-bold me-2'>Tags:</span>
+                      <b:loop values='data:post.labels' var='label'>
+                        <a class='btn btn-light btn-sm border rounded-pill' expr:href='data:label.url'><data:label.name/></a>
+                      </b:loop>
+                    </div>
+
+                    <div class='related-posts-wrapper'>
+                      <h3 class='h4 fw-bold mb-4 border-start border-primary border-4 ps-3'>Você também pode gostar</h3>
+                      <div class='row g-3' expr:data-label='data:post.labels.first.name' id='vm-related-posts'>
+                        <div class='col-12 text-center py-4'>
+                          <div class='spinner-border text-primary spinner-border-sm' role='status'/>
+                          <span class='text-muted ms-2 small'>Buscando novidades...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </b:if>
+                </footer>
+
+                [[COMMENTS_SECTION]]
+
+                <div class='sl-after-content mt-4'>[[SLOT_AFTER_INJECTION]]</div>
+              </b:if>
+            </div>
+          </b:includable>
+
+
+          <!-- ════════ PAGINAÇÃO ════════ -->
+          <b:includable id='nextprev'>
+            [[PAGINATION_MODULE]]
+          </b:includable>
+
+          [[BLOGGER_INCLUDABLES_PADRAO]]
+
+        </b:widget>
+        </b:section>
+
+        <!-- SIDEBAR — irmã da b:section 'main' (e do b:widget Blog1 lá
+             dentro), nunca filha do includable dele. Uma única seção
+             'sidebar-right' (não 3 sub-seções) — bate com o arquivo real:
+             Translate1 + Stats1 + PopularPosts1, nessa ordem. Sem Label/
+             social — não existem no sidebar do arquivo real (Label1 vive
+             no footer-1, ver abaixo). -->
+        <b:if cond='data:view.isMultipleItems'>
+            <aside class='col-lg-4 mt-4 mt-lg-0'>
+              <b:section class='sidebar' id='sidebar-right' name='Barra Lateral' showaddelement='yes'>[[TRANSLATE_WIDGET]][[STATS_WIDGET]][[POPULAR_POSTS_RANKING]]</b:section>
+            </aside>
+          <b:else/>
+            <aside class='col-lg-4 mt-4 mt-lg-0'>
+              <b:section id='post-sidebar' name='Post Sidebar — Widgets' showaddelement='yes'>[[FEATURED_POST_WIDGET]]</b:section>
+            </aside>
+        </b:if>
+        </div><!-- /row -->
+
+      </main>
+
+    </div>
+  </div>
+
+
+  <!-- FOOTER (3 colunas — bate com o arquivo real: Label1/FeaturedPost1/
+       ContactForm1, não 4 colunas do chassis genérico) -->
+  <footer class='sl-footer mt-5 py-5'>
+    [[FOOTER_NEWSLETTER]]
+    <div class='container'>
+      <div class='row g-4'>
+        <div class='col-md-4'>
+          <b:section class='col-md-4' id='footer-1' name='Rodapé Coluna 1' showaddelement='yes'>[[LABEL_CLOUD_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section class='col-md-4' id='footer-2' name='Rodapé Coluna 2' showaddelement='yes'>[[FEATURED_POST_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section class='col-md-4' id='footer-3' name='Rodapé Coluna 3' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <hr class='sl-footer-divider my-4'/>
+      <div class='text-center'>
+        <small>© <data:blog.title/> — Powered by Softload Engine</small>
+      </div>
+    </div>
+  </footer>
+
+
+  [[ERROR_404_MODULE]]
+  [[DARK_MODE_MODULE]]
+  [[BACK_TO_TOP_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+  [[READING_PROGRESS]]
+  [[MENU_DROPDOWN_PREFIXO]]
+
+
+  <!-- Magazine JS -->
+  <script>
+  //<![CDATA[
+  (function(){
+    // Search bar toggle
+    var btn = document.getElementById('mag-search-btn');
+    var bar = document.getElementById('mag-search-bar');
+    if (btn && bar) {
+      btn.addEventListener('click', function(){ bar.classList.toggle('d-none'); });
+    }
+
+    // Ticker: carrega posts recentes
+    var ticker = document.getElementById('mag-ticker-items');
+    if (ticker) {
+      fetch('/feeds/posts/default?alt=json&max-results=8&orderby=published')
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(data){
+          if (!data || !data.feed || !data.feed.entry) return;
+          ticker.innerHTML = data.feed.entry.map(function(e){
+            var lnk = (e.link||[]).filter(function(l){ return l.rel==='alternate'; })[0];
+            var url = lnk ? lnk.href : '#';
+            var t = (e.title||{}).$t || '';
+            return '<a class="text-white text-decoration-none" href="'+url+'">'+t+'</a>';
+          }).join('<span class="mx-3 text-white-50" aria-hidden="true">·</span>');
+        })
+        .catch(function(){
+          var bar2 = ticker.closest && ticker.closest('.mag-ticker-bar');
+          if (bar2) bar2.style.display = 'none';
+        });
+    }
+  })();
+  //]]>
+  </script>
+
+  <!-- "Posts relacionados" (single post) — NÃO usa o script genérico
+       antigo do chassis (id descontinuado, era hardcoded aqui): a peça
+       'posts-relacionados-js' do dossiê já existente já implementa isso
+       mirando o container real do arquivo original (vm-related-posts,
+       dentro do footer do post único acima) — ficava morta desde a
+       migração original porque esse container nunca existiu em nenhum
+       esqueleto até esta correção. -->
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

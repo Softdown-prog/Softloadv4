@@ -1,0 +1,54 @@
+O chat do Workspace tem rota, view e roteamento próprios desde a decoupling do Especialista Blogger
+
+Isso substitui/atualiza o que estava documentado antes sobre o chat
+agêntico do Workspace ainda compartilhar rota com o Especialista — isso
+mudou.
+
+Situação anterior (obsoleta): o chat do Workspace era literalmente a mesma
+rota (/dashboard/chat, arquivo chat.js) e a mesma view (chat.ejs) do
+Especialista Blogger, diferenciados só por wsSessionId/wsProjetoId opcionais
+no corpo da requisição. O agente de edição rodava como um pré-filtro: se
+decidisse que a mensagem "não era sobre o template", o código caía no
+fluxo geral do Especialista (RAG de suporte, prompt genérico).
+
+Situação atual: dois pares rota+view totalmente separados.
+
+- Especialista Blogger: GET /dashboard/chat + POST /dashboard/chat/stream,
+  arquivo src/routes/dashboard_routes/chat.js, view
+  views/pages/dashboard/chat.ejs. Suporte técnico geral, SEO, geração de
+  template do zero fora do contexto de uma sessão do Workspace.
+
+- Chat do Workspace: GET /dashboard/workspace/chat + POST
+  /dashboard/workspace/chat/stream, arquivo
+  src/routes/dashboard_routes/workspaceChat.js, view
+  views/pages/dashboard/workspace/chat.ejs. wsSessionId/wsProjetoId são
+  SEMPRE obrigatórios aqui.
+
+Roteamento interno do chat do Workspace (sem nenhum fallback pro
+Especialista):
+
+- Se a sessão já tem manifesto completo no snapshot: modo EDIÇÃO, 100%
+  agêntico, via processarEdicaoDeTemplate (chat/chatEditFlow.js) chamando
+  templateEditAgent.js (Gemini + function-calling, tools próprias:
+  ver_template_atual, propor_edicao, aplicar_edicao_pendente etc). O
+  agente SEMPRE responde algo útil, mesmo pra pergunta fora de escopo —
+  nunca descarta a resposta e nunca cai no chat geral.
+
+- Se a sessão ainda não tem manifesto: modo GERAÇÃO, reaproveitando o
+  MESMO fluxo de marcador [[TEMPLATE:{...}]] que o Especialista usa
+  (extraído pra chat/chatGenerationFlow.js, compartilhado entre as duas
+  rotas sem duplicar lógica).
+
+Detalhe de UX: o chat do Workspace não mostra nenhum botão de download
+avulso na bolha da conversa (nem gerando um template novo, nem aplicando
+uma edição) — todo download acontece exclusivamente pela aba "Histórico de
+Versões" do Workspace, que já lista e baixa qualquer versão gerada. Isso
+foi uma decisão deliberada pra eliminar duplicidade entre "baixar pelo
+chat" e "baixar pelo histórico". O Especialista Blogger geral continua com
+botão de download normal na bolha, porque não existe Histórico de Versões
+fora do contexto do Workspace.
+
+Sessões de chat do Workspace são salvas com type='workspace-chat' (mesmo
+mecanismo genérico de chatStorageService usado por chat-suporte e sol) —
+as rotas genéricas /api/chat/sessions* (em chat.js) servem os dois tipos,
+sem rota duplicada.

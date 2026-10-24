@@ -1,0 +1,28 @@
+{
+  "id": "ia-balcao-dropdown-menu-dinamico",
+  "categoria": "funcionalidade-js",
+  "conceito": "Técnica para criar menus dropdown no Blogger sem editar o template: links no widget LinkList prefixados com '_' são automaticamente transformados em subitens do item anterior. Zero configuração no XML — o usuário gerencia via painel do Blogger.",
+  "convencao_nomenclatura": {
+    "pai": "Tecnologia",
+    "filho_1": "_Hardware",
+    "filho_2": "_Software",
+    "filho_3": "_Reviews",
+    "resultado": "Tecnologia (dropdown) → Hardware, Software, Reviews"
+  },
+  "javascript_dropdown": "document.addEventListener('DOMContentLoaded', () => {\n  const navItems = document.querySelectorAll('#blogger-nav .nav-item');\n  let currentDropdown = null;\n  let currentDropdownMenu = null;\n\n  navItems.forEach(item => {\n    const link = item.querySelector('a');\n    if (!link) return;\n    const title = link.textContent.trim();\n\n    if (title.startsWith('_')) {\n      // É filho: remove o '_', converte para dropdown-item\n      link.textContent = title.substring(1).trim();\n      link.classList.remove('nav-link');\n      link.classList.add('dropdown-item');\n\n      // Cria o <ul> do dropdown na primeira vez\n      if (!currentDropdownMenu && currentDropdown) {\n        currentDropdownMenu = document.createElement('ul');\n        currentDropdownMenu.className = 'dropdown-menu border-0 shadow-sm';\n        currentDropdown.appendChild(currentDropdownMenu);\n        // Transforma o pai em dropdown\n        const parentLink = currentDropdown.querySelector('a');\n        parentLink.classList.add('dropdown-toggle');\n        parentLink.setAttribute('data-bs-toggle', 'dropdown');\n        currentDropdown.classList.add('dropdown');\n      }\n\n      if (currentDropdownMenu) {\n        const li = document.createElement('li');\n        li.appendChild(link);\n        currentDropdownMenu.appendChild(li);\n        item.remove(); // Remove o nav-item original\n      }\n    } else {\n      // É pai: reset state\n      currentDropdown = item;\n      currentDropdownMenu = null;\n    }\n  });\n});",
+  "css_dropdown": "@media (min-width: 992px) {\n  .navbar .dropdown:hover .dropdown-menu {\n    display: block;\n    margin-top: 0;\n    border-radius: 0 0 8px 8px;\n    box-shadow: 0 10px 15px rgba(0,0,0,0.1);\n  }\n}",
+  "exemplo_links_no_blogger": [
+    "Início → /",
+    "Tecnologia → /search/label/tecnologia",
+    "_Hardware → /search/label/hardware",
+    "_Software → /search/label/software",
+    "Sobre → /p/sobre.html"
+  ],
+  "notas_tecnicas": [
+    "O seletor #blogger-nav é obrigatório — o script só opera dentro desse ul para não afetar outros menus da página",
+    "O hover dropdown CSS (min-width: 992px) abre no hover em desktop — em mobile o data-bs-toggle='dropdown' usa clique via Bootstrap JS",
+    "Múltiplos dropdowns são suportados — quando um item pai (sem _) aparece, o currentDropdownMenu é resetado",
+    "O item original li.nav-item é removido do DOM após mover o a para dentro do dropdown-menu — sem duplicatas",
+    "Esta técnica não requer edição do template XML — o usuário gerencia os links pelo painel Blogger > Layout > Menu Principal"
+  ]
+}

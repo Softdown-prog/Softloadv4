@@ -1,0 +1,54 @@
+{
+  "id": "tema-pop-retro-pixel",
+  "titulo": "Pop Retro — Estética 8-bit com Theme Designer Bridge, steps() Animations, Glitch Effect e Sistema Híbrido Skin+Gadget",
+  "categoria": "tema-completo",
+  "nicho": "pop-retro-gaming-landing-page",
+  "descricao": "Template Blogger com estética pixel-art 8-bit para landing pages e portais de entretenimento/gaming. Tokens via Theme Designer Bridge com sintaxe $(cor.primaria) mapeada para variáveis CSS :root. Sistema híbrido: cards globais usam .pixel-card da skin; cards de gadgets têm CSS próprio no CDATA mas herdam var(--primary) da skin. Animações em quadros via steps(). Efeito CRT scanlines com gradiente duplo. Glitch effect em títulos. Typewriter em NPCs. Stat bars animadas por IntersectionObserver. Fonte Press Start 2P. box-shadow deslocada sólida como assinatura visual. Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, progress bar, utilitários)",
+    "Press Start 2P — Google Fonts (fonte pixel-art, peso único)",
+    "FormSubmit.co (newsletter AJAX — sem backend próprio)"
+  ],
+  "atributo_html_especial": {
+    "b:defaultwidgetversion": "2",
+    "descricao": "b:defaultwidgetversion='2' no <html> força todos os widgets adicionados pelo usuário no Layout Editor a usarem version='2' por padrão. Sem este atributo, novos widgets adicionados podem vir como version='1' e exigir stubs diferentes.",
+    "codigo_html_tag": "<html b:css='false' b:defaultwidgetversion='2' b:layoutsversion='3' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>"
+  },
+  "tokens_css": {
+    "prefixo": "sem prefixo customizado — nomes curtos: --primary, --secondary, --bg-light, --border-pixel, --font-pixel",
+    "variaveis_raw": {
+      "--primary": "$(cor.primaria) = #FF4500 — laranja-vermelho intenso (CTA, sombras, destaques)",
+      "--secondary": "$(cor.secundaria) = #00FF41 — verde Matrix (efeito neon, elementos tecnológicos)",
+      "--bg-light": "$(cor.fundo) = #F4F4F4 — cinza claro de fundo",
+      "--border-pixel": "4px solid $(cor.borda) = 4px solid #000000 — borda grossa preta como token completo",
+      "--font-pixel": "'Press Start 2P', cursive — fonte pixel"
+    },
+    "nota_border_token": "--border-pixel é um token completo (inclui largura, estilo e cor) não apenas uma cor. Permite usar border: var(--border-pixel) diretamente. Válido em CSS — border aceita shorthand como valor de variável."
+  },
+  "theme_designer_bridge": {
+    "formato": "Group/Variable dentro de /* */ no CDATA do b:skin. Sintaxe $(nome.variavel) nos valores CSS.",
+    "codigo_completo": "/*\n<Group description=\"🎨 Cores do Tema (Pop Retro)\" selector=\":root\">\n  <Variable name=\"cor.primaria\" description=\"Cor Principal (Destaques)\" type=\"color\" default=\"#FF4500\" value=\"#FF4500\"/>\n  <Variable name=\"cor.secundaria\" description=\"Cor Secundária (Efeito Matrix)\" type=\"color\" default=\"#00FF41\" value=\"#00FF41\"/>\n  <Variable name=\"cor.fundo\" description=\"Cor de Fundo (Background)\" type=\"color\" default=\"#F4F4F4\" value=\"#F4F4F4\"/>\n  <Variable name=\"cor.borda\" description=\"Cor das Bordas dos Cartuchos\" type=\"color\" default=\"#000000\" value=\"#000000\"/>\n</Group>\n*/\n\n:root {\n  --primary: $(cor.primaria);\n  --secondary: $(cor.secundaria);\n  --bg-light: $(cor.fundo);\n  --border-pixel: 4px solid $(cor.borda);\n  --font-pixel: 'Press Start 2P', cursive;\n}",
+    "mecanismo": "O Blogger Theme Designer substitui $(cor.primaria) pelo valor hexadecimal selecionado no painel antes de servir o CSS. O resultado no browser é --primary: #FF4500. Quando o usuário muda a cor no painel, o Blogger regera o CSS com o novo valor.",
+    "propagacao_em_gadgets": "Gadgets HTML com CSS próprio no CDATA TAMBÉM herdam var(--primary) do :root — os tokens CSS são globais. Um card com box-shadow: 8px 8px 0px var(--primary) dentro de um gadget muda de cor automaticamente quando o usuário troca a cor no Theme Designer.",
+    "notas": [
+      "selector=':root' nas variáveis — as variáveis CSS são declaradas no :root do documento, não no body ou num elemento específico.",
+      "O comentário /* */ em volta do bloco Group/Variable é obrigatório — sem ele, o texto XML do Group aparece no CSS servido.",
+      "Emojis no description do Group (🎨) são válidos e aparecem no painel do Theme Designer."
+    ]
+  },
+  "float_and_blink_animations": {
+    "blink": "@keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }\n.cta-blink { animation: blink 1s steps(2) infinite; }",
+    "float_item": "@keyframes floatItem {\n  0%, 100% { transform: translateY(0); }\n  50% { transform: translateY(-10px); }\n}\n.quest-icon { animation: floatItem 2s steps(4) infinite; }",
+    "pulse_cookie": "@keyframes pulseCookie {\n  0% { transform: scale(1); }\n  50% { transform: scale(1.1); }\n  100% { transform: scale(1); }\n}\n.cookie-icon { animation: pulseCookie 1s steps(2) infinite; }"
+  },
+  "notas_tecnicas": [
+    "b:defaultwidgetversion='2' é exclusivo deste template entre os RAG catalogados. Garante que widgets adicionados via Layout Editor nunca precisem de stubs manuais — todos chegam como version='2'.",
+    "$(cor.primaria) é a sintaxe do servidor Blogger para injetar valores do Theme Designer no CSS. A substituição ocorre no servidor antes de servir o arquivo — o browser nunca vê $(cor.primaria), apenas o valor hexadecimal.",
+    "steps() é incompatível com suavidade — por design. Não combinar steps() e ease/cubic-bezier na mesma transição. Para o Pop Retro, steps() é obrigatório em TODAS as animações para manter coerência estética.",
+    "image-rendering: pixelated deve ser aplicado a TODAS as imagens do tema — logo, sprites de NPC, thumbnails de posts. Sem isso, imagens pixeladas ficam borradas em telas de alta DPI.",
+    "O CSS do b:skin usa .retro-font como classe helper para Press Start 2P. Aplicar a TODOS os textos cria desconforto de leitura — a fonte foi projetada para títulos e etiquetas curtas, não parágrafos.",
+    "FormSubmit.co é gratuito para até 1000 submissões/mês sem signup. Para projetos maiores, substituir pela URL do Formspree ou endpoint próprio — a lógica Fetch permanece igual.",
+    "O 50ms de delay entre display:block e classList.add('show-banner') no cookie banner é um padrão crítico reutilizável em qualquer animação de entrada CSS que começa com display:none. O browser precisa de um frame para computar o estado inicial antes de transicionar.",
+    "O cartucho automático (.sidebar .widget) usa overflow:hidden para conter imagens. Se um widget precisar de overflow visível (ex: dropdown), adicionar overflow: visible diretamente no widget específico via classe."
+  ]
+}

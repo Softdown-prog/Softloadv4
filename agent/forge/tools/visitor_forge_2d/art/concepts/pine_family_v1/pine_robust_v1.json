@@ -1,0 +1,45 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "pine_robust_v1",
+  "canvas": [
+    220,
+    231
+  ],
+  "anchor": [
+    110,
+    217
+  ],
+  "bounds": [
+    14,
+    11,
+    210,
+    231
+  ],
+  "seed": 73061,
+  "crownStyle": "conifer",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "raster": {
+    "shadowDabs": 340,
+    "highlightDabs": 280,
+    "needleStrokes": 620,
+    "finalGrain": 330,
+    "finalNeedles": 330
+  },
+  "runtimePromotion": false,
+  "artApproved": false,
+  "recipe": "tools/visitor_forge_2d/examples/pine_robust_v1.json",
+  "recipeSha256": "0359ff6aed195884fe34cc7fd7d06e6b639ef531819a9363f3dff7b89ea96723",
+  "png": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_robust_v1.png",
+  "review": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_robust_v1_review.png",
+  "isometricReview": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_robust_v1_isometric_review.png"
+}

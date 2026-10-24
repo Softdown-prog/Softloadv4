@@ -1,0 +1,29 @@
+{
+  "id": "widget-menu-dropdown-prefixo",
+  "titulo": "Menu Dropdown Dinamico — Tecnica do Prefixo _Sublinhado",
+  "categoria": "widget-navegacao",
+  "descricao": "Converte links do menu Blogger em dropdown Bootstrap 5 dinamicamente. Links com nome comecando por _ (sublinhado) se tornam filhos do item anterior. Zero HTML extra necessario — so JS. Extraido do template Bulma Vegan.",
+  "dependencias": [
+    "Bootstrap 5.3.3 JS (data-bs-toggle=dropdown)",
+    "Blogger LinkList widget com id='dynamic-menu'"
+  ],
+  "como_usar": {
+    "no_blogger": "No painel Blogger, em Lista de links, adicione um link com nome '_Subpagina' (com underline no inicio). Esse link vira filho do item de menu imediatamente anterior.",
+    "exemplo": [
+      "Categorias (item pai)",
+      "_Tecnologia (vira dropdown item)",
+      "_Design (vira dropdown item)",
+      "Contato (novo item pai, fecha o dropdown)"
+    ]
+  },
+  "html_menu_base": "<nav class=\"navbar navbar-expand-lg sticky-top\" id=\"site-header\">\n  <div class=\"container\">\n    <a class=\"navbar-brand\" href=\"/\">[LOGO]</a>\n    <button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarNav\">\n      <span class=\"navbar-toggler-icon\"></span>\n    </button>\n    <div class=\"collapse navbar-collapse\" id=\"navbarNav\">\n      <ul class=\"navbar-nav ms-auto\" id=\"dynamic-menu\">\n        <!-- Links do widget Blogger LinkList sao injetados aqui -->\n        <!-- Exemplo: <li><a class=\"nav-link\" href=\"/\">Home</a></li> -->\n      </ul>\n    </div>\n  </div>\n</nav>",
+  "javascript": "try {\n  const menu = document.getElementById('dynamic-menu');\n  if (menu) {\n    let currentDropdown = null;\n    let currentDropdownMenu = null;\n\n    Array.from(menu.children).forEach(li => {\n      const a = li.querySelector('a');\n      if (!a) return;\n      const text = a.textContent.trim();\n\n      if (text.startsWith('_')) {\n        // Este item e filho do dropdown anterior\n        a.textContent = text.substring(1).trim();\n        a.classList.remove('nav-link');\n        a.classList.add('dropdown-item');\n\n        if (!currentDropdown && li.previousElementSibling) {\n          currentDropdown = li.previousElementSibling;\n          currentDropdown.classList.add('dropdown');\n\n          const parentA = currentDropdown.querySelector('a');\n          parentA.classList.add('dropdown-toggle');\n          parentA.setAttribute('data-bs-toggle', 'dropdown');\n          parentA.setAttribute('role', 'button');\n          parentA.setAttribute('aria-expanded', 'false');\n\n          currentDropdownMenu = document.createElement('ul');\n          currentDropdownMenu.classList.add('dropdown-menu', 'border-0', 'shadow-sm', 'mt-2');\n          currentDropdown.appendChild(currentDropdownMenu);\n        }\n\n        if (currentDropdownMenu) {\n          const newLi = document.createElement('li');\n          newLi.appendChild(a);\n          currentDropdownMenu.appendChild(newLi);\n          li.remove();\n        }\n      } else {\n        // Item normal — encerra qualquer dropdown aberto\n        currentDropdown = null;\n        currentDropdownMenu = null;\n      }\n    });\n  }\n} catch(e) { console.error('Menu dropdown:', e); }",
+  "notas_tecnicas": [
+    "O JS modifica o DOM em tempo de execucao — o Blogger renderiza o menu como lista plana e o JS reestrutura",
+    "li.previousElementSibling aponta para o item pai — deve ser chamado antes de mover o li filho",
+    "li.remove() remove o item filho da lista plana apos move-lo para dentro do dropdown-menu",
+    "bootstrap.bundle.min.js e obrigatorio para o data-bs-toggle=dropdown funcionar",
+    "Multiplos grupos de dropdown funcionam — currentDropdown reseta para null em cada item sem prefixo"
+  ],
+  "limitacao": "Nao suporta dropdowns aninhados (sub-sub-menus). Para menus complexos, usar Mega Menu via offcanvas."
+}

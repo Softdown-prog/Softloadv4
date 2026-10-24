@@ -1,0 +1,57 @@
+{
+  "id": "tema-appstore-bulma-mobile",
+  "titulo": "Tema App Store / Bulma Mobile — Arquitetura de Loja de Apps para Blogger",
+  "categoria": "tema-nicho",
+  "nicho": "appstore",
+  "versao_fonte": "Bulma Mobile Template",
+  "descricao": "Template de loja de apps para Blogger. Arquitetura de biblioteca de componentes: CSS definido UMA VEZ na b:skin estiliza HTML snippets colados diretamente nos posts — padrao identico a componentes React/CSS Modules. Posts na home sao automaticamente renderizados como cards .app-list-card (icone squircle + nome + botao Baixar). Posts individuais viram paginas completas de app store usando snippets colados no corpo. Zero configuracao de CSS por post.",
+  "atributos_html_raiz": {
+    "b_css": "false",
+    "b_defaultmarkups": "true",
+    "b_layoutsVersion": "3",
+    "nota": "b:defaultmarkups='true' (igual Bulma Vegan — diferente de MAG News/PlayerOne que usam b:defaultmessages='true'). Preserva markups padrao de widgets nativos do Blogger."
+  },
+  "blogger_theme_designer_bridge": {
+    "formato": "Variaveis dentro de comentario /* */ — mesma tecnica do PlayerOne V2",
+    "bloco": "/*\n<Variable name=\"body.background\" description=\"Plano de Fundo\" type=\"background\" color=\"#F5F7F8\" default=\"$(color) none repeat scroll top left\" value=\"$(color) none repeat scroll top left\"/>\n<Group description=\"Cores Principais\" selector=\"body\">\n  <Variable name=\"theme.color.primary\" description=\"Verde Bulma (Destaque)\" type=\"color\" default=\"#10b981\" value=\"#10b981\"/>\n  <Variable name=\"theme.color.text\" description=\"Cor do Texto\" type=\"color\" default=\"#202124\" value=\"#202124\"/>\n  <Variable name=\"theme.color.footer\" description=\"Fundo do Rodape\" type=\"color\" default=\"#121212\" value=\"#303236\"/>\n</Group>\n<Group description=\"Tipografia (Fontes)\" selector=\"body\">\n  <Variable name=\"body.font\" description=\"Fonte do Texto\" type=\"font\" default=\"normal normal 16px 'Segoe UI', Arial, sans-serif\" value=\"normal normal 16px 'Segoe UI', Arial, sans-serif\"/>\n  <Variable name=\"heading.font\" description=\"Fonte dos Titulos\" type=\"font\" default=\"normal bold 24px 'Segoe UI', Arial, sans-serif\" value=\"normal bold 24px 'Segoe UI', Arial, sans-serif\"/>\n</Group>\n*/",
+    "mapeamento_css": ":root {\n  --bulma-primary: $(theme.color.primary);\n  --bulma-text: $(theme.color.text);\n  --bulma-footer: $(theme.color.footer);\n  --bulma-bg: #F5F7F8;\n}\nbody { background: $(body.background); color: var(--bulma-text); font: $(body.font); }\nh1, h2, h3 { font: $(heading.font); }"
+  },
+  "tokens_css": {
+    "prefixo": "--bulma-",
+    "light_mode": {
+      "--bulma-primary": "#10b981",
+      "--bulma-text": "#202124",
+      "--bulma-footer": "#121212",
+      "--bulma-bg": "#F5F7F8"
+    },
+    "fontes": {
+      "corpo": "Segoe UI, Arial, sans-serif",
+      "titulos": "Segoe UI bold, Arial, sans-serif",
+      "nota": "Sem Google Fonts — usa fontes do sistema (Segoe UI no Windows, SF Pro no Mac, Roboto no Android). Zero latencia de carregamento de fonte."
+    }
+  },
+  "layout": {
+    "estrutura": "container > row: col-lg-8 (main) + col-lg-4 (sidebar direita)",
+    "body": "d-flex flex-column min-vh-100 — footer cola no rodape em paginas curtas",
+    "main_tag": "id='main' — necessario para o JS de 404 mover o gadget de erro para ca",
+    "swipe_menu": "renderizado apenas em paginas nao-post (b:if cond='not data:view.isPost')"
+  },
+  "regras_nicho": [
+    "Verde esmeralda #10b981 — cor primaria de referencia do Google Play e apps modernos",
+    "Sem Google Fonts — usa Segoe UI / Arial do sistema. Sites de app store carregam rapido: fontes do sistema eliminam uma requisicao DNS",
+    "Icone squircle (border-radius 18-22%) em TODOS os avatares/thumbnails de app — padrao universal iOS/Android",
+    "Botao 'Baixar' em pill (rounded-pill) transparente na lista — so fica solido no hover (padrao Play Store)",
+    "Swipe horizontal de categorias — pattern mobile-first essencial para nichos de apps/jogos/softwares",
+    "Tres tipos de botao de download: Google Play (preto), APK Direto (verde primario), MOD APK (amarelo #f4b400) — cada tipo com cor semantica propria",
+    "Ranking com CSS counter (sem JS) no Popular Posts — numeracao automatica 1, 2, 3... sem HTML extra",
+    "Label cloud com 5 cores rotativas automaticas (nth-child 5n+X) — nenhum label tem a mesma cor que o anterior, visual colorido sem configuracao",
+    "Widget Stats transformado em Jelly Bean animado — transforma o contador chato do Blogger em elemento visual de destaque da sidebar",
+    "404 detectado via JS (nao Blogger nativo) — permite 404 customizado em qualquer tema mesmo sem suporte nativo"
+  ],
+  "widgets_complementares": [
+    "widget-app-post-snippets",
+    "widget-ranking-apps",
+    "widget-back-to-top",
+    "widget-slider-carousel"
+  ]
+}

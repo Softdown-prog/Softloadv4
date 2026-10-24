@@ -1,0 +1,63 @@
+{
+  "id": "ia-balcao-heuristicas-ui-ux",
+  "titulo": "Heurísticas de UI/UX para Templates Blogger",
+  "categoria": "ux",
+  "descricao": "Princípios de usabilidade (UI/UX) estritamente limitados ao que é tecnicamente possível num template nativo do Blogger.",
+  "heuristicas": [
+    {
+      "id": 1,
+      "nome": "Otimização de Imagens Nativas (Performance como UX)",
+      "regra": "Nunca renderizar a imagem original no feed.",
+      "execucao": "<img expr:src='resizeImage(data:post.featuredImage, 600, \"600:400\")' />",
+      "ux_impacto": "O site carrega quase instantaneamente, respeitando a banda larga do utilizador."
+    },
+    {
+      "id": 2,
+      "nome": "Navegação e Hierarquia (O Mito dos Menus Dinâmicos)",
+      "descricao": "O gadget LinkList gera apenas uma lista plana. Não existe gestor de menus complexo nativo.",
+      "execucao": "Para dropdowns, o utilizador cria links com prefixos (ex: _Submenu) no painel do Blogger, e o JavaScript de frontend transforma isso num dropdown visual.",
+      "ux_impacto": "Interface de gestão simples para o utilizador final, com navegação rica no site público."
+    },
+    {
+      "id": 3,
+      "nome": "Gestão de Estado via URL e DOM (Zero Base de Dados)",
+      "descricao": "Não existe carrinho de compras, Favoritos guardados no servidor ou Modo Escuro por conta.",
+      "regra": "Qualquer preferência ou estado deve ser guardado no lado do cliente.",
+      "execucao": [
+        "Modo Escuro: localStorage e variáveis CSS (:root).",
+        "Pesquisa: Rota nativa /search?q=termo do Blogger.",
+        "Filtros: /search/label/NomeDaCategoria."
+      ],
+      "ux_impacto": "Navegação previsível e rápida. As partilhas de links funcionam porque o estado está na URL."
+    },
+    {
+      "id": 4,
+      "nome": "Feedback do Sistema (Formulários e Comentários)",
+      "regra": "Usar gadgets nativos do Blogger para interação.",
+      "execucao": [
+        "Contacto: Estilizar <b:widget type='ContactForm'> nativo com CSS Bootstrap. O Blogger trata do envio do email.",
+        "Comentários: Sistema nativo do Google/Blogger. É seguro, anti-spam e zero impacto no tempo de carregamento."
+      ]
+    },
+    {
+      "id": 5,
+      "nome": "Paginação e Scroll Infinito (A Ilusão Perfeita)",
+      "descricao": "Para criar experiência moderna, usar a API de feeds do Blogger ou manipular o DOM.",
+      "execucao": "Vanilla JS faz fetch silencioso à página seguinte, extrai os artigos e injeta-os no final da grelha atual, atualizando a URL via history.pushState.",
+      "ux_impacto": "O utilizador não sofre interrupções (reloads de ecrã branco) enquanto navega pelo feed de artigos."
+    },
+    {
+      "id": 6,
+      "nome": "Design Adaptativo e Touch Targets",
+      "regra": "O design TEM de ser Mobile-First. O modo móvel nativo do Blogger deve ser forçado a desligar.",
+      "execucao": [
+        "Adicionar b:responsive='true' na tag <html>.",
+        "Configurar a meta viewport corretamente.",
+        "Utilizar CSS Grid/Flexbox para estrutura fluida.",
+        "Botões e links de categorias com mínimo de 44x44 px (Touch Target)."
+      ],
+      "ux_impacto": "Experiência consistente em qualquer ecrã, sem penalizações de usabilidade nos motores de busca."
+    }
+  ],
+  "conclusao": "Se não pode ser feito com HTML/XML, CSS3, e JavaScript executado no browser (consumindo a API pública do Blogger), não o desenhe. A criatividade deve focar-se na apresentação dos dados, não na invenção de novas rotas de backend."
+}

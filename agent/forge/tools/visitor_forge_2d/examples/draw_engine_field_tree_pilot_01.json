@@ -1,0 +1,195 @@
+{
+  "contract": "CH_2D_GRAPH_RECIPE_V2",
+  "id": "draw_engine_field_tree_pilot_01",
+  "canvas": [256, 256],
+  "anchor": [128, 246],
+  "seed": 20261002,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "graph": {
+    "seed": 20261002,
+    "nodes": [
+      {"id": "base", "type": "canvas", "params": {"color": [0, 0, 0, 0]}},
+      {
+        "id": "wood_structure",
+        "type": "tapered_path",
+        "inputs": {"image": "base"},
+        "params": {
+          "supersample": 4,
+          "paths": [
+            {"points": [[128, 241], [127, 213], [124, 184], [126, 156], [121, 131]], "widthStart": 17, "widthEnd": 6, "fill": "#765034", "outline": "#4B301F", "outlineWidth": 1.2},
+            {"points": [[125, 178], [104, 158], [83, 143], [66, 125]], "widthStart": 8, "widthEnd": 2.5, "fill": "#765034", "outline": "#4B301F", "outlineWidth": 0.8},
+            {"points": [[124, 169], [145, 151], [166, 136], [184, 116]], "widthStart": 8, "widthEnd": 2.5, "fill": "#765034", "outline": "#4B301F", "outlineWidth": 0.8},
+            {"points": [[121, 150], [102, 132], [92, 110], [80, 91]], "widthStart": 6, "widthEnd": 2, "fill": "#765034"},
+            {"points": [[123, 149], [139, 127], [151, 105], [162, 86]], "widthStart": 6, "widthEnd": 2, "fill": "#765034"},
+            {"points": [[104, 158], [92, 151], [75, 151]], "widthStart": 4.5, "widthEnd": 1.4, "fill": "#765034"},
+            {"points": [[145, 151], [160, 151], [177, 145]], "widthStart": 4.5, "widthEnd": 1.4, "fill": "#765034"}
+          ]
+        }
+      },
+      {"id": "wood_mask", "type": "field_alpha_mask", "inputs": {"source": "wood_structure"}, "params": {"threshold": 12, "expandPx": 1, "blurRadius": 0.8}},
+      {"id": "branch_proximity", "type": "field_distance", "inputs": {"field": "wood_mask"}, "params": {"maxDistance": 50, "threshold": 64, "proximity": true}},
+      {"id": "support_branch_proximity", "type": "field_distance", "inputs": {"field": "wood_mask"}, "params": {"maxDistance": 58, "threshold": 64, "proximity": true}},
+      {
+        "id": "crown_density",
+        "type": "field_radial_density",
+        "params": {
+          "power": 0.68,
+          "lobes": [
+            {"center": [82, 112], "radius": [54, 42], "weight": 0.90},
+            {"center": [112, 91], "radius": [55, 44], "weight": 0.98},
+            {"center": [145, 87], "radius": [57, 44], "weight": 1.0},
+            {"center": [177, 111], "radius": [52, 40], "weight": 0.89},
+            {"center": [101, 137], "radius": [50, 36], "weight": 0.84},
+            {"center": [147, 137], "radius": [54, 37], "weight": 0.86}
+          ]
+        }
+      },
+      {"id": "structured_density", "type": "field_multiply", "inputs": {"a_crown": "crown_density", "b_branches": "branch_proximity"}},
+      {"id": "rear_core_density", "type": "field_multiply", "inputs": {"a_core": "structured_density", "b_core": "structured_density"}},
+      {"id": "support_density", "type": "field_multiply", "inputs": {"a_crown": "crown_density", "b_branches": "support_branch_proximity"}},
+      {"id": "depth", "type": "field_linear_depth", "params": {"start": [128, 54], "end": [128, 186]}},
+      {"id": "direction", "type": "field_direction_to_point", "params": {"point": [128, 118], "offsetDeg": 180}},
+      {
+        "id": "support_mass",
+        "type": "field_mass_fill",
+        "inputs": {"image": "base", "density": "support_density", "depth": "depth"},
+        "params": {
+          "color": "#142B1C",
+          "threshold": 0.23,
+          "feather": 0.025,
+          "opacity": 24,
+          "closePx": 0,
+          "edgeNoise": 0.20,
+          "noiseCellPx": 8,
+          "depthShade": 0.28,
+          "seedOffset": 31
+        }
+      },
+      {"id": "rear_canvas", "type": "canvas", "params": {"color": [0, 0, 0, 0]}},
+      {
+        "id": "rear_foliage",
+        "type": "field_cluster_scatter",
+        "inputs": {"image": "rear_canvas", "density": "rear_core_density", "depth": "depth", "direction": "direction", "distance": "branch_proximity"},
+        "params": {
+          "count": 13,
+          "bounds": [50, 52, 206, 174],
+          "minDistance": 15.5,
+          "maxAttempts": 32000,
+          "scale": [0.94, 1.16],
+          "rotationDeg": [-13, 13],
+          "mirrorXProbability": 0.5,
+          "mappings": {
+            "scale_mul": {"base": 1.0, "inputs": {"density": [[0.0, -0.04], [1.0, 0.14]], "depth": [[0.0, -0.04], [1.0, 0.05]]}}
+          },
+          "cluster": {
+            "members": [
+              {"type": "brush", "offset": [0, 0], "brushes": ["foliage_v2/foliage_mass_01.png", "foliage_v2/foliage_mass_02.png"], "scale": [0.88, 1.08], "aspect": [0.84, 1.18], "rotationDeg": [-20, 20], "opacity": [164, 202], "tints": ["#244B30", "#2C5936", "#35643C"], "hueJitterDeg": 2, "saturation": [0.95, 1.04], "value": [0.86, 0.98]},
+              {"type": "brush", "offset": [-9, -3], "brushes": ["foliage_v2/foliage_mass_01.png", "foliage_v2/foliage_cluster_01.png"], "scale": [0.68, 0.88], "aspect": [0.88, 1.14], "rotationDeg": [-22, 22], "opacity": [154, 196], "tints": ["#294F32", "#315E38", "#396B3D"], "value": [0.88, 1.0]},
+              {"type": "brush", "offset": [9, 3], "brushes": ["foliage_v2/foliage_mass_02.png", "foliage_v2/foliage_cluster_02.png"], "scale": [0.68, 0.88], "aspect": [0.88, 1.14], "rotationDeg": [-22, 22], "opacity": [154, 196], "tints": ["#294F32", "#315E38", "#396B3D"], "value": [0.88, 1.0]}
+            ]
+          }
+        }
+      },
+      {"id": "rear_composite", "type": "image_composite", "inputs": {"base": "support_mass", "layer": "rear_foliage"}, "params": {"opacity": 1.0}},
+      {
+        "id": "wood_visible",
+        "type": "tapered_path",
+        "inputs": {"image": "rear_composite"},
+        "params": {
+          "supersample": 4,
+          "paths": [
+            {"points": [[128, 241], [127, 213], [124, 184], [126, 156], [121, 131]], "widthStart": 17, "widthEnd": 6, "fill": "#795337", "outline": "#4A2F1D", "outlineWidth": 1.1},
+            {"points": [[125, 178], [104, 158], [83, 143], [66, 125]], "widthStart": 8, "widthEnd": 2.5, "fill": "#795337", "outline": "#4A2F1D", "outlineWidth": 0.7},
+            {"points": [[124, 169], [145, 151], [166, 136], [184, 116]], "widthStart": 8, "widthEnd": 2.5, "fill": "#795337", "outline": "#4A2F1D", "outlineWidth": 0.7},
+            {"points": [[121, 150], [102, 132], [92, 110], [80, 91]], "widthStart": 6, "widthEnd": 2, "fill": "#795337"},
+            {"points": [[123, 149], [139, 127], [151, 105], [162, 86]], "widthStart": 6, "widthEnd": 2, "fill": "#795337"},
+            {"points": [[104, 158], [92, 151], [75, 151]], "widthStart": 4.5, "widthEnd": 1.4, "fill": "#795337"},
+            {"points": [[145, 151], [160, 151], [177, 145]], "widthStart": 4.5, "widthEnd": 1.4, "fill": "#795337"}
+          ]
+        }
+      },
+      {
+        "id": "wood_material",
+        "type": "image_masked_relief_material",
+        "inputs": {"image": "wood_visible", "mask": "wood_mask"},
+        "params": {
+          "lightDirection": [-0.9, -0.35],
+          "reliefStrength": 0.32,
+          "edgeShade": 0.15,
+          "coarsePx": 12,
+          "coarseAmount": 0.14,
+          "grainAxis": "vertical",
+          "grainScalePx": 6,
+          "grainAmount": 0.14,
+          "fineAmount": 0.024,
+          "seedOffset": 97
+        }
+      },
+      {"id": "front_canvas", "type": "canvas", "params": {"color": [0, 0, 0, 0]}},
+      {
+        "id": "front_foliage",
+        "type": "field_cluster_scatter",
+        "inputs": {"image": "front_canvas", "density": "structured_density", "avoid": "wood_mask", "depth": "depth", "direction": "direction", "distance": "branch_proximity"},
+        "params": {
+          "count": 21,
+          "bounds": [40, 46, 216, 184],
+          "minDistance": 11.2,
+          "maxAttempts": 32000,
+          "scale": [0.80, 1.06],
+          "rotationDeg": [-12, 12],
+          "mirrorXProbability": 0.5,
+          "mappings": {
+            "scale_mul": {"base": 0.98, "inputs": {"density": [[0.0, -0.05], [1.0, 0.14]], "depth": [[0.0, -0.03], [1.0, 0.09]]}},
+            "rotation_add_deg": {"base": 0.0, "inputs": {"field_distance": [[0.0, -4.0], [1.0, 4.0]]}}
+          },
+          "cluster": {
+            "members": [
+              {"type": "brush", "offset": [0, 0], "brushes": ["foliage_v2/foliage_mass_01.png", "foliage_v2/foliage_mass_02.png"], "scale": [0.72, 0.90], "aspect": [0.86, 1.16], "rotationDeg": [-18, 18], "opacity": [150, 190], "tints": ["#315E38", "#3B6D3F", "#477A46"], "value": [0.92, 1.02]},
+              {"type": "brush", "offset": [-8, -4], "brushes": ["foliage_v2/foliage_cluster_01.png", "foliage_v2/foliage_cluster_02.png"], "scale": [0.64, 0.82], "aspect": [0.88, 1.14], "rotationDeg": [-24, 24], "opacity": [232, 255], "tints": ["#39703F", "#478348", "#559250"], "hueJitterDeg": 3, "saturation": [0.95, 1.05], "value": [0.95, 1.08]},
+              {"type": "brush", "offset": [8, -3], "brushes": ["foliage_v2/foliage_cluster_01.png", "foliage_v2/foliage_cluster_02.png"], "scale": [0.64, 0.82], "aspect": [0.88, 1.14], "rotationDeg": [-24, 24], "opacity": [232, 255], "tints": ["#3D7442", "#4B874A", "#5A9852"], "hueJitterDeg": 3, "saturation": [0.95, 1.05], "value": [0.96, 1.09]},
+              {"type": "brush", "offset": [0, 7], "brushes": ["foliage_v2/foliage_cluster_01.png", "foliage_v2/foliage_cluster_02.png"], "scale": [0.62, 0.79], "aspect": [0.90, 1.12], "rotationDeg": [-22, 22], "opacity": [230, 254], "tints": ["#345F39", "#427744", "#50894B"], "value": [0.93, 1.05]}
+            ]
+          }
+        }
+      },
+      {"id": "front_shadow", "type": "image_contact_occlusion", "inputs": {"base": "wood_material", "occluder": "front_foliage"}, "params": {"radius": 2.4, "strength": 0.24, "offset": [0, 2], "color": "#101B13", "expandPx": 1, "baseAlphaOnly": true}},
+      {"id": "front_composite", "type": "image_composite", "inputs": {"base": "front_shadow", "layer": "front_foliage"}, "params": {"opacity": 1.0}},
+      {"id": "detail_canvas", "type": "canvas", "params": {"color": [0, 0, 0, 0]}},
+      {
+        "id": "detail_foliage",
+        "type": "field_cluster_scatter",
+        "inputs": {"image": "detail_canvas", "density": "structured_density", "avoid": "wood_mask", "depth": "depth", "direction": "direction", "distance": "branch_proximity"},
+        "params": {
+          "count": 16,
+          "bounds": [42, 47, 214, 180],
+          "minDistance": 10.0,
+          "maxAttempts": 28000,
+          "scale": [0.62, 0.84],
+          "rotationDeg": [-15, 15],
+          "mirrorXProbability": 0.5,
+          "cluster": {
+            "members": [
+              {"type": "brush", "offset": [-7, 0], "brushes": ["foliage_v2/foliage_edge_01.png", "foliage_v2/foliage_edge_02.png"], "scale": [0.50, 0.66], "aspect": [0.90, 1.10], "rotationDeg": [-30, 30], "opacity": [242, 255], "tints": ["#478248", "#57934F", "#66A258"], "hueJitterDeg": 4, "value": [1.0, 1.12]},
+              {"type": "brush", "offset": [7, -1], "brushes": ["foliage_v2/foliage_edge_01.png", "foliage_v2/foliage_edge_02.png"], "scale": [0.50, 0.66], "aspect": [0.90, 1.10], "rotationDeg": [-30, 30], "opacity": [242, 255], "tints": ["#478248", "#57934F", "#66A258"], "hueJitterDeg": 4, "value": [1.0, 1.12]},
+              {"type": "brush", "offset": [0, -7], "brushes": ["foliage_v2/foliage_cluster_01.png", "foliage_v2/foliage_cluster_02.png"], "scale": [0.46, 0.60], "aspect": [0.92, 1.08], "rotationDeg": [-26, 26], "opacity": [235, 255], "tints": ["#4A8449", "#5A9651", "#69A55B"], "value": [0.99, 1.11]}
+            ]
+          }
+        }
+      },
+      {"id": "detail_shadow", "type": "image_contact_occlusion", "inputs": {"base": "front_composite", "occluder": "detail_foliage"}, "params": {"radius": 1.6, "strength": 0.14, "offset": [0, 1], "color": "#112017", "expandPx": 0, "baseAlphaOnly": true}},
+      {"id": "foliage", "type": "image_composite", "inputs": {"base": "detail_shadow", "layer": "detail_foliage"}, "params": {"opacity": 1.0}},
+      {"id": "alpha_repair", "type": "image_alpha_cleanup", "inputs": {"image": "foliage"}, "params": {"closePx": 0, "openPx": 0, "featherRadius": 0.06}},
+      {"id": "broad_light", "type": "image_depth_light", "inputs": {"image": "alpha_repair", "depth": "depth"}, "params": {"strength": 0.11, "bias": -0.02, "preserveAlpha": true}},
+      {"id": "detail_finish", "type": "image_local_contrast", "inputs": {"image": "broad_light"}, "params": {"radius": 0.78, "amount": 0.38, "globalContrast": 1.035}},
+      {"id": "finish", "type": "levels", "inputs": {"image": "detail_finish"}, "params": {"contrast": 1.015, "brightness": 1.005}},
+      {"id": "output", "type": "output", "inputs": {"image": "finish"}}
+    ]
+  }
+}

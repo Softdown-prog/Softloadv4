@@ -1,0 +1,190 @@
+{
+  "nicho": "tecnologia-techwind",
+  "versaoDossie": 1,
+  "chassis": "magazine",
+  "pageType": "portal-noticias",
+  "tokensCss": {
+    "light_mode": {
+      "--sd-primary": "#198754",
+      "--sd-primary-hover": "#0f5132",
+      "--sd-bg": "#f8f9fa",
+      "--sd-text": "#212529",
+      "--sd-dark": "#212529"
+    }
+  },
+  "pecas": [
+    {
+      "id": "carousel-destaque",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "carrosselDestaques"
+      ],
+      "css": ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 450px; width: 100%; object-fit: cover; }\n.hero-destaque-caption {\n  position: absolute; bottom: 0; left: 0; right: 0;\n  background: linear-gradient(0deg, rgba(33,37,41,0.95) 0%, rgba(33,37,41,0) 100%);\n  padding: 2rem;\n}\n.hero-destaque-badge { background-color: var(--sd-primary); }",
+      "html": "",
+      "js": "",
+      "descricao": "Hero servido por widget nativo FeaturedPost (data:postTitle/postUrl/postFirstImage/postSnippet reais do post mais recente) — card com badge/legenda gradient no estilo do carousel original, mas com 1 post real em vez de 2 slides estáticos. Substituiu o carousel Bootstrap com legendas fixas (\"Título do Destaque\"/\"Segundo Destaque\") e CTA \"Ler Artigo\" com href=\"#\" (não levava a lugar nenhum) — achado real de auditoria com template de usuário real. 5 variações de restyle visual (cssVariantes) escolhidas por seed determinístico — overlay gradiente original/legenda flutuante em vidro/duotone full-bleed/painel lateral/overlay claro. Sem htmlVariantes (widgetNativo gera o html fixo via gerarHeroDestaqueCard).",
+      "widgetNativo": "featured-post-card",
+      "tituloWidget": "Destaque",
+      "cssVariantes": [
+        ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 450px; width: 100%; object-fit: cover; }\n.hero-destaque-caption {\n  position: absolute; bottom: 0; left: 0; right: 0;\n  background: linear-gradient(0deg, rgba(33,37,41,0.95) 0%, rgba(33,37,41,0) 100%);\n  padding: 2rem;\n}\n.hero-destaque-badge { background-color: var(--sd-primary); }",
+        ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 420px; width: 100%; object-fit: cover; border-radius: 4px; }\n.hero-destaque-caption {\n  position: absolute; bottom: 16px; left: 16px; right: 16px;\n  background: rgba(33,37,41,0.72);\n  backdrop-filter: blur(8px);\n  border-radius: 12px;\n  padding: 1.5rem 1.75rem;\n}\n.hero-destaque-badge { background-color: var(--sd-primary); }",
+        ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 520px; width: 100%; object-fit: cover; filter: saturate(1.1) contrast(1.05); }\n.hero-destaque-caption {\n  position: absolute; bottom: 0; left: 0; right: 0;\n  background: linear-gradient(0deg, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.1) 90%);\n  padding: 2.5rem 2rem;\n}\n.hero-destaque-badge { background-color: transparent; border: 1px solid var(--sd-primary); color: var(--sd-primary); }",
+        ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 450px; width: 100%; object-fit: cover; }\n.hero-destaque-caption {\n  position: absolute; top: 0; bottom: 0; right: 0; left: auto;\n  width: 42%;\n  min-width: 280px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  background: linear-gradient(90deg, rgba(33,37,41,0) 0%, rgba(33,37,41,0.9) 25%, rgba(33,37,41,0.94) 100%);\n  padding: 2rem;\n}\n.hero-destaque-badge { background-color: var(--sd-primary); align-self: flex-start; }",
+        ".hero-destaque-card { position: relative; }\n.hero-destaque-card img { height: 450px; width: 100%; object-fit: cover; }\n.hero-destaque-caption {\n  position: absolute; bottom: 0; left: 0; right: 0;\n  background: linear-gradient(0deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0) 100%);\n  padding: 2rem;\n}\n.hero-destaque-caption h1, .hero-destaque-caption p { color: var(--sd-dark) !important; }\n.hero-destaque-badge { background-color: var(--sd-primary); position: absolute; top: -14px; left: 24px; }"
+      ]
+    },
+    {
+      "id": "scroll-to-top",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "btnScrollToTop"
+      ],
+      "css": "#btnScrollToTop {\n  position: fixed; bottom: 30px; right: 30px;\n  width: 55px; height: 55px; border-radius: 50%;\n  display: flex; align-items: center; justify-content: center;\n  z-index: 1050; opacity: 0; visibility: hidden; transform: translateY(30px);\n  background: linear-gradient(135deg, #20c997, var(--sd-primary));\n  border: 2px solid rgba(255,255,255,0.2); color: white; cursor: pointer;\n  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);\n}\n#btnScrollToTop.show {\n  opacity: 1; visibility: visible; transform: translateY(0);\n  animation: pulseGlow 2s infinite;\n}\n#btnScrollToTop:hover {\n  background: linear-gradient(135deg, #15a362, var(--sd-primary-hover));\n  transform: translateY(-8px) scale(1.05);\n  box-shadow: 0 10px 25px rgba(25, 135, 84, 0.6);\n  border-color: rgba(255,255,255,0.5);\n  animation: none;\n}\n#btnScrollToTop i { font-size: 2.2rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }\n#btnScrollToTop:hover i { transform: translateY(-4px); }\n@keyframes pulseGlow {\n  0% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0.7); }\n  70% { box-shadow: 0 0 0 15px rgba(32, 201, 151, 0); }\n  100% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0); }\n}",
+      "html": "<button id='btnScrollToTop' title='Voltar ao topo' aria-label='Voltar ao topo'><i class='bi bi-arrow-up-short'></i></button>",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  const btnScroll = document.getElementById('btnScrollToTop');\n  window.addEventListener('scroll', () => btnScroll.classList.toggle('show', window.scrollY > 300));\n  btnScroll.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));\n});",
+      "descricao": "Botão flutuante de voltar ao topo com animação PulseGlow — achado real: css/js já existiam no impl.json original mas o html nunca foi documentado (mesmo padrão de bug fechado em culinaria-boutique-gourmet e viral-magazine)."
+    },
+    {
+      "id": "img-gpu-optimization",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "img {\n  max-width: 100%;\n  height: auto;\n  image-rendering: -webkit-optimize-contrast;\n  image-rendering: crisp-edges;\n  -webkit-backface-visibility: hidden;\n  backface-visibility: hidden;\n  filter: contrast(1.02) saturate(1.02);\n}\n.img-4k-sharp {\n  image-rendering: -webkit-optimize-contrast;\n  transform: translateZ(0);\n  font-smoothing: antialiased;\n}\n.card-img-top, .post-thumbnail img {\n  object-fit: cover;\n  width: 100%;\n  aspect-ratio: 16 / 9;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Delegação de renderização de imagens à GPU (translateZ, crisp-edges) — estiliza elementos <img> já existentes, sem HTML próprio."
+    },
+    {
+      "id": "page-body-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body {\n  background-color: var(--sd-bg);\n  color: var(--sd-text);\n  font-family: 'Inter', system-ui, -apple-system, sans-serif;\n  -webkit-font-smoothing: antialiased;\n  border-top: 5px solid var(--sd-primary);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo base do body — linha verde no topo da página inteira (identidade visual Matrix)."
+    },
+    {
+      "id": "cards-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".card {\n  border-radius: 12px;\n  overflow: hidden;\n  background-color: var(--bs-body-bg);\n  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;\n}\n.card-post-grid {\n  border: 0;\n  border-bottom: 4px solid var(--sd-primary) !important;\n}\n.card-post-grid:hover {\n  transform: translateY(-5px);\n  box-shadow: 0 10px 20px rgba(25, 135, 84, 0.15) !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo dos cards de post na grade (borda inferior verde, hover elevado) — estiliza elementos já existentes do chassis."
+    },
+    {
+      "id": "post-single-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-title-single {\n  border-left: 6px solid var(--sd-primary);\n  padding-left: 15px;\n  color: var(--bs-emphasis-color);\n}\n.post-body-content blockquote {\n  border-left: 5px solid var(--sd-primary);\n  background-color: rgba(25, 135, 84, 0.05);\n  padding: 1.2rem;\n  border-radius: 0 8px 8px 0;\n  font-style: italic;\n  margin: 1.5rem 0;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo do título e blockquote na página de post único."
+    },
+    {
+      "id": "top-bar-footer-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".top-bar, footer {\n  background-color: var(--sd-dark) !important;\n  color: rgba(255,255,255,0.85);\n}\n.top-bar a, footer a { color: rgba(255,255,255,0.85); }\n.top-bar a:hover, footer a:hover { color: var(--sd-primary); }\nfooter { border-top: 6px solid var(--sd-primary) !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo da top-bar e do footer — fundo escuro com destaque verde."
+    },
+    {
+      "id": "dark-mode-css-overrides",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "[data-bs-theme='dark'] .card, [data-bs-theme='dark'] aside .widget {\n  background-color: #18181b;\n  border-color: #27272a !important;\n}\n[data-bs-theme='dark'] .post-body-content { color: #d4d4d8; }\n[data-bs-theme='dark'] .post-body-content blockquote { background-color: rgba(25, 135, 84, 0.1); }",
+      "html": "",
+      "js": "",
+      "descricao": "Overrides de CSS específicos do dark mode para cards, sidebar e post body."
+    },
+    {
+      "id": "navbar-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header .navbar {\n  background-color: var(--bs-body-bg) !important;\n  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;\n}\n.navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: var(--sd-primary) !important; }\n.navbar-toggler { border: 1px solid rgba(25, 135, 84, 0.5); color: var(--sd-primary); }\n.navbar-toggler:focus { box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo do navbar — hover/active em verde, toggler destacado."
+    },
+    {
+      "id": "sidebar-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "aside .widget {\n  background: var(--bs-body-bg);\n  padding: 1.5rem;\n  border-radius: 12px;\n  border: 1px solid rgba(0,0,0,0.05);\n  margin-bottom: 1.5rem;\n  box-shadow: 0 2px 5px rgba(0,0,0,0.02);\n}\naside h2 {\n  font-size: 1.1rem;\n  font-weight: 700;\n  color: var(--bs-emphasis-color);\n  border-left: 4px solid var(--sd-primary);\n  padding-left: 12px;\n  margin-bottom: 15px;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo dos widgets da sidebar — card com borda esquerda verde no título."
+    },
+    {
+      "id": "label-cloud-hashtag-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul,\n.cloud-label-widget-content {\n  list-style: none !important;\n  padding: 0 !important;\n  margin: 0 !important;\n  display: flex;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n.list-label-widget-content ul li a,\n.cloud-label-widget-content .label-size a,\n.post-bottom-tags a {\n  display: inline-flex;\n  align-items: center;\n  background: #ffffff;\n  color: var(--sd-text);\n  font-size: 0.85rem !important;\n  font-weight: 600;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  padding: 6px 14px;\n  border-radius: 6px;\n  border: 1px solid rgba(0,0,0,0.08);\n  transition: all 0.3s ease;\n  text-decoration: none !important;\n}\n.list-label-widget-content ul li a::before,\n.cloud-label-widget-content .label-size a::before,\n.post-bottom-tags a::before {\n  content: '\\F420';\n  font-family: 'bootstrap-icons';\n  margin-right: 4px;\n  font-size: 1rem !important;\n  color: var(--sd-primary);\n  transition: color 0.3s ease;\n}\n.list-label-widget-content ul li a:hover,\n.cloud-label-widget-content .label-size a:hover,\n.post-bottom-tags a:hover {\n  background: var(--sd-primary);\n  color: #ffffff !important;\n  border-color: var(--sd-primary);\n  transform: translateY(-2px);\n  box-shadow: 0 6px 15px rgba(25, 135, 84, 0.2);\n}\n.list-label-widget-content ul li span[dir='ltr'],\n.cloud-label-widget-content .label-count {\n  background: var(--sd-dark);\n  color: #ffffff;\n  font-size: 0.7rem;\n  padding: 2px 6px;\n  border-radius: 4px;\n  margin-left: -8px;\n  margin-top: -12px;\n  font-weight: 700;\n  z-index: 2;\n  border: 2px solid var(--sd-bg);\n  display: inline-flex;\n  box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Label cloud e tags estilizados como chips de software com ícone bi-hash via ::before — estiliza widget nativo do Blogger já existente."
+    },
+    {
+      "id": "ripple-effect",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".btn, .nav-link, .dropdown-item {\n  position: relative !important;\n  overflow: hidden !important;\n}\n.ripple-effect {\n  position: absolute;\n  background: rgba(255, 255, 255, 0.4);\n  transform: translate(-50%, -50%);\n  pointer-events: none;\n  border-radius: 50%;\n  animation: ripple-animation 0.6s linear;\n}\n@keyframes ripple-animation {\n  from { width: 0px; height: 0px; opacity: 0.5; }\n  to { width: 500px; height: 500px; opacity: 0; }\n}",
+      "html": "",
+      "js": "document.querySelectorAll('.btn, .nav-link').forEach(button => {\n  button.addEventListener('click', function(e) {\n    let x = e.clientX - e.target.getBoundingClientRect().left;\n    let y = e.clientY - e.target.getBoundingClientRect().top;\n    let ripple = document.createElement('span');\n    ripple.style.left = x + 'px';\n    ripple.style.top = y + 'px';\n    ripple.classList.add('ripple-effect');\n    this.appendChild(ripple);\n    setTimeout(() => { ripple.remove(); }, 600);\n  });\n});",
+      "descricao": "Efeito de onda ao clicar em botões e nav-links, span dinâmico criado via JS puro."
+    },
+    {
+      "id": "animate-up-reveal",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".animate-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }\n.animate-up.visible { opacity: 1; transform: translateY(0); }",
+      "html": "",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  const scrollObserver = new IntersectionObserver((entries, observer) => {\n    entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });\n  }, { threshold: 0 });\n  document.querySelectorAll('.card-post-grid, aside .widget').forEach((el, i) => {\n    el.classList.add('animate-up');\n    el.style.transitionDelay = `${(i % 3) * 0.1}s`;\n    scrollObserver.observe(el);\n  });\n});",
+      "descricao": "Animação de revelação ao rolar (fade+translateY) em cards e widgets da sidebar — achado real: a CSS da classe .animate-up nunca era incluída pelo walker legado, então a classe era adicionada via JS mas não tinha nenhum efeito visual (no-op silencioso)."
+    },
+    {
+      "id": "reading-time",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "",
+      "html": "",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  const postBody = document.querySelector('.post-body-content');\n  const metaContainer = document.querySelector('.post-title-single') ?\n    document.querySelector('.post-title-single').nextElementSibling : null;\n  if (postBody && metaContainer && metaContainer.classList.contains('gap-3')) {\n    const text = postBody.innerText || postBody.textContent;\n    const wordCount = text.trim().split(/\\s+/).length;\n    const readingTime = Math.ceil(wordCount / 200);\n    const timeSpan = document.createElement('span');\n    timeSpan.innerHTML = `<i class=\"bi bi-clock-history text-success me-1\"></i> ${readingTime} min de leitura`;\n    metaContainer.appendChild(timeSpan);\n  }\n});",
+      "descricao": "Calcula e injeta tempo de leitura estimado nos metadados do post — cria seu próprio nó DOM via createElement, não depende de domId pré-existente."
+    },
+    {
+      "id": "popular-posts-upscale",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "",
+      "html": "",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  document.querySelectorAll('.PopularPosts img').forEach(img => {\n    let novaSrc = img.src.replace(/\\/s[0-9]+(\\-c)?\\//, '/s600/');\n    novaSrc = novaSrc.replace(/\\=s[0-9]+(\\-c)?/, '=s600');\n    novaSrc = novaSrc.replace(/\\/w[0-9]+\\-h[0-9]+[^\\/]+\\//, '/s600/');\n    img.src = novaSrc;\n  });\n});",
+      "descricao": "Substitui URLs de miniaturas do widget Popular Posts (s72-c ridículo) por s600 — achado real: essa feature existia inteira no impl.json original mas o walker legado nunca a incluía no output (nem CSS nem JS), silenciosamente descartada."
+    },
+    {
+      "id": "dark-mode-toggle-logic",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "",
+      "html": "",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  const getStoredTheme = () => localStorage.getItem('theme');\n  const setStoredTheme = theme => localStorage.setItem('theme', theme);\n  const getPreferredTheme = () => getStoredTheme() || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');\n  const setTheme = theme => { document.documentElement.setAttribute('data-bs-theme', theme); atualizarIcone(theme); };\n  const atualizarIcone = theme => {\n    const btnIcone = document.querySelector('.btn-dark-mode i');\n    if (btnIcone) btnIcone.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-dark';\n  };\n  setTheme(getPreferredTheme());\n  window.alternarTema = () => {\n    const novoTema = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';\n    setStoredTheme(novoTema); setTheme(novoTema);\n  };\n  document.querySelectorAll('.btn-dark-mode').forEach(btn => btn.addEventListener('click', window.alternarTema));\n});",
+      "descricao": "Lógica de alternância de dark mode (persistência via localStorage, ícone dinâmico) — liga em elementos .btn-dark-mode já existentes no chassis."
+    }
+  ]
+}

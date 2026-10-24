@@ -1,0 +1,1183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho culinaria-boutique-gourmet — ver plano
+     "esqueleto por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md),
+     Fase 2 (7/11). Chassis 'blog' compartilhado ainda ativo com
+     gamer-playerone/natureza-bulma-vegan/pop-retro-pixel (3 nichos
+     restantes) — este é o 1º a sair dele.
+
+     Estrutura física extraída de exemplos/culinaria-boutique-gourmet.xml
+     (2301 linhas, 20 b:section reais — bem mais denso que as migrações
+     anteriores desta fase). Achados:
+
+     1. Dossiê já era fiel à realidade (piloto original da "reconstrução
+        de dossiê" desta sessão, ~34 peças "modulo-*" cobrindo o
+        bloco b:skin quase inteiro seção-por-seção) — diferente de saas-nexus/
+        brutalista-appcraft/tecnologia-techwind, NENHUMA peça precisou de
+        reversão de seletor (nunca foi remapeada pro chassis 'blog'
+        compartilhado). O trabalho aqui foi auditoria de CSS órfã +
+        extração da estrutura física real, não reversão de seletor.
+     2. CSS órfã encontrada e removida do dossiê (bug pré-existente no
+        arquivo original, não introduzido por esta migração):
+          - 'modulo-variaveis-para-facilitar-a-manutencao' +
+            'modulo-efeito-de-foco': estilizavam .search-input-custom/
+            .search-box-custom/.search-button-custom — classes que NUNCA
+            aparecem em nenhum HTML do arquivo real (a busca real usa o
+            widget BlogSearch1 nativo, classes gsc-*). CSS morta de uma
+            versão anterior da busca, nunca limpa.
+          - 'modulo-otizacao-de-imagens-hd-gourmet' +
+            'modulo-efeito-ao-passar-o-mouse-ou-slide-ativo' +
+            'modulo-overlay-para-proteger-a-nitidez-do-texto-sobre-a-imagem':
+            estilizavam .btq-slide/.btq-slide-overlay — o slider real
+            (dentro do próprio HTML4, self-contained) usa classes .gs-*
+            (prefixo diferente). CSS morta de uma versão anterior do
+            carrossel.
+        Ambos os grupos removidos via dossieWriter.substituirDossieCompleto
+        (36 → 31 peças). '.list-label-widget-content'/'.post-bottom-tags'
+        mantidas: são nomes de classe que o próprio Blogger gera
+        automaticamente conforme o modo de exibição do widget Label
+        (LIST vs CLOUD) — mesmo o Label1 real usando CLOUD hoje, manter o
+        CSS do modo LIST é inofensivo e resiliente a troca futura pelo
+        painel do Blogger (diferente de .btq-slide/.search-*-custom, que
+        são classes autorais que nunca teriam outro caminho de ativação).
+     3. Achado de qualidade: '.post-bottom-tags' (design "premium" com
+        ícone bookmark-heart antes de cada tag, CSS já pronta) nunca
+        estava de fato ligada a nenhum HTML — a view de post único
+        mostrava as labels em texto simples separado por vírgula. Ligada
+        à b:section id=main desta migração (troca o texto simples
+        pelo design premium já existente na CSS, sem duplicar — antes as
+        labels apareciam 2x se ambos ficassem).
+     4. 'header-logo': Header1 real tinha displayUrl real do dono
+        original — redigido via HEADER_WIDGET genérico.
+     5. 'main-menu': PageList1 real tinha URL do blog real do dono
+        original (boutiquecookie.blogspot.com) + 1 link pessoal do
+        Google Drive — redigido via NAV_WIDGET genérico.
+     6. 'top-search'/'featured-big'/'featured-small-2': 3 seções reais
+        com b:widget nativo completo e autocontido (BlogSearch1 padrão;
+        HTML4 = slider de imagens em HD buscando posts via feed JSON,
+        script próprio; HTML3 = banner de cookies "Boutique Gourmet"
+        estilizado, com aceite via localStorage, script próprio) — sem
+        dado real de terceiro, mantidas verbatim NAS SUAS POSIÇÕES REAIS
+        (achado de mecanismo: o dossiê tinha essas 3 como peças tipo
+        'secao', que no cano antigo (chassis compartilhado) eram
+        despejadas TODAS juntas num único ponto via um token de blob
+        único — sem capacidade de as posicionar em 3 lugares fisicamente
+        diferentes, que é exatamente o que a barra de busca no header/o
+        slider no meio da grade/o banner de cookies numa coluna pequena
+        precisam. Corrigido aqui escrevendo o html de cada peça
+        diretamente na sua seção real — mesmo trade-off já
+        documentado noutras migrações pra Blog1/PageList: vira conteúdo
+        do esqueleto, não é mais re-renderizado dinamicamente por edição
+        futura do dossiê via chat).
+     7. Blog1: widget-settings trimmados pra lista válida (commentLabel/
+        authorLabel/timestampLabel vazio/reactionsLabel vazio/
+        showAuthorProfile/postsPerAd/style.*/postLocationLabel/
+        postLabelsLabel vazio rejeitados pelo Blogger hoje). Card do feed
+        (isMultipleItems) tinha uma declaração de includable de post
+        colada INDEVIDAMENTE dentro de uma âncora solta no meio do card
+        (erro de colagem na autoria original — declaração de includable
+        não pode ficar aninhada dentro de HTML solto) — corrigido pro
+        card limpo já documentado no próprio arquivo (mesmo conteúdo,
+        sem a declaração solta). View de post único (isError) com 404
+        temático real ("Receita não encontrada!") preservada verbatim —
+        melhor que o módulo de erro 404 genérico, não adicionado
+        (duplicaria).
+     8. H1 da home: Header1 usa useImage=true (logo em imagem substitui o
+        título), então a home real nunca tinha nenhum heading de nível 1
+        — corrigido com um h1 oculto visualmente (visually-hidden) com o
+        título do blog, dentro de uma b:section dedicada (id=home-hero-h1,
+        widget HTML própria) logo no início do body (só na home). Precisa
+        ser uma b:section com widget (não HTML solto) — mesma regra já
+        documentada em aquarela ("Regra B" do xmlValidator.js) — e precisa
+        ficar numa seção com id estável porque compilerWorker.test.js
+        verifica "exatamente 1 h1" dentro da seção de hero de cada nicho
+        (ID_SECAO_HERO_POR_NICHO).
+     9. Anti-FOUC: o dark mode real só aplicava o tema no
+        DOMContentLoaded (flash de tema errado em cada visita de quem já
+        escolheu escuro) — corrigido com script inline no head, mesma
+        chave de localStorage ('theme') que o script original já usa.
+    10. sidebar/footer-1/footer-2/footer-contact: PopularPosts1 e HTML98
+        ("A Chef", foto de banco de imagens Unsplash — mesmo padrão já
+        aceito em saas-nexus) nativos preservados; Translate1+Stats1
+        nativos preservados; Label1 nativo preservado SEM o
+        selectedLabelsList hardcoded ("brownie,cookies" — específico
+        demais pra virar padrão de todo site gerado, mesmo raciocínio já
+        aplicado a peças de rótulo noutras migrações). footer-2 ganha
+        BLOG_ARCHIVE_WIDGET junto do Label1 real (mobília nova,
+        nichoModuleDefaults.js já ligava blogArchiveWidget sem seção pra
+        receber). footer-3 (vazio no arquivo real) ganha SOCIAL_LINKS_WIDGET
+        (idem). featured-small-1 (vazio no arquivo real) ganha
+        FEATURED_POST_WIDGET (idem). footer-contact: ContactForm1 real
+        mapeado pro token CONTACT_FORM genérico (mesmo padrão de sempre —
+        evita o bug já conhecido de .contact-form-button-submit).
+    11. Copyright do rodapé: "© 2026 - Boutique Gourmet" hardcoded no
+        arquivo real → ano dinâmico + data:blog.title (nome real do site
+        gerado).
+    12. JS órfão: o listener de ESC-para-limpar-busca
+        (document.querySelector('.search-input-custom')) mirava um
+        elemento que nunca existiu (mesmo achado 2 acima) — não portado.
+        Scroll-to-top (botão + listener) já é peça tipo 'widget'
+        self-contained do dossiê (id 'scroll-to-top') — renderizada via
+        token de widgets do nicho, não duplicada aqui à mão (duplicar teria
+        recriado o bug já corrigido nesta sessão de listener de
+        back-to-top disparando 2x).
+     Ver nichoDossie.culinaria-boutique-gourmet.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <b:if cond='data:view.featuredImage'>
+    <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+  </b:if>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:blog.pageTitle/></title>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'/>
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  <!-- Anti-FOUC (achado 9): arquivo real só aplicava o tema no
+       DOMContentLoaded, causando flash do tema claro em cada carga pra
+       quem já tinha escolhido escuro. Mesma chave 'theme' do script
+       original (ver fim do body). -->
+  <script>
+  //<![CDATA[
+  (function(){
+    var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-bs-theme', t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+    /* === VARIÁVEIS DO PAINEL DO BLOGGER (arquivo real, preservadas
+       verbatim) === */
+    <Group description="Cores Principais" selector="body">
+      <Variable name="cor.primaria" description="Cor Principal (Roxo Elegante)" type="color" default="#6f42c1" value="#6f42c1"/>
+      <Variable name="cor.secundaria" description="Cor Secundária/Hover (Rosa Vibrante)" type="color" default="#e83e8c" value="#e83e8c"/>
+      <Variable name="cor.detalhe" description="Detalhes Quentes (Vermelho)" type="color" default="#dc3545" value="#dc3545"/>
+      <Variable name="cor.fundo" description="Fundo do Site (Branco Creme)" type="color" default="#fdfafb" value="#fdfafb"/>
+      <Variable name="cor.texto" description="Texto Principal" type="color" default="#2d2d2d" value="#2d2d2d"/>
+      <Variable name="cor.escura" description="Fundo do Topo e Rodapé" type="color" default="#212529" value="#212529"/>
+    </Group>
+
+    :root {
+      --sd-primary: $(cor.primaria);
+      --sd-secondary: $(cor.secundaria);
+      --sd-danger: $(cor.detalhe);
+      --sd-bg: $(cor.fundo);
+      --sd-text: $(cor.texto);
+      --sd-dark: $(cor.escura);
+    }
+
+    [[DYNAMIC_CSS]]
+
+    /* === CSS DO NICHO (peças do dossiê: ~31 módulos de estilo real +
+         hero/widgets protegidos) === */
+    [[NICHO_CSS]]
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <b:if cond='data:view.isHomepage'>
+    <b:section id='home-hero-h1' maxwidgets='1' name='H1 Oculto (Acessibilidade)' showaddelement='no'>
+      <b:widget id='HTML97' locked='true' title='H1 Oculto' type='HTML' version='2' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='content'><![CDATA[<h1 class="visually-hidden"><data:blog.title/></h1>]]></b:widget-setting>
+        </b:widget-settings>
+        <b:includable id='main'>
+          <data:content/>
+        </b:includable>
+      </b:widget>
+    </b:section>
+  </b:if>
+
+  <div class='top-bar py-2' id='topbar-wrapper'>
+    <div class='container d-flex flex-column flex-md-row justify-content-between align-items-center'>
+      <div class='ticker-area w-100 text-center text-md-start'>
+        <b:section id='top-ticker' name='Aviso Topo' showaddelement='yes'/>
+      </div>
+      <div class='social-area flex-shrink-0 mt-2 mt-md-0'>
+        <b:section id='top-social' name='Redes Sociais Topo' showaddelement='yes'/>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <nav class='navbar navbar-expand-lg sticky-top'>
+      <div class='container'>
+
+        <div class='navbar-brand-wrapper'>
+          <b:section id='header-logo' maxwidgets='1' name='Logotipo Gourmet' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+        </div>
+
+        <button aria-controls='mainNavbar' aria-expanded='false' aria-label='Toggle navigation' class='navbar-toggler' data-bs-target='#mainNavbar' data-bs-toggle='collapse' type='button'>
+          <i class='bi bi-list fs-2'/>
+        </button>
+
+        <div class='collapse navbar-collapse' id='mainNavbar'>
+          <div class='me-auto w-100 mt-3 mt-lg-0'>
+            <b:section id='main-menu' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+          </div>
+
+          <div class='d-flex align-items-center justify-content-center gap-3 mt-3 mt-lg-0 pb-3 pb-lg-0'>
+            <div class='dark-mode-wrapper'>
+               <button aria-label='Alternar tema claro/escuro' class='btn btn-outline-primary btn-dark-mode d-flex align-items-center justify-content-center' style='width: 40px; height: 40px; border-radius: 50%; transition: all 0.3s;' type='button'>
+                 <i class='bi bi-moon-stars-fill'/>
+               </button>
+            </div>
+            <div class='search-wrapper'>
+              <!-- Achado 6: BlogSearch1 nativo real, verbatim. -->
+              <b:section id='top-search' maxwidgets='1' name='Barra de Pesquisa' showaddelement='yes'>
+                <b:widget id='BlogSearch1' locked='false' title='Pesquisar este blog' type='BlogSearch'>
+                  <b:includable id='main'>
+                    <b:if cond='data:title != &quot;&quot;'>
+                      <h2 id='secao-top-search' class='title'><data:title/></h2>
+                    </b:if>
+                    <div class='widget-content'>
+                      <div expr:id='data:widget.instanceId + &quot;_form&quot;'>
+                        <form class='gsc-search-box' expr:action='data:blog.searchUrl'>
+                          <b:attr cond='not data:view.isPreview' name='target' value='_top'/>
+                          <table cellpadding='0' cellspacing='0' class='gsc-search-box'>
+                            <tbody>
+                              <tr>
+                                <td class='gsc-input'>
+                                  <input autocomplete='off' class='gsc-input' expr:value='data:view.isSearch ? data:view.search.query.escaped : &quot;&quot;' name='q' size='10' title='search' type='text'/>
+                                </td>
+                                <td class='gsc-search-button'>
+                                  <input class='gsc-search-button' expr:value='data:messages.search' title='search' type='submit'/>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </form>
+                      </div>
+                    </div>
+                    <b:include name='quickedit'/>
+                  </b:includable>
+                </b:widget>
+              </b:section>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </nav>
+  </header>
+
+  <b:if cond='data:view.isHomepage'>
+    <section class='featured-area my-4'>
+      <div class='container'>
+        <b:section id='featured-full' name='Destaque Topo' showaddelement='yes'/>
+        <div class='row g-3 mt-1'>
+          <div class='col-lg-8'>
+            <!-- Achado 6: slider gourmet-slider-hd real, self-contained (style+html+script), verbatim. -->
+            <b:section id='featured-big' name='Destaque Grande' showaddelement='yes'>
+              <b:widget id='HTML4' locked='false' title='' type='HTML'>
+                <b:widget-settings>
+                  <b:widget-setting name='content'><![CDATA[<div id="gourmet-slider-hd">
+    <div id="gs-loading">Aquisitando imagens em HD...</div>
+    <div id="gs-track"></div>
+
+    <button class="gs-nav gs-prev" onclick="window.moveGsSlide(-1)" aria-label="Anterior">&#10094;</button>
+    <button class="gs-nav gs-next" onclick="window.moveGsSlide(1)" aria-label="Próximo">&#10095;</button>
+</div>
+
+<style>
+:root {
+    --gs-purple: #6f42c1;
+    --gs-pink: #d63384;
+    --gs-radius: 24px;
+    --gs-shadow: 0 20px 40px rgba(111, 66, 193, 0.2);
+}
+
+#gourmet-slider-hd {
+    position: relative;
+    width: 100%;
+    max-width: 1150px;
+    height: 500px;
+    margin: 20px auto;
+    background: #1a1a1a;
+    border-radius: var(--gs-radius);
+    overflow: hidden;
+    box-shadow: var(--gs-shadow);
+}
+
+#gs-loading {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.gs-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    text-decoration: none;
+}
+
+.gs-slide.active {
+    opacity: 1;
+    z-index: 5;
+}
+
+.gs-slide img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    image-rendering: -webkit-optimize-contrast;
+    filter: brightness(0.85) contrast(1.1);
+    transition: transform 8s linear;
+    will-change: transform;
+}
+
+.gs-slide.active img {
+    transform: scale(1.1);
+}
+
+.gs-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 100px 50px 50px;
+    background: linear-gradient(to top, rgba(18, 1, 34, 0.9) 0%, rgba(18, 1, 34, 0) 100%);
+    color: #fff;
+}
+
+.gs-badge {
+    display: inline-block;
+    background: linear-gradient(45deg, var(--gs-purple), var(--gs-pink));
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3);
+}
+
+.gs-title {
+    font-size: 2.8rem;
+    margin: 0;
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.gs-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 55px; height: 55px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.95);
+    color: var(--gs-purple);
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.gs-nav:hover {
+    background: var(--gs-purple);
+    color: #fff;
+    transform: translateY(-50%) scale(1.15);
+}
+
+.gs-prev { left: 25px; }
+.gs-next { right: 25px; }
+
+@media (max-width: 768px) {
+    #gourmet-slider-hd { height: 400px; border-radius: 0; }
+    .gs-title { font-size: 1.8rem; }
+    .gs-info { padding: 60px 25px 30px; }
+    .gs-nav { width: 45px; height: 45px; }
+}
+</style>
+
+<script>
+//<![CDATA[
+(function() {
+    const SLIDER_SETTINGS = {
+        postsCount: 5,
+        speed: 6000,
+        hdWidth: 1200,
+        hdHeight: 600
+    };
+
+    let idx = 0;
+    let autoRotate;
+
+    const startSlider = () => {
+        const track = document.getElementById('gs-track');
+        const loader = document.getElementById('gs-loading');
+
+        fetch(`/feeds/posts/default?alt=json&max-results=${SLIDER_SETTINGS.postsCount}`)
+            .then(r => r.json())
+            .then(data => {
+                const entries = data.feed.entry || [];
+                if (!entries.length) return;
+
+                let html = '';
+                entries.forEach((post, i) => {
+                    const title = post.title.$t;
+                    const link = post.link.find(l => l.rel === 'alternate').href;
+
+                    let imgOriginal = 'https://placehold.co/1200x600/6f42c1/ffffff?text=Boutique+Gourmet';
+
+                    if (post.media$thumbnail) {
+                        let thumbUrl = post.media$thumbnail.url;
+                        imgOriginal = thumbUrl.replace(/\/s\d+(-c)?/, `/w${SLIDER_SETTINGS.hdWidth}-h${SLIDER_SETTINGS.hdHeight}-p-k-no-nu`);
+                        imgOriginal = imgOriginal.replace(/=s\d+(-c)?/, `=w${SLIDER_SETTINGS.hdWidth}-h${SLIDER_SETTINGS.hdHeight}-p-k-no-nu`);
+                    }
+
+                    html += `
+                        <a href="${link}" class="gs-slide ${i === 0 ? 'active' : ''}">
+                            <img src="${imgOriginal}" alt="${title}">
+                            <div class="gs-info">
+                                <span class="gs-badge">Receita Premium</span>
+                                <h2 class="gs-title">${title}</h2>
+                            </div>
+                        </a>`;
+                });
+
+                track.innerHTML = html;
+                loader.style.display = 'none';
+                runAutoPlay();
+            });
+    };
+
+    window.moveGsSlide = (dir) => {
+        const slides = document.querySelectorAll('.gs-slide');
+        if (!slides.length) return;
+        slides[idx].classList.remove('active');
+        idx = (idx + dir + slides.length) % slides.length;
+        slides[idx].classList.add('active');
+        resetTimer();
+    };
+
+    const runAutoPlay = () => {
+        autoRotate = setInterval(() => window.moveGsSlide(1), SLIDER_SETTINGS.speed);
+    };
+
+    const resetTimer = () => {
+        clearInterval(autoRotate);
+        runAutoPlay();
+    };
+
+    document.addEventListener('DOMContentLoaded', startSlider);
+})();
+//]]]]><![CDATA[>
+</script>]]></b:widget-setting>
+                </b:widget-settings>
+                <b:includable id='main'>
+                  <b:if cond='data:title != &quot;&quot;'>
+                    <h2 class='title'><data:title/></h2>
+                  </b:if>
+                  <div class='widget-content'>
+                    <data:content/>
+                  </div>
+                  <b:include name='quickedit'/>
+                </b:includable>
+              </b:widget>
+            </b:section>
+          </div>
+          <div class='col-lg-4'>
+            <div class='row g-3'>
+              <div class='col-12 col-md-6 col-lg-12'>
+                <b:section id='featured-small-1' name='Destaque Pequeno 1' showaddelement='yes'>[[FEATURED_POST_WIDGET]]</b:section>
+              </div>
+              <div class='col-12 col-md-6 col-lg-12'>
+                <!-- Achado 6: banner de cookies real, self-contained (style+html+script com aceite via localStorage), verbatim. -->
+                <b:section id='featured-small-2' name='Destaque Pequeno 2' showaddelement='yes'>
+                  <b:widget id='HTML3' locked='false' title='' type='HTML'>
+                    <b:widget-settings>
+                      <b:widget-setting name='content'><![CDATA[<div id="btq-cookie-barrier" style="display: none; opacity: 0;">
+  <div class="btq-cookie-box">
+    <div class="btq-cookie-text">
+      <span class="btq-cookie-icon">🍪</span>
+      <p>Este site utiliza cookies para garantir que você tenha a melhor experiência gourmet. <a href="/p/politica-de-privacidade.html" target="_blank">Saber mais</a></p>
+    </div>
+    <div class="btq-cookie-actions">
+      <button id="btq-cookie-accept" type="button">Aceitar e Continuar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+#btq-cookie-barrier {
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 20px !important;
+  right: 20px !important;
+  z-index: 9999999 !important;
+  display: none;
+}
+
+.btq-cookie-box {
+  background: #ffffff !important;
+  padding: 20px 30px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+  border-left: 6px solid #6f42c1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  max-width: 1000px !important;
+  margin: 0 auto !important;
+}
+
+.btq-cookie-text {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+}
+
+.btq-cookie-icon { font-size: 24px !important; }
+
+.btq-cookie-text p {
+  margin: 0 !important;
+  color: #333 !important;
+  font-family: 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.btq-cookie-text a {
+  color: #d63384 !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+
+#btq-cookie-accept {
+  background: linear-gradient(135deg, #6f42c1, #d63384) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 12px 25px !important;
+  border-radius: 50px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: transform 0.2s ease !important;
+}
+
+#btq-cookie-accept:hover {
+  transform: scale(1.05) !important;
+}
+
+@media (max-width: 768px) {
+  .btq-cookie-box { flex-direction: column !important; text-align: center !important; padding: 20px !important; }
+  #btq-cookie-accept { width: 100% !important; }
+}
+</style>
+
+<script>
+//<![CDATA[
+(function() {
+  const STORAGE_KEY = 'btq_gourmet_cookie_consent';
+  const banner = document.getElementById('btq-cookie-barrier');
+  const btn = document.getElementById('btq-cookie-accept');
+
+  const hasConsent = localStorage.getItem(STORAGE_KEY);
+
+  if (!hasConsent) {
+    setTimeout(() => {
+      banner.style.display = 'block';
+      banner.style.transition = 'opacity 0.6s ease';
+      setTimeout(() => banner.style.opacity = '1', 50);
+    }, 1000);
+  }
+
+  btn.addEventListener('click', function() {
+    localStorage.setItem(STORAGE_KEY, 'true');
+    banner.style.opacity = '0';
+    setTimeout(() => {
+      banner.remove();
+    }, 600);
+  });
+})();
+//]]]]><![CDATA[>
+</script>]]></b:widget-setting>
+                    </b:widget-settings>
+                    <b:includable id='main'>
+                      <b:if cond='data:title != &quot;&quot;'>
+                        <h2 class='title'><data:title/></h2>
+                      </b:if>
+                      <div class='widget-content'>
+                        <data:content/>
+                      </div>
+                      <b:include name='quickedit'/>
+                    </b:includable>
+                  </b:widget>
+                </b:section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </b:if>
+
+  <div class='container my-5'>
+    <div class='row g-4'>
+
+      <main class='col-lg-8'>
+
+        <div class='before-post-area mb-4'>
+          <b:section id='before-post-content' name='Antes do Post (Topo)' showaddelement='yes'>
+            <b:widget id='HTML2' locked='false' title='' type='HTML'>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2 class='title'><data:title/></h2>
+                </b:if>
+                <div class='widget-content'>
+                  <data:content/>
+                </div>
+                <b:include name='quickedit'/>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+
+        <!-- id LITERAL 'main' já é o real (marcador canônico do Design
+             Package, ver compilerWorker.js:injetarDesignPackage). -->
+        <b:section id='main' name='Postagens' showaddelement='yes'>
+          <b:widget id='HTML5' locked='false' title='' type='HTML'>
+            <b:includable id='main'>
+              <b:if cond='data:title != &quot;&quot;'>
+                <h2 class='title'><data:title/></h2>
+              </b:if>
+              <div class='widget-content'>
+                <data:content/>
+              </div>
+              <b:include name='quickedit'/>
+            </b:includable>
+          </b:widget>
+          <b:widget id='Blog1' locked='false' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+            <!-- Achado 7 — settings limitados à lista válida pro tipo Blog. -->
+            <b:widget-settings>
+              <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+              <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+              <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+              <b:widget-setting name='showAuthor'>false</b:widget-setting>
+              <b:widget-setting name='showLabels'>true</b:widget-setting>
+              <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+              <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+              <b:widget-setting name='showInlineAds'>true</b:widget-setting>
+              <b:widget-setting name='showReactions'>false</b:widget-setting>
+            </b:widget-settings>
+
+            <b:includable id='main' var='top'>
+              <b:if cond='data:view.isError'>
+                <div class='error-404-wrapper text-center animate-up'>
+                  <div class='error-icon mb-3'>
+                    <i class='bi bi-egg-fried' style='font-size: 4.5rem; opacity: 0.8;'/>
+                  </div>
+                  <h1 class='fw-black error-code'>404</h1>
+                  <h2 class='h4 fw-bold mb-3' style='color: var(--sd-secondary);'>Receita não encontrada!</h2>
+                  <p class='text-secondary mb-5 mx-auto fs-6' style='max-width: 450px;'>
+                    Ops! Parece que deixamos queimar o prato. A página que procuras não existe ou foi movida para outra cozinha.
+                  </p>
+                  <a class='btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm' href='/'>
+                    <i class='bi bi-house-heart me-2'/> Voltar ao Menu
+                  </a>
+                </div>
+              </b:if>
+
+              <b:if cond='data:view.isMultipleItems'>
+                <div class='row row-cols-1 row-cols-md-2 g-4'>
+                  <b:loop values='data:posts' var='post'>
+                    <div class='col'>
+                      <article class='card h-100 animate-up'>
+                        <b:if cond='data:post.featuredImage'>
+                          <div class='ratio ratio-16x9'>
+                            <a expr:href='data:post.url'>
+                              <img class='card-img-top object-fit-cover' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 600, &quot;16:9&quot;)' loading='lazy'/>
+                            </a>
+                          </div>
+                        <b:else/>
+                          <div class='ratio ratio-4x3' style='background-color: rgba(232, 62, 140, 0.05);'>
+                            <a class='d-flex align-items-center justify-content-center text-decoration-none' expr:href='data:post.url'>
+                              <i class='bi bi-egg-fried opacity-50' style='font-size: 4rem; color: var(--sd-secondary);'/>
+                            </a>
+                          </div>
+                        </b:if>
+
+                        <div class='card-body p-4 d-flex flex-column'>
+                          <b:if cond='data:post.labels'>
+                            <div class='mb-3'>
+                              <b:loop values='data:post.labels' var='label'>
+                                <a class='badge text-decoration-none me-1' expr:href='data:label.url' style='background-color: rgba(111, 66, 193, 0.1); color: var(--sd-primary); border-radius: 12px; padding: 6px 12px;'>
+                                  <i class='bi bi-bookmark-heart me-1'/> <data:label.name/>
+                                </a>
+                              </b:loop>
+                            </div>
+                          </b:if>
+
+                          <h2 class='h5 card-title fw-bold mb-3'>
+                            <a class='text-decoration-none' expr:href='data:post.url' style='color: inherit;'><data:post.title/></a>
+                          </h2>
+
+                          <div class='text-secondary small mb-3 d-flex align-items-center gap-3'>
+                            <span><i class='bi bi-clock text-secondary me-1'/> <data:post.date/></span>
+                          </div>
+
+                          <p class='card-text text-secondary small mb-4'><data:post.snippet/></p>
+
+                          <a class='btn btn-outline-primary mt-auto align-self-start stretched-link' expr:href='data:post.url'>
+                            Ver Receita <i class='bi bi-arrow-right-short fs-5 lh-1 align-middle'/>
+                          </a>
+                        </div>
+                      </article>
+                    </div>
+                  </b:loop>
+                </div>
+
+                <b:include name='nextprev'/>
+
+              <b:else/>
+
+                <b:loop values='data:posts' var='post'>
+                  <article class='card border-0 shadow-sm mb-4 animate-up'>
+                    <div class='card-body p-md-5 p-4'>
+                      <h1 class='post-title-single fw-bold mb-3'><data:post.title/></h1>
+
+                      <div class='d-flex flex-wrap align-items-center gap-3 text-secondary small border-bottom pb-3 mb-4'>
+                        <span><i class='bi bi-calendar-heart text-primary me-1'/> <data:post.date/></span>
+                        <span><i class='bi bi-person-hearts text-primary me-1'/> <data:post.author.name/></span>
+                      </div>
+
+                      <div class='post-body-content' style='font-size: 1.1rem; line-height: 1.8;'>
+                        <data:post.body/>
+                      </div>
+
+                      <!-- Achado 3: design "premium" das tags (ícone
+                           bookmark-heart, CSS já pronta) nunca ligado a
+                           HTML nenhum — ligado aqui, substitui a lista em
+                           texto simples que existia antes (sem duplicar). -->
+                      <b:if cond='data:post.labels'>
+                        <div class='post-bottom-tags mt-4 pt-3 border-top'>
+                          <span>Receita marcada com: </span>
+                          <b:loop values='data:post.labels' var='label'>
+                            <a expr:href='data:label.url'><data:label.name/></a>
+                          </b:loop>
+                        </div>
+                      </b:if>
+
+                      <div class='post-footer mt-5 pt-4 border-top d-flex justify-content-between align-items-center' style='border-top: 2px dashed rgba(232, 62, 140, 0.2) !important;'>
+                        <div>
+                          <strong style='color: var(--sd-secondary);'><i class='bi bi-share-fill me-2'/>Partilhar Delícia:</strong>
+                          <a class='btn btn-sm btn-outline-primary rounded-circle ms-2' expr:href='&quot;https://www.facebook.com/sharer.php?u=&quot; + data:post.url' target='_blank'><i class='bi bi-facebook'/></a>
+                          <a class='btn btn-sm btn-outline-primary rounded-circle ms-1' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:post.url + &quot;&amp;text=&quot; + data:post.title' target='_blank'><i class='bi bi-twitter-x'/></a>
+                          <a class='btn btn-sm btn-outline-primary rounded-circle ms-1' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:post.title + &quot; &quot; + data:post.url' target='_blank'><i class='bi bi-whatsapp'/></a>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  <div class='card border-0 shadow-sm p-4 mt-4 animate-up' style='animation-delay: 0.2s;'>
+                    <b:include cond='data:post.allowComments' data='post' name='threaded_comments'/>
+                  </div>
+                </b:loop>
+
+              </b:if>
+            </b:includable>
+            <b:includable id='post' var='post'><div/></b:includable>
+            <b:includable id='nextprev'>
+              <nav class='d-flex justify-content-between mt-4 gap-2'>
+                <b:if cond='data:newerPageUrl'>
+                  <a class='btn btn-outline-secondary btn-sm rounded-pill' expr:href='data:newerPageUrl'><i class='bi bi-chevron-left me-1'/>Recentes</a>
+                </b:if>
+                <b:if cond='data:olderPageUrl'>
+                  <a class='btn btn-outline-secondary btn-sm rounded-pill ms-auto' expr:href='data:olderPageUrl'>Antigas<i class='bi bi-chevron-right ms-1'/></a>
+                </b:if>
+              </nav>
+            </b:includable>
+
+            [[BLOGGER_INCLUDABLES_PADRAO]]
+
+          </b:widget>
+        </b:section>
+
+        <div class='after-post-area mt-5'>
+          <b:section id='after-post-content' name='Depois da Receita (Fundo)' showaddelement='yes'>
+            <b:widget id='HTML1' locked='false' title='' type='HTML'>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2 class='title'><data:title/></h2>
+                </b:if>
+                <div class='widget-content'>
+                  <data:content/>
+                </div>
+                <b:include name='quickedit'/>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+
+      </main>
+
+      <aside class='col-lg-4'>
+        <div class='sticky-top' style='top: 80px;'>
+          <b:section id='sidebar' name='Barra Lateral (Direita)' showaddelement='yes'>
+            <b:widget id='PopularPosts1' locked='false' title='Postagens mais visitadas' type='PopularPosts' version='1'>
+              <b:widget-settings>
+                <b:widget-setting name='numItemsToShow'>10</b:widget-setting>
+                <b:widget-setting name='showThumbnails'>true</b:widget-setting>
+                <b:widget-setting name='showSnippets'>true</b:widget-setting>
+                <b:widget-setting name='timeRange'>LAST_YEAR</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'><h2><data:title/></h2></b:if>
+                <div class='widget-content popular-posts'>
+                  <ul>
+                    <b:loop values='data:posts' var='post'>
+                    <li>
+                      <b:if cond='!data:showThumbnails'>
+                        <b:if cond='!data:showSnippets'>
+                          <a expr:href='data:post.href'><data:post.title/></a>
+                        <b:else/>
+                          <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+                          <div class='item-snippet'><data:post.snippet/></div>
+                        </b:if>
+                      <b:else/>
+                        <div expr:class='data:showSnippets ? &quot;item-content&quot; : &quot;item-thumbnail-only&quot;'>
+                          <b:if cond='data:post.featuredImage.isResizable or data:post.thumbnail'>
+                            <div class='item-thumbnail'>
+                              <a expr:href='data:post.href' target='_blank'>
+                                <b:with value='data:post.featuredImage.isResizable ? resizeImage(data:post.featuredImage, 220, &quot;1:1&quot;) : data:post.thumbnail' var='image'>
+                                  <img alt='' border='0' expr:src='data:image'/>
+                                </b:with>
+                              </a>
+                            </div>
+                          </b:if>
+                          <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+                          <b:if cond='data:showSnippets'>
+                            <div class='item-snippet'><data:post.snippet/></div>
+                          </b:if>
+                        </div>
+                        <div style='clear: both;'/>
+                      </b:if>
+                    </li>
+                    </b:loop>
+                  </ul>
+                  <b:include name='quickedit'/>
+                </div>
+              </b:includable>
+            </b:widget>
+            <b:widget id='HTML98' locked='false' title='A Chef' type='HTML' version='2' visible='true'>
+              <b:widget-settings>
+                <b:widget-setting name='content'/>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <div class='widget HTML text-center'>
+                  <h2 class='title'><data:title/></h2>
+                  <img alt='Autora' class='rounded-circle mb-3 border border-3' src='https://images.unsplash.com/photo-1556910103-1c02745aae4d?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=200&amp;q=80' style='width: 120px; height: 120px; object-fit: cover; border-color: var(--sd-secondary) !important;'/>
+                  <p class='text-secondary small'>Bem-vinda ao meu cantinho! Aqui partilho as melhores receitas de família e dicas práticas para o dia a dia na cozinha.</p>
+                  <div class='d-flex justify-content-center gap-2 mt-3'>
+                    <a class='btn btn-sm btn-outline-primary rounded-circle' href='#'><i class='bi bi-instagram'/></a>
+                    <a class='btn btn-sm btn-outline-primary rounded-circle' href='#'><i class='bi bi-pinterest'/></a>
+                    <a class='btn btn-sm btn-outline-primary rounded-circle' href='#'><i class='bi bi-youtube'/></a>
+                  </div>
+                </div>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <footer class='bg-dark text-white pt-5 pb-3 mt-auto'>
+    <div class='container'>
+
+      <div class='row g-4'>
+        <div class='col-md-4'>
+          <b:section id='footer-1' name='Footer Esquerda' showaddelement='yes'>
+            <b:widget id='Translate1' locked='false' title='Translate' type='Translate'>
+              <b:widget-settings>
+                <b:widget-setting name='displayMode'>VERTICAL</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2 class='title'><data:title/></h2>
+                </b:if>
+                <div id='google_translate_element'/>
+                <script>
+                  function googleTranslateElementInit() {
+                    new google.translate.TranslateElement({
+                      pageLanguage: &#39;<data:pageLanguage/>&#39;,
+                      autoDisplay: &#39;true&#39;,
+                      layout: google.translate.TranslateElement.InlineLayout.<data:layout/>
+                    }, &#39;google_translate_element&#39;);
+                  }
+                </script>
+                <script src='//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'/>
+                <b:include name='quickedit'/>
+              </b:includable>
+            </b:widget>
+            <b:widget id='Stats1' locked='false' title='Total de visualizações de página' type='Stats'>
+              <b:widget-settings>
+                <b:widget-setting name='showGraphicalCounter'>true</b:widget-setting>
+                <b:widget-setting name='showAnimatedCounter'>true</b:widget-setting>
+                <b:widget-setting name='showSparkline'>true</b:widget-setting>
+                <b:widget-setting name='sparklineStyle'>BLACK_TRANSPARENT</b:widget-setting>
+                <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'><h2><data:title/></h2></b:if>
+                <div class='widget-content'>
+                  <div expr:id='data:widget.instanceId + &quot;_content&quot;' style='display: none;'>
+                    <b:if cond='data:showSparkline'>
+                      <script src='https://www.gstatic.com/charts/loader.js' type='text/javascript'/>
+                      <span expr:id='data:widget.instanceId + &quot;_sparklinespan&quot;' style='display:inline-block; width:75px; height:30px'/>
+                    </b:if>
+                    <span expr:class='&quot;counter-wrapper &quot; + (data:showGraphicalCounter ? &quot;graph-counter-wrapper&quot; : &quot;text-counter-wrapper&quot;)' expr:id='data:widget.instanceId + &quot;_totalCount&quot;'/>
+                    <b:include name='quickedit'/>
+                  </div>
+                </div>
+              </b:includable>
+            </b:widget>
+          </b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-2' name='Footer Centro' showaddelement='yes'>
+            <!-- Label1 real, sem selectedLabelsList hardcoded (achado 10). -->
+            <b:widget id='Label1' locked='false' title='Marcadores' type='Label'>
+              <b:widget-settings>
+                <b:widget-setting name='sorting'>ALPHA</b:widget-setting>
+                <b:widget-setting name='display'>CLOUD</b:widget-setting>
+                <b:widget-setting name='showFreqNumbers'>true</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2><data:title/></h2>
+                </b:if>
+                <div expr:class='&quot;widget-content &quot; + data:display + &quot;-label-widget-content&quot;'>
+                  <b:if cond='data:display == &quot;list&quot;'>
+                    <ul>
+                      <b:loop values='data:labels' var='label'>
+                        <li>
+                          <b:if cond='data:blog.url == data:label.url'>
+                            <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+                          <b:else/>
+                            <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+                          </b:if>
+                          <b:if cond='data:showFreqNumbers'>
+                            <span class='label-count' dir='ltr'>(<data:label.count/>)</span>
+                          </b:if>
+                        </li>
+                      </b:loop>
+                    </ul>
+                  <b:else/>
+                    <span>
+                      <b:loop values='data:labels' var='label'>
+                        <b:if cond='data:blog.url == data:label.url'>
+                          <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+                        <b:else/>
+                          <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+                        </b:if>
+                        <b:if cond='data:showFreqNumbers'>
+                          <span class='label-count' dir='ltr'>(<data:label.count/>)</span>
+                        </b:if>
+                      </b:loop>
+                    </span>
+                  </b:if>
+                  <b:include name='quickedit'/>
+                </div>
+              </b:includable>
+            </b:widget>
+            [[BLOG_ARCHIVE_WIDGET]]
+          </b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-3' name='Footer Direita' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+        </div>
+      </div>
+
+      <hr class='my-5 border-secondary'/>
+
+      <div class='row justify-content-center py-4'>
+        <div class='col-lg-6 col-md-8'>
+          <b:section id='footer-contact' name='Área de Contato' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+
+      <div class='border-top border-secondary mt-5 pt-4'>
+        <div class='row align-items-center'>
+          <div class='col-md-6 text-center text-md-start mb-3 mb-md-0'>
+            <b:section id='footer-branding' maxwidgets='1' name='Footer Branding (Logo Menor)' showaddelement='yes'/>
+          </div>
+          <div class='col-md-6 text-center text-md-end text-secondary small'>
+            <b:section id='copyright-area' maxwidgets='1' name='Créditos / Copyright' showaddelement='yes'/>
+            &#169; <script>document.write(new Date().getFullYear())</script> <data:blog.title/>. Feito com muito amor.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  [[ERROR_404_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'/>
+
+  <script>
+  //<![CDATA[
+  document.addEventListener('DOMContentLoaded', () => {
+    'use strict';
+
+    /* --- DARK MODE --- */
+    const getStoredTheme = () => localStorage.getItem('theme');
+    const setStoredTheme = theme => localStorage.setItem('theme', theme);
+    const getPreferredTheme = () => {
+      const storedTheme = getStoredTheme();
+      if (storedTheme) return storedTheme;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    const setTheme = theme => {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      atualizarIcone(theme);
+    };
+
+    const atualizarIcone = (theme) => {
+      const btnIcone = document.querySelector('.btn-dark-mode i');
+      if (btnIcone) {
+        btnIcone.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-dark';
+      }
+    };
+
+    setTheme(getPreferredTheme());
+
+    window.alternarTema = () => {
+      const temaAtual = document.documentElement.getAttribute('data-bs-theme');
+      const novoTema = temaAtual === 'dark' ? 'light' : 'dark';
+      setStoredTheme(novoTema);
+      setTheme(novoTema);
+    };
+
+    const toggleBtns = document.querySelectorAll('.btn-dark-mode');
+    toggleBtns.forEach(btn => {
+      btn.addEventListener('click', window.alternarTema);
+    });
+
+    /* --- ANIMAÇÕES DE SCROLL --- */
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0 };
+    const scrollObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    const elementosAnimaveis = document.querySelectorAll('.card, aside .widget, .animate-up');
+    elementosAnimaveis.forEach((el, index) => {
+      el.classList.add('animate-up');
+      el.style.transitionDelay = `${(index % 3) * 0.1}s`;
+      scrollObserver.observe(el);
+    });
+
+  });
+  //]]>
+  </script>
+
+  <script>
+  //<![CDATA[
+  /* BOUTIQUE GOURMET - RESIZE 16:9 ENGINE (Vanilla JS) */
+  (function() {
+    const CONFIG = {
+      width: 800,
+      height: 450,
+      selectors: '.post-thumb img, .popular-posts img, .card-img-top'
+    };
+
+    const processImages16by9 = () => {
+      const images = document.querySelectorAll(CONFIG.selectors);
+
+      images.forEach(img => {
+        let src = img.getAttribute('src');
+        if (!src) return;
+
+        if (src.includes('bp.blogspot.com') || src.includes('googleusercontent.com')) {
+          let hdUrl = src.replace(/\/(s|w|h)\d+(-[a-z]+)?\//g, `/w${CONFIG.width}-h${CONFIG.height}-p-k-no-nu/`)
+                         .replace(/=(s|w|h)\d+(-[a-z]+)?/g, `=w${CONFIG.width}-h${CONFIG.height}-p-k-no-nu`);
+
+          if (img.src !== hdUrl) {
+            img.src = hdUrl;
+          }
+        }
+      });
+    };
+
+    window.addEventListener('DOMContentLoaded', processImages16by9);
+  })();
+
+  /* Ripple Effect */
+  document.querySelectorAll('.btn, .nav-link').forEach(button => {
+    button.addEventListener('click', function(e) {
+      let x = e.clientX - e.target.getBoundingClientRect().left;
+      let y = e.clientY - e.target.getBoundingClientRect().top;
+
+      let ripple = document.createElement('span');
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.classList.add('ripple-effect');
+
+      this.appendChild(ripple);
+
+      setTimeout(() => { ripple.remove(); }, 600);
+    });
+  });
+  //]]>
+  </script>
+
+  <!-- JS do nicho (dossiê — hoje sem peças 'modulo'/'hero' com js
+       próprio, token mantido por consistência com os demais esqueletos). -->
+  [[NICHO_JS]]
+
+</body>
+</html>

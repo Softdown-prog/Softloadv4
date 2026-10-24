@@ -1,0 +1,48 @@
+{
+  "contract": "CH_2D_SHAPE_RECIPE_V1",
+  "id": "park_clock_tower_sign_01",
+  "canvas": [64, 80],
+  "anchor": [32, 77],
+  "layers": [
+    {
+      "name": "post",
+      "fill": {"top": "#8B6840", "bottom": "#4A3018"},
+      "shapes": [{"type": "polygon", "points": [[29, 36], [35, 36], [35, 76], [29, 76]]}],
+      "shadow": {"offset": [1, 2], "blur": 1, "opacity": 0.4}
+    },
+    {
+      "name": "clock_body",
+      "fill": {"top": "#2C4A68", "bottom": "#162A40"},
+      "shapes": [{"type": "ellipse", "box": [12, 4, 52, 44]}],
+      "shadow": {"offset": [2, 3], "blur": 2, "opacity": 0.5}
+    },
+    {
+      "name": "clock_face",
+      "fill": {"top": "#F0E8D0", "bottom": "#C8BC98"},
+      "shapes": [{"type": "ellipse", "box": [16, 8, 48, 40]}]
+    },
+    {
+      "name": "hour_wedge",
+      "fill": {"top": "#1A1A28", "bottom": "#0E0E1A"},
+      "shapes": [{"type": "pieslice", "box": [16, 8, 48, 40], "start": 270, "end": 360}]
+    },
+    {
+      "name": "minute_wedge",
+      "fill": {"top": "#2A2A3A", "bottom": "#1A1A2A"},
+      "shapes": [{"type": "pieslice", "box": [16, 8, 48, 40], "start": 270, "end": 330}]
+    },
+    {
+      "name": "centre_pin",
+      "fill": {"top": "#C8A050", "bottom": "#906830"},
+      "shapes": [{"type": "ellipse", "box": [30, 22, 34, 26]}]
+    },
+    {
+      "name": "rim",
+      "fill": {"top": "#C8A050", "bottom": "#906830", "opacity": 0.7},
+      "shapes": [
+        {"type": "ellipse", "box": [13, 5, 51, 43]},
+        {"type": "ellipse", "box": [16, 8, 48, 40], "operation": "erase"}
+      ]
+    }
+  ]
+}

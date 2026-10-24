@@ -1,0 +1,110 @@
+{
+  "id": "tema-noticias-mag-news",
+  "titulo": "Tema Noticias / Magazine — MAG News Editorial Premium",
+  "categoria": "tema-nicho",
+  "nicho": "noticias",
+  "versao_fonte": "MAG News V6 Editorial",
+  "descricao": "Design tokens, sistema de cores dual (light/dark), Hero Mosaico CSS Grid, componentes CSS e estruturas HTML extraidos de template real de noticias. Paleta Azul Eletrico + Preto Nanquim + Branco Papel. Bootstrap 5 + Playfair Display + Inter.",
+  "atributos_html_raiz": {
+    "b_css": "false",
+    "b_defaultmessages": "true",
+    "b_layoutsVersion": "3",
+    "b_responsive": "true",
+    "nota": "b:defaultmessages=true (diferente do Bulma Vegan que usa b:defaultmarkups=true). Habilita mensagens nativas do Blogger."
+  },
+  "blogger_theme_designer": {
+    "descricao": "Variaveis declaradas no bloco Group/Variable dentro do b:skin — aparecem no painel Blogger Theme Designer",
+    "grupos": {
+      "cores_principais": {
+        "mag.primary": "Cor Principal (Destaque) — default #0d6efd",
+        "mag.secondary": "Cor Secundaria — default #6c757d",
+        "mag.body.bg": "Fundo do Site — default #ffffff",
+        "mag.card.bg": "Fundo dos Cards/Widgets — default #f8f9fa"
+      },
+      "textos_fontes": {
+        "mag.text.color": "Cor do Texto — default #212529",
+        "mag.title.color": "Cor dos Titulos — default #1a1a1a",
+        "mag.link.color": "Cor dos Links — default #0d6efd",
+        "mag.font.body": "Fonte do Texto — tipo font, valor completo CSS",
+        "mag.font.title": "Fonte dos Titulos — tipo font, valor completo CSS"
+      },
+      "layout_design": {
+        "mag.border.radius": "Arredondamento (px) — tipo string, default 8px",
+        "mag.border.color": "Cor das Bordas — default #dee2e6"
+      }
+    },
+    "mapeamento_css_vars": {
+      "--mag-primary": "$(mag.primary)",
+      "--mag-secondary": "$(mag.secondary)",
+      "--mag-bg": "$(mag.body.bg)",
+      "--mag-card-bg": "$(mag.card.bg)",
+      "--mag-text": "$(mag.text.color)",
+      "--mag-title": "$(mag.title.color)",
+      "--mag-link": "$(mag.link.color)",
+      "--font-body": "$(mag.font.body.family)",
+      "--font-title": "$(mag.font.title.family)",
+      "--radius": "$(mag.border.radius)",
+      "--border-color": "$(mag.border.color)",
+      "nota": "$(var.name.family) extrai apenas a familia da fonte do valor completo da font variable"
+    }
+  },
+  "tokens_css": {
+    "prefixo": "--mag-",
+    "light_mode": {
+      "--mag-primary": "#2563eb",
+      "--mag-dark": "#111827",
+      "--mag-bg": "#f9fafb",
+      "--mag-surface": "#ffffff",
+      "--mag-text": "#374151",
+      "--mag-title": "#030712",
+      "--mag-border": "#e5e7eb",
+      "--font-title": "Playfair Display, serif",
+      "--font-text": "Inter, sans-serif",
+      "--radius": "12px"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--mag-bg": "#0f172a",
+      "--mag-surface": "#1e293b",
+      "--mag-text": "#cbd5e1",
+      "--mag-title": "#f8fafc",
+      "--mag-border": "#334155",
+      "--mag-dark": "#0f172a"
+    },
+    "fontes": {
+      "corpo": "Inter, sans-serif",
+      "titulos_serif": "Playfair Display, serif",
+      "google_fonts_query": "Inter:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400"
+    }
+  },
+  "layout": {
+    "estrutura": "container > row g-5: col-lg-8 (main) + col-lg-4 (aside sidebar)",
+    "top_bar": "background #111827, py-2, d-none d-md-block — data + redes sociais",
+    "header": "background var(--mag-surface), padding-top 2rem — logo centralizada",
+    "navbar": "sticky-top, border-top 1px + border-bottom 4px solid var(--mag-dark), font-text uppercase letter-spacing 1px",
+    "sidebar": "sticky-top com top: 100px (fica abaixo do navbar)"
+  },
+  "js_leitura_no_post": {
+    "descricao": "Calcula tempo de leitura e injeta no header do post (225 wpm, seletor #read-time-calc)",
+    "velocidade_wpm": 225,
+    "seletor_texto": "#post-body-content",
+    "seletor_badge": "#read-time-calc",
+    "codigo": "const textBlock = document.getElementById('post-body-content').innerText;\nconst words = textBlock.trim().split(/\\s+/).length;\nconst time = Math.ceil(words / 225);\ndocument.getElementById('read-time-calc').innerHTML = `<i class='bi bi-book me-1'></i> ${time} min de leitura`;"
+  },
+  "regras_nicho": [
+    "Paleta Azul Eletrico (#2563eb) sobre Preto Nanquim (#111827) — autoridade e seriedade editorial",
+    "Fonte Playfair Display serif para titulos confere gravidade jornalistica",
+    "Inter sans-serif para corpo de texto — alta legibilidade em artigos longos",
+    "Hero Mosaico CSS Grid: post principal ocupa o dobro do espaco visual dos secundarios",
+    "Dark mode nativo via data-bs-theme — leitores noturnos sao criticos em portais de noticias",
+    "Dropcap na primeira letra do corpo — marca estilo editorial premium",
+    "Blockquote com icone Bootstrap Icons (\\f6b0) em vez de aspas decorativas — visual moderno",
+    "Labels como pills uppercase com hover elevado e sombra azul — taxonomia visivel"
+  ],
+  "widgets_complementares": [
+    "widget-slider-editorial",
+    "widget-cookie-popup",
+    "widget-newsletter-formspree",
+    "widget-dark-mode"
+  ]
+}

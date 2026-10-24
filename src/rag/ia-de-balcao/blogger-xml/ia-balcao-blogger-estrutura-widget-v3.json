@@ -1,0 +1,86 @@
+{
+  "id": "ia-balcao-blogger-estrutura-widget-v3",
+  "categoria": "blogger-xml-syntax",
+  "titulo": "Blogger V3: Estrutura Obrigatória de b:widget — Conteúdo Sempre em b:includable id='main'",
+
+  "regra_central": "Em Blogger layoutsVersion='3', todo conteúdo real (HTML, b:loop, b:if, b:include) deve estar dentro de <b:includable id='main'>. Conteúdo colocado diretamente dentro de <b:widget> sem este envelope é silenciosamente ignorado pelo engine de layout moderno.",
+
+  "estrutura_correta": {
+    "padrao": "<b:section id='sidebar' showaddelement='yes'>\n  <b:widget id='HTML1' locked='false' title='Meu Bloco' type='HTML'>\n    <b:includable id='main'>\n      <!-- Todo o código HTML e b:loop deve morar aqui dentro -->\n    </b:includable>\n  </b:widget>\n</b:section>",
+    "hierarquia": [
+      "b:section — container de layout (define uma região da página)",
+      "  b:widget — gadget individual (type='HTML', 'Blog', 'PageList', etc.)",
+      "    b:includable id='main' — ponto de entrada obrigatório para renderização",
+      "      [conteúdo HTML + b:loop + b:if + b:include aqui]"
+    ]
+  },
+
+  "erros_comuns": [
+    {
+      "problema": "HTML diretamente dentro de b:widget (fora de b:includable)",
+      "errado": "<b:widget id='HTML1' type='HTML'>\n  <ul>\n    <b:loop var='p' values='data:pages'>\n      <li><a expr:href='data:p.href'><data:p.title/></a></li>\n    </b:loop>\n  </ul>\n</b:widget>",
+      "correto": "<b:widget id='HTML1' type='HTML'>\n  <b:includable id='main'>\n    <ul>\n      <b:loop var='p' values='data:pages'>\n        <li><a expr:href='data:p.href'><data:p.title/></a></li>\n      </b:loop>\n    </ul>\n  </b:includable>\n</b:widget>",
+      "consequencia": "O Blogger V3 ignora o conteúdo silenciosamente — o widget aparece em branco no painel Layout e não renderiza nada na página."
+    },
+    {
+      "problema": "b:loop fora de b:includable",
+      "errado": "<b:widget id='HTML1' type='HTML'>\n  <b:loop var='post' values='data:posts'>\n    <div><data:post.title/></div>\n  </b:loop>\n</b:widget>",
+      "correto": "<b:widget id='HTML1' type='HTML'>\n  <b:includable id='main'>\n    <b:loop var='post' values='data:posts'>\n      <div><data:post.title/></div>\n    </b:loop>\n  </b:includable>\n</b:widget>",
+      "consequencia": "SAXParseException ou renderização em branco dependendo da versão do parser Blogger."
+    }
+  ],
+
+  "excecoes_validas": {
+    "b:widget-setting": {
+      "descricao": "b:widget-setting é filho direto legítimo de b:widget — define valores padrão de configuração do gadget, não renderização.",
+      "exemplo": "<b:widget id='HTML1' type='HTML'>\n  <b:widget-setting name='title'>Meu Widget</b:widget-setting>\n  <b:includable id='main'>\n    <div>conteúdo aqui</div>\n  </b:includable>\n</b:widget>"
+    },
+    "multiplos_includables": {
+      "descricao": "Um widget pode ter múltiplos b:includable além do 'main' — para sub-templates chamados via b:include.",
+      "exemplo": "<b:widget id='Blog1' type='Blog'>\n  <b:includable id='main'>\n    <b:loop var='post' values='data:posts'>\n      <b:include name='postBody' data='post'/>\n    </b:loop>\n  </b:includable>\n  <b:includable id='postBody' var='post'>\n    <article><data:post.title/></article>\n  </b:includable>\n</b:widget>"
+    },
+    "outros_tipos_widget": {
+      "descricao": "Widgets de tipos nativos (PageList, Profile, Label, PopularPosts) têm seu próprio mapeamento de includables gerenciado pelo Blogger. O id='main' pode não ser o ponto de entrada nesses casos.",
+      "tipos_gerenciados_pelo_blogger": ["Blog", "PageList", "Profile", "Label", "PopularPosts", "Header", "LinkList"]
+    }
+  },
+
+  "atributos_obrigatorios_b_widget": {
+    "descricao": "Todo b:widget em V3 deve ter estes atributos declarados",
+    "atributos": [
+      { "nome": "id", "formato": "TIPO + número sequencial", "exemplo": "id='HTML1'", "nota": "Único no template inteiro" },
+      { "nome": "locked", "valores": ["'true'", "'false'"], "exemplo": "locked='false'", "nota": "Boolean XML — deve ter valor explícito" },
+      { "nome": "title", "exemplo": "title='Meu Bloco'", "nota": "Nome exibido no painel Layout" },
+      { "nome": "type", "exemplo": "type='HTML'", "nota": "Tipo do gadget — determina comportamento do Blogger" }
+    ],
+    "atributos_opcionais": [
+      { "nome": "version", "exemplo": "version='2'", "nota": "Omitir deixa o Blogger usar o default do layoutsVersion" }
+    ]
+  },
+
+  "atributos_b_section": {
+    "showaddelement": {
+      "descricao": "Controla se o botão 'Adicionar Gadget' aparece no painel Layout para esta section.",
+      "valores_validos": ["'yes'", "'no'", "'true'", "'false'"],
+      "recomendacao": "Use 'yes' para sections editáveis pelo usuário, 'no' para sections estruturais do tema."
+    },
+    "maxwidgets": {
+      "descricao": "Número máximo de widgets permitidos nesta section.",
+      "exemplo": "maxwidgets='1'",
+      "nota": "Omitir permite quantidade ilimitada."
+    }
+  },
+
+  "palavras_chave": [
+    "b:includable id main",
+    "estrutura widget blogger v3",
+    "conteúdo fora de includable",
+    "b:widget type HTML",
+    "b:section showaddelement",
+    "widget em branco blogger",
+    "layout v3 blogger",
+    "b:widget-setting",
+    "gadget blogger estrutura",
+    "b:loop dentro de widget"
+  ]
+}

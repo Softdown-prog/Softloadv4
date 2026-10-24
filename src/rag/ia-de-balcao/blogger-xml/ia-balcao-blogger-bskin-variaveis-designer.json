@@ -1,0 +1,63 @@
+{
+  "id": "ia-balcao-blogger-bskin-variaveis-designer",
+  "categoria": "blogger-xml-css",
+  "titulo": "Blogger XML: b:skin, Variáveis CSS e Painel Designer — Personalização sem Código",
+  "fonte": "Guia de Treinamento LLM para Blogger XML (documento interno Softload)",
+
+  "b_skin": {
+    "descricao": "No Blogger, todo CSS editável pelo painel deve ficar dentro de <b:skin>. Usar <style> convencional desabilita a caixa 'Adicionar CSS' no Designer de Tema.",
+    "estrutura_correta": "<b:skin><![CDATA[\n  /* CSS completo aqui */\n  body { background-color: $(cor.fundo); }\n]]></b:skin>",
+    "cdata_obrigatorio": "O <![CDATA[ ... ]]> é proteção técnica: diz ao parser XML que o conteúdo não é HTML. Sem ele, caracteres como < e > no CSS/JS causam erros fatais.",
+    "injecao_pelo_blogger": "Quando o usuário digita na caixa 'Adicionar CSS', o Blogger injeta <style id='page-skin-1'> logo após a tag <b:skin>. Por isso, a <b:skin> deve estar sem erros de sintaxe."
+  },
+
+  "variaveis_css": {
+    "conceito": "Botões giratórios no painel de controle — o usuário muda a cor pela UI do Blogger sem ver uma linha de código.",
+    "declaracao": "<Variable name='cor.principal' description='Cor Principal do Site' type='color' default='#F59E0B' value='#F59E0B'/>",
+    "atributos": {
+      "name":        "Identificador interno — sem espaços. Use dot.notation ou camelCase. Espaços quebram o painel.",
+      "description": "Texto que o usuário vê no painel Designer",
+      "type":        "'color' → abre paleta de cores | 'font' → abre lista de fontes",
+      "default":     "Valor padrão ao instalar o template",
+      "value":       "Valor atual (geralmente igual ao default)"
+    },
+    "uso_no_css": "Substituir código hex direto pela variável usando $(nome.da.variavel): body { background-color: $(cor.fundo); }",
+    "nomenclatura_correta": [
+      "name='cor.fundo' ✓",
+      "name='corFundo' ✓",
+      "name='body.background.color' ✓",
+      "name='cor do fundo' ✗ (espaços quebram o painel)"
+    ]
+  },
+
+  "groups": {
+    "conceito": "Agrupa variáveis em abas temáticas no painel Designer. Sem Groups, 50 variáveis viram bagunça.",
+    "estrutura": "<Group description='Cores da Marca' selector='body'>\n  <Variable name='cor.fundo' description='Fundo do Site' type='color' default='#1E293B' value='#1E293B'/>\n  <Variable name='cor.texto' description='Cor do Texto' type='color' default='#FFFFFF' value='#FFFFFF'/>\n</Group>",
+    "resultado": "Cria aba 'Cores da Marca' no Designer do Blogger"
+  },
+
+  "exemplo_completo_bskin": {
+    "estrutura_com_variaveis": "<b:skin><![CDATA[\n  /* 1. VARIÁVEIS (aparecem no painel) */\n  <Group description='Cores do Tema' selector='body'>\n    <Variable name='cor.fundo' description='Cor de Fundo' type='color' default='#1E293B' value='#1E293B'/>\n    <Variable name='cor.destaque' description='Cor dos Botões' type='color' default='#F59E0B' value='#F59E0B'/>\n  </Group>\n\n  /* 2. CSS REAL */\n  body {\n    background-color: $(cor.fundo);\n    margin: 0; padding: 0;\n  }\n  .btn-cta {\n    background-color: $(cor.destaque);\n    color: white;\n  }\n]]></b:skin>",
+    "nota": "As variáveis ficam DENTRO do CDATA mas antes do CSS real. O Blogger processa <Group>/<Variable> mesmo dentro de CDATA."
+  },
+
+  "designer_de_tema": {
+    "ativacao": "Para que o painel Designer abra e funcione, o template DEVE ter:",
+    "requisitos": [
+      "b:layoutsVersion='3' na tag <html> — ativa interface moderna",
+      "<b:skin> presente e sem erros de sintaxe",
+      "<b:template-skin> (opcional no V3, mas recomendado para variáveis de largura de layout)"
+    ],
+    "sem_bskin": "Sem <b:skin>, o Blogger desabilita completamente a caixa 'Adicionar CSS' no painel — o usuário não consegue personalizar nada sem editar o código diretamente.",
+    "tecnica_alternativa_playerone": "Templates gamer/avançados usam Group/Variable dentro de comentário CSS: /* <Group>...</Group> */. O Blogger processa mesmo dentro de comentários no CDATA do b:skin. Técnica válida para templates que usam CSS custom properties (--vars) em vez de $(vars) do Blogger."
+  },
+
+  "esqueleto_v3_obrigatorio": {
+    "descricao": "Estrutura mínima que todo template Blogger V3 deve ter",
+    "xml": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE html>\n<html b:css='false' b:defaultmessages='true' b:layoutsVersion='3'\n  xmlns='http://www.w3.org/1999/xhtml'\n  xmlns:b='http://www.google.com/namespaces/b/1.0'\n  xmlns:data='http://www.google.com/namespaces/d/1.0'\n  xmlns:expr='http://www.google.com/namespaces/expr/1.0'>\n<head>\n  <b:skin><![CDATA[\n    /* CSS aqui */\n  ]]></b:skin>\n</head>\n<body>\n</body>\n</html>",
+    "b_css_false": "b:css='false' desativa o bundle CSS legado do Blogger — obrigatório para templates modernos com Bootstrap ou Tailwind",
+    "b_defaultmessages_true": "Ativa strings de mensagem internacionalizadas do Blogger"
+  },
+
+  "palavras_chave": ["b:skin", "CDATA", "Variable", "Group", "designer de tema", "personalizar", "$(variavel)", "cor do botão", "cor de fundo", "painel blogger", "adicionar css", "b:layoutsVersion", "tema", "template skin", "variável css blogger"]
+}

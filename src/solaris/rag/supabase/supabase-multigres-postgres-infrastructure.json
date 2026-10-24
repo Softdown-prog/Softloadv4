@@ -1,0 +1,79 @@
+{
+  "id": "supabase-multigres-postgres-infrastructure",
+  "slug": "supabase-multigres-postgres-infrastructure",
+  "categoria": "database-infrastructure",
+  "pasta": "supabase",
+  "titulo": "Multigres: Infraestrutura Avançada para PostgreSQL",
+  "descricao": "O Multigres foi apresentado como uma camada open-source para gerenciamento avançado de ambientes PostgreSQL. A proposta é simplificar operações complexas de banco de dados em escala, incluindo distribuição de dados, gerenciamento de conexões, backup e mecanismos de alta disponibilidade.",
+  "componentes": [
+    {
+      "nome": "technology",
+      "conteudo": "supabase"
+    },
+    {
+      "nome": "feature-type",
+      "conteudo": "postgres-scaling"
+    },
+    {
+      "nome": "year",
+      "conteudo": 2026
+    },
+    {
+      "nome": "release-status",
+      "conteudo": "alpha"
+    },
+    {
+      "nome": "confidence-score",
+      "conteudo": 0.9
+    },
+    {
+      "nome": "related-concepts",
+      "conteudo": [
+        "distributed-database",
+        "database-operations",
+        "cloud-native"
+      ]
+    },
+    {
+      "nome": "sources",
+      "conteudo": [
+        {
+          "type": "official",
+          "provider": "Supabase",
+          "reference": "Developer Update June 2026"
+        }
+      ]
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "supabase-multigres-postgres-infrastructure",
+    "supabase",
+    "multigres",
+    "postgres",
+    "infrastructure",
+    "Multigres: Infraestrutura Avançada para PostgreSQL",
+    "multigres:",
+    "infraestrutura",
+    "avançada",
+    "para",
+    "postgresql",
+    "database-infrastructure",
+    "database",
+    "postgres-scaling",
+    "scaling",
+    "sharding",
+    "connection-pooling",
+    "connection",
+    "pooling",
+    "high-availability",
+    "high",
+    "availability",
+    "distributed-database",
+    "distributed",
+    "database-operations",
+    "operations",
+    "cloud-native",
+    "native"
+  ]
+}

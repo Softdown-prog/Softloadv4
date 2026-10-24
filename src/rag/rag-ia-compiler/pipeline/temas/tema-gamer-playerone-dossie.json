@@ -1,0 +1,161 @@
+{
+  "nicho": "gamer-playerone",
+  "versaoDossie": 1,
+  "chassis": "blog",
+  "pageType": "blogger-conteudo",
+  "tokensCss": {
+    "light_mode": {
+      "--gamer-primary": "#8b5cf6",
+      "--gamer-secondary": "#06b6d4",
+      "--gamer-bg-dark": "#0f172a",
+      "--font-main": "'Inter', sans-serif",
+      "--font-display": "'Oswald', sans-serif"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--gamer-bg": "#0f172a",
+      "--gamer-surface": "#1e293b",
+      "--gamer-text": "#e2e8f0",
+      "--gamer-border": "#334155"
+    }
+  },
+  "pecas": [
+    {
+      "id": "modulo-motor-playerone-v2-1-cyberpunk-edition",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body { background-color: var(--gamer-bg); color: var(--gamer-text); font-family: var(--font-main); -webkit-font-smoothing: antialiased; transition: background-color 0.3s ease, color 0.3s ease; }\n\nh1, h2, h3, h4, h5, h6, .oswald-font { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px; }\n\na { color: var(--gamer-primary); text-decoration: none; transition: all 0.3s ease; }\n\na:hover { color: var(--gamer-secondary); }\n\n/* Ripple Effect (achado de qualidade: o JS real já criava .ripple-effect\n   via createElement, mas nunca existia regra CSS pra ele no arquivo\n   original — efeito ficava invisível; adicionado aqui). */\n.btn, .nav-link, .dropdown-item { position: relative !important; overflow: hidden !important; }\n.ripple-effect {\n  position: absolute;\n  background: rgba(255, 255, 255, 0.4);\n  transform: translate(-50%, -50%);\n  pointer-events: none;\n  border-radius: 50%;\n  animation: ripple-animation 0.6s linear;\n}\n@keyframes ripple-animation {\n  from { width: 0px; height: 0px; opacity: 0.5; }\n  to { width: 500px; height: 500px; opacity: 0; }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: MOTOR PLAYERONE V2.1 - CYBERPUNK EDITION (mapeamento de cor $(gamer.*) e bloco [data-bs-theme=\"dark\"] removidos — redundantes com tokensCss do dossiê, que já declara as mesmas variáveis globalmente; --font-title/--font-text renomeadas pra --font-display/--font-main, os nomes reais já usados no tokensCss deste dossiê) Ripple effect CSS adicionado (achado de qualidade: JS real criava .ripple-effect mas nunca existia CSS pra ele)."
+    },
+    {
+      "id": "modulo-topo-e-cabecalho",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "header .navbar { background-color: var(--gamer-surface); border-bottom: 2px solid var(--gamer-border); padding: 15px 0; }\n\n.navbar-brand-wrapper .navbar-brand-text { font-family: var(--font-display); font-size: 2rem; color: var(--gamer-text); margin: 0; }\n\n.navbar-nav .nav-link { font-family: var(--font-display); font-size: 1.1rem; color: var(--gamer-text); padding: 10px 15px !important; }\n\n.navbar-nav .nav-link:hover { color: var(--gamer-primary); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo real do header/navbar (header .navbar, .navbar-brand-wrapper h1, .navbar-nav .nav-link) — revertido do remapeamento pro chassis blog compartilhado (.sl-header/.sl-header-brand/.sl-nav)."
+    },
+    {
+      "id": "modulo-correcoes-de-imagens-do-post",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body-content img, .post-body-content iframe { max-width: 100% !important; height: auto !important; border-radius: 8px; margin: 1.5rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }\n\n.separator a { margin-left: 0 !important; margin-right: 0 !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Correções de imagem do post real (.post-body-content) — revertido do remapeamento pro chassis blog (.blog-post-body)."
+    },
+    {
+      "id": "modulo-blockquote-estilizado-vermelho-gamer",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body-content blockquote {\n  position: relative;\n  background: linear-gradient(90deg, rgba(220, 38, 38, 0.08) 0%, transparent 100%);\n  border-left: 4px solid #dc2626;\n  padding: 1.5rem 2rem;\n  margin: 2rem 0;\n  font-size: 1.2rem;\n  font-style: italic;\n  color: var(--gamer-text);\n  border-radius: 0 8px 8px 0;\n  box-shadow: inset 4px 0 10px -5px rgba(220, 38, 38, 0.2);\n  z-index: 1;\n}\n\n.post-body-content blockquote::before {\n  content: '\\201C';\n  font-family: var(--font-display);\n  font-size: 6rem;\n  position: absolute;\n  left: 10px;\n  top: -20px;\n  color: #dc2626;\n  opacity: 0.15;\n  line-height: 1;\n  z-index: -1;\n}\n\n[data-bs-theme=\"dark\"] .post-body-content blockquote {\n  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Blockquote estilizado real (.post-body-content blockquote) — revertido do remapeamento pro chassis blog (.blog-post-body)."
+    },
+    {
+      "id": "modulo-estilos-dos-cartoes-de-jogos-home",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".game-card {\n  background-color: var(--gamer-surface);\n  border: 1px solid var(--gamer-border);\n  border-radius: 12px;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  height: 100%;\n}\n\n.game-card:hover {\n  transform: translateY(-5px);\n  border-color: var(--gamer-primary);\n  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15);\n}\n\n.game-cover { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #000; }\n.game-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; opacity: 0.9; }\n.game-card:hover .game-cover img { transform: scale(1.05); opacity: 1; }\n\n.game-badge {\n  position: absolute; top: 12px; left: 12px;\n  background: linear-gradient(45deg, var(--gamer-primary), var(--gamer-secondary));\n  color: #fff; font-family: var(--font-display); font-size: 0.8rem;\n  padding: 4px 12px; border-radius: 20px; z-index: 2;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Cartões de jogos reais (.game-card/.game-cover/.game-badge) — revertido do remapeamento pro chassis blog (.news-card/.news-card-img) + variável órfã do chassis (--sl-primary-rgb) trocada pelo valor real."
+    },
+    {
+      "id": "modulo-rodape",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".animate-up { opacity: 0; transform: translateY(20px); transition: 0.5s ease; }\n\n.animate-up.visible { opacity: 1; transform: translateY(0); }\n\nfooter { background-color: #020617; color: #94a3b8; border-top: 4px solid var(--gamer-primary); padding-top: 3rem; }\n\n.contact-form-widget .form-control { background-color: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #ffffff !important; border-radius: 8px; }\n\n.contact-form-widget .form-control:focus { border-color: var(--gamer-primary) !important; box-shadow: 0 0 0 0.25rem rgba(139,92,246,0.25) !important; }\n\n.contact-form-button { background: linear-gradient(45deg, var(--gamer-primary), var(--gamer-secondary)); border: none !important; color: white !important; font-family: var(--font-display); font-size: 1.1rem; border-radius: 8px; padding: 10px 0; width: 100%; cursor: pointer;}",
+      "html": "",
+      "js": "",
+      "descricao": "Rodapé real — cor literal (chassis usava var(--sl-footer-bg), inexistente aqui), rgba real (chassis usava var(--sl-primary-rgb)), botão de contato sem sufixo -submit (mesmo achado de aquarela/saas-nexus/brutalista-appcraft/culinaria: o includable main do token CONTACT_FORM genérico, o que de fato renderiza, usa a classe sem sufixo)."
+    },
+    {
+      "id": "modulo-pagina-de-erro-404-game-over",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".error-404-wrapper {\n  min-height: 55vh;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  background-color: var(--gamer-surface);\n  border: 2px solid var(--gamer-border);\n  border-radius: 12px;\n  margin: 3rem auto;\n  padding: 4rem 2rem;\n  max-width: 800px;\n  box-shadow: 0 10px 30px rgba(0,0,0,0.1);\n  position: relative;\n  overflow: hidden;\n}\n\n.error-404-wrapper::before {\n  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;\n  background: radial-gradient(circle, rgba(var(--sl-primary-rgb),0.05) 0%, transparent 60%);\n  pointer-events: none; z-index: 0;\n}\n\n.error-code {\n  font-size: clamp(6rem, 15vw, 10rem);\n  color: var(--gamer-primary);\n  text-shadow: 5px 5px 0 rgba(6, 182, 212, 0.4);\n  line-height: 1;\n  margin-bottom: 0;\n  position: relative;\n  z-index: 1;\n}\n\n.error-icon i {\n  color: var(--gamer-secondary);\n  font-size: 5rem;\n  filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.5));\n  position: relative;\n  z-index: 1;\n}\n\n.error-content { position: relative; z-index: 1; }\n\n.btn-respawn {\n  background: linear-gradient(45deg, var(--gamer-primary), var(--gamer-secondary));\n  color: #fff !important;\n  border: none;\n  font-family: var(--font-display);\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 12px 35px;\n  border-radius: 30px;\n  transition: transform 0.2s ease, box-shadow 0.2s ease;\n}\n\n.btn-respawn:hover {\n  transform: scale(1.05);\n  box-shadow: 0 8px 25px rgba(var(--sl-primary-rgb),0.4);\n}\n\n[data-bs-theme=\"dark\"] .error-404-wrapper {\n  box-shadow: 0 10px 30px rgba(0,0,0,0.4);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === PÁGINA DE ERRO 404 (GAME OVER) === (classes conferidas contra modules.js:ERROR_404_GAMER — batem 1:1 com o markup real renderizado quando error404Theme:\"gamer\". --font-title → --font-display, rgba(139,92,246,X) → rgba(var(--sl-primary-rgb),X))"
+    },
+    {
+      "id": "modulo-estilizacao-premium-das-tags-playerone-edition",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul {\n  list-style: none !important;\n  padding: 0 !important;\n  margin: 0 !important;\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n}\n\n.list-label-widget-content ul li {\n  display: inline-flex;\n  align-items: center;\n  margin: 0;\n}\n\n.list-label-widget-content ul li a,\n.post-bottom-tags a {\n  display: inline-flex;\n  align-items: center;\n  background: var(--gamer-surface);\n  color: var(--gamer-text);\n  font-family: var(--font-display);\n  font-size: 0.9rem;\n  font-weight: 500;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  padding: 8px 20px;\n  border-radius: 4px;\n  border: 1px solid var(--gamer-border);\n  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);\n  text-decoration: none !important;\n  box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n}\n\n.list-label-widget-content ul li a::before,\n.post-bottom-tags a::before {\n  content: '\\F325';\n  font-family: 'bootstrap-icons';\n  margin-right: 8px;\n  font-size: 1rem;\n  color: var(--gamer-primary);\n  transition: color 0.3s ease;\n}\n\n.list-label-widget-content ul li a:hover,\n.post-bottom-tags a:hover {\n  background: var(--gamer-primary);\n  color: #ffffff !important;\n  border-color: var(--gamer-primary);\n  transform: translateY(-3px);\n  box-shadow: 0 8px 20px rgba(var(--sl-primary-rgb),0.4);\n}\n\n.list-label-widget-content ul li a:hover::before,\n.post-bottom-tags a:hover::before { color: #ffffff; }\n\n.list-label-widget-content ul li span[dir='ltr'] {\n  background: var(--gamer-secondary);\n  color: #ffffff;\n  font-family: var(--font-display);\n  font-size: 0.8rem;\n  padding: 2px 8px;\n  border-radius: 4px;\n  margin-left: -12px;\n  font-weight: 700;\n  z-index: 2;\n  border: 2px solid var(--gamer-bg);\n  box-shadow: 0 2px 5px rgba(0,0,0,0.3);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === ESTILIZAÇÃO PREMIUM DAS TAGS (PLAYERONE EDITION) === (unifica as 5 peças pequenas do arquivo original — ícone de tag, efeito hover neon, ícone branco no hover, contador de posts — mesmos seletores .list-label-widget-content/.post-bottom-tags, reais e confirmados na migração anterior. --font-title → --font-display, rgba(139,92,246,0.4) → rgba(var(--sl-primary-rgb),0.4))"
+    },
+    {
+      "id": "modulo-popular-posts-thumbnail-mobile-first",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".popular-posts .item-thumbnail {\n  flex-shrink: 0;\n  margin-right: 15px;\n}\n\n.popular-posts .item-thumbnail img {\n  width: 100px;\n  height: 56px;\n  object-fit: cover;\n  border-radius: 8px;\n  display: block;\n  transition: all 0.3s ease;\n}\n\n@media (min-width: 768px) {\n  .popular-posts .item-thumbnail img {\n    width: 150px;\n    height: 85px;\n  }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Thumbnail do PopularPosts real (.popular-posts, minúsculo — classe real da div widget-content) — corrigido de .PopularPosts (maiúsculo, nunca bate por CSS ser case-sensitive)."
+    },
+    {
+      "id": "dark-mode-toggle-scroll",
+      "tipo": "widget",
+      "protegida": true,
+      "domIds": [
+        "btnDarkModeToggle"
+      ],
+      "html": "<button aria-label=\"Dark Mode\" id=\"btnDarkModeToggle\" class=\"btn btn-link btn-sm text-decoration-none p-0 btn-dark-mode\" style=\"color: var(--gamer-secondary);\">\n  <i class=\"bi bi-moon-stars-fill fs-6\"></i>\n</button>",
+      "js": "document.addEventListener('DOMContentLoaded', () => {\n  /* Dark Mode — default DARK para gaming sites */\n  const setTheme = t => {\n    document.documentElement.setAttribute('data-bs-theme', t);\n    localStorage.setItem('theme', t);\n    document.querySelector('.btn-dark-mode i').className = t === 'dark' ? 'bi bi-sun-fill fs-6 text-warning' : 'bi bi-moon-stars-fill fs-6';\n  };\n  setTheme(localStorage.getItem('theme') || 'dark');\n  document.querySelectorAll('.btn-dark-mode').forEach(b =>\n    b.addEventListener('click', () =>\n      setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark')\n    )\n  );\n\n  /* Scroll Animations */\n  const obs = new IntersectionObserver(es =>\n    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } })\n  , { threshold: 0.1 });\n  document.querySelectorAll('.animate-up, .news-card').forEach((el, i) => {\n    if (el.classList.contains('game-card')) el.style.transitionDelay = `${(i % 2) * 0.1}s`;\n    el.classList.add('animate-up');\n    obs.observe(el);\n  });\n});",
+      "descricao": "Toggle de dark mode (força \"dark\" por padrão via localStorage — sites gamer são dark-first) + scroll-reveal via IntersectionObserver (.animate-up/.news-card, remapeado de .game-card pro nome real do card no chassis)."
+    },
+    {
+      "id": "gamer-hero-banner",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "gamer-hero-banner"
+      ],
+      "html": "<div class=\"gph-hero animate-up\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\">Level Up</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\">Ver Notícias <i class=\"bi bi-controller\"></i></a>\n  </div>\n</div>",
+      "css": ".gph-hero {\n  position: relative;\n  border-radius: 16px;\n  padding: 4rem 2rem;\n  margin-bottom: 2rem;\n  overflow: hidden;\n  background: linear-gradient(135deg, var(--gamer-bg-dark) 0%, #1e1b4b 100%);\n  border: 1px solid var(--gamer-border);\n  text-align: center;\n}\n.gph-hero::before {\n  content: '';\n  position: absolute;\n  inset: -40% -10% auto -10%;\n  height: 260px;\n  background: radial-gradient(circle, var(--gamer-primary) 0%, transparent 70%);\n  opacity: 0.35;\n  pointer-events: none;\n}\n.gph-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }\n.gph-hero-tag {\n  display: inline-block;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-secondary);\n  border: 1px solid var(--gamer-secondary);\n  border-radius: 50px;\n  padding: 4px 16px;\n  margin-bottom: 1.25rem;\n}\n.gph-hero h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.8rem, 4vw, 2.75rem);\n  color: #ffffff;\n  line-height: 1.15;\n  margin-bottom: 1rem;\n}\n.gph-hero p {\n  color: #cbd5e1;\n  font-size: 1.05rem;\n  margin-bottom: 1.75rem;\n}\n.gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: linear-gradient(45deg, var(--gamer-primary), var(--gamer-secondary));\n  color: #ffffff;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 12px 28px;\n  border-radius: 8px;\n  text-decoration: none;\n}",
+      "js": "",
+      "descricao": "Hero de destaque com glow neon roxo/ciano sobre fundo escuro, tag \"Level Up\" e CTA — reaproveita .animate-up (reveal-on-scroll já existente na peça dark-mode-toggle-scroll). 5 variações estruturais autorais (htmlVariantes/cssVariantes) escolhidas por seed determinístico — glow radial original/split diagonal/HUD com scanlines/card com anel de glow/faixa lateral. Sempre 1 <h1> e 1 <p> (pra injetarHeroTexto continuar substituindo heroTitle/heroSubtitle igual em qualquer variante). Corrigido de brinde: seletor .gph-hero h2 nunca batia com o <h1> real — bug pré-existente, agora h1 em todas.",
+      "htmlVariantes": [
+        "<div class=\"gph-hero animate-up\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\">Level Up</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\">Ver Notícias <i class=\"bi bi-controller\"></i></a>\n  </div>\n</div>",
+        "<div class=\"gph-hero animate-up gph-hero--split\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\">Level Up</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\">Ver Notícias <i class=\"bi bi-controller\"></i></a>\n  </div>\n</div>",
+        "<div class=\"gph-hero animate-up gph-hero--hud\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\">[ Level Up ]</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\">[ Ver Notícias ]</a>\n  </div>\n</div>",
+        "<div class=\"gph-hero animate-up gph-hero--card\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\"><i class=\"bi bi-lightning-charge-fill\" aria-hidden=\"true\"></i> Level Up</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\"><i class=\"bi bi-controller\"></i> Ver Notícias</a>\n  </div>\n</div>",
+        "<div class=\"gph-hero animate-up gph-hero--stripe\" id=\"gamer-hero-banner\">\n  <div class=\"gph-hero-inner\">\n    <span class=\"gph-hero-tag\">Level Up</span>\n    <h1>As últimas do universo gamer, direto na tela</h1>\n    <p>Reviews, guias e notícias sobre os jogos que estão bombando agora.</p>\n    <a class=\"gph-hero-cta\" href=\"#main\">Ver Notícias <i class=\"bi bi-arrow-right\"></i></a>\n  </div>\n</div>"
+      ],
+      "cssVariantes": [
+        ".gph-hero {\n  position: relative;\n  border-radius: 16px;\n  padding: 4rem 2rem;\n  margin-bottom: 2rem;\n  overflow: hidden;\n  background: linear-gradient(135deg, var(--gamer-bg-dark) 0%, #1e1b4b 100%);\n  border: 1px solid var(--gamer-border);\n  text-align: center;\n}\n.gph-hero::before {\n  content: '';\n  position: absolute;\n  inset: -40% -10% auto -10%;\n  height: 260px;\n  background: radial-gradient(circle, var(--gamer-primary) 0%, transparent 70%);\n  opacity: 0.35;\n  pointer-events: none;\n}\n.gph-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }\n.gph-hero-tag {\n  display: inline-block;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-secondary);\n  border: 1px solid var(--gamer-secondary);\n  border-radius: 50px;\n  padding: 4px 16px;\n  margin-bottom: 1.25rem;\n}\n.gph-hero h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.8rem, 4vw, 2.75rem);\n  color: #ffffff;\n  line-height: 1.15;\n  margin-bottom: 1rem;\n}\n.gph-hero p {\n  color: #cbd5e1;\n  font-size: 1.05rem;\n  margin-bottom: 1.75rem;\n}\n.gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: linear-gradient(45deg, var(--gamer-primary), var(--gamer-secondary));\n  color: #ffffff;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 12px 28px;\n  border-radius: 8px;\n  text-decoration: none;\n}",
+        ".gph-hero--split {\n  position: relative;\n  border-radius: 16px;\n  padding: 4rem 2rem;\n  margin-bottom: 2rem;\n  overflow: hidden;\n  background: linear-gradient(100deg, var(--gamer-bg-dark) 0%, var(--gamer-bg-dark) 55%, #1e1b4b 55%, #1e1b4b 100%);\n  border: 1px solid var(--gamer-border);\n  text-align: left;\n}\n.gph-hero--split .gph-hero-inner { position: relative; z-index: 1; max-width: 560px; margin: 0; }\n.gph-hero--split .gph-hero-tag {\n  display: inline-block;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-secondary);\n  border: 1px solid var(--gamer-secondary);\n  border-radius: 50px;\n  padding: 4px 16px;\n  margin-bottom: 1.25rem;\n}\n.gph-hero--split h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.8rem, 4vw, 2.75rem);\n  color: #ffffff;\n  line-height: 1.15;\n  margin-bottom: 1rem;\n}\n.gph-hero--split p { color: #cbd5e1; font-size: 1.05rem; margin-bottom: 1.75rem; }\n.gph-hero--split .gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: transparent;\n  border: 2px solid var(--gamer-secondary);\n  color: var(--gamer-secondary);\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 10px 26px;\n  border-radius: 8px;\n  text-decoration: none;\n}",
+        ".gph-hero--hud {\n  position: relative;\n  border-radius: 4px;\n  padding: 4rem 2rem;\n  margin-bottom: 2rem;\n  overflow: hidden;\n  background: var(--gamer-bg-dark);\n  border: 1px solid var(--gamer-secondary);\n  text-align: center;\n}\n.gph-hero--hud::before {\n  content: '';\n  position: absolute;\n  inset: 0;\n  background: repeating-linear-gradient(0deg, rgba(6,182,212,0.06) 0px, rgba(6,182,212,0.06) 1px, transparent 1px, transparent 3px);\n  pointer-events: none;\n}\n.gph-hero--hud .gph-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }\n.gph-hero--hud .gph-hero-tag {\n  display: inline-block;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-secondary);\n  margin-bottom: 1.25rem;\n}\n.gph-hero--hud h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.8rem, 4vw, 2.75rem);\n  color: var(--gamer-secondary);\n  line-height: 1.15;\n  margin-bottom: 1rem;\n  text-shadow: 0 0 12px rgba(6,182,212,0.5);\n}\n.gph-hero--hud p { color: #cbd5e1; font-size: 1.05rem; margin-bottom: 1.75rem; font-family: monospace; }\n.gph-hero--hud .gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: transparent;\n  color: var(--gamer-secondary);\n  font-family: monospace;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 10px 20px;\n  border: 1px dashed var(--gamer-secondary);\n  text-decoration: none;\n}",
+        ".gph-hero--card {\n  position: relative;\n  border-radius: 20px;\n  padding: 4rem 2rem;\n  margin-bottom: 2rem;\n  background: linear-gradient(160deg, #1e1b4b 0%, var(--gamer-bg-dark) 100%);\n  border: 1px solid var(--gamer-border);\n  box-shadow: 0 0 0 1px var(--gamer-primary), 0 0 40px rgba(139,92,246,0.25);\n  text-align: center;\n}\n.gph-hero--card .gph-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }\n.gph-hero--card .gph-hero-tag {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-primary);\n  margin-bottom: 1.25rem;\n}\n.gph-hero--card h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.8rem, 4vw, 2.75rem);\n  color: #ffffff;\n  line-height: 1.15;\n  margin-bottom: 1rem;\n}\n.gph-hero--card p { color: #cbd5e1; font-size: 1.05rem; margin-bottom: 1.75rem; }\n.gph-hero--card .gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: var(--gamer-primary);\n  color: #ffffff;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 12px 28px;\n  border-radius: 50px;\n  text-decoration: none;\n}",
+        ".gph-hero--stripe {\n  position: relative;\n  border-radius: 8px;\n  padding: 3rem 2rem 3rem 2.5rem;\n  margin-bottom: 2rem;\n  background: var(--gamer-bg-dark);\n  border: 1px solid var(--gamer-border);\n  border-left: 5px solid var(--gamer-secondary);\n  text-align: left;\n}\n.gph-hero--stripe .gph-hero-inner { max-width: 600px; margin: 0; }\n.gph-hero--stripe .gph-hero-tag {\n  display: block;\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 2px;\n  font-size: 0.8rem;\n  color: var(--gamer-secondary);\n  margin-bottom: 1rem;\n}\n.gph-hero--stripe h1 {\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  font-size: clamp(1.7rem, 3.6vw, 2.5rem);\n  color: #ffffff;\n  line-height: 1.15;\n  margin-bottom: 1rem;\n}\n.gph-hero--stripe p { color: #cbd5e1; font-size: 1rem; margin-bottom: 1.5rem; }\n.gph-hero--stripe .gph-hero-cta {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: transparent;\n  color: var(--gamer-secondary);\n  font-family: var(--font-display);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 0.95rem;\n  padding: 0;\n  text-decoration: underline;\n}"
+      ]
+    },
+    {
+      "id": "modulo-shortcode-review-box",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "html": "",
+      "css": ".shortcode-review-box {\n  background-color: #0f172a;\n  border: 2px solid #1e293b;\n  border-left: 5px solid var(--gamer-primary);\n  border-radius: 12px;\n  padding: 2rem;\n  margin: 2.5rem 0;\n  color: #e2e8f0;\n  box-shadow: 0 10px 30px rgba(0,0,0,0.3);\n  position: relative;\n  overflow: hidden;\n}\n.shortcode-review-box::before {\n  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;\n  background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 60%);\n  pointer-events: none; z-index: 0;\n}\n.review-score-circle {\n  width: 90px; height: 90px;\n  background: #020617;\n  border: 3px solid var(--gamer-secondary);\n  border-radius: 50%;\n  display: flex; align-items: center; justify-content: center;\n  font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--gamer-secondary);\n  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);\n  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);\n}\n.review-bar-container { background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }\n.review-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gamer-primary), var(--gamer-secondary)); border-radius: 4px; transition: width 1s ease-out; }",
+      "js": "",
+      "descricao": "Estilo da caixa de review gerada pelo motor de shortcodes [review ...] (JS real embutido no skeleton) — seção inteira do CSS real (\"SHORTCODE: CAIXA DE REVIEW\") nunca tinha sido extraída pro dossiê na reconstrução original."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "tema-culinaria-boutique-gourmet",
+  "titulo": "Boutique Gourmet — Blog de Culinária Roxo+Rosa com Slider JSON Feed HD, Dark Mode e Resize Engine 16:9",
+  "categoria": "tema-completo",
+  "nicho": "culinaria-food-blog",
+  "descricao": "Template Blogger para blog de culinária/receitas. Paleta roxa+rosa+creme com border-top 6px no body e footer como assinatura visual. Inter (system font). Slider JSON Feed que busca os últimos posts via fetch e reescreve URLs para HD (1200x600). Resize Engine 16:9 que processa todas as imagens do tema em lote ao DOMContentLoaded. Dark mode via data-bs-theme com persistência localStorage. Tags com bi-bookmark-heart CSS ::before e contador rosa flutuante. Blockquote premium com aspas decorativas gigantes. 404 temático (bi-egg-fried, 'deixamos queimar o prato'). Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, navbar sticky-top, card, ratio, badge, btn, form-floating, data-bs-theme)",
+    "Bootstrap Icons 1.11.3 (bi-bookmark-heart \\F1A4, bi-egg-fried, bi-cup-hot, bi-calendar-heart, bi-person-hearts, bi-envelope-heart, bi-chat-heart-fill)"
+  ],
+  "tokens_css": {
+    "prefixo": "--sd-",
+    "light_mode": {
+      "--sd-primary": "#6f42c1",
+      "--sd-secondary": "#e83e8c",
+      "--sd-danger": "#dc3545",
+      "--sd-bg": "#fdfafb",
+      "--sd-text": "#2d2d2d",
+      "--sd-dark": "#212529"
+    }
+  },
+  "theme_designer_bridge": {
+    "formato": "Group e Variable DIRETAMENTE no CDATA — sem /* */ — seletor é 'body' (não ':root')",
+    "codigo": "<Group description=\"Cores Principais\" selector=\"body\">\n  <Variable name=\"cor.primaria\" description=\"Cor Principal (Roxo Elegante)\" type=\"color\" default=\"#6f42c1\" value=\"#6f42c1\"/>\n  <Variable name=\"cor.secundaria\" description=\"Cor Secundária/Hover (Rosa Vibrante)\" type=\"color\" default=\"#e83e8c\" value=\"#e83e8c\"/>\n  <Variable name=\"cor.detalhe\" description=\"Detalhes Quentes (Vermelho)\" type=\"color\" default=\"#dc3545\" value=\"#dc3545\"/>\n  <Variable name=\"cor.fundo\" description=\"Fundo do Site (Branco Creme)\" type=\"color\" default=\"#fdfafb\" value=\"#fdfafb\"/>\n  <Variable name=\"cor.texto\" description=\"Texto Principal\" type=\"color\" default=\"#2d2d2d\" value=\"#2d2d2d\"/>\n  <Variable name=\"cor.escura\" description=\"Fundo do Topo e Rodapé\" type=\"color\" default=\"#212529\" value=\"#212529\"/>\n</Group>",
+    "nota": "selector='body' em vez de ':root' — variante válida do Theme Designer. O compilador deve suportar ambos."
+  },
+  "css_identidade_visual": {
+    "border_top_body": "body { border-top: 6px solid var(--sd-primary); } — linha roxa de 6px no topo do site inteiro, assinatura visual do tema",
+    "border_top_footer": "footer { border-top: 6px solid var(--sd-primary) !important; } — espelha o border do body no topo do footer, criando bookmarks visuais",
+    "fonte": "font-family: 'Inter', system-ui, -apple-system, sans-serif — sem Google Fonts; Inter é a system font do macOS Ventura+ e Linux moderno; fallback para system-ui cobre Windows e Android",
+    "antialiasing": "-webkit-font-smoothing: antialiased — suavização de fontes no macOS/iOS"
+  },
+  "notas_tecnicas": [
+    "border-top: 6px solid var(--sd-primary) no body + border-top: 6px solid var(--sd-primary) no footer — bookmarks visuais que enquadram o conteúdo do topo ao rodapé. Padrão de design editorial de revistas.",
+    "rgba(18,1,34,...) = #120122 roxo quase preto — cor do overlay do slider. Não é preto puro (#000000) nem cinza: tem pigmento roxo que harmoniza com a paleta --sd-primary sem virar preto neutro.",
+    "p-k-no-nu no parâmetro Google Images: p=pad (preenche o espaço sem cortar), k=keep (mantém aspect ratio), no-nu=no upscale (não aumenta imagens pequenas além do tamanho original). Combinação ideal para thumbnails de blog que podem ter qualquer dimensão original.",
+    "form-floating do Bootstrap 5 requer placeholder explícito no input (mesmo que vazio string '') para o floating label funcionar — sem placeholder o label não sobe ao foco.",
+    "sticky-top na nav + sticky-top na aside com top: 80px — a aside cola 80px abaixo do topo considerando a altura da navbar (~60-65px). Valor deve ser ajustado se a navbar tiver height diferente.",
+    "bi-egg-fried como fallback de imagem e ícone da 404 — coerência temática culinária em todos os pontos de estado vazio. Trocar por ícone do nicho ao adaptar para outros temas.",
+    "font-size: 0.85rem !important na .cloud-label-widget-content .label-size a — o Blogger por padrão varia o font-size de tags de nuvem baseado na frequência de uso. !important bloqueia isso para aparência uniforme.",
+    "Ripple em .btn, .nav-link e .dropdown-item requer position:relative + overflow:hidden nessas classes. Bootstrap 5 já tem position:relative em .btn mas NÃO tem overflow:hidden — o CSS custom adiciona ambos com !important para garantir.",
+    "window.alternarTema exposto globalmente — pode ser chamado de qualquer elemento com onclick='window.alternarTema()' além do botão padrão .btn-dark-mode.",
+    "Gradiente de overlay do slider rgba(18,1,34,0.9) → rgba(18,1,34,0) — 90% opaco na base para legibilidade do título, 0% no topo para a imagem aparecer. Sem faixa preta antiestética."
+  ]
+}

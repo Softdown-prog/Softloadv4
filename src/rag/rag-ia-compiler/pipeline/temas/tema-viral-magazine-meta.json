@@ -1,0 +1,87 @@
+{
+  "id": "tema-viral-magazine",
+  "titulo": "Viral Magazine — Template de Notícias/Social/Pessoal com Hero Grid via JSON Feed",
+  "categoria": "noticias-magazine",
+  "descricao": "Template responsivo para blogs de notícias, social e pessoal. Layout magazine com hero grid de 3 posts (col-lg-8 + col-lg-4 empilhado) populado via Blogger JSON Feed. Sistema de CSS centralizado com prefixo --vm-*, dark mode via atributo no body, slider ciber-punk, posts relacionados automáticos, tempo de leitura injetado e banner de cookies. Três blocos JS independentes com exposição global via window.*.",
+  "html_atributos": {
+    "tag_html": "<html b:css='false' b:defaultmessages='true' b:layoutsVersion='3' b:responsive='true' lang='pt-br'>",
+    "diferenca_critica": "b:defaultmessages='true' — DIFERENTE da maioria dos templates. Este template mantém as mensagens padrão do Blogger ativas (comentários, labels), pois usa stubs reais do sistema para comentários e não customizou essas strings.",
+    "b_css_false": "Presente — bloqueia widget_css_bundle"
+  },
+  "tokens_css": {
+    "prefixo": "--vm-",
+    "light_mode": {
+      "--vm-primary": "#e74c3c",
+      "--vm-accent": "#2c3e50",
+      "--vm-text": "#333333",
+      "--vm-link": "#0d6efd",
+      "--vm-link-hover": "#0a58ca",
+      "--vm-border": "#dee2e6",
+      "--vm-header-bg": "#ffffff",
+      "--vm-footer-bg": "#212529",
+      "--vm-footer-text": "#f8f9fa"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--vm-text": "#e0e0e0",
+      "--vm-border": "#333333",
+      "--vm-header-bg": "#1e1e1e",
+      "--vm-footer-bg": "#0a0a0a",
+      "--vm-footer-text": "#cccccc"
+    },
+    "descricao": "Prefixo 'vm' de Viral Magazine. Todos os tokens mapeiam variáveis do Theme Designer via $(variavel) no b:skin."
+  },
+  "theme_designer_variaveis": {
+    "grupo_fundo_cores": {
+      "selector": "body",
+      "variaveis": [
+        "body.background — tipo background, default #f8f9fa — fundo geral",
+        "theme.primary — tipo color, default #e74c3c — cor de destaque (badges, botões, links hover)",
+        "theme.accent — tipo color, default #2c3e50 — cor secundária (hover do botão de contato)",
+        "theme.text — tipo color, default #333333 — texto principal",
+        "theme.link — tipo color, default #0d6efd — links normais",
+        "theme.linkHover — tipo color, default #0a58ca — links ao passar o mouse",
+        "theme.border — tipo color, default #dee2e6 — bordas e linhas divisoras"
+      ]
+    },
+    "grupo_header_footer": {
+      "selector": "body",
+      "variaveis": [
+        "header.bg — tipo color, default #ffffff — fundo do cabeçalho",
+        "footer.bg — tipo color, default #212529 — fundo do rodapé",
+        "footer.text — tipo color, default #f8f9fa — texto do rodapé"
+      ]
+    },
+    "grupo_tipografia": {
+      "selector": "body",
+      "variaveis": [
+        "body.font — tipo font, default 'Segoe UI' Roboto Helvetica Arial sans-serif 16px normal",
+        "heading.font — tipo font, default bold 24px 'Segoe UI' Roboto — usado em h1-h6",
+        "nav.font — tipo font, default 600 15px 'Segoe UI' Roboto — menu principal"
+      ]
+    }
+  },
+  "popular_posts_sidebar": {
+    "html": "<ul class=\"list-unstyled\">\n    <li class=\"d-flex align-items-center gap-3 mb-3 pb-3\">\n        <!-- Thumbnail 100x75px -->\n        <div style=\"width:100px; height:75px; flex-shrink:0; overflow:hidden; border-radius:6px\">\n            <a href=\"[post.url]\">\n                <img class=\"w-100 h-100\" src=\"[resizeImage 200 4:3]\" style=\"object-fit:cover\">\n            </a>\n        </div>\n        <div class=\"item-title small fw-bold\">\n            <a class=\"text-decoration-none text-body\" href=\"[post.url]\">[title]</a>\n        </div>\n    </li>\n</ul>"
+  },
+  "footer_layout": {
+    "estrutura": "footer.bg-dark.text-white.pt-5.pb-3 com 3 colunas col-md-4: Label (cloud), FeaturedPost, ContactForm. Copyright centrado abaixo.",
+    "css": "footer {\n    background-color: var(--vm-footer-bg) !important;\n    color: var(--vm-footer-text) !important;\n    border-top: 1px solid var(--vm-border);\n}\nfooter a { color: var(--vm-footer-text); opacity: 0.8; }\nfooter a:hover { color: var(--vm-primary); opacity: 1; }",
+    "copyright_html": "<div class=\"text-center mt-4 border-top pt-3\">\n    <p>© [blog.title] - Todos os direitos reservados.</p>\n</div>"
+  },
+  "quickedit_remocao": {
+    "css": ".quickedit,\n.widget-item-control,\n.item-control,\n.item-control.blog-admin {\n    display: none !important;\n    height: 0 !important;\n    width: 0 !important;\n    opacity: 0 !important;\n    visibility: hidden !important;\n}\n#navbar-iframe { display: none !important; }",
+    "nota": "5 propriedades com !important — mais agressivo que o padrão de apenas display:none. Necessário porque o Blogger usa JS para mostrar esses elementos e pode sobrescrever estilos simples."
+  },
+  "notas_tecnicas": [
+    "b:defaultmessages='true' é uma escolha deliberada — este template usa os includables padrão de comentários do Blogger (threadedComments, commentForm etc.) em vez de suprimi-los. Requer que os stubs de comentários sejam implementados com o markup legado do sistema.",
+    "O prefixo --vm- (Viral Magazine) diferencia os tokens de outros templates. É uma boa prática: se o template for combinado com widgets externos ou trechos de outros projetos, não há colisão de nomes.",
+    "Dark mode no [data-bs-theme='dark'] body (não no :root) — as variáveis CSS ficam no escopo do body. Garante que apenas elementos dentro do body sejam afetados, excluindo potenciais widgets injetados no <head>.",
+    "Três blocos JS separados com DOMContentLoaded: (1) Cyber Slider, (2) Magazine Grid + Related Posts, (3) Dark Mode toggle fora do DOMContentLoaded (attached diretamente ao botão). Separação facilita desativar funcionalidades individualmente.",
+    "void el.offsetWidth é a técnica de reflow para animações CSS em elementos com display:none. O browser bate o cache de layout, garantindo que o estado inicial (translateY(30px), opacity:0) seja registado antes de adicionar a classe de animação.",
+    "A função getHighResImage aplica dois regex diferentes para cobrir os dois formatos de URL do Google: /w800-h600-c/ (barra com parâmetros) e =w800-h600-c (sinal de igual com parâmetros). Ambos os formatos existem porque o Google mudou a sintaxe ao longo dos anos.",
+    "O sistema de posts relacionados usa data-label para comunicar entre o Blogger XML e o JS. O valor da label é injetado pelo servidor Blogger no atributo data-label do container, e o JS lê esse atributo em tempo de execução.",
+    "clip-path: polygon(0 0, 90% 100%, ...) no .cyber-badge-news cria a forma paralela sem SVG. Suporte universal em browsers modernos.",
+    "PopularPosts usa resizeImage() nativo do Blogger (b:with value resizeImage) para o thumbnail de 200x200 (4:3). Diferente dos containers JS que usam regex, o widget PopularPosts tem acesso direto ao objeto featuredImage."
+  ]
+}

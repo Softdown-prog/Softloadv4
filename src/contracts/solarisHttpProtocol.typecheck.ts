@@ -1,0 +1,10 @@
+import { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } from '../solaris/http/solarisHttpProtocol';
+import type { SolarisSseEvent, SolarisHistoricoMotor, SolarisTokensSse, SolarisZipSse, ValidacaoMensagemSolaris, ValidacaoSessaoSolaris } from '../solaris/http/solarisHttpProtocol';
+const entrada: ValidacaoMensagemSolaris = validarMensagemSolaris('Olá');
+const sessao: ValidacaoSessaoSolaris = validarSessaoSolaris('1790000000000_ab3f');
+const historico: SolarisHistoricoMotor[] = historicoParaMotorSolaris(sanitizarHistoricoSolaris([{ role: 'user', content: 'Oi' }]));
+const tokens: SolarisTokensSse = { input: 10, output: 20, total: 30 };
+const zip: SolarisZipSse = { base64: 'UEs=', nome: 'projeto.zip', totalArquivos: 1 };
+const event: SolarisSseEvent = { type: 'done', reply: 'Projeto pronto', sessionId: '1790000000000_ab3f', tokens, zip };
+const bytes: string = serializarEventoSseSolaris(event);
+void entrada; void sessao; void historico; void bytes;

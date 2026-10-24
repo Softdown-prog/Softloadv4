@@ -1,0 +1,272 @@
+{
+  "architecture-model": {
+    "name": "google-cloud-native-solaris-code",
+    "description": "Arquitetura baseada no ecossistema Google Cloud utilizando identidade nativa, controle IAM e serviços gerenciados.",
+    "core-services": {
+      "compute": {
+        "service": "cloud-run",
+        "role": "backend-execution-environment"
+      },
+      "database": {
+        "service": "firebase",
+        "role": "authentication-and-data-management"
+      },
+      "storage": {
+        "service": "cloud-storage",
+        "role": "file-and-asset-storage"
+      },
+      "ai": {
+        "service": "gemini-api",
+        "role": "reasoning-and-agent-intelligence"
+      }
+    }
+  },
+
+  "google-security-model": {
+    "principle": "identity-based-security",
+    "description": "A segurança é baseada em identidade, permissões e controle de acesso, não em chaves expostas.",
+
+    "authentication": {
+      "system": "iam-adc",
+      "name": "application-default-credentials",
+      "flow": {
+        "cloud-run": {
+          "uses": "service-account",
+          "does-not-store": [
+            "passwords",
+            "long-lived-tokens",
+            "json-service-keys"
+          ]
+        },
+        "authentication": {
+          "method": "google-internal-identity",
+          "credential-storage": "managed-by-google-cloud"
+        }
+      },
+
+      "security-benefits": [
+        "sem arquivos json de credenciais dentro do container",
+        "sem tokens permanentes em variáveis de ambiente",
+        "rotação de identidade gerenciada pela plataforma"
+      ]
+    },
+
+    "network-security": {
+      "communication": {
+        "between-services": [
+          "cloud-run",
+          "firebase",
+          "cloud-storage",
+          "gemini-api"
+        ],
+        "network": "google-private-infrastructure"
+      },
+
+      "protection": [
+        "redução de exposição pública",
+        "menor superfície para ataques man-in-the-middle",
+        "comunicação otimizada dentro da infraestrutura Google"
+      ]
+    }
+  },
+
+  "firebase-vs-supabase-security": {
+    "main-principle": "security-depends-on-configuration",
+
+    "firebase": {
+      "platform": "google-cloud",
+      "common-mistake": {
+        "name": "open-security-rules",
+        "example": "allow read, write: if true",
+        "risk": "exposição completa dos dados"
+      },
+
+      "recommended-security": {
+        "component": "firebase-security-rules",
+        "integration": [
+          "firebase-auth",
+          "user-token-validation",
+          "database-access-control"
+        ]
+      }
+    },
+
+    "supabase": {
+      "platform": "managed-postgresql",
+      "common-mistake": {
+        "name": "missing-row-level-security",
+        "risk": "acesso indevido aos registros"
+      },
+
+      "recommended-security": {
+        "component": "postgresql-rls",
+        purpose": "controle de acesso por linha"
+      }
+    },
+
+    "conclusion": {
+      "statement": "A maior parte dos vazamentos ocorre por configuração incorreta do desenvolvedor, não por falha da infraestrutura."
+    }
+  },
+
+  "solaris-code-sandbox": {
+    "path": "src/solaris/sandbox",
+
+    "modules": {
+      "session-manager": {
+        "file": "sessionManager.js",
+        "purpose": "gerenciar ambientes temporários isolados",
+
+        "constants": {
+          "base-directory": "/tmp/sandbox"
+        },
+
+        "dependencies": [
+          "fs/promises",
+          "path",
+          "crypto"
+        ],
+
+        "features": {
+          "init": {
+            "description": "Inicializa diretório raiz da sandbox.",
+            "operation": "create-directory",
+            "recursive": true
+          },
+
+          "create-session": {
+            "description": "Cria workspace único para cada execução.",
+            "process": [
+              "gerar uuid único",
+              "criar diretório session-id",
+              "retornar identificadores"
+            ],
+
+            "output": {
+              "session-id": "uuid",
+              "session-path": "/tmp/sandbox/session-id"
+            }
+          },
+
+          "cleanup-session": {
+            "description": "Remove completamente os arquivos temporários após execução.",
+
+            "security-check": {
+              "condition": "session-path-must-start-with-base-directory"
+            },
+
+            "operation": {
+              "command": "recursive-delete",
+              "force": true
+            }
+          }
+        }
+      },
+
+
+      "path-guard": {
+        "file": "pathGuard.js",
+        "purpose": "proteção contra path traversal",
+
+        "dependency": [
+          "path"
+        ],
+
+        "function": {
+          "name": "sanitizePath",
+
+          "parameters": {
+            "session-path": {
+              "type": "string",
+              "example": "/tmp/sandbox/session-uuid"
+            },
+
+            "relative-file-path": {
+              "type": "string",
+              "examples": [
+                "src/index.js",
+                "../../etc/passwd"
+              ]
+            }
+          },
+
+          "process": [
+            {
+              "step": 1,
+              "action": "validate-input",
+              "rules": [
+                "path-required",
+                "must-be-string"
+              ]
+            },
+
+            {
+              "step": 2,
+              "action": "resolve-absolute-path",
+              "method": "path.resolve"
+            },
+
+            {
+              "step": 3,
+              "action": "verify-boundary",
+              "rule": "resolved-path-must-start-with-session-path"
+            }
+          ],
+
+          "result": {
+            "success": "returns-safe-absolute-path",
+            "failure": "blocks-path-traversal-attempt"
+          }
+        },
+
+        "attack-example": {
+          "input": "../../etc/passwd",
+          "expected-result": "blocked"
+        }
+      }
+    }
+  },
+
+  "complete-security-flow": {
+    "pipeline": [
+      "user-request",
+      "gemini-agent-planning",
+      "cloud-run-receives-intent",
+      "service-account-authentication",
+      "create-isolated-session",
+      "validate-path-with-pathguard",
+      "execute-operation-inside-sandbox",
+      "store-results",
+      "cleanup-temporary-memory",
+      "return-feedback-to-gemini"
+    ]
+  },
+
+  "security-layers": [
+    {
+      "layer": "identity",
+      "technology": "google-iam-service-account",
+      "purpose": "authentication-without-exposed-keys"
+    },
+    {
+      "layer": "network",
+      "technology": "google-private-infrastructure",
+      "purpose": "protected-service-communication"
+    },
+    {
+      "layer": "filesystem",
+      "technology": "pathguard",
+      "purpose": "prevent-path-escape"
+    },
+    {
+      "layer": "runtime",
+      "technology": "cloud-run-container-isolation",
+      "purpose": "execute-code-safely"
+    },
+    {
+      "layer": "memory",
+      "technology": "session-manager",
+      "purpose": "cleanup-temporary-workspaces"
+    }
+  ]
+}

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho brutalista-appcraft — ver plano
+     "esqueleto por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md),
+     Fase 2 (5/11): quinto dos 11 nichos restantes com exemplos/ real,
+     escolhido pra completar a resolução do compartilhamento de chassis
+     'saas' junto com saas-nexus (já migrado) — brutalista-appcraft era o
+     outro nicho preso ao mesmo chassis genérico.
+
+     A estrutura física abaixo foi extraída de exemplos/brutalista-appcraft.xml
+     (arquivo hand-authored real). Achado principal desta migração: 6 das
+     12 peças do dossiê tinham sido "corrigidas" pra mirar seletores do
+     CHASSIS 'saas' compartilhado (.sl-footer, .sl-pagination,
+     .saas-sidebar-widget/.saas-sidebar-widget-title, .saas-post-article
+     h1, .saas-post-body, .saas-post-meta, .contact-form-button-submit) —
+     fazia sentido enquanto o nicho usava o chassis genérico, mas agora
+     que ele ganha esqueleto próprio, viraram seletor órfão (mesmo padrão
+     já corrigido em appstore-bulma-mobile/noticias-mag-news). Revertidas
+     nesta migração pros seletores REAIS do arquivo:
+       - sidebar-brutalista: .saas-sidebar-widget → aside .widget;
+         .saas-sidebar-widget-title → aside h3.
+       - paginacao-brutalista: .sl-pagination → .pagination (classe real
+         do includable nextprev do arquivo).
+       - footer-brutalista: .sl-footer → .footer-section (classe real do
+         elemento footer com classes footer-section pt-5 pb-3).
+       - post-single-brutalista: .saas-post-article h1 → .post-title-single;
+         .saas-post-body → .post-body-content (classes reais do main
+         includable do Blog1).
+       - metadados-mono: .saas-post-meta → .post-meta, .post-meta-single
+         (o arquivo real estiliza feed e post único com a MESMA regra).
+       - botao-tecla-mecanica: .contact-form-button-submit →
+         .contact-form-button (classe real do includable main do token
+         genérico CONTACT_FORM, sem sufixo -submit — mesmo achado já
+         descoberto em aquarela/saas-nexus).
+
+     Outras diferenças estruturais reais vs. template_saas.xml
+     compartilhado:
+       - 'header-logo': Header1 real tinha displayUrl apontando pra uma
+         imagem já hospedada do dono original — dado real, redigido via
+         HEADER_WIDGET genérico.
+       - 'main-menu': PageList1 real tinha URL do blog real do dono
+         original (tecdowny.blogspot.com) + 1 link pessoal do Google
+         Drive — mesmo padrão de dado real já encontrado em saas-nexus/
+         tecnologia-techwind. Redigido via NAV_WIDGET genérico.
+       - 'home-hero': widget real (visible='false', conteúdo vazio) —
+         slot só existe pra abrigar o hero, sem conteúdo estático real
+         pra preservar. Ocupado pela peça protegida ac-hero-strip
+         (NICHO_HERO), sozinha no b:section, sem irmãos HTML soltos
+         (achado de verificação já estabelecido em aquarela: "Regra B"
+         do xmlValidator.js quebra a árvore XML se houver HTML solto ao
+         lado do token dentro do mesmo b:section).
+       - 'home-features': widget real vazio (slot nativo, sem conteúdo).
+       - 'main-content' (não 'main'): Blog1 real extraído verbatim (feed
+         .post-feed/.post-item/.post-title/.post-meta/.post-snippet,
+         post único .post-title-single/.post-meta-single/.post-body-content,
+         paginação .pagination). widget-settings trimmados pra lista
+         válida (commentLabel/authorLabel/timestampLabel com valor
+         literal/reactionsLabel/showAuthorProfile/postLocationLabel/
+         style.* rejeitados pelo Blogger hoje — mesmo achado já
+         descoberto em noticias-mag-news/tecnologia-techwind/saas-nexus).
+       - 'sidebar-right': Translate1 nativo (→ TRANSLATE_WIDGET) + HTML102
+         "Sobre o Desenvolvedor" com conteúdo vazio (slot nativo).
+       - 'footer-info': Stats1 (→ STATS_WIDGET), Label1 com
+         selectedLabelsList="Software" hardcoded (→ LABEL_CLOUD_WIDGET,
+         sem labels fixas), FeaturedPost1 já com defaults seguros
+         (postId=0/useMostRecentPost=true, sem redação necessária —
+         mapeado direto pro token FEATURED_POST_WIDGET), HTML103
+         "AppCraft" com conteúdo vazio (não extraído).
+       - 'footer-contact': ContactForm1 real tinha includable customizado
+         (placeholders estilo terminal "> sys.name_") → mapeado pro token
+         CONTACT_FORM genérico, mesmo padrão já usado em todas as
+         migrações anteriores.
+     Ver nichoDossie.brutalista-appcraft.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /* === VARIÁVEIS DO PAINEL DO BLOGGER (arquivo real, preservadas
+     verbatim — permitem o dono do site trocar as 3 cores pelo painel
+     "Personalizar" do Blogger) === */
+  <Group description="Cores do Tema (AppCraft)" selector=":root">
+    <Variable name="cor.fundo" description="Cor de Fundo (Branco Gelo)" type="color" default="#f8f9fa" value="#f8f9fa"/>
+    <Variable name="cor.escura" description="Cor Escura (Preto Nanquim)" type="color" default="#111111" value="#111111"/>
+    <Variable name="cor.destaque" description="Cor de Destaque (Amarelo Tech)" type="color" default="#facc15" value="#facc15"/>
+  </Group>
+
+  :root {
+    --ac-bg: $(cor.fundo);
+    --ac-dark: $(cor.escura);
+    --ac-yellow: $(cor.destaque);
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'Fira Code', monospace;
+  }
+
+  [[DYNAMIC_CSS]]
+
+  /* === ESTILOS GLOBAIS (arquivo real) === */
+  body {
+    background-color: var(--ac-bg);
+    color: var(--ac-dark);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  /* === CABEÇALHO === */
+  header { background-color: var(--ac-bg); border-bottom: 3px solid var(--ac-dark); padding: 0.5rem 0; }
+  .navbar-brand h1 { font-weight: 700; font-size: 2rem; text-transform: uppercase; letter-spacing: -2px; margin: 0; }
+  .navbar-brand { text-decoration: none; }
+  .navbar-brand:hover { background-color: transparent; }
+  .nav-link { font-weight: 700; text-transform: uppercase; font-size: 0.95rem; padding: 0.5rem 1.2rem !important; border: 2px solid transparent; text-decoration: none !important; color: var(--ac-dark) !important; }
+  .nav-link:hover { background-color: var(--ac-yellow); border-color: var(--ac-dark); }
+  .navbar-toggler { color: var(--ac-dark); border-radius: 0; padding: 5px; }
+  .navbar-toggler:focus { box-shadow: 0 0 0 3px var(--ac-yellow); }
+
+  /* === PÁGINA INICIAL ESTÁTICA === */
+  .features-section { border-bottom: 3px solid var(--ac-dark); background: var(--ac-bg); }
+  .features-section h2 { font-size: 2.5rem; text-transform: uppercase; border-bottom: 3px solid var(--ac-dark); display: inline-block; padding-bottom: 5px; margin-bottom: 2rem; }
+
+  /* === FEED DE POSTS (ATUALIZAÇÕES) === */
+  .post-feed .post-item { border-bottom: 3px solid var(--ac-dark); }
+  .post-title { font-size: 2.2rem; line-height: 1.1; margin-bottom: 0.8rem; }
+  .post-title a { text-decoration: none; }
+  .post-title a:hover { background-color: var(--ac-yellow); }
+  .post-snippet { font-size: 1.15rem; color: #222; margin-top: 1rem; }
+
+  /* Tags Brutalistas (Cruas) */
+  .post-bottom-tags { font-family: var(--font-mono); font-weight: 500; font-size: 0.9rem; border-top: 3px solid var(--ac-dark); }
+  .post-bottom-tags span:first-child { color: #666; }
+  .post-bottom-tags a { background: var(--ac-dark); color: var(--ac-bg); text-decoration: none; padding: 2px 8px; display: inline-block; margin-top: 5px; }
+  .post-bottom-tags a:hover { background: var(--ac-yellow); color: var(--ac-dark); }
+
+  .footer-bottom { border-top: 1px solid #333 !important; font-family: var(--font-mono); font-size: 0.8rem; color: #888; }
+
+  /* === CSS DO NICHO (peças do dossiê: links/títulos/hero-pontilhado/
+       blockquote/botão/formulário/sidebar/paginação/footer/post-single/
+       metadados + hero protegido ac-hero-strip) === */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <header class='sticky-top'>
+    <nav class='navbar navbar-expand-lg py-1'>
+      <div class='container d-flex justify-content-between align-items-center'>
+
+        <b:section id='header-logo' maxwidgets='1' name='Logotipo (App)' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+
+        <button aria-controls='mainNavbar' aria-expanded='false' aria-label='Abrir menu de navegação' class='navbar-toggler border-0' data-bs-target='#mainNavbar' data-bs-toggle='collapse' type='button'>
+          <svg fill='none' height='28' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24' width='28' xmlns='http://www.w3.org/2000/svg'>
+            <line x1='3' x2='21' y1='12' y2='12'/>
+            <line x1='3' x2='21' y1='6' y2='6'/>
+            <line x1='3' x2='21' y1='18' y2='18'/>
+          </svg>
+        </button>
+
+        <div class='collapse navbar-collapse justify-content-end' id='mainNavbar'>
+          <b:section id='main-menu' maxwidgets='1' name='Menu de Navegação' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+        </div>
+
+      </div>
+    </nav>
+  </header>
+
+  <b:if cond='data:view.isHomepage'>
+
+    <!-- Hero protegido do dossiê (ac-hero-strip) sozinho no b:section —
+         sem irmãos HTML soltos (ver doc do topo do arquivo). -->
+    <section class='hero-section text-center'>
+      <div class='container'>
+        <b:section id='home-hero' maxwidgets='1' name='Hero (Bloco de Texto Topo)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+      </div>
+    </section>
+
+    <section class='features-section py-5'>
+      <div class='container py-4'>
+        <b:section id='home-features' name='Recursos (Blocos Editáveis)' showaddelement='yes'/>
+      </div>
+    </section>
+
+  </b:if>
+
+  <div class='container my-5'>
+    <div class='row'>
+      <main class='col-lg-8'>
+
+        <!-- id LITERAL 'main' preservado de propósito — marcador canônico
+             que injetarDesignPackage() (compilerWorker.js) busca pra
+             staticSections/heroHtml do chat de edição. Nome real do
+             arquivo era 'main-content' (ver name= abaixo, decorativo). -->
+        <b:section id='main' name='Postagens (Feed)' showaddelement='no'>
+          <b:widget id='Blog1' locked='true' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+            <!-- Settings limitados à lista válida pro tipo Blog
+                 (gerarDiagnostico() rejeita commentLabel/authorLabel/
+                 timestampLabel com valor literal/reactionsLabel/
+                 showAuthorProfile/postLocationLabel/style.* — mesmo
+                 achado já descoberto em noticias-mag-news/tecnologia-
+                 techwind/saas-nexus). -->
+            <b:widget-settings>
+              <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+              <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+              <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+              <b:widget-setting name='showAuthor'>true</b:widget-setting>
+              <b:widget-setting name='showLabels'>true</b:widget-setting>
+              <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+              <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+              <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+              <b:widget-setting name='showReactions'>false</b:widget-setting>
+            </b:widget-settings>
+
+            <!-- ════════ MAIN includable ════════ -->
+            <!-- Extraído verbatim de exemplos/brutalista-appcraft.xml:
+                 feed .post-feed/.post-item/.post-title/.post-meta/
+                 .post-snippet, post único .post-title-single/
+                 .post-meta-single/.post-body-content. -->
+            <b:includable id='main' var='top'>
+
+              <b:if cond='data:view.isMultipleItems'>
+                <div class='post-feed'>
+                  <b:loop values='data:posts' var='post'>
+                    <article class='post-item mb-5 pb-4'>
+                      <header class='mb-3'>
+                        <h2 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h2>
+                        <div class='post-meta'>
+                          <span>[ <data:post.date/> ]</span>
+                          <b:if cond='data:post.labels'>
+                            <span class='mx-2'>/</span>
+                            <span>
+                              <b:loop values='data:post.labels' var='label'>
+                                <data:label.name/><b:if cond='not data:label.isLast'> / </b:if>
+                              </b:loop>
+                            </span>
+                          </b:if>
+                        </div>
+                      </header>
+                      <div class='post-snippet'>
+                        <data:post.snippet/>
+                      </div>
+                    </article>
+                  </b:loop>
+                </div>
+                <b:include name='nextprev'/>
+
+              <b:else/>
+                <b:loop values='data:posts' var='post'>
+                  <article class='post-single mb-5'>
+                    <header class='mb-4'>
+                      <h1 class='post-title-single'><data:post.title/></h1>
+                      <div class='post-meta-single'>
+                        <span>&gt; pub_date: <data:post.date/></span>
+                      </div>
+                    </header>
+                    <div class='post-body-content'>
+                      <data:post.body/>
+                    </div>
+                    <b:if cond='data:post.labels'>
+                      <div class='post-bottom-tags mt-5 pt-3'>
+                        <span>Tags: </span>
+                        <b:loop values='data:post.labels' var='label'>
+                          <a expr:href='data:label.url'>#<data:label.name/></a><b:if cond='not data:label.isLast'> </b:if>
+                        </b:loop>
+                      </div>
+                    </b:if>
+                  </article>
+                </b:loop>
+              </b:if>
+
+            </b:includable>
+
+            <!-- ════════ POST includable ════════ -->
+            <b:includable id='post' var='post'><div/></b:includable>
+
+            <!-- ════════ PAGINAÇÃO (markup real do arquivo, classe .pagination — ver paginacao-brutalista no dossiê) ════════ -->
+            <b:includable id='nextprev'>
+              <div class='pagination d-flex justify-content-between mt-5 pt-3'>
+                <b:if cond='data:newerPageUrl'><a expr:href='data:newerPageUrl'>&lt; Voltar</a><b:else/><span/></b:if>
+                <b:if cond='data:olderPageUrl'><a expr:href='data:olderPageUrl'>Avançar &gt;</a></b:if>
+              </div>
+            </b:includable>
+
+            [[BLOGGER_INCLUDABLES_PADRAO]]
+
+          </b:widget>
+        </b:section>
+
+      </main>
+
+      <aside class='col-lg-4'>
+        <div class='sticky-top' style='top: 100px;'>
+          <b:section id='sidebar-right' name='Barra Lateral Direita' showaddelement='yes'>[[TRANSLATE_WIDGET]]</b:section>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class='footer-section pt-5 pb-3'>
+    <div class='container'>
+      <div class='row g-5 mb-4'>
+        <div class='col-md-4'>
+          <b:section id='footer-info' maxwidgets='4' name='Informações do Footer' showaddelement='yes'>[[STATS_WIDGET]][[LABEL_CLOUD_WIDGET]][[FEATURED_POST_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-links' maxwidgets='2' name='Links (Rodapé)' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]][[BLOG_ARCHIVE_WIDGET]]</b:section>
+        </div>
+        <div class='col-md-4'>
+          <b:section id='footer-contact' maxwidgets='1' name='Formulário de Contato' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <div class='footer-bottom text-center pt-3'>
+        <small>&#169; <script>document.write(new Date().getFullYear())</script> <data:blog.title/>. Todos os direitos reservados.</small>
+        <b:section id='footer-copyright' maxwidgets='1' name='Copyright' showaddelement='yes'/>
+      </div>
+    </div>
+  </footer>
+
+  [[ERROR_404_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "titulo": "bootstrap5 — forms",
+  "categoria": "topico",
+  "descricao": "Conjunto de classes que estilizam inputs, selects, checkboxes e radios de forma consistente entre navegadores, incluindo variantes floating label e input-group com ícones/botões acoplados.",
+  "componentes": [
+    "form-control",
+    "form-label",
+    "form-select",
+    "form-check",
+    "form-check-input",
+    "form-check-label",
+    "form-floating",
+    "input-group",
+    "form-text",
+    "form-range"
+  ],
+  "exemplos": [
+    "<div class=\"mb-3\"><label class=\"form-label\" for=\"email\">E-mail</label><input type=\"email\" class=\"form-control\" id=\"email\"></div>",
+    "<div class=\"form-floating mb-3\"><input type=\"text\" class=\"form-control\" id=\"nome\" placeholder=\"Nome\"><label for=\"nome\">Nome</label></div>"
+  ],
+  "boas_praticas": [
+    "Sempre associar label a input via for/id, mesmo com form-floating (acessibilidade).",
+    "input-group pra acoplar ícone, texto fixo (ex: \"R$\") ou botão ao lado do input.",
+    "form-text pra texto de ajuda abaixo do campo, nunca dentro do próprio label."
+  ],
+  "keywords": [
+    "formulário",
+    "input",
+    "campo de texto",
+    "select",
+    "checkbox",
+    "radio"
+  ],
+  "id": "bootstrap5-forms",
+  "slug": "bootstrap5-forms"
+}

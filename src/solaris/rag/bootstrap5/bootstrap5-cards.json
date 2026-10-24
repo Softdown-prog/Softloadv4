@@ -1,0 +1,33 @@
+{
+  "titulo": "bootstrap5 — cards",
+  "categoria": "topico",
+  "descricao": "Container flexível com borda, padding e sombra opcional, usado pra agrupar imagem, título, texto e ações relacionadas. É o bloco de construção mais reutilizado do Bootstrap pra listagens (produtos, posts, perfis).",
+  "componentes": [
+    "card",
+    "card-body",
+    "card-title",
+    "card-subtitle",
+    "card-text",
+    "card-img-top",
+    "card-header",
+    "card-footer",
+    "card-group",
+    "row-cols-md-3"
+  ],
+  "exemplos": [
+    "<div class=\"card\" style=\"width: 18rem;\"><img src=\"img.jpg\" class=\"card-img-top\" alt=\"...\"><div class=\"card-body\"><h5 class=\"card-title\">Título</h5><p class=\"card-text\">Descrição curta.</p><a href=\"#\" class=\"btn btn-primary\">Ação</a></div></div>"
+  ],
+  "boas_praticas": [
+    "Usar row-cols-* + g-* (grid) pra grade responsiva de vários cards, em vez de card-deck (removido no v5).",
+    "card-img-top sempre antes de card-body na ordem do DOM.",
+    "h-100 no card dentro de uma coluna evita altura desigual quando os textos variam."
+  ],
+  "keywords": [
+    "cartão",
+    "card de produto",
+    "card de post",
+    "bloco de conteúdo"
+  ],
+  "id": "bootstrap5-cards",
+  "slug": "bootstrap5-cards"
+}

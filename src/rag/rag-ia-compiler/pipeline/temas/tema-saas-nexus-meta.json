@@ -1,0 +1,58 @@
+{
+  "id": "tema-saas-nexus",
+  "titulo": "Nexus SaaS — Landing Page Pronta para Conversão com Cards de Preço via CSS Puro",
+  "categoria": "tema-completo",
+  "nicho": "saas-empresa",
+  "descricao": "Template Blogger para empresa/SaaS com landing page completa embutida pronta para conversão: hero split col-lg-6, cards de funcionalidades com ícone CSS auto-injetado, cards de preço com R$ montado via p:first-of-type::before, depoimentos com aspas bi-quote amarelo, blog section e footer com formulário de contato. Estética 'Tailwind-like' usando Bootstrap: slate palette (#1e293b/#64748b/#f8fafc), Space Grotesk, border-radius-16/20, sombras sutis e border #e2e8f0 — visual limpo e chamativo sem Tailwind no código. Todas as seções da landing ficam dentro de b:if isHomepage. Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, navbar, btn, form-control, ratio, d-flex, gap)",
+    "Bootstrap Icons 1.11.3 (bi-lightning-charge \\F287, bi-quote \\F6B0)",
+    "Google Fonts: Space Grotesk (300/400/500/600/700)"
+  ],
+  "tokens_css": {
+    "prefixo": "--nexus-",
+    "light_mode": {
+      "--nexus-primary": "#0d6efd",
+      "--nexus-dark": "#1e293b",
+      "--nexus-light": "#f8fafc",
+      "--nexus-gray": "#64748b"
+    }
+  },
+  "theme_designer_bridge": {
+    "formato": "Group e Variable dentro de bloco de comentario CSS /* */",
+    "codigo": "/*\n<Group description=\"🎨 Cores do Tema (Nexus SaaS)\" selector=\":root\">\n  <Variable name=\"cor.primaria\" description=\"Cor Principal (Azul Destaque)\" type=\"color\" default=\"#0d6efd\" value=\"#0d6efd\"/>\n  <Variable name=\"cor.escura\" description=\"Cor Escura (Textos e Títulos)\" type=\"color\" default=\"#1e293b\" value=\"#1e293b\"/>\n  <Variable name=\"cor.clara\" description=\"Cor de Fundo Secundário\" type=\"color\" default=\"#f8fafc\" value=\"#f8fafc\"/>\n  <Variable name=\"cor.cinza\" description=\"Cor dos Textos Menores\" type=\"color\" default=\"#64748b\" value=\"#64748b\"/>\n</Group>\n*/",
+    "nota": "Mesmo formato /* <Group> */ do AppCraft e PlayerOne — compilador suporta este padrão"
+  },
+  "css_utilitarios": {
+    "fade_in_up": "/* Animação de entrada para seções — controlada por IntersectionObserver */\n.fade-in-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }\n.fade-in-up.is-visible { opacity: 1; transform: translateY(0); }",
+    "links": "a { text-decoration: none; transition: all 0.3s ease; }"
+  },
+  "css_top_bar": {
+    "descricao": "Faixa de aviso/promo no topo da página — fundo primário, texto branco centralizado",
+    "css": ".top-bar-wrapper .widget { background: var(--nexus-primary); color: #fff; text-align: center; padding: 8px 15px; font-size: 0.9rem; font-weight: 500; }\n.top-bar-wrapper .widget h2 { display: none; }",
+    "nota": "h2.title do gadget ocultado via display:none — o título do widget no painel do Blogger não aparece na faixa"
+  },
+  "css_navbar": {
+    "descricao": "Navbar glassmorphism leve com fixed-top. padding-top: 140px no hero compensa a altura da navbar fixa.",
+    "css": ".navbar-nexus { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; padding: 1rem 0; }\n.navbar-nexus .Header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--nexus-dark); }\n.navbar-nexus .Header img { max-height: 40px; }",
+    "cta_nav": "<a class='btn btn-primary rounded-pill px-4 fw-bold' href='#contato'>Fale Conosco</a>",
+    "nota": "href='#contato' aponta para id='contato' no footer — scroll suave sem JS adicional"
+  },
+  "css_cards_grid": {
+    "descricao": "Grid CSS auto-fit usado em funcionalidades, preços e depoimentos — mesmo wrapper .cards-wrapper e .cards-grid para todas as seções",
+    "css": ".cards-wrapper { padding: 80px 0; }\n.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }",
+    "nota": "auto-fit minmax(300px, 1fr) — 1 coluna em mobile, 2 colunas em tablet, 3 colunas em desktop para 3 widgets. Para 2 widgets de preço: 2 colunas a partir de 600px naturalmente."
+  },
+  "notas_tecnicas": [
+    "p:first-of-type::before com content: 'R$ ' injeta o símbolo de moeda via CSS — o conteúdo do gadget só precisa do número. Trocar 'R$ ' por '€ ' ou '$ ' para internacionalização sem tocar no HTML dos gadgets.",
+    "padding-top: 140px na hero-section compensa a navbar fixed-top (~60px) com folga visual de 80px — padrão correto para landing pages com navbar fixa. Sem isso o hero fica parcialmente sob a navbar.",
+    "h2.title::before com Bootstrap Icons unicode é pattern poderoso: usuário edita apenas o título no painel do Blogger, o ícone vem automaticamente do CSS. Trocar \\F287 por qualquer código de bootstrap-icons para mudar o ícone sem alterar o HTML.",
+    "(index % 3) * 0.15s como transitionDelay escalonado cria efeito de onda para grids de 3 colunas — cada linha de 3 cards anima em cascata 0→0.15→0.30 segundos, reiniciando para a próxima linha.",
+    "margin-top: auto no .btn dentro de flex-column no pricing card — botão de CTA sempre ancorando no bottom do card, independente de quantas features o plano lista. Essencial para cards de preço com listas de tamanhos diferentes.",
+    "transform: scale(1.02) no hover do pricing card — efeito de destaque mais suave que translateY para cards de preço, que já têm conteúdo longo. scale evita que o card 'saia da linha' visualmente.",
+    "id='contato' no footer cria âncora que recebe href='#contato' do navbar CTA e do hero CTA — comportamento SPA sem nenhum JS de scroll customizado. Bootstrap não é necessário para ancoragem nativa do browser.",
+    "\\F6B0 (bi-quote) em #ffc107 antes do nome no depoimento — cor amarela Bootstrap warning quebra o ritmo visual do azul primário e cinza e funciona como marcador de 'destaque humano' (depoimento = voz do cliente).",
+    "background: #f1f5f9 no .post-card-img como fallback — quando o post não tem imagem, o espaço é preenchido com um cinza azulado que combina com a paleta --nexus-light sem ser um branco vazio.",
+    "Space Grotesk compartilhada com AppCraft brutalista mas aplicada de forma oposta: no AppCraft é pesada, uppercase, letter-spacing negativo agressivo. No Nexus é 400/500 weight, letter-spacing -1px apenas nos títulos grandes — mesma fonte, identidades visuais opostas."
+  ]
+}

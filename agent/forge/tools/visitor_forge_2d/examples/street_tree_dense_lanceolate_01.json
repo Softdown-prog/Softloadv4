@@ -1,0 +1,232 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "street_tree_dense_lanceolate_01",
+  "pipelineRevision": 8,
+  "sceneryType": "structured_broadleaf",
+  "canvas": [
+    256,
+    320
+  ],
+  "anchor": [
+    128,
+    311
+  ],
+  "seed": 731407,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 136,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "soft yellow-green daylight on the upper-left crown",
+    "front": "dense overlapping elongated leaves in hanging branch-end groups",
+    "base": "deep cool green interior with two readable trunk stems",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "leaf_canopy",
+    "profile": "domed",
+    "center": [
+      128,
+      145
+    ],
+    "radius": [
+      105,
+      82
+    ],
+    "density": 1.18,
+    "species": "oiti",
+    "leafDetail": "defined",
+    "negativeSpace": "very_low",
+    "referenceProfile": "dense_round_broadleaf",
+    "silhouetteIntent": "wide low umbrella with dense elongated leaves and irregular hanging lower fringe",
+    "leafProfile": "lanceolate_droop",
+    "leafCount": 680,
+    "leafLength": [
+      7.8,
+      13.6
+    ],
+    "leafWidth": [
+      1.45,
+      2.6
+    ],
+    "leafDroop": 0.78,
+    "edgeDroop": 0.24
+  },
+  "palette": {
+    "ground_shadow": "#26302B",
+    "trunk_top": "#716857",
+    "trunk_bottom": "#3D4036",
+    "trunk_light": "#9A8E73",
+    "back_top": "#294B31",
+    "back_bottom": "#183121",
+    "mid_top": "#4F7747",
+    "mid_bottom": "#294A31",
+    "front_top": "#73975B",
+    "front_bottom": "#3F6843",
+    "highlight": "#A7BC78",
+    "occlusion": "#14291E"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {
+      "p0": [
+        119,
+        311
+      ],
+      "p1": [
+        112,
+        253
+      ],
+      "p2": [
+        111,
+        188
+      ],
+      "w0": 18,
+      "w1": 8
+    },
+    {
+      "p0": [
+        136,
+        311
+      ],
+      "p1": [
+        144,
+        250
+      ],
+      "p2": [
+        146,
+        187
+      ],
+      "w0": 17,
+      "w1": 7
+    },
+    {
+      "p0": [
+        112,
+        225
+      ],
+      "p1": [
+        92,
+        194
+      ],
+      "p2": [
+        64,
+        171
+      ],
+      "w0": 7,
+      "w1": 2.8
+    },
+    {
+      "p0": [
+        113,
+        211
+      ],
+      "p1": [
+        97,
+        174
+      ],
+      "p2": [
+        84,
+        137
+      ],
+      "w0": 6,
+      "w1": 2.5
+    },
+    {
+      "p0": [
+        143,
+        220
+      ],
+      "p1": [
+        163,
+        188
+      ],
+      "p2": [
+        194,
+        164
+      ],
+      "w0": 7,
+      "w1": 2.8
+    },
+    {
+      "p0": [
+        145,
+        206
+      ],
+      "p1": [
+        163,
+        168
+      ],
+      "p2": [
+        178,
+        132
+      ],
+      "w0": 6,
+      "w1": 2.5
+    },
+    {
+      "p0": [
+        127,
+        202
+      ],
+      "p1": [
+        124,
+        166
+      ],
+      "p2": [
+        120,
+        122
+      ],
+      "w0": 5.5,
+      "w1": 2.2
+    }
+  ],
+  "paletteId": "street_dense_evergreen_reference_01",
+  "referenceNotes": {
+    "source": "user-provided street tree photograph",
+    "use": "structural and palette reference only; no source pixels are embedded",
+    "traits": [
+      "very wide dense rounded crown",
+      "elongated lanceolate leaves in visible sprays",
+      "deep shaded lower canopy",
+      "irregular drooping lower fringe",
+      "two main trunk stems"
+    ]
+  },
+  "validation": {
+    "minimumOpaqueHeightPx": 245,
+    "maximumOpaqueHeightPx": 312
+  }
+}

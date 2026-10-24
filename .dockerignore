@@ -1,0 +1,13 @@
+node_modules
+.env
+.env.*
+.gitignore
+.DS_Store
+npm-debug.log*
+*.local
+
+# .git NÃO está ignorado de propósito — o stage "build-info" do Dockerfile
+# lê o SHA/data do commit dali para expor em /health e /eu (ver
+# src/services/buildInfo.js). Só existe no stage descartado; nunca vai
+# parar na imagem final (stage final não faz COPY do .git, só dos 2
+# arquivos de texto gerados a partir dele).

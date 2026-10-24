@@ -1,0 +1,290 @@
+{
+  "topic": "secure-code-agent-sandbox-architecture",
+  "category": "cloud-security-and-ai-agents",
+  "description": "Arquitetura geral para criar ambientes isolados de execução de código para agentes de IA, evitando execução maliciosa, vazamento de credenciais e acesso indevido à infraestrutura.",
+
+  "security-foundations": {
+    "principles": [
+      {
+        "name": "network-isolation",
+        "description": "O ambiente de execução deve operar sem acesso à internet para impedir comunicação externa não autorizada.",
+        "implementation": {
+          "strategy": [
+            "bloquear conexões de saída",
+            "não permitir download dinâmico de dependências",
+            "pré-instalar bibliotecas necessárias na imagem"
+          ]
+        },
+        "benefits": [
+          "reduz exfiltração de dados",
+          "impede download de payloads maliciosos",
+          "aumenta previsibilidade do ambiente"
+        ]
+      },
+
+      {
+        "name": "ephemeral-filesystem",
+        "description": "O código analisado deve existir somente em um workspace temporário isolado.",
+        "implementation": {
+          "storage-options": [
+            "tmpfs",
+            "/tmp",
+            "temporary-container-volume"
+          ],
+          "rules": [
+            "somente o workspace possui permissão de escrita",
+            "sistema operacional deve permanecer somente leitura",
+            "arquivos temporários devem ser removidos após execução"
+          ]
+        }
+      },
+
+      {
+        "name": "least-privilege-execution",
+        "description": "Processos executados pelo agente nunca devem possuir privilégios administrativos.",
+        "implementation": {
+          "container-user": "non-root-user",
+          "rules": [
+            "não executar como root",
+            "remover permissões desnecessárias",
+            "limitar acesso ao sistema"
+          ]
+        }
+      },
+
+      {
+        "name": "resource-limits",
+        "description": "Toda execução deve possuir limites rígidos de consumo.",
+        "controls": {
+          "cpu-limit": true,
+          "memory-limit": true,
+          "execution-timeout": true
+        },
+        "example": {
+          "maximum-execution-time": "10-seconds"
+        }
+      }
+    ]
+  },
+
+
+  "isolated-container-image": {
+    "purpose": "Criar uma imagem Docker contendo somente ferramentas necessárias para validação de código.",
+
+    "recommended-components": {
+      "base-image": "minimal-linux-container",
+      "runtimes": [
+        "nodejs",
+        "python",
+        "php"
+      ],
+      "static-analysis-tools": [
+        "eslint",
+        "stylelint",
+        "postcss"
+      ]
+    },
+
+    "container-hardening": {
+      "rules": [
+        "remover pacotes desnecessários",
+        "executar limpeza após instalação",
+        "criar usuário sem privilégios",
+        "definir workspace restrito"
+      ]
+    }
+  },
+
+
+  "secure-command-execution": {
+    "problem": "Executar comandos shell diretamente pode permitir command injection.",
+
+    "unsafe-pattern": {
+      "method": "shell-string-execution",
+      "risk": "entrada maliciosa pode alterar comandos"
+    },
+
+    "recommended-pattern": {
+      "method": "exec-file-with-arguments",
+      "benefits": [
+        "separa comando dos argumentos",
+        "reduz risco de injeção shell",
+        "permite validação de comandos permitidos"
+      ]
+    },
+
+    "executor-security-controls": {
+      "allowed-commands-list": [
+        "language-runtime",
+        "static-analyzer",
+        "compiler-checker"
+      ],
+
+      "execution-options": {
+        "timeout": "limited-duration",
+        "output-buffer": "limited-size",
+        "working-directory": "isolated-workspace"
+      },
+
+      "environment-security": {
+        "strategy": "clean-environment",
+        "remove": [
+          "api-keys",
+          "database-passwords",
+          "cloud-credentials",
+          "private-tokens"
+        ]
+      }
+    }
+  },
+
+
+  "static-validation-model": {
+    "principle": "analisar código sem executar lógica da aplicação",
+
+    "validators": [
+      {
+        "language": "php",
+        "method": "syntax-check",
+        "example-tool": "php-l",
+        "behavior": "analisa sintaxe sem executar aplicação"
+      },
+
+      {
+        "language": "python",
+        "method": "bytecode-compilation-check",
+        "example-tool": "python-py-compile",
+        "behavior": "verifica sintaxe sem iniciar servidor ou executar fluxo da aplicação"
+      },
+
+      {
+        "language": "javascript",
+        "method": "static-analysis",
+        "tools": [
+          "eslint"
+        ]
+      },
+
+      {
+        "language": "css",
+        "method": "stylesheet-analysis",
+        "tools": [
+          "stylelint",
+          "postcss"
+        ]
+      },
+
+      {
+        "language": "html",
+        "method": "markup-validation"
+      }
+    ]
+  },
+
+
+  "agent-execution-flow": {
+    "pipeline": [
+      {
+        "step": 1,
+        "name": "receive-code-request",
+        "actor": "user-or-ai-agent"
+      },
+
+      {
+        "step": 2,
+        "name": "create-isolated-workspace",
+        "actor": "sandbox-manager"
+      },
+
+      {
+        "step": 3,
+        "name": "validate-file-access",
+        "actor": "path-security-layer"
+      },
+
+      {
+        "step": 4,
+        "name": "execute-static-validation",
+        "actor": "sandbox-executor"
+      },
+
+      {
+        "step": 5,
+        "name": "return-diagnostics",
+        "actor": "validation-engine"
+      },
+
+      {
+        "step": 6,
+        "name": "destroy-workspace",
+        "actor": "cleanup-manager"
+      }
+    ]
+  },
+
+
+  "recommended-project-structure": {
+    "pattern": "modular-sandbox-architecture",
+
+    "folders": {
+      "sandbox": {
+        "responsibility": "isolamento-e-execucao",
+        "modules": [
+          "executor",
+          "filesystem-manager",
+          "resource-limiter",
+          "path-validator"
+        ]
+      },
+
+      "workers": {
+        "responsibility": "validadores-especificos-por-linguagem",
+        "examples": [
+          "html-validator",
+          "css-validator",
+          "javascript-validator",
+          "php-validator",
+          "python-validator"
+        ]
+      }
+    }
+  },
+
+
+  "threat-model": {
+    "protected-against": [
+      {
+        "threat": "malicious-code-execution",
+        "mitigation": [
+          "static-analysis",
+          "restricted-user",
+          "timeouts"
+        ]
+      },
+
+      {
+        "threat": "credential-leak",
+        "mitigation": [
+          "clean-environment",
+          "secret-isolation"
+        ]
+      },
+
+      {
+        "threat": "filesystem-escape",
+        "mitigation": [
+          "path-validation",
+          "isolated-workspace"
+        ]
+      },
+
+      {
+        "threat": "network-exfiltration",
+        "mitigation": [
+          "offline-execution",
+          "network-blocking"
+        ]
+      }
+    ]
+  }
+}

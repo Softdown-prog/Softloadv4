@@ -1,0 +1,50 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "flower_bed_01",
+  "sceneryType": "flower_bed",
+  "canvas": [160, 144],
+  "anchor": [80, 118],
+  "seed": 29,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "tile": [128, 64]
+  },
+  "palette": {
+    "ground_shadow": "#17301F",
+    "border_top": "#BFAE7D",
+    "border_bottom": "#7E6A49",
+    "soil": "#4A3526",
+    "foliage_dark": "#0A4529",
+    "foliage_mid": "#0D5A32",
+    "foliage_light": "#187342",
+    "foliage_highlight": "#31864E",
+    "leaf_dabs": ["#0C4228", "#115533", "#17683C", "#287C49", "#478F58", "#6AA064"],
+    "stem": "#185F35",
+    "stem_light": "#2C7842",
+    "flower_yellows": ["#F5D94A", "#EAC638", "#FFE36B", "#E7BA31", "#F7E17C"],
+    "glints": ["#378B50", "#529A5D", "#73A36A", "#C6B953", "#E5CB4A"],
+    "grain": ["#10452B", "#17603A", "#2C7848", "#5A9560", "#D7BF48"]
+  },
+  "layout": {
+    "center": [80, 93],
+    "outerRadius": [60, 22],
+    "innerRadius": [52, 17],
+    "foliageRadius": [61, 32],
+    "darkBlobs": 42,
+    "midBlobs": 64,
+    "lightBlobs": 62,
+    "highlightBlobs": 30,
+    "stemCount": 44,
+    "tallStemChance": 0.15,
+    "minimumFlowerY": 20
+  },
+  "raster": {
+    "leafDabs": 220,
+    "glints": 145,
+    "finalGrain": 95
+  },
+  "validation": {
+    "footprint": [1, 1],
+    "requiresGameplayScaleReview": true
+  }
+}

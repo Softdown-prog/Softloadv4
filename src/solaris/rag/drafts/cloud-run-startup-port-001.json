@@ -1,0 +1,46 @@
+{
+  "id": "cloud-run-startup-port-001",
+  "slug": "cloud-run-container-failed-to-listen-port",
+  "categoria": "cloud-run",
+  "descricao": "Container iniciado, mas Cloud Run não conseguiu detectar o servidor HTTP na porta fornecida.",
+  "sintomas": [
+    "Default STARTUP TCP probe failed",
+    "Connection failed with status DEADLINE_EXCEEDED",
+    "container failed to start and listen on port 8080"
+  ],
+  "investigacao": [
+    "Consultar logs da revisão",
+    "Verificar se server.js chama app.listen",
+    "Verificar valor de PORT",
+    "Verificar endereço de bind",
+    "Comparar PORT esperado pelo Cloud Run com PORT usado pela aplicação"
+  ],
+  "causa_raiz": "server.js estava usando PORT=3000 fixo em vez de respeitar process.env.PORT.",
+  "correcao": {
+    "antes": "const PORT = 3000;",
+    "depois": "const PORT = process.env.PORT || 8080;"
+  },
+  "validacao": [
+    "app.listen(PORT, '0.0.0.0', ...)",
+    "git diff --check",
+    "build Docker concluído",
+    "smoke test de require concluído",
+    "novo deploy"
+  ],
+  "comandos": [
+    "grep -nE \"const PORT|app.listen\" server.js",
+    "git diff --check",
+    "gcloud logging read ..."
+  ],
+  "aprendizado": [
+    "Cloud Run fornece PORT através de variável de ambiente.",
+    "A aplicação deve escutar em process.env.PORT.",
+    "O servidor deve aceitar conexões em 0.0.0.0.",
+    "Um build Docker bem-sucedido não significa que o container passará no startup probe."
+  ],
+  "anti_padrao": [
+    "Fixar PORT=3000 em produção.",
+    "Assumir que EXPOSE 8080 configura automaticamente o servidor.",
+    "Confundir sucesso do build com sucesso do runtime."
+  ]
+}

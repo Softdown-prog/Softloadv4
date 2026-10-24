@@ -1,0 +1,66 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "billing_logs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "criado_em",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "admin_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "criado_em",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "compilacoes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "wsSessionId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "criadoEm",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "solaris_rag_vectors",
+      "fieldPath": "embedding",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "vectorConfig": {
+            "dimension": 768,
+            "flat": {}
+          }
+        }
+      ]
+    },
+    {
+      "collectionGroup": "solaris_code_vectors",
+      "fieldPath": "embedding",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION",
+          "vectorConfig": {
+            "dimension": 768,
+            "flat": {}
+          }
+        }
+      ]
+    }
+  ]
+}

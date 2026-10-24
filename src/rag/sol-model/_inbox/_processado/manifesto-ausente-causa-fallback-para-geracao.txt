@@ -1,0 +1,43 @@
+Manifesto ausente no snapshot faz o chat do Workspace cair pra modo geração sem avisar
+
+Contexto: toda sessão do Workspace guarda um campo "snapshot" no Firestore
+(clientes_premium/{email}/projetos/{pid}/sessoes/{sid}). O roteamento do
+chat dedicado do Workspace (workspaceChat.js) decide entre dois modos
+totalmente diferentes checando uma única condição: wsSnapshot?.manifesto
+existe ou não.
+
+- Se existe manifesto: modo edição, 100% agêntico (templateEditAgent.js
+  via chatEditFlow.js). O agente propõe mudanças, pede confirmação, aplica,
+  cria versão nova no histórico.
+- Se NÃO existe manifesto: modo geração, o mesmo fluxo de marcador
+  [[TEMPLATE:{...}]] usado pelo Especialista Blogger geral
+  (chatGenerationFlow.js). A IA tenta criar um template do ZERO, ignorando
+  que já existe um site ativo na sessão.
+
+O bug real encontrado: duas rotas de criação de sessão em workspace.js —
+POST /api/workspace/projetos/:pid/sessoes (vincula a sessão à última
+compilação global do usuário) e POST /api/workspace/importar (importa uma
+compilação existente) — montavam o snapshot só com campos resumidos
+(siteName, colorPreset, typography, gridLayout, nichoTema, xmlPath, gcPath,
+compilacaoId, snapshotEm), sem o campo manifesto. Isso acontecia mesmo o
+doc de origem em `compilacoes` já ter o manifesto completo disponível na
+mesma leitura — só não estava sendo copiado pro snapshot.
+
+Resultado visível pro usuário: pedir uma edição ("adiciona aria-label nos
+botões") numa sessão criada por essas duas rotas fazia a IA responder algo
+como "não consigo editar o XML diretamente, vou gerar um template novo pra
+você" — completamente errado, porque o usuário queria editar o site que já
+tinha, não criar um novo.
+
+Correção aplicada: as duas rotas agora salvam manifesto no snapshot desde a
+criação. Além disso, workspaceChat.js ganhou um backfill em runtime: se a
+sessão já existe sem manifesto mas tem compilacaoId, busca o manifesto no
+doc de compilações correspondente e persiste de volta na sessão — conserta
+sessões antigas automaticamente na primeira mensagem seguinte, sem precisar
+recriar nada.
+
+Lição pra qualquer nova rota que crie ou vincule um snapshot no futuro:
+sempre incluir o campo manifesto quando ele estiver disponível na leitura.
+Esquecer isso não gera nenhum erro visível — o sistema degrada
+silenciosamente pro modo geração, que parece "funcionar" mas faz a coisa
+errada.

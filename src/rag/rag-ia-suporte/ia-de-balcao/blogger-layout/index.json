@@ -1,0 +1,26 @@
+{
+  "grupo": "blogger-layout",
+  "descricao": "Blogger Layout: grid, imagens, micro-interações, tokens CSS e posicionamento",
+  "ficheiros": [
+    {
+      "arquivo": "ia-balcao-grid-sidebar-condicional.json",
+      "palavras_chave": ["grid", "sidebar", "col-lg-8", "col-lg-4", "isMultipleItems", "isPost", "condicional", "artigos relacionados", "layout dois colunas", "bootstrap grid"]
+    },
+    {
+      "arquivo": "ia-balcao-imagens-responsivas-blogger.json",
+      "palavras_chave": ["imagens responsivas", "resize", "lazy load", "LCP", "layout shift", "placeholder SVG", "breakpoints", "IIFE", "otimizacao imagens", "performance imagens", "resizeImage"]
+    },
+    {
+      "arquivo": "ia-balcao-micro-interacoes-css.json",
+      "palavras_chave": ["micro-interações", "scrollbar", "seleção de texto", "zoom cinematográfico", "card hover", "fallback imagem", "holográfico", "signal flicker", "polimento visual", "animação css", "efeito css"]
+    },
+    {
+      "arquivo": "ia-balcao-gamer-css-tokens-e-badges.json",
+      "palavras_chave": ["category badges", "badges cores", "gamer css variables", "--gamer-primary", "--gamer-surface", "--gamer-border", "--font-display", "badge monocromático", "categoryBadges", "variação cromática", "paleta nicho", "css tokens", "gamer-playerone"]
+    },
+    {
+      "arquivo": "ia-balcao-saas-posicionamento-componentes.json",
+      "palavras_chave": ["saas-nexus", "posicionamento", "ícone duplicado", "scroll-to-top", "mobile nav", "::before", "sobreposição", "feature card", "deduplicação", "z-index", "componente saas"]
+    }
+  ]
+}

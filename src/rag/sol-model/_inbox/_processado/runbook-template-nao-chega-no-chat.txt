@@ -1,0 +1,52 @@
+Runbook — usuário reporta que o template pedido no chat "não chega"
+
+Sintoma típico: o usuário pede pra gerar ou editar um template pelo chat
+(Especialista ou Workspace), a IA responde algo como "perfeito, gerando
+seu template" ou "aplicando a edição", mas nenhum download aparece e
+nenhuma mensagem de erro é mostrada — a conversa simplesmente para aí, às
+vezes com o usuário mandando "ok" repetidas vezes sem nada acontecer.
+
+Causa raiz mais provável, na ordem de probabilidade (baseado em casos reais
+já encontrados):
+
+1. Falha de compilação sendo engolida silenciosamente. O ponto de detecção
+   do marcador [[TEMPLATE:{...}]] (chat/chatGenerationFlow.js) captura
+   qualquer erro de _compilarParaChat num try/catch que só faz
+   console.error — NENHUM erro chega ao usuário nesse caminho hoje. Isso é
+   uma limitação conhecida do design atual, não um bug pontual: qualquer
+   falha de compilação (integridade de dossiê, cota de storage estourada,
+   XML inválido) vira silêncio pro usuário. Primeiro lugar a checar: logs
+   do servidor por linhas "[CHAT-TEMPLATE] Falha ao compilar marcador".
+
+2. Verificação de integridade do dossiê (dossieIntegrityChecker,
+   compilerWorker.js Passo 5b) — lança "[DOSSIE] Integridade do nicho ...
+   violada" quando uma peça declara um domId que não aparece no XML final.
+   Já aconteceu por causa de conflito entre Design Package e hero
+   protegido do dossiê (ver arquivo específico sobre isso nesta pasta) —
+   vale checar se o nichoTema em questão tem tanto um dossiê
+   (rag-ia-compiler/pipeline/temas/tema-{nicho}-dossie.json) quanto um
+   Design Package (design-packages/*/config.json) cadastrados.
+
+3. Erro 400 do Gemini por peculiaridade da API (ver arquivo específico
+   nesta pasta) — enum vazio em tool declaration, ou histórico começando
+   com role errado. Esses aparecem no log como
+   "[GoogleGenerativeAI Error]" com mensagens específicas ("enum[0]:
+   cannot be empty" ou "First content should be with role 'user'"). No
+   caso do histórico, é recorrente: uma vez que a conversa passa de ~10
+   mensagens, o MESMO erro se repete em toda mensagem seguinte daquela
+   sessão especificamente.
+
+4. Cota de armazenamento do usuário estourada (verificarCota,
+   storageService.js) — lança erro ANTES do upload, também cai no mesmo
+   silêncio do item 1 se vier do fluxo de geração via chat.
+
+Como confirmar qual é: pedir (ou já ter) o log de erros do período em
+questão — o painel expõe isso, e as mensagens de erro citadas acima são
+específicas o bastante pra apontar direto pra causa. Sem log, é muito
+difícil diagnosticar às cegas porque o sintoma do lado do usuário é sempre
+o mesmo silêncio, não importa qual das quatro causas seja.
+
+Nota sobre o item 1: enquanto o design não mudar pra propagar erro de
+compilação como uma mensagem visível no chat, esse tipo de report vai
+continuar parecendo "travou sem motivo" pro usuário — o log do servidor é
+a única fonte de verdade disponível hoje.

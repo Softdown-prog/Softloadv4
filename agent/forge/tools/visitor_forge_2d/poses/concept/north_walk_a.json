@@ -1,0 +1,31 @@
+{
+  "poseId": "north_walk_a",
+  "direction": "north",
+  "frameDurationMs": 220,
+  "joints": {
+    "shoulder_left": {
+      "rotationDegrees": 1.6
+    },
+    "shoulder_right": {
+      "rotationDegrees": -1.6
+    },
+    "elbow_left": {
+      "rotationDegrees": 0.8
+    },
+    "elbow_right": {
+      "rotationDegrees": -0.8
+    },
+    "hip_left": {
+      "rotationDegrees": -0.9
+    },
+    "hip_right": {
+      "rotationDegrees": 0.9
+    },
+    "knee_left": {
+      "rotationDegrees": 0.5
+    },
+    "knee_right": {
+      "rotationDegrees": -0.5
+    }
+  }
+}

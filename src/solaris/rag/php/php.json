@@ -1,0 +1,27 @@
+{
+  "id":"php",
+
+  "slug":"php",
+
+  "categoria":"backend",
+
+  "descricao":"Backend para sites dinâmicos.",
+
+  "arquivos":[
+    "index.php",
+    "config.php",
+    "routes.php"
+  ],
+
+  "casos_de_uso":[
+    "Blog",
+    "Portal",
+    "CMS",
+    "Sistema administrativo",
+    "Área de login"
+  ],
+
+  "validadores":[
+    "php-l"
+  ]
+}

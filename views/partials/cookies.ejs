@@ -1,0 +1,64 @@
+<div id="cookie-engine" style="display:none;position:fixed;bottom:24px;right:24px;z-index:1090;width:min(384px,calc(100vw - 32px))">
+    <div class="rounded-4 p-4 shadow"
+         style="background:rgba(15,23,42,0.95);backdrop-filter:blur(20px);border:1px solid var(--sl-bg-800)">
+        <div class="d-flex align-items-start gap-3">
+            <%- include('./icon', { name: 'shield-check', cls: 'mt-1 flex-shrink-0', style: 'color:var(--sl-primary);font-size:1.25rem' }) %>
+            <div class="flex-grow-1">
+                <p class="mb-2 small" style="color:var(--sl-text-300);line-height:1.6">
+                    Usamos um cookie essencial de sessão para manter você conectado com segurança, e armazenamento local do navegador para lembrar preferências como o tema claro/escuro. Não usamos cookies de rastreamento, publicidade ou analytics de terceiros.
+                </p>
+                <p class="mb-3 small">
+                    <a href="/privacidade" class="fw-semibold" style="color:var(--sl-primary);text-decoration:none">Saiba mais na Política de Privacidade</a>
+                </p>
+                <div class="d-flex justify-content-end">
+                    <button onclick="acceptEngineCookies()" class="btn btn-sl-primary btn-sm fw-bold text-uppercase" style="letter-spacing:0.08em">
+                        Entendi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var storageKey = 'softload_cookie_consent';
+    var banner     = document.getElementById('cookie-engine');
+    if (!banner) return;
+
+    // Validade de 12 meses após aceite — renovação periódica de consentimento
+    // (prática usual LGPD/GDPR), evita reexibir o aviso toda semana pro mesmo
+    // visitante que já aceitou.
+    var CONSENT_VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
+
+    function checkConsent() {
+        var data = localStorage.getItem(storageKey);
+        if (!data) return false;
+        try {
+            return Date.now() < JSON.parse(data).expiry;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    if (!checkConsent()) {
+        setTimeout(function() {
+            banner.style.display = 'block';
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(12px)';
+            banner.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+            requestAnimationFrame(function() {
+                banner.style.opacity  = '1';
+                banner.style.transform = 'translateY(0)';
+            });
+        }, 1500);
+    }
+
+    window.acceptEngineCookies = function() {
+        localStorage.setItem(storageKey, JSON.stringify({ expiry: Date.now() + CONSENT_VALIDITY_MS }));
+        banner.style.opacity   = '0';
+        banner.style.transform = 'translateY(12px)';
+        setTimeout(function() { banner.style.display = 'none'; }, 400);
+    };
+});
+</script>

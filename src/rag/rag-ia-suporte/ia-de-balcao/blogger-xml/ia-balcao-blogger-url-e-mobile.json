@@ -1,0 +1,25 @@
+{
+  "id": "ia-balcao-blogger-url-e-mobile",
+  "categoria": "blogger-url-configuracao",
+  "titulo": "Blogger: URLs, Parâmetro ?m=1, Permalinks e Datas",
+  "parametro_m1": {
+    "o_que_e": "?m=1 é um parâmetro arquitetônico intrínseco do Blogger — usado pelo backend para renderizar a versão mobile",
+    "status_nativo": "NÃO existe forma nativa de desativar o ?m=1 nos servidores do Blogger",
+    "problema_seo": "Gera URLs duplicadas — a mesma página acessível com e sem ?m=1",
+    "solucao_recomendada": "Mascarar a URL via JavaScript com window.history.replaceState — não faz nova requisição ao servidor, sem risco de loops"
+  },
+  "script_remover_m1": {
+    "codigo": "if (window.location.search.indexOf('m=1') > -1) { var urlLimpa = window.location.protocol + '//' + window.location.host + window.location.pathname; window.history.replaceState(null, null, urlLimpa); }",
+    "onde_colocar": "Dentro do b:skin CDATA ou antes de </body> no template",
+    "vantagem": "history.replaceState não faz requisição ao servidor, não quebra o DOM, não conflita com outros scripts"
+  },
+  "remocao_datas_urls": {
+    "problema": "Blogger inclui datas nas URLs por padrão: /2024/01/titulo-do-post.html — não é ideal para SEO atemporal",
+    "limitacao": "O Blogger NÃO permite remover datas das URLs nativamente — é uma limitação da plataforma",
+    "alternativas": [
+      "Usar o campo 'Permalink' personalizado ao publicar cada post (remove data)",
+      "Aceitar o formato padrão e compensar com conteúdo sempergreen de qualidade"
+    ]
+  },
+  "palavras_chave": ["?m=1", "parâmetro mobile", "url duplicada", "permalink", "data url", "remover data url", "history.replaceState", "blogger url", "slug", "url canônica"]
+}

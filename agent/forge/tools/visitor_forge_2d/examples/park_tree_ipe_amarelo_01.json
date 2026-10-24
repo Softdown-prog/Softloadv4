@@ -1,0 +1,84 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_ipe_amarelo_01",
+  "pipelineRevision": 5,
+  "canvas": [256, 320],
+  "anchor": [128, 311],
+  "seed": 73191,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 118,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "derived_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": ["south", "west", "north", "east"],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "bright lemon-yellow flowering masses",
+    "front": "warm gold clusters with visible dark woody forks",
+    "base": "medium warm brown bark with root flare",
+    "rotationSpace": "screen-consistent derived directional sprites"
+  },
+  "broadleafStructure": {
+    "layout": "open_flowering_canopy",
+    "species": "ipe_amarelo",
+    "profile": "broad_open_rounded",
+    "visibleWood": 0.34,
+    "primaryForks": 4,
+    "secondaryForks": 10,
+    "macroMasses": 12,
+    "negativeSpace": "medium"
+  },
+  "foliage": {
+    "primaryBrush": "flower_cluster_small_round",
+    "secondaryBrush": "leaf_cluster_broadleaf",
+    "edgeRhythm": "many_small_flowering_clusters",
+    "clusterDensity": "dense",
+    "flowerColorRange": ["#F2B705", "#FFD21A", "#FFE64A"]
+  },
+  "palette": {
+    "ground_shadow": "#2B2B25",
+    "trunk_top": "#8C633B",
+    "trunk_bottom": "#4A321F",
+    "trunk_light": "#C69A63",
+    "back_top": "#D59B08",
+    "back_bottom": "#9A6700",
+    "mid_top": "#F2B705",
+    "mid_bottom": "#C38300",
+    "front_top": "#FFD21A",
+    "front_bottom": "#E4A400",
+    "highlight": "#FFE96A",
+    "occlusion": "#62431B"
+  },
+  "raster": {
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "validation": {
+    "minimumOpaqueHeightPx": 220,
+    "maximumOpaqueHeightPx": 300,
+    "footprint": [1, 1],
+    "visualApproval": "approved",
+    "approvedViews": ["south", "west", "north", "east"],
+    "approvedFor": ["runtime_promotion", "forge_derivation"]
+  },
+  "derivation": {
+    "sourceType": "approved_2d_master",
+    "directionMethod": "deterministic_canopy_warp",
+    "purpose": "future Forge 2D trees derived from the same open-flowering geometry/palette grammar"
+  }
+}

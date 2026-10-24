@@ -1,0 +1,49 @@
+{
+  "pipeline-compilation-core": {
+    "objetivo-do-pipeline": {
+      "meta-primaria": "garantir-compilacao-deterministica-segura-para-templates-blogger-v3",
+      "focos-de-analise": [
+        "ordem-de-compilacao",
+        "montagem-xml",
+        "sanitizacao",
+        "validacao",
+        "parser-safe-output"
+      ]
+    },
+    "estagios-iniciais-pipeline": [
+      {
+        "nome-do-estagio": "input-intent-analysis",
+        "ordem": 1,
+        "descricao": "analisa-intencao-do-usuario-e-converte-em-blueprint-estrutural",
+        "operacoes": [
+          "detect-layout-type",
+          "detect-niche",
+          "detect-widget-requirements",
+          "detect-responsive-rules"
+        ]
+      },
+      {
+        "nome-do-estagio": "rag-context-routing",
+        "ordem": 2,
+        "descricao": "roteia-contextos-especializados-do-rag",
+        "operacoes": [
+          "load-blogger-core-rules",
+          "load-layout-rules",
+          "load-widget-rules",
+          "load-performance-rules"
+        ]
+      },
+      {
+        "nome-do-estagio": "blueprint-generation",
+        "ordem": 3,
+        "descricao": "gera-json-estrutural-do-template",
+        "operacoes": [
+          "define-layout-tree",
+          "define-widget-tree",
+          "define-grid-system",
+          "define-render-logic"
+        ]
+      }
+    ]
+  }
+}

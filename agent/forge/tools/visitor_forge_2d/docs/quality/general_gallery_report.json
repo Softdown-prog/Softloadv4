@@ -1,0 +1,1155 @@
+{
+  "componentVariants": 704,
+  "families": 44,
+  "renderedStyles": 88,
+  "seed": 43,
+  "scale": 1.6,
+  "records": [
+    {
+      "id": "wood_plank_clean_md_000",
+      "family": "wood_plank",
+      "style": "clean",
+      "bounds": [
+        15,
+        30,
+        85,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "wood_plank_rough_md_000",
+      "family": "wood_plank",
+      "style": "rough",
+      "bounds": [
+        15,
+        31,
+        85,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "wood_beam_square_md_000",
+      "family": "wood_beam",
+      "style": "square",
+      "bounds": [
+        17,
+        28,
+        84,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "wood_beam_tapered_md_000",
+      "family": "wood_beam",
+      "style": "tapered",
+      "bounds": [
+        17,
+        28,
+        84,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "metal_pipe_round_md_000",
+      "family": "metal_pipe",
+      "style": "round",
+      "bounds": [
+        18,
+        31,
+        82,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "metal_pipe_square_md_000",
+      "family": "metal_pipe",
+      "style": "square",
+      "bounds": [
+        18,
+        31,
+        82,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "metal_plate_flat_md_000",
+      "family": "metal_plate",
+      "style": "flat",
+      "bounds": [
+        28,
+        24,
+        72,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "metal_plate_beveled_md_000",
+      "family": "metal_plate",
+      "style": "beveled",
+      "bounds": [
+        28,
+        24,
+        72,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "fastener_rivet_md_000",
+      "family": "fastener",
+      "style": "rivet",
+      "bounds": [
+        44,
+        32,
+        56,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "fastener_bolt_md_000",
+      "family": "fastener",
+      "style": "bolt",
+      "bounds": [
+        44,
+        32,
+        56,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "hinge_bracket_hinge_md_000",
+      "family": "hinge_bracket",
+      "style": "hinge",
+      "bounds": [
+        39,
+        22,
+        61,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "hinge_bracket_angle_bracket_md_000",
+      "family": "hinge_bracket",
+      "style": "angle_bracket",
+      "bounds": [
+        39,
+        22,
+        61,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "rope_chain_rope_md_000",
+      "family": "rope_chain",
+      "style": "rope",
+      "bounds": [
+        22,
+        34,
+        79,
+        43
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "rope_chain_chain_md_000",
+      "family": "rope_chain",
+      "style": "chain",
+      "bounds": [
+        22,
+        33,
+        80,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "marine_fitting_cleat_md_000",
+      "family": "marine_fitting",
+      "style": "cleat",
+      "bounds": [
+        33,
+        29,
+        68,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "marine_fitting_mooring_ring_md_000",
+      "family": "marine_fitting",
+      "style": "mooring_ring",
+      "bounds": [
+        33,
+        28,
+        68,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "street_hardware_post_cap_md_000",
+      "family": "street_hardware",
+      "style": "post_cap",
+      "bounds": [
+        33,
+        16,
+        68,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "street_hardware_foot_plate_md_000",
+      "family": "street_hardware",
+      "style": "foot_plate",
+      "bounds": [
+        33,
+        16,
+        68,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "natural_detail_leaf_cluster_md_000",
+      "family": "natural_detail",
+      "style": "leaf_cluster",
+      "bounds": [
+        35,
+        26,
+        65,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "natural_detail_stone_cluster_md_000",
+      "family": "natural_detail",
+      "style": "stone_cluster",
+      "bounds": [
+        35,
+        27,
+        65,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "surface_decal_scratch_md_000",
+      "family": "surface_decal",
+      "style": "scratch",
+      "bounds": [
+        36,
+        33,
+        63,
+        43
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "surface_decal_paint_chip_md_000",
+      "family": "surface_decal",
+      "style": "paint_chip",
+      "bounds": [
+        35,
+        32,
+        65,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "decorative_trim_bead_md_000",
+      "family": "decorative_trim",
+      "style": "bead",
+      "bounds": [
+        25,
+        33,
+        75,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "decorative_trim_groove_md_000",
+      "family": "decorative_trim",
+      "style": "groove",
+      "bounds": [
+        25,
+        35,
+        76,
+        41
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "washer_nut_washer_md_000",
+      "family": "washer_nut",
+      "style": "washer",
+      "bounds": [
+        42,
+        30,
+        59,
+        47
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "washer_nut_hex_nut_md_000",
+      "family": "washer_nut",
+      "style": "hex_nut",
+      "bounds": [
+        42,
+        30,
+        59,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "hook_latch_hook_md_000",
+      "family": "hook_latch",
+      "style": "hook",
+      "bounds": [
+        45,
+        21,
+        65,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "hook_latch_latch_md_000",
+      "family": "hook_latch",
+      "style": "latch",
+      "bounds": [
+        37,
+        22,
+        64,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "handle_grip_bar_handle_md_000",
+      "family": "handle_grip",
+      "style": "bar_handle",
+      "bounds": [
+        33,
+        33,
+        67,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "handle_grip_loop_handle_md_000",
+      "family": "handle_grip",
+      "style": "loop_handle",
+      "bounds": [
+        33,
+        31,
+        68,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "mesh_panel_chainlink_md_000",
+      "family": "mesh_panel",
+      "style": "chainlink",
+      "bounds": [
+        23,
+        19,
+        77,
+        57
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "mesh_panel_wire_grid_md_000",
+      "family": "mesh_panel",
+      "style": "wire_grid",
+      "bounds": [
+        23,
+        19,
+        77,
+        57
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "railing_segment_two_rail_md_000",
+      "family": "railing_segment",
+      "style": "two_rail",
+      "bounds": [
+        14,
+        21,
+        87,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "railing_segment_three_rail_md_000",
+      "family": "railing_segment",
+      "style": "three_rail",
+      "bounds": [
+        14,
+        21,
+        87,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "ladder_segment_straight_md_000",
+      "family": "ladder_segment",
+      "style": "straight",
+      "bounds": [
+        37,
+        8,
+        63,
+        68
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "ladder_segment_marine_md_000",
+      "family": "ladder_segment",
+      "style": "marine",
+      "bounds": [
+        37,
+        7,
+        63,
+        68
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "oar_paddle_oar_md_000",
+      "family": "oar_paddle",
+      "style": "oar",
+      "bounds": [
+        14,
+        31,
+        87,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "oar_paddle_paddle_md_000",
+      "family": "oar_paddle",
+      "style": "paddle",
+      "bounds": [
+        14,
+        31,
+        87,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "boat_rib_rib_md_000",
+      "family": "boat_rib",
+      "style": "rib",
+      "bounds": [
+        21,
+        26,
+        80,
+        50
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "boat_rib_gunwale_md_000",
+      "family": "boat_rib",
+      "style": "gunwale",
+      "bounds": [
+        21,
+        31,
+        79,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "dock_bumper_rubber_fender_md_000",
+      "family": "dock_bumper",
+      "style": "rubber_fender",
+      "bounds": [
+        33,
+        27,
+        68,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "dock_bumper_rope_fender_md_000",
+      "family": "dock_bumper",
+      "style": "rope_fender",
+      "bounds": [
+        33,
+        27,
+        68,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "lamp_fixture_lantern_md_000",
+      "family": "lamp_fixture",
+      "style": "lantern",
+      "bounds": [
+        35,
+        16,
+        65,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "lamp_fixture_shade_md_000",
+      "family": "lamp_fixture",
+      "style": "shade",
+      "bounds": [
+        33,
+        16,
+        68,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "lamp_post_segment_straight_md_000",
+      "family": "lamp_post_segment",
+      "style": "straight",
+      "bounds": [
+        15,
+        31,
+        85,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "lamp_post_segment_ornate_md_000",
+      "family": "lamp_post_segment",
+      "style": "ornate",
+      "bounds": [
+        15,
+        31,
+        85,
+        45
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "sign_panel_rect_md_000",
+      "family": "sign_panel",
+      "style": "rect",
+      "bounds": [
+        15,
+        21,
+        85,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "sign_panel_rounded_md_000",
+      "family": "sign_panel",
+      "style": "rounded",
+      "bounds": [
+        15,
+        21,
+        85,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "sign_icon_arrow_md_000",
+      "family": "sign_icon",
+      "style": "arrow",
+      "bounds": [
+        36,
+        24,
+        64,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "sign_icon_info_md_000",
+      "family": "sign_icon",
+      "style": "info",
+      "bounds": [
+        44,
+        24,
+        56,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "bench_support_leg_md_000",
+      "family": "bench_support",
+      "style": "leg",
+      "bounds": [
+        34,
+        17,
+        66,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "bench_support_arm_support_md_000",
+      "family": "bench_support",
+      "style": "arm_support",
+      "bounds": [
+        34,
+        16,
+        66,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "bin_component_lid_md_000",
+      "family": "bin_component",
+      "style": "lid",
+      "bounds": [
+        28,
+        21,
+        72,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "bin_component_opening_md_000",
+      "family": "bin_component",
+      "style": "opening",
+      "bounds": [
+        28,
+        21,
+        72,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "planter_rim_round_rim_md_000",
+      "family": "planter_rim",
+      "style": "round_rim",
+      "bounds": [
+        23,
+        30,
+        77,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "planter_rim_square_rim_md_000",
+      "family": "planter_rim",
+      "style": "square_rim",
+      "bounds": [
+        23,
+        30,
+        77,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "stone_block_cut_md_000",
+      "family": "stone_block",
+      "style": "cut",
+      "bounds": [
+        28,
+        25,
+        72,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "stone_block_rough_md_000",
+      "family": "stone_block",
+      "style": "rough",
+      "bounds": [
+        28,
+        25,
+        72,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "brick_tile_brick_md_000",
+      "family": "brick_tile",
+      "style": "brick",
+      "bounds": [
+        33,
+        29,
+        68,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "brick_tile_paver_md_000",
+      "family": "brick_tile",
+      "style": "paver",
+      "bounds": [
+        33,
+        29,
+        68,
+        48
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "fabric_flag_flag_md_000",
+      "family": "fabric_flag",
+      "style": "flag",
+      "bounds": [
+        27,
+        25,
+        72,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "fabric_flag_banner_md_000",
+      "family": "fabric_flag",
+      "style": "banner",
+      "bounds": [
+        27,
+        25,
+        68,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "cable_wire_cable_md_000",
+      "family": "cable_wire",
+      "style": "cable",
+      "bounds": [
+        22,
+        35,
+        79,
+        42
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "cable_wire_wire_md_000",
+      "family": "cable_wire",
+      "style": "wire",
+      "bounds": [
+        22,
+        35,
+        79,
+        42
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "wheel_pulley_wheel_md_000",
+      "family": "wheel_pulley",
+      "style": "wheel",
+      "bounds": [
+        34,
+        22,
+        66,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "wheel_pulley_pulley_md_000",
+      "family": "wheel_pulley",
+      "style": "pulley",
+      "bounds": [
+        34,
+        22,
+        66,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "marine_anchor_anchor_md_000",
+      "family": "marine_anchor",
+      "style": "anchor",
+      "bounds": [
+        33,
+        16,
+        68,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "marine_anchor_grapnel_md_000",
+      "family": "marine_anchor",
+      "style": "grapnel",
+      "bounds": [
+        33,
+        16,
+        67,
+        61
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "buoy_float_round_buoy_md_000",
+      "family": "buoy_float",
+      "style": "round_buoy",
+      "bounds": [
+        36,
+        18,
+        65,
+        58
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "buoy_float_marker_buoy_md_000",
+      "family": "buoy_float",
+      "style": "marker_buoy",
+      "bounds": [
+        38,
+        20,
+        62,
+        58
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "crate_panel_slatted_md_000",
+      "family": "crate_panel",
+      "style": "slatted",
+      "bounds": [
+        28,
+        21,
+        72,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "crate_panel_reinforced_md_000",
+      "family": "crate_panel",
+      "style": "reinforced",
+      "bounds": [
+        28,
+        21,
+        72,
+        56
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "barrel_stave_stave_md_000",
+      "family": "barrel_stave",
+      "style": "stave",
+      "bounds": [
+        36,
+        16,
+        64,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "barrel_stave_hoop_md_000",
+      "family": "barrel_stave",
+      "style": "hoop",
+      "bounds": [
+        36,
+        16,
+        64,
+        60
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "awning_canopy_striped_awning_md_000",
+      "family": "awning_canopy",
+      "style": "striped_awning",
+      "bounds": [
+        20,
+        25,
+        80,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "awning_canopy_plain_canopy_md_000",
+      "family": "awning_canopy",
+      "style": "plain_canopy",
+      "bounds": [
+        20,
+        25,
+        80,
+        52
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "flower_cluster_round_bloom_md_000",
+      "family": "flower_cluster",
+      "style": "round_bloom",
+      "bounds": [
+        37,
+        27,
+        64,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "flower_cluster_spray_bloom_md_000",
+      "family": "flower_cluster",
+      "style": "spray_bloom",
+      "bounds": [
+        35,
+        26,
+        66,
+        49
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "shrub_cluster_rounded_shrub_md_000",
+      "family": "shrub_cluster",
+      "style": "rounded_shrub",
+      "bounds": [
+        32,
+        24,
+        69,
+        50
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "shrub_cluster_spiky_shrub_md_000",
+      "family": "shrub_cluster",
+      "style": "spiky_shrub",
+      "bounds": [
+        33,
+        24,
+        69,
+        53
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "pavement_marking_stripe_md_000",
+      "family": "pavement_marking",
+      "style": "stripe",
+      "bounds": [
+        30,
+        32,
+        71,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "pavement_marking_chevron_md_000",
+      "family": "pavement_marking",
+      "style": "chevron",
+      "bounds": [
+        30,
+        30,
+        64,
+        46
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "water_edge_detail_foam_line_md_000",
+      "family": "water_edge_detail",
+      "style": "foam_line",
+      "bounds": [
+        25,
+        33,
+        75,
+        43
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "water_edge_detail_ripple_line_md_000",
+      "family": "water_edge_detail",
+      "style": "ripple_line",
+      "bounds": [
+        25,
+        32,
+        75,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "tool_handle_straight_handle_md_000",
+      "family": "tool_handle",
+      "style": "straight_handle",
+      "bounds": [
+        22,
+        32,
+        79,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "tool_handle_grip_handle_md_000",
+      "family": "tool_handle",
+      "style": "grip_handle",
+      "bounds": [
+        22,
+        32,
+        79,
+        44
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "decorative_finial_ball_finial_md_000",
+      "family": "decorative_finial",
+      "style": "ball_finial",
+      "bounds": [
+        38,
+        22,
+        62,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    },
+    {
+      "id": "decorative_finial_spear_finial_md_000",
+      "family": "decorative_finial",
+      "style": "spear_finial",
+      "bounds": [
+        40,
+        24,
+        60,
+        54
+      ],
+      "artApproved": false,
+      "runtimePromotion": false
+    }
+  ],
+  "artApproved": false,
+  "runtimePromotion": false
+}

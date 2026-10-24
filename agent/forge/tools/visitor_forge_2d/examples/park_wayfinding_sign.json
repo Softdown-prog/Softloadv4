@@ -1,0 +1,73 @@
+{
+  "contract": "CH_2D_SHAPE_RECIPE_V1",
+  "id": "park_wayfinding_sign_study",
+  "canvas": [128, 128],
+  "anchor": [68, 115],
+  "layers": [
+    {
+      "name": "contact_shadow",
+      "fill": {"top": "#1D2423", "opacity": 0.32},
+      "shapes": [{"type": "ellipse", "box": [45, 110, 94, 118]}]
+    },
+    {
+      "name": "post_back",
+      "paletteSlot": "wood",
+      "fill": {"top": "#B88447", "bottom": "#674127"},
+      "shapes": [{"type": "polygon", "points": [[65, 50], [75, 50], [75, 112], [66, 114]]}],
+      "shadow": {"offset": [2, 2], "blur": 1, "opacity": 0.35}
+    },
+    {
+      "name": "post_highlight",
+      "fill": {"top": "#E9BD75", "bottom": "#99704D", "opacity": 0.7},
+      "shapes": [{"type": "polygon", "points": [[66, 56], [69, 56], [69, 111], [66, 113]]}]
+    },
+    {
+      "name": "frame_depth",
+      "fill": {"top": "#273C31", "bottom": "#14281E"},
+      "shapes": [{"type": "polygon", "points": [[23, 29], [98, 25], [108, 34], [108, 69], [100, 75], [24, 79]]}],
+      "shadow": {"offset": [3, 4], "blur": 2, "opacity": 0.45}
+    },
+    {
+      "name": "painted_border",
+      "paletteSlot": "trim",
+      "fill": {"top": "#E6C983", "bottom": "#A87D42"},
+      "shapes": [{"type": "polygon", "points": [[23, 29], [98, 25], [103, 31], [103, 67], [98, 71], [24, 75]]}]
+    },
+    {
+      "name": "enamel_face",
+      "paletteSlot": "panel",
+      "fill": {"top": "#3C765D", "bottom": "#204939"},
+      "shapes": [{"type": "polygon", "points": [[29, 34], [96, 31], [98, 35], [98, 65], [95, 67], [29, 70]]}]
+    },
+    {
+      "name": "face_gloss",
+      "fill": {"top": "#FFFFFF", "bottom": "#A8D4AC", "opacity": 0.12},
+      "shapes": [{"type": "polygon", "points": [[31, 36], [95, 33], [95, 39], [32, 44]]}]
+    },
+    {
+      "name": "tree_mark",
+      "fill": {"top": "#EED99B", "bottom": "#C9A560"},
+      "shapes": [
+        {"type": "ellipse", "box": [41, 43, 54, 58]},
+        {"type": "polygon", "points": [[47, 53], [50, 53], [50, 62], [47, 62]]}
+      ]
+    },
+    {
+      "name": "direction_arrow",
+      "fill": {"top": "#F6E3AC", "bottom": "#D1B16B"},
+      "shapes": [
+        {"type": "polygon", "points": [[63, 49], [82, 48], [82, 43], [92, 53], [82, 63], [82, 58], [63, 59]]}
+      ]
+    },
+    {
+      "name": "fixings",
+      "fill": {"top": "#FFE6B2", "bottom": "#9D7847"},
+      "shapes": [
+        {"type": "ellipse", "box": [33, 37, 37, 41]},
+        {"type": "ellipse", "box": [33, 64, 37, 68]},
+        {"type": "ellipse", "box": [92, 37, 96, 41]},
+        {"type": "ellipse", "box": [92, 61, 96, 65]}
+      ]
+    }
+  ]
+}

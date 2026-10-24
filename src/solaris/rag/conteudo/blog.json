@@ -1,0 +1,61 @@
+{
+  "id": "blog",
+  "slug": "blog",
+  "titulo": "Blog",
+
+  "categoria": "conteudo",
+
+  "prioridade": 10,
+
+  "frameworks": [
+    "php",
+    "django",
+    "flask",
+    "ejs"
+  ],
+
+  "descricao": "Template de blog para publicação contínua de artigos — hero, post em destaque, grid de posts, sidebar com widgets (categorias, tags, populares, recentes, busca), comentários, posts relacionados e SEO completo (Open Graph, Twitter Cards, Schema.org, RSS, sitemap).",
+
+  "objetivo": "Publicação contínua de artigos e gerenciamento de conteúdo.",
+
+  "componentes": [
+    "header",
+    "topbar",
+    "navbar",
+    "hero",
+    "featured-post",
+    "posts-grid",
+    "sidebar",
+    "newsletter",
+    "autor-box",
+    "comentarios",
+    "posts-relacionados",
+    "breadcrumbs",
+    "paginacao",
+    "footer"
+  ],
+
+  "seo": [
+    "open-graph",
+    "twitter-cards",
+    "schema-org",
+    "canonical",
+    "rss",
+    "sitemap"
+  ],
+
+  "widgets": [
+    "categorias",
+    "tags",
+    "posts-populares",
+    "posts-recentes",
+    "arquivo",
+    "busca"
+  ],
+
+  "workers":[
+    "htmlWorker",
+    "cssWorker",
+    "jsWorker"
+  ]
+}

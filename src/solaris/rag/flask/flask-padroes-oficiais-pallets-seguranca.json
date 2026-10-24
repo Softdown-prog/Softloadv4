@@ -1,0 +1,26 @@
+{
+  "id": "flask-padroes-oficiais-pallets-seguranca",
+  "slug": "flask-padroes-oficiais-pallets-seguranca",
+  "categoria": "topico",
+  "descricao": "Padrões vindos diretamente de repositórios oficiais do time Pallets e da comunidade Awesome Flask — a abordagem limpa de Application Factory com comandos CLI customizados e Blueprints sem variáveis globais acidentais, e o Flask-Talisman pra forçar HTTPS, prevenir XSS e gerenciar Content Security Policy.",
+  "componentes": [
+    "flask-instance-relative-config",
+    "flask-talisman",
+    "content-security-policy"
+  ],
+  "exemplos": [
+    "def create_app(test_config=None):\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_mapping(SECRET_KEY='dev-key-substituir-em-producao')\n    from . import auth, blog\n    app.register_blueprint(auth.bp)\n    app.register_blueprint(blog.bp)\n    return app",
+    "Talisman(app, content_security_policy={'default-src': [\"'self'\", '*.firebaseio.com', '*.googleapis.com']}, force_https=True, strict_transport_security=True)"
+  ],
+  "boas_praticas": [
+    "Registre as políticas do Talisman logo após a inicialização do objeto app, dentro da factory",
+    "Use a SECRET_KEY vinda exclusivamente de uma variável de ambiente em produção"
+  ],
+  "keywords": [
+    "flask talisman",
+    "flask csp",
+    "flask https forcado",
+    "flask instance config",
+    "flask seguranca oficial pallets"
+  ]
+}

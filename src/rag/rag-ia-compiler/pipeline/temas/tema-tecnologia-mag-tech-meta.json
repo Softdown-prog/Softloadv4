@@ -1,0 +1,67 @@
+{
+  "id": "tema-tecnologia-mag-tech",
+  "titulo": "Mag Tech V5.0 — Portal de Tecnologia/Hardware com Dropdown Dinâmico, Preloader, PopularPosts Carrossel, Scroll Reveal e color-mix()",
+  "categoria": "tema-completo",
+  "nicho": "tecnologia-hardware-magazine",
+  "codename": "Softload Core Mag Tech",
+  "descricao": "Template Blogger para portal de tecnologia/hardware estilo magazine. Paleta slate limpa sem prefixo (--primary, --surface, --border). Header empilhado: logo centralizado acima + navbar sticky abaixo (sem fixed-top, sem padding-top). Tiny Slider CDN. JSON-LD BlogPosting. Dropdown dinâmico via underscore no LinkList. Preloader window.load. PopularPosts com carrossel automático, termômetro de popularidade e abas. FeaturedPost com reordenação de DOM e botão injetado. Scroll Reveal com IntersectionObserver threshold:0.15. Seleção de texto temática. color-mix() nativo em sombras e hovers. Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (CSS + JS bundle — navbar collapse, dropdown data-bs-toggle, data-bs-theme dark mode)",
+    "Bootstrap Icons 1.11.3 (bi-moon-stars-fill, bi-sun-fill, bi-clock, bi-pencil-fill, bi-calendar3, bi-whatsapp, bi-twitter-x, bi-chevron-up, bi-arrow-right, bi-list, bi-f282 seta dropdown)",
+    "Tiny Slider 2.9.4 (CSS + JS — cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/)",
+    "Roboto — Google Fonts (preconnect fonts.googleapis.com + fonts.gstatic.com crossorigin), pesos: 300;400;700;900"
+  ],
+  "tokens_css": {
+    "prefixo": "sem prefixo — nomes curtos diretos",
+    "light_mode": {
+      "--primary": "#2563eb",
+      "--bg-color": "#f8fafc",
+      "--surface": "#ffffff",
+      "--text-main": "#1e293b",
+      "--text-muted": "#64748b",
+      "--border": "#e2e8f0",
+      "--font-body": "'Roboto', sans-serif",
+      "--shadow-sm": "0 .125rem .25rem rgba(0,0,0,.075)"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--primary": "#3b82f6",
+      "--bg-color": "#0f172a",
+      "--surface": "#1e293b",
+      "--text-main": "#f8fafc",
+      "--text-muted": "#94a3b8",
+      "--border": "#334155",
+      "--shadow-sm": "0 .125rem .25rem rgba(0,0,0,.3)"
+    },
+    "nota": "Tokens sem prefixo customizado — padrão minimalista. Compilador deve aceitar ambos: com prefixo (--el-, --sd-, --nexus-) e sem prefixo (--primary, --surface). Dark mode via data-bs-theme Bootstrap 5.3+."
+  },
+  "theme_designer_bridge": {
+    "existe": false,
+    "nota": "Tokens hardcoded no :root CSS. Sem Group/Variable. Para customizar cores: editar diretamente as variáveis no b:skin."
+  },
+  "selecao_texto_tematica": {
+    "descricao": "Seleção de texto com a cor primária do tema — detalhe premium que torna o portal coeso.",
+    "css": "::selection { background-color: var(--primary); color: #ffffff; text-shadow: none; }\n::-moz-selection { background-color: var(--primary); color: #ffffff; text-shadow: none; }",
+    "nota": "text-shadow: none obrigatório — sem isso, o browser pode adicionar sombra de texto herdada que fica estranha sobre o background colorido."
+  },
+  "article_reading_line": {
+    "descricao": "Linha decorativa de gradiente azul→roxo antes do conteúdo do artigo, criada via ::before pseudo-elemento sem HTML extra.",
+    "css": ".article-safe-area::before {\n  content: '';\n  display: block;\n  width: 60px;\n  height: 4px;\n  background: linear-gradient(90deg, var(--primary), #8b5cf6);\n  border-radius: 2px;\n  margin-bottom: 2rem;\n}",
+    "nota": "O wrapper .article-safe-area também contém regras para blockquote, img e p dentro de posts — isola os estilos de conteúdo gerado pelo usuário do CSS global."
+  },
+  "limpeza_blogger": {
+    "descricao": "Seletores obrigatórios para esconder elementos da UI do Blogger que aparecem quando o dono está logado.",
+    "css": "#navbar-iframe, .quickedit, .widget-item-control { display: none !important; }",
+    "nota": "#navbar-iframe é a barra azul do Blogger no topo da página. .quickedit são os lápis de edição rápida nos widgets. Sempre incluir em templates de produção."
+  },
+  "notas_tecnicas": [
+    "b:css='false' presente + b:defaultmessages='true' — este template optou por manter as mensagens padrão do sistema habilitadas, diferente do E-learning que as desativa. Ambas as opções são válidas.",
+    "color-mix() requer suporte a browsers modernos (Chrome 111+, 2023). Em 2025+, a cobertura é >95%. Para compatibilidade máxima, adicionar fallbacks com variáveis estáticas como backup.",
+    "Tiny Slider (tns) é alternativa ao Swiper — mais leve (21KB vs 142KB). O CSS tns deve ser importado antes do b:skin para não conflitar.",
+    "will-change: opacity, transform no .mag-reveal é uma dica de otimização para a GPU renderizar as animações em camada separada. Não usar em excesso — cada elemento com will-change consome memória GPU.",
+    "O dynamic dropdown do menu funciona com LinkList (não PageList). A propriedade text-startsWith('_') lê o texto visível do link — funciona em qualquer idioma.",
+    "O schema.org BlogPosting dentro de CDATA no XML do Blogger — o CDATA é obrigatório para prevenir que o analisador XML interprete < e > como tags. Sem CDATA, o template quebra ao ser salvo.",
+    "data-id nos lesson-links do E-learning e data-label no related-posts-container são dois padrões diferentes do mesmo princípio: atributos HTML5 customizados (data-*) para comunicação entre HTML e JS sem poluir o DOM com classes de estado.",
+    "Google Translate widget: body { top: 0 !important; } + .goog-te-banner-frame { display: none !important; } — sem essas regras, o Google Translate adiciona um banner no topo que empurra o conteúdo 40px para baixo."
+  ]
+}

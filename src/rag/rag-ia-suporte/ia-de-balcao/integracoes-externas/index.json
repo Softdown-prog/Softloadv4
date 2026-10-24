@@ -1,0 +1,14 @@
+{
+  "grupo": "integracoes-externas",
+  "descricao": "Como integrar serviços externos (IA, formulários, automações) a um blog Blogger via Worker/API — orientação de arquitetura para o usuário implementar por conta própria, fora do template gerado.",
+  "ficheiros": [
+    {
+      "arquivo": "chatbot-gemini-worker.md",
+      "palavras_chave": ["chatbot", "chat bot", "assistente de ia", "ia no blog", "gemini", "api do gemini", "cloudflare workers", "cloudflare worker", "google apps script", "apps script", "worker", "proxy de ia", "chave de api", "api key", "esconder api key", "chatbot com ia", "assistente virtual", "bot no blogger"]
+    },
+    {
+      "arquivo": "workers-automacao-blogger.md",
+      "palavras_chave": ["entrega automática", "entrega digital", "item digital", "produto digital", "download automático", "automação blogger", "automação no blogger", "serviço de automação", "banco de dados", "cloudflare d1", "d1", "cloudflare kv", "kv", "webhook", "webhook de pagamento", "gateway de pagamento", "leads", "formulário blogger", "newsletter blogger", "sql no blogger", "publicação automática", "post automático", "posts automáticos", "publicar automaticamente", "automaticamente", "automático", "automática", "cron trigger", "agendamento", "api do blogger", "blogger api", "oauth2", "refresh token", "publicar no blogger via api"]
+    }
+  ]
+}

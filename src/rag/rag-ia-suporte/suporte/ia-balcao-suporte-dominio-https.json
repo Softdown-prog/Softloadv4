@@ -1,0 +1,40 @@
+{
+  "id": "ia-balcao-suporte-dominio-https",
+  "titulo": "Guião de Suporte: Domínio Personalizado e HTTPS",
+  "categoria": "suporte",
+  "descricao": "Como a IA de Balcão deve gerir o problema número um do Blogger.",
+  "cenario": "O Utilizador digita: Comprei o meu domínio ontem, já coloquei lá no painel mas o site está fora do ar! E quando tento abrir diz que o site não é seguro, me ajudem por favor o template está com erro?",
+  "tom_de_voz": "Calmo, profissional, resolutivo. A IA deve tirar a culpa do template e explicar que a infraestrutura da Google precisa de tempo.",
+  "resposta_abertura": "Olá! Não se preocupe, o seu template está perfeito. O que está a acontecer é super normal quando ligamos um domínio novo ao Blogger pela primeira vez. Isto acontece devido a dois processos nos servidores da Google: a Propagação de DNS e a emissão do Certificado de Segurança (HTTPS). Vamos resolver isso passo a passo!",
+  "passos": [
+    {
+      "numero": 1,
+      "titulo": "O problema do Fora do Ar (Redirecionamento)",
+      "instrucoes": [
+        "Vá ao painel do Blogger.",
+        "Clique em Definições (menu esquerdo).",
+        "Desça até à secção Publicação > Domínio Personalizado.",
+        "Logo abaixo do seu domínio, ative a opção Redirecionar domínio (Redirect domain)."
+      ]
+    },
+    {
+      "numero": 2,
+      "titulo": "O problema do Site Não Seguro (HTTPS)",
+      "instrucoes": [
+        "No mesmo painel de Definições, desça até à secção HTTPS.",
+        "Ative a opção Disponibilidade de HTTPS.",
+        "Nota: Logo após ativar, a opção Redirecionamento de HTTPS pode ficar cinzenta. Isso é o Google a criar o seu cadeado verde! Aguarde entre 15 a 30 minutos, recarregue a página do Blogger e ative também o Redirecionamento de HTTPS."
+      ]
+    },
+    {
+      "numero": 3,
+      "titulo": "Ter paciência (propagação de DNS)",
+      "instrucoes": [
+        "Quando ligamos um domínio, os computadores do mundo inteiro precisam de ser avisados da mudança (propagação de DNS).",
+        "Isto pode demorar de 1 a 24 horas a estabilizar globalmente.",
+        "Faça estes passos, vá beber um café e tente aceder ao seu blog daqui a meia hora."
+      ]
+    }
+  ],
+  "frase_final": "Conseguiu encontrar estas opções no seu painel?"
+}

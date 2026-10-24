@@ -1,0 +1,52 @@
+{
+  "id": "artigos-inteligentes-blogger",
+  "versao": "1.0",
+  "categoria": "fundacao-gpt",
+  "exclusivo_modelo": "gpt-5.4",
+  "titulo": "Artigos Inteligentes para Blogger — Escrita que Rankeia e Retém",
+  "descricao": "Como o GPT ajuda o usuário a escrever artigos de blog que funcionam em 2026: legíveis por humanos, estruturados para AI Overviews e mecanismos de busca, sem cair em práticas condenadas (keyword stuffing, conteúdo raso, IA óbvia).",
+
+  "tese_central": "Em 2026 o conteúdo compete por duas audiências ao mesmo tempo: o leitor humano e os sistemas de IA que resumem a web (AI Overviews, AI Mode). Um bom artigo serve as duas sem trair nenhuma — responde a intenção real, com estrutura semântica clara e autoridade demonstrável (E-E-A-T).",
+
+  "estrutura_de_artigo_forte": [
+    {
+      "elemento": "titulo",
+      "regra": "Responde a uma intenção de busca específica, não a um tema vago. 'Como configurar HTTPS no Blogger com domínio próprio' > 'Tudo sobre HTTPS'.",
+      "tecnico": "55-60 caracteres para não truncar no SERP."
+    },
+    {
+      "elemento": "primeiro-paragrafo",
+      "regra": "Responde a pergunta central nas primeiras 2-3 frases. É o trecho que AI Overviews mais cita. Não enrole com 'nos dias de hoje, a internet...'."
+    },
+    {
+      "elemento": "hierarquia-h2-h3",
+      "regra": "Um H1 por página (o título do post). Subtemas em H2, detalhes em H3. Cada cabeçalho deve fazer sentido lido isolado — é assim que a IA fatia o conteúdo.",
+      "armadilha": "Tema novo deve trocar de H2, não continuar no mesmo. Cabeçalho que descreve mal a seção confunde IA e leitor."
+    },
+    {
+      "elemento": "blocos-respondiveis",
+      "regra": "Para perguntas factuais, use uma frase de resposta direta seguida da explicação. Listas e tabelas para dados comparáveis — formatos que AI Overviews extrai bem."
+    },
+    {
+      "elemento": "prova-de-experiencia",
+      "regra": "E-E-A-T pede o 'Experience' extra: dados próprios, prints de teste, 'testei em 3 temas e...'. Conteúdo genérico que poderia ser de qualquer um perde para conteúdo com pele em jogo."
+    }
+  ],
+
+  "praticas_condenadas_2026": [
+    "Keyword stuffing — repetir a palavra-chave de forma não-natural. Os algoritmos de 2026 penalizam, não premiam.",
+    "Conteúdo raso inflado para atingir contagem de palavras. Tamanho não é fator; cobertura da intenção é.",
+    "Texto de IA óbvio: parágrafos genéricos, 'no mundo de hoje', listas sem substância, conclusões que repetem a introdução.",
+    "Datas falsas de atualização para parecer fresco sem mudar o conteúdo.",
+    "Títulos clickbait que o corpo não entrega — aumenta pogo-sticking e derruba ranking."
+  ],
+
+  "como_o_gpt_ajuda": {
+    "rascunho": "Gera estrutura (outline de H2/H3) primeiro, valida com o usuário, depois desenvolve. Nunca despeja 1500 palavras genéricas de uma vez.",
+    "edicao": "Corta gordura, fortalece o primeiro parágrafo, transforma muros de texto em listas/tabelas onde cabe, sugere onde falta prova de experiência.",
+    "seo-on-page": "Sugere título <60c, meta-descrição, estrutura de cabeçalhos, e onde o autor pode adicionar dado próprio. NÃO inventa estatísticas — marca '[inserir dado real aqui]'.",
+    "voz-do-autor": "Adapta ao tom do blog do usuário. Não impõe um estilo corporativo genérico — pergunta/observa a voz existente e mantém."
+  },
+
+  "regra_inegociavel": "Nunca inventar fatos, estatísticas, citações ou estudos. Se um dado fortaleceria o artigo, marcar onde ele entra e dizer ao usuário para preenchê-lo com fonte real. Conteúdo de blog com dado fabricado é risco de E-E-A-T e de credibilidade."
+}

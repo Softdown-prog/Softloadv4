@@ -1,0 +1,327 @@
+{
+  "grupo": "blogger-ui",
+  "descricao": "Blogger UI: cabeçalho, menus, ticker, dark mode e post interativo",
+  "ficheiros": [
+    {
+      "arquivo": "ia-balcao-cabecalho-padrao-completo.json",
+      "palavras_chave": [
+        "cabeçalho",
+        "header",
+        "navbar",
+        "sticky",
+        "logo",
+        "menu",
+        "busca",
+        "bootstrap 5",
+        "navbar-brand",
+        "mobile toggle",
+        "topbar",
+        "brand"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-dropdown-menu-dinamico.json",
+      "palavras_chave": [
+        "dropdown",
+        "submenu",
+        "underscore",
+        "prefixo",
+        "navegação",
+        "linklist",
+        "menu dinâmico",
+        "menu dropdown"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-ticker-breaking-news.json",
+      "palavras_chave": [
+        "ticker",
+        "breaking news",
+        "últimas notícias",
+        "marquee",
+        "json feed",
+        "notícias ao vivo",
+        "barra de notícias",
+        "feed ticker"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-dark-mode-toggle-js.json",
+      "palavras_chave": [
+        "dark mode",
+        "modo escuro",
+        "localstorage",
+        "prefers-color-scheme",
+        "toggle",
+        "lua",
+        "sol",
+        "data-bs-theme",
+        "anti-flash",
+        "tema escuro"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-post-interativo-js.json",
+      "palavras_chave": [
+        "toc",
+        "sumário automático",
+        "posts relacionados",
+        "lazy loading",
+        "highlight busca",
+        "json feed",
+        "h2 h3",
+        "artigos relacionados",
+        "post page",
+        "post interativo"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-animacoes-pagina.json",
+      "palavras_chave": [
+        "animacoes",
+        "pagina",
+        "animacoes pagina"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-barra-pesquisa.json",
+      "palavras_chave": [
+        "barra",
+        "pesquisa",
+        "barra pesquisa"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-botoes-cta.json",
+      "palavras_chave": [
+        "botoes",
+        "cta",
+        "botoes cta"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-cards-com-imagem.json",
+      "palavras_chave": [
+        "cards",
+        "imagem",
+        "cards imagem"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-cards-sem-imagem.json",
+      "palavras_chave": [
+        "cards",
+        "sem",
+        "imagem",
+        "cards sem",
+        "sem imagem"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-cookie-banner.json",
+      "palavras_chave": [
+        "cookie",
+        "banner",
+        "cookie banner"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-dark-mode-svg-btn.json",
+      "palavras_chave": [
+        "dark",
+        "mode",
+        "svg",
+        "btn",
+        "dark mode",
+        "mode svg",
+        "svg btn"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-fab-scroll-top.json",
+      "palavras_chave": [
+        "fab",
+        "scroll",
+        "top",
+        "fab scroll",
+        "scroll top"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-footer-variantes.json",
+      "palavras_chave": [
+        "footer",
+        "variantes",
+        "footer variantes"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-formulario-contato.json",
+      "palavras_chave": [
+        "formulario",
+        "contato",
+        "formulario contato"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-galeria-midia.json",
+      "palavras_chave": [
+        "galeria",
+        "midia",
+        "galeria midia"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-grids-layouts.json",
+      "palavras_chave": [
+        "grids",
+        "layouts",
+        "grids layouts"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-headers-variantes.json",
+      "palavras_chave": [
+        "headers",
+        "variantes",
+        "headers variantes"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-hero-variantes.json",
+      "palavras_chave": [
+        "hero",
+        "variantes",
+        "hero variantes"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-icones-svg-ui.json",
+      "palavras_chave": [
+        "icones",
+        "svg",
+        "ui",
+        "icones svg",
+        "svg ui"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-menus-variantes.json",
+      "palavras_chave": [
+        "menus",
+        "variantes",
+        "menus variantes"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-paginacao.json",
+      "palavras_chave": [
+        "paginacao"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-post-single-layout.json",
+      "palavras_chave": [
+        "post",
+        "single",
+        "layout",
+        "post single",
+        "single layout"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-posts-relacionados.json",
+      "palavras_chave": [
+        "posts",
+        "relacionados",
+        "posts relacionados"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-pricing-table.json",
+      "palavras_chave": [
+        "pricing",
+        "table",
+        "pricing table"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-ratings-avaliacoes.json",
+      "palavras_chave": [
+        "ratings",
+        "avaliacoes",
+        "ratings avaliacoes"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-share-social.json",
+      "palavras_chave": [
+        "share",
+        "social",
+        "share social"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-sidebar-widgets.json",
+      "palavras_chave": [
+        "sidebar",
+        "widgets",
+        "sidebar widgets"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-skeleton-loading.json",
+      "palavras_chave": [
+        "skeleton",
+        "loading",
+        "skeleton loading"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-slider-carrossel.json",
+      "palavras_chave": [
+        "slider",
+        "carrossel",
+        "slider carrossel"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-tabelas-estilizadas.json",
+      "palavras_chave": [
+        "tabelas",
+        "estilizadas",
+        "tabelas estilizadas"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-timeline.json",
+      "palavras_chave": [
+        "timeline"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-tipografia-cores.json",
+      "palavras_chave": [
+        "tipografia",
+        "cores",
+        "tipografia cores"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-toasts-alertas.json",
+      "palavras_chave": [
+        "toasts",
+        "alertas",
+        "toasts alertas"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-toc-sumario.json",
+      "palavras_chave": [
+        "toc",
+        "sumario",
+        "toc sumario"
+      ]
+    }
+  ]
+}

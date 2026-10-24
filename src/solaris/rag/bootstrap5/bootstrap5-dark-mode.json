@@ -1,0 +1,28 @@
+{
+  "titulo": "bootstrap5 — dark-mode",
+  "categoria": "topico",
+  "descricao": "Suporte nativo a tema escuro no Bootstrap 5.3+, controlado pelo atributo data-bs-theme na raiz do documento (ou em qualquer container), sem precisar de CSS customizado nem de biblioteca externa.",
+  "componentes": [
+    "data-bs-theme=\"dark\"",
+    "data-bs-theme=\"light\"",
+    "data-bs-theme=\"auto\"",
+    "color-scheme"
+  ],
+  "exemplos": [
+    "<html data-bs-theme=\"dark\">",
+    "<div class=\"card\" data-bs-theme=\"light\">Este card sempre fica claro, mesmo com o resto da página escuro.</div>"
+  ],
+  "boas_praticas": [
+    "data-bs-theme=\"auto\" respeita a preferência do sistema operacional (prefers-color-scheme) — ideal pra deixar o usuário escolher.",
+    "Definir o tema por componente (não só na raiz) permite ilhas com tema fixo dentro de uma página com tema variável.",
+    "Testar contraste de cor customizada em ambos os temas — nem toda cor de marca funciona bem em fundo escuro."
+  ],
+  "keywords": [
+    "tema escuro",
+    "modo escuro",
+    "dark theme",
+    "night mode"
+  ],
+  "id": "bootstrap5-dark-mode",
+  "slug": "bootstrap5-dark-mode"
+}

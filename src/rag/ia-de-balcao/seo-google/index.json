@@ -1,0 +1,83 @@
+{
+  "grupo": "seo-google",
+  "descricao": "SEO Google: dados estruturados, semântica, contexto 2026, práticas e performance",
+  "ficheiros": [
+    {
+      "arquivo": "dados-estruturados-para-llms.json",
+      "palavras_chave": [
+        "dados estruturados",
+        "llm",
+        "schema.org",
+        "json-ld",
+        "rich results",
+        "schema",
+        "structured data"
+      ]
+    },
+    {
+      "arquivo": "semantica-html-para-ia.json",
+      "palavras_chave": [
+        "html semântico",
+        "schema",
+        "semântica",
+        "article",
+        "section",
+        "main",
+        "aside",
+        "html5 semântico",
+        "ia generativa",
+        "llm"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-seo-contexto-2026.json",
+      "palavras_chave": [
+        "2026",
+        "core update",
+        "abril 2026",
+        "contexto",
+        "ai overviews",
+        "ai mode",
+        "agentes ia",
+        "caixa de busca",
+        "google 2026",
+        "blogger 2026",
+        "sitemap llm"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-seo-praticas-e-nicho.json",
+      "palavras_chave": [
+        "desindexação",
+        "black hat",
+        "spam",
+        "penalização",
+        "ymyl",
+        "saúde",
+        "finanças",
+        "eeat",
+        "ai overviews",
+        "h2 h3 semântico",
+        "indexar",
+        "reindexar",
+        "praticas seo"
+      ]
+    },
+    {
+      "arquivo": "ia-balcao-performance-e-geo.json",
+      "palavras_chave": [
+        "performance",
+        "velocidade",
+        "pagespeed",
+        "lcp",
+        "tbt",
+        "geo",
+        "generative engine",
+        "fidelização",
+        "preferred sources",
+        "newsletter",
+        "crawl budget"
+      ]
+    }
+  ]
+}

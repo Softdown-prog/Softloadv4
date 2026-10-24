@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho noticias-mag-news — ver plano "esqueleto
+     por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md), Fase 2
+     (1/11): primeiro dos 11 nichos restantes com exemplos/ real, escolhido
+     porque é o nicho pra onde o classificador de nicho mais cai quando o
+     usuário pede "magazine de notícias" (achado provocado por teste real
+     do usuário — template baixado batia com o chassis genérico
+     compartilhado, não com o esqueleto próprio já corrigido do
+     viral-magazine).
+
+     A estrutura física (b:section, ids, ordem) abaixo foi extraída de
+     exemplos/noticias-mag-news.xml (arquivo hand-authored real) — não é
+     mais o chassis genérico 'magazine' compartilhado com
+     tecnologia-mag-tech/tecnologia-techwind. O b:widget Blog1 (main/post)
+     também foi extraído verbatim (mesmo achado já corrigido em
+     viral-magazine/appstore-bulma-mobile: só copiar os ids de b:section
+     não basta, o feed/card é a maior área visual da página).
+
+     Diferenças estruturais reais vs. template_magazine.xml:
+       - 'top-date'/'top-social': 2 slots nativos vazios, novos (barra
+         superior discreta com data + redes sociais no arquivo real —
+         conteúdo de exemplo do próprio dono, baixo valor pra herdar).
+       - 'header-branding' (não 'header-logo'): mesma função (Header
+         widget), nome real do arquivo mantido.
+       - 'main-menu' (não 'main-nav'): PageList real, dentro de um
+         collapse Bootstrap (menu clássico, não offcanvas).
+       - 'hero-section' (não 'hero-area'): no arquivo real é um SEGUNDO
+         widget Blog nativo (Blog2) mostrando um mosaico de 3 posts. A
+         peça 'hero-mosaico-noticias' do dossiê já usa o mecanismo
+         widgetNativo (GERADORES_HERO_NATIVO['featured-post'], data
+         binding real — post mais recente), então não precisou de
+         extração aqui; só o wrapper de b:section mudou de nome/posição
+         pra bater com o arquivo real (dentro de 'container mt-5 mb-5',
+         gated por isHomepage — mais restrito que isMultipleItems, só
+         aparece na home mesmo, igual ao arquivo original).
+       - 'main-content' (não 'main'): Blog1, main/post extraído verbatim
+         (achado 8, ver acima) — feed em 2 colunas sem post-destacado
+         (.news-card, row-cols-md-2), post único com header centralizado
+         (.post-header-single/.post-title-single), corpo em
+         .post-body-content (não .post-body — 3 peças do dossiê tinham
+         sido "corrigidas" pro seletor errado numa época em que o nicho
+         ainda usava o chassis compartilhado; revertidas de volta nesta
+         migração), tempo de leitura + posts relacionados via scripts
+         reais próprios (não os módulos genéricos READING_TIME/
+         RELATED_POSTS_JSON), 404 embutido no próprio main (não o módulo
+         genérico ERROR_404_MODULE).
+       - 'sidebar-trending-slider' (novo, sem correspondente 1:1 no
+         arquivo real): a seção real 'sidebar-trending' tem 4 widgets
+         (slider premium + newsletter + cookie banner + FeaturedPost1).
+         O mecanismo de peça tipo secao (nichoBlocks.js:_montarSecaoPeca)
+         só permite 1 b:section por peça, então o slider (extraído
+         verbatim, mesmo achado do cyber-slider de viral-magazine — CSS/
+         HTML/JS completos e funcionais no arquivo real) ganhou seção
+         própria, adjacente a 'sidebar-trending' (que ficou só com
+         FEATURED_POST_WIDGET). Newsletter e cookie banner customizados
+         NÃO foram extraídos nesta migração (fora do escopo — mesmo
+         padrão de slots deferidos já usado em viral-magazine/appstore-
+         bulma-mobile); cookieBanner:true (módulo genérico, 6 variantes)
+         cobre o consentimento.
+       - 'sidebar-tags' (nome real, mas conteúdo real não é tags — é um
+         vídeo embed HTML custom + PopularPosts1): vídeo não extraído
+         (baixo valor, decorativo); POPULAR_POSTS_RANKING no lugar real
+         do PopularPosts1.
+       - footer 3 colunas (Sobre/Links Rápidos/Edições) + footer-copyright
+         separado: footer-1 (real: about text + ícones sociais fake
+         href='#') → SOCIAL_LINKS_WIDGET real; footer-2 (real: iframe de
+         compartilhamento custom, baixo valor) → BLOG_ARCHIVE_WIDGET;
+         footer-3 (real: ContactForm1 NATIVO) → CONTACT_FORM (match
+         exato — mesmo b:widget type='ContactForm', só title diferente).
+       - nichoModuleDefaults.js reauditado: error404/readingTime/
+         shareButtons/statsWidget/translateWidget/labelCloudWidget
+         removidos (sem seção real correspondente, ou já cobertos pelo
+         main/post real); cookieBanner/contactForm/popularPostsRanking
+         adicionados (existiam no arquivo real sem flag correspondente).
+     Ver nichoDossie.noticias-mag-news.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+    <b:if cond='data:view.featuredImage'>
+      <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+    </b:if>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /*
+  <Group description="Fundo e Cores Base" selector="body">
+    <Variable name="body.background" description="Fundo Geral" type="background" color="#f9fafb" default="$(color) none repeat scroll top left" value="$(color) none repeat scroll top left"/>
+    <Variable name="main.color" description="Cor Principal" type="color" default="#2563eb" value="#2563eb"/>
+    <Variable name="theme.text" description="Cor do Texto" type="color" default="#374151" value="#374151"/>
+    <Variable name="header.bg" description="Fundo do Cabeçalho" type="color" default="#ffffff" value="#ffffff"/>
+    <Variable name="footer.bg" description="Fundo do Rodapé" type="color" default="#111827" value="#111827"/>
+  </Group>
+  <Group description="Tipografia" selector="body">
+    <Variable name="body.font" description="Fonte do Texto" type="font" default="normal normal 16px system-ui,-apple-system,sans-serif" value="normal normal 16px system-ui,-apple-system,sans-serif"/>
+  </Group>
+  */
+
+  :root {
+    --sl-bg-body:        $(body.background);
+    --sl-text-main:      $(theme.text);
+    --sl-primary:        $(main.color);
+    --sl-card-bg:        #ffffff;
+    --sl-footer-bg:      #111827;
+    --sl-nav-bg:         #ffffff;
+    --sl-radius-lg:      12px;
+    --sl-radius-sm:      6px;
+    --sl-transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+    --sl-btn-radius:     8px;
+    --sl-btn-shadow:     0 2px 6px rgba(0,0,0,0.15);
+    --sl-font-family:    system-ui,-apple-system,sans-serif;
+    --sl-heading-weight: 700;
+  }
+
+  [[DYNAMIC_CSS]]
+
+  body {
+    background-color: var(--sl-bg-body,#f9fafb);
+    color: var(--sl-text-main);
+    font-family: var(--sl-font-family,system-ui,sans-serif);
+    margin:0; padding:0; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  img { max-width:100%; height:auto; display:block; }
+  a { color:var(--sl-primary); text-decoration:none; transition:var(--sl-transition); }
+  a:hover { filter:brightness(0.85); }
+  h1,h2,h3,h4,h5,h6 { font-weight:var(--sl-heading-weight); }
+
+  /* ── HEADER / NAV ──────────────────────────────────────── */
+  /* .header-logo (wrapper estático real) + .sl-header-brand (classe real
+     do [[HEADER_WIDGET]] genérico, gerarHeaderWidget() em widgets.js —
+     não é .mag-header-content/.mag-logo-link, isso nunca existiu na
+     saída real deste token). */
+  .header-logo { padding-top: 1.25rem; padding-bottom: 1.25rem; text-align: center; }
+  .sl-header-brand { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: -.5px; text-transform: uppercase; }
+  .navbar-container { border-top: 1px solid var(--mag-border,rgba(0,0,0,.08)); border-bottom: 4px solid var(--mag-dark,var(--sl-text-main)); background-color: var(--sl-card-bg); }
+  [data-bs-theme="dark"] .navbar-container { border-bottom-color: var(--sl-primary); }
+  .navbar .nav-link { font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; color: var(--sl-text-main) !important; padding: 15px 20px !important; }
+  .navbar .nav-link:hover { color: var(--sl-primary) !important; }
+
+  /* ── ANIMAÇÃO DE ENTRADA (real: .animate-up, usada no feed e no post) ── */
+  .animate-up { opacity: 0; transform: translateY(20px); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .animate-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── FEED (marcação real: .news-card, sem grid/post-destacado) ───── */
+  .news-card { background: transparent; border: none; transition: transform 0.3s; height: 100%; }
+  .news-card-img { overflow: hidden; border-radius: var(--sl-radius-lg); background: color-mix(in srgb, var(--sl-text-main) 6%, transparent); }
+  .news-card-img img { transition: transform 0.5s ease; }
+  .news-card:hover .news-card-img img { transform: scale(1.05); }
+  .news-title a { color: var(--sl-text-main); }
+  .news-card:hover .news-title a { color: var(--sl-primary); filter:none; }
+  .widget-title { font-weight: 900; font-size: 1.5rem; border-bottom: 2px solid var(--sl-primary); padding-bottom: 10px; margin-bottom: 20px; }
+
+  /* ── POST ÚNICO (marcação real: .post-header-single/.post-title-single/
+       .post-body-content — NUNCA .post-body, essa classe nunca existiu
+       no arquivo real) ────────────────────────────────────────────── */
+  .post-header-single { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(0,0,0,.08); }
+  .post-title-single { font-weight: 900; font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.15; margin: 15px 0; }
+  .post-body-content { font-size: 1.1rem; line-height: 1.8; }
+  .post-body-content img, .post-body-content iframe { max-width: 100% !important; height: auto !important; margin: 2rem 0; border-radius: var(--sl-radius-sm); }
+  .post-body-content > p:first-of-type::first-letter, .post-body-content > div:first-of-type::first-letter { font-size: 4rem; font-weight: 900; float: left; line-height: .8; margin-right: 12px; margin-top: 5px; color: var(--sl-primary); }
+
+  /* ── 404 (embutido no main/post real, data:view.isError) ─────────── */
+  .error-404-wrapper { min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 1rem; }
+  .error-code { font-size: clamp(4rem, 15vw, 8rem); font-weight: 900; line-height: 1; color: var(--sl-primary); }
+
+  /* ── BUTTONS ──────────────────────────────────────────── */
+  .btn-primary,.btn-outline-primary { border-radius:var(--sl-btn-radius); box-shadow:var(--sl-btn-shadow); }
+  .btn-outline-primary { color:var(--sl-primary); border-color:var(--sl-primary); }
+  .btn-outline-primary:hover,.btn-outline-primary:focus,.btn-outline-primary:active,.btn-outline-primary.active {
+    background-color:var(--sl-primary); border-color:var(--sl-primary); color:#fff; filter:none;
+  }
+
+  /* ── FOOTER (marcação real: .mag-footer, NUNCA .sl-footer) ────────── */
+  .mag-footer { background:var(--sl-footer-bg,#111827); color:#94a3b8; padding-top: 4rem; margin-top: 4rem; }
+  .mag-footer h6,.mag-footer .title { color:#f1f5f9; font-weight:700; text-transform:uppercase; letter-spacing:.06em; font-size:.75rem; margin-bottom:1rem; }
+  .mag-footer a { color:#94a3b8; font-size:.875rem; }
+  .mag-footer a:hover { color:#f1f5f9; filter:none; }
+  .mag-footer-divider { border-color:rgba(255,255,255,0.08) !important; }
+
+  /* ── DARK MODE ────────────────────────────────────────── */
+  [data-bs-theme="dark"] body { background-color:#0f172a; color:#cbd5e1; }
+  [data-bs-theme="dark"] .navbar-container { background:#1e293b !important; }
+  [data-bs-theme="dark"] .post-header-single { border-color: rgba(255,255,255,.08); }
+
+  /* GRID LAYOUTS (lista/dupla/revista/quadrado/mural/coluna-unica/zigzag) —
+     centralizado em gerarGridCardCss() (designTokensCss.js), injetado via
+     DYNAMIC_CSS. O feed real (row-cols-md-2, g-5, sem post-destacado) não
+     usa nenhuma dessas classes — gridLayout mantido em
+     nichoModuleDefaults.js mas sem efeito visual aqui, mesmo trade-off já
+     documentado em viral-magazine/appstore-bulma-mobile. */
+
+  /* === CSS DO NICHO ===================================== */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <div class='top-bar py-2 d-none d-md-block'>
+    <div class='container d-flex justify-content-between align-items-center'>
+      <div class='fw-bold'><b:section id='top-date' maxwidgets='1' name='Data Topo' showaddelement='yes'/></div>
+      <div class='d-flex gap-4 align-items-center'>
+        <b:section id='top-social' name='Redes Sociais' showaddelement='yes'/>
+        <button aria-label='Alternar Tema' class='btn btn-link btn-sm text-decoration-none p-0 btn-dark-mode' title='Alternar Tema'><i class='bi bi-moon-stars-fill fs-6'/></button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class='container'>
+      <div class='header-logo'>
+        <b:section id='header-branding' maxwidgets='1' name='Logotipo Principal' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+      </div>
+    </div>
+
+    <div class='navbar-container sticky-top'>
+      <nav class='navbar navbar-expand-lg py-0'>
+        <div class='container'>
+          <button aria-controls='mainNavbar' aria-expanded='false' class='navbar-toggler border-0 py-3' data-bs-target='#mainNavbar' data-bs-toggle='collapse' type='button'>
+            <i class='bi bi-list fs-2 text-primary'/> <span class='fw-bold ms-2 text-uppercase'>Menu</span>
+          </button>
+          <div class='collapse navbar-collapse justify-content-center' id='mainNavbar'>
+            <b:section id='main-menu' maxwidgets='1' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO — mosaico de 3 posts via widget nativo (hero-mosaico-noticias,
+       widgetNativo:'featured-post') — data binding real, não HTML
+       estático. Gated por isHomepage (mais restrito que isMultipleItems),
+       igual ao arquivo original: só aparece na home. -->
+  <b:if cond='data:view.isHomepage'>
+    <div class='container mt-5 mb-5'>
+      <b:section id='hero-section' maxwidgets='1' name='Destaque Mosaico (3 Posts)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+    </div>
+  </b:if>
+
+  <!-- MAIN + SIDEBAR — 1 <div class='row'> só, com <main> e <aside> como
+       IRMÃS diretas. Mesma regra de schema documentada em
+       template_magazine.xml: b:section de sidebar precisa ser IRMÃ do
+       b:widget Blog1 (nunca filha do includable dele) e b:widget precisa
+       ser filho DIRETO de b:section. -->
+  <div class='container my-4'>
+    <div class='row'>
+      <main class='col-lg-8'>
+        <!-- id LITERAL 'main' preservado de propósito — é o marcador
+             canônico que injetarDesignPackage() (compilerWorker.js) busca
+             pra staticSections/heroHtml do chat de edição, zero rede de
+             segurança se a string não existir. O nome real do arquivo era
+             'main-content' (ver name= abaixo, decorativo). -->
+        <b:section id='main' name='Feed de Notícias' showaddelement='no'>
+          <b:widget id='Blog1' locked='true' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+        <!-- Sem esta declaração, o Blogger aplica os defaults do painel
+             (share buttons, comment link, author, etc.) e tenta acionar
+             sua própria máquina interna de bylines — cadeia que aponta
+             pra ícones nunca definidos neste tema. Settings limitados à
+             lista válida pro tipo Blog (gerarDiagnostico() rejeita
+             commentLabel/showAuthorProfile/showLocation/style.unittype —
+             "not a valid setting name", presentes no arquivo real mas
+             fora do schema que o Blogger aceita hoje). -->
+        <b:widget-settings>
+          <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+          <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+          <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+          <b:widget-setting name='showAuthor'>false</b:widget-setting>
+          <b:widget-setting name='showLabels'>true</b:widget-setting>
+          <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+          <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+          <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+          <b:widget-setting name='showReactions'>false</b:widget-setting>
+        </b:widget-settings>
+
+        <!-- ════════ MAIN includable ════════ -->
+        <!-- Extraído verbatim de exemplos/noticias-mag-news.xml (achado 8,
+             mesmo tipo já aplicado em viral-magazine/appstore-bulma-mobile):
+             feed em 2 colunas sem post-destacado (.news-card), post único
+             com header centralizado + corpo em .post-body-content, 404
+             embutido (data:view.isError), tempo de leitura e posts
+             relacionados via fetch real (scripts próprios do arquivo,
+             mantidos como estão — não substituídos pelos módulos
+             genéricos READING_TIME/RELATED_POSTS_JSON, que ficaram
+             desligados em nichoModuleDefaults.js pra não duplicar). -->
+        <b:includable id='main' var='top'>
+
+          <b:if cond='data:view.isError'>
+            <div class='error-404-wrapper animate-up'>
+              <h1 class='error-code'>404</h1>
+              <h2 class='h3 mb-4'>Página não encontrada</h2>
+              <p class='text-muted mb-5 mx-auto' style='max-width: 500px;'>A edição que procura parece ter sido recolhida das bancas. O link pode estar quebrado ou a matéria foi arquivada.</p>
+              <a class='btn btn-dark rounded-pill px-5 py-3 fw-bold text-uppercase' href='/'><i class='bi bi-journal-text me-2'/> Voltar à Capa</a>
+            </div>
+          </b:if>
+
+          <b:if cond='data:view.isMultipleItems'>
+
+            <h3 class='widget-title animate-up mb-4'>Últimas Edições</h3>
+            <div class='row row-cols-1 row-cols-md-2 g-5'>
+              <b:loop values='data:posts' var='post'>
+                <div class='col'>
+                  <article class='news-card animate-up d-flex flex-column'>
+                    <div class='news-card-img ratio ratio-4x3'>
+                      <a expr:href='data:post.url'>
+                        <b:if cond='data:post.featuredImage'>
+                          <img [[LAZY_LOAD_TOGGLE]] expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 800, &quot;4:3&quot;)'/>
+                        <b:else/>
+                          <div class='w-100 h-100 d-flex align-items-center justify-content-center bg-light'><i class='bi bi-image fs-1 opacity-25'/></div>
+                        </b:if>
+                      </a>
+                    </div>
+                    <div class='d-flex flex-column flex-grow-1'>
+                      <div class='d-flex gap-2 mb-2'>
+                        <b:if cond='data:post.labels'>
+                          <a class='text-primary fw-bold text-uppercase small' expr:href='data:post.labels.first.url' style='letter-spacing: 1px;'><data:post.labels.first.name/></a>
+                        </b:if>
+                      </div>
+                      <h3 class='news-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
+                      <p class='text-muted mt-2 mb-3 flex-grow-1' style='font-size: 0.95rem;'><data:post.snippet/></p>
+                      <div class='small fw-bold text-uppercase mt-auto' style='letter-spacing: 1px;'>
+                        <data:post.date/>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </b:loop>
+            </div>
+
+            <b:include name='nextprev'/>
+
+          <b:else/>
+
+            <b:loop values='data:posts' var='post'>
+              <article class='animate-up mb-5'>
+                <header class='post-header-single'>
+                  <b:if cond='data:post.labels'>
+                    <div class='mb-3'>
+                      <b:loop values='data:post.labels' var='label'>
+                        <a class='badge text-decoration-none me-2' expr:href='data:label.url' style='background: var(--sl-primary); color: #fff; padding: 6px 12px; font-weight: 700; text-transform: uppercase;'><data:label.name/></a>
+                      </b:loop>
+                    </div>
+                  </b:if>
+                  <h1 class='post-title-single' itemprop='headline'><data:post.title/></h1>
+
+                  <div class='d-flex justify-content-center align-items-center gap-4 text-muted small fw-bold text-uppercase mt-4' style='letter-spacing: 1px;'>
+                    <span>Por <span style='color: var(--sl-primary);'><data:post.author.name/></span></span>
+                    <span>&#8226;</span>
+                    <span><data:post.date/></span>
+                    <span>&#8226;</span>
+                    <span id='read-time-calc'><i class='bi bi-hourglass-split me-1'/> Calculando...</span>
+                  </div>
+                </header>
+
+                <div class='post-body-content' id='post-body-content' itemprop='articleBody'>
+                  <data:post.body/>
+                </div>
+
+                <div class='mt-5 pt-4 border-top d-flex justify-content-between align-items-center'>
+                   <div class='post-bottom-tags d-flex flex-wrap gap-2'>
+                      <b:loop values='data:post.labels' var='label'>
+                        <a expr:href='data:label.url'><data:label.name/></a>
+                      </b:loop>
+                   </div>
+                   <div class='d-flex gap-2'>
+                     <a class='btn btn-outline-dark rounded-circle' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:post.url' style='width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;' target='_blank'><i class='bi bi-twitter-x'/></a>
+                     <a class='btn btn-outline-dark rounded-circle' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:post.url' style='width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;' target='_blank'><i class='bi bi-whatsapp'/></a>
+                   </div>
+                </div>
+
+                <div class='related-posts mt-5 pt-5 border-top'>
+                  <h4 class='widget-title'>Leia Também</h4>
+                  <div class='row g-4' id='related-grid'>
+                    <div class='col-12 text-center text-muted spinner-border text-primary mx-auto' role='status'/>
+                  </div>
+                </div>
+
+              </article>
+
+              <b:if cond='data:post.labels'>
+                <script>
+                //<![CDATA[
+                document.addEventListener('DOMContentLoaded', () => {
+                  const label = ']]><data:post.labels.first.name/><![CDATA[';
+                  const cUrl = ']]><data:post.url/><![CDATA[';
+                  const rGrid = document.getElementById('related-grid');
+
+                  fetch('/feeds/posts/default/-/' + label + '?alt=json-in-script&max-results=4')
+                  .then(res => res.text())
+                  .then(txt => {
+                    const jsonStr = txt.replace('gdata.io.handleScriptLoaded(', '').slice(0, -2);
+                    const d = JSON.parse(jsonStr);
+                    rGrid.innerHTML = '';
+                    const feed = d.feed;
+                    if (!feed.entry || feed.entry.length === 0) { rGrid.innerHTML = '<div class="col-12 text-muted">Nenhuma edição encontrada.</div>'; return; }
+                    let c = 0;
+                    feed.entry.forEach(e => {
+                      if (c >= 3) return;
+                      let pUrl = ''; e.link.forEach(l => { if (l.rel === 'alternate') pUrl = l.href; });
+                      if (pUrl.split('?')[0] === cUrl) return;
+                      let pImg = e.media$thumbnail ? e.media$thumbnail.url.replace(/\/s\d+(\-c)?\//, '/w600-h450-p/') : '[[PLACEHOLDER_IMG]]';
+                      const title = e.title.$t;
+                      rGrid.innerHTML += `
+                        <div class="col-md-4">
+                          <div class="news-card">
+                            <a href="${pUrl}">
+                              <div class="news-card-img ratio ratio-4x3 mb-3"><img src="${pImg}" class="rounded-3 object-fit-cover" alt="Thumb"></div>
+                              <h6 class="fw-bold" style="font-size: 1.1rem;">${title}</h6>
+                            </a>
+                          </div>
+                        </div>
+                      `;
+                      c++;
+                    });
+                  });
+
+                  const textBlock = document.getElementById('post-body-content').innerText;
+                  const words = textBlock.trim().split(/\s+/).length;
+                  const time = Math.ceil(words / 225);
+                  document.getElementById('read-time-calc').innerHTML = `<i class='bi bi-book me-1'></i> ${time} min de leitura`;
+                });
+                //]]>
+                </script>
+              </b:if>
+
+              <div class='mt-5 pt-4 border-top animate-up'>
+                <b:include cond='data:post.allowComments' data='post' name='threaded_comments'/>
+              </div>
+            </b:loop>
+
+          </b:if>
+        </b:includable>
+
+
+        <!-- ════════ POST includable ════════ -->
+        <!-- Não usado pelo main (achado 8): o main real trata o post
+             único inline dentro do b:loop, sem b:include name='post'.
+             Mantido idêntico ao arquivo real (div vazio) — outros
+             includables padrão referenciam 'post' por nome. -->
+        <b:includable id='post' var='post'><div/></b:includable>
+
+
+        <!-- ════════ PAGINAÇÃO ════════ -->
+        <b:includable id='nextprev'>
+          [[PAGINATION_MODULE]]
+        </b:includable>
+
+        [[BLOGGER_INCLUDABLES_PADRAO]]
+
+      </b:widget>
+      </b:section>
+      </main>
+
+      <aside class='col-lg-4'>
+        <!-- Slider premium de destaques (extraído verbatim, achado 9 —
+             ver dossiê) — seção própria (ver doc do topo do arquivo). -->
+        [[NICHO_EXTRA_SECTIONS]]
+
+        <b:section id='sidebar-trending' name='Mais Lidas' showaddelement='true'>[[FEATURED_POST_WIDGET]]</b:section>
+
+        <!-- Nome real 'Categorias (Marcadores)', mas conteúdo real é
+             vídeo embed + PopularPosts — PopularPosts mapeado, vídeo não
+             extraído (baixo valor, decorativo). -->
+        <b:section id='sidebar-tags' name='Categorias (Marcadores)' showaddelement='yes'>[[POPULAR_POSTS_RANKING]]</b:section>
+      </aside>
+    </div>
+  </div>
+
+  <footer class='mag-footer'>
+    <div class='container'>
+      <div class='row g-5'>
+        <div class='col-lg-5'>
+          <b:section id='footer-1' maxwidgets='1' name='Sobre o Portal' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+        </div>
+        <div class='col-lg-3 offset-lg-1'>
+          <b:section id='footer-2' name='Links Rápidos' showaddelement='yes'>[[BLOG_ARCHIVE_WIDGET]]</b:section>
+        </div>
+        <div class='col-lg-3'>
+          <b:section id='footer-3' name='Edições' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <hr class='mag-footer-divider my-4'/>
+      <div class='mag-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center font-monospace small'>
+        <b:section id='footer-copyright' maxwidgets='1' name='Copyright' showaddelement='yes'/>
+        <small>&#169; <data:blog.title/> — Powered by Softload Engine</small>
+      </div>
+    </div>
+  </footer>
+
+  [[DARK_MODE_MODULE]]
+  [[BACK_TO_TOP_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+  [[READING_PROGRESS]]
+  [[MENU_DROPDOWN_PREFIXO]]
+
+  <!-- JS do nicho -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

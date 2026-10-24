@@ -1,0 +1,33 @@
+{
+  "titulo": "bootstrap5 — offcanvas",
+  "categoria": "topico",
+  "descricao": "Painel lateral (ou superior/inferior) que desliza sobre o conteúdo, comum pra menu mobile, carrinho de compras ou filtros. Bloqueia scroll do body por padrão enquanto aberto.",
+  "componentes": [
+    "offcanvas",
+    "offcanvas-start",
+    "offcanvas-end",
+    "offcanvas-top",
+    "offcanvas-bottom",
+    "offcanvas-header",
+    "offcanvas-title",
+    "offcanvas-body",
+    "btn-close",
+    "data-bs-toggle"
+  ],
+  "exemplos": [
+    "<div class=\"offcanvas offcanvas-start\" id=\"menuLateral\"><div class=\"offcanvas-header\"><h5 class=\"offcanvas-title\">Menu</h5><button class=\"btn-close\" data-bs-dismiss=\"offcanvas\"></button></div><div class=\"offcanvas-body\">Conteúdo do menu</div></div>"
+  ],
+  "boas_praticas": [
+    "data-bs-backdrop=\"false\" quando o offcanvas deve conviver com interação no resto da página.",
+    "data-bs-scroll=\"true\" permite rolar o body por trás enquanto o painel está aberto.",
+    "Sempre incluir um botão de fechar (btn-close) visível, não depender só de clicar fora."
+  ],
+  "keywords": [
+    "painel lateral",
+    "menu deslizante",
+    "drawer",
+    "sidebar"
+  ],
+  "id": "bootstrap5-offcanvas",
+  "slug": "bootstrap5-offcanvas"
+}

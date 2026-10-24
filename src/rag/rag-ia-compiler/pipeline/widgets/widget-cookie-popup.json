@@ -1,0 +1,32 @@
+{
+  "id": "widget-cookie-popup",
+  "titulo": "Banner de Cookies LGPD — Popup de Canto com Animacao",
+  "categoria": "widget-ui",
+  "nicho": "noticias",
+  "descricao": "Popup LGPD de canto inferior esquerdo com animacao de entrada (bottom: -150px → bottom: 20px). Dois botoes: link 'Saber mais' e botao primario 'Aceitar e Continuar'. Chama cookieBanner.remove() apos fechar para liberar memoria. Zero IIFE — codigo inline simples. Extraido do template MAG News.",
+  "diferenca_vs_bulma_vegan": "Bulma Vegan usa barra full-width no rodape (transform translateY). MAG News usa popup de canto max-width 450px com bottom position animation — estilo de notificacao de aplicativo.",
+  "dependencias": ["Nenhum — Vanilla JS puro"],
+  "personalizacao": {
+    "id_banner": "mag-cookie-banner",
+    "chave_localstorage": "magConsent",
+    "valor_aceite": "accepted",
+    "nota_versionamento": "Alterar o nome da chave (ex: magConsent_v2) forca reaceitacao quando politicas mudarem",
+    "delay_aparecimento_ms": 1500,
+    "delay_remocao_ms": 500,
+    "link_politica": "Substituir href='#' pelo link real da politica de privacidade"
+  },
+  "css": ".mag-cookie-wrapper {\n  position: fixed;\n  bottom: -150px;\n  left: 20px;\n  z-index: 10000;\n  max-width: 450px;\n  background-color: var(--bs-tertiary-bg, #1a1a1a);\n  border: 1px solid var(--border-color, #333);\n  border-radius: var(--radius, 12px);\n  box-shadow: 0 15px 35px rgba(0,0,0,0.15);\n  padding: 1.5rem;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);\n  font-family: var(--font-body, 'Inter', sans-serif);\n}\n.mag-cookie-wrapper.show {\n  bottom: 20px;\n  opacity: 1;\n  visibility: visible;\n}\n.mag-cookie-content strong {\n  font-family: var(--font-title, 'Playfair Display', serif);\n  font-size: 1.1rem;\n  color: var(--mag-title, #fff);\n  display: block;\n  margin-bottom: 0.5rem;\n}\n.mag-cookie-content p {\n  font-size: 0.85rem;\n  color: rgba(255,255,255,0.7);\n  line-height: 1.5;\n  margin-bottom: 1.2rem;\n}\n.cookie-buttons {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 15px;\n}\n.btn-cookie-link {\n  font-size: 0.85rem;\n  color: var(--mag-secondary, #6c757d);\n  text-decoration: underline;\n  text-underline-offset: 4px;\n  transition: color 0.2s ease;\n}\n.btn-cookie-link:hover { color: var(--mag-primary, #0d6efd); }\n.btn-cookie-accept {\n  background-color: var(--mag-primary, #0d6efd);\n  color: #fff;\n  border: none;\n  padding: 10px 20px;\n  border-radius: 6px;\n  font-weight: 700;\n  font-size: 0.85rem;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  cursor: pointer;\n  transition: transform 0.2s ease, opacity 0.2s ease;\n}\n.btn-cookie-accept:hover { opacity: 0.9; transform: translateY(-2px); }\n@media (max-width: 768px) {\n  .mag-cookie-wrapper { left: 15px; right: 15px; max-width: 100%; }\n  .cookie-buttons { flex-direction: column; }\n  .btn-cookie-accept { width: 100%; order: -1; }\n  .btn-cookie-link { margin-top: 10px; }\n}",
+  "html": "<div id=\"mag-cookie-banner\" class=\"mag-cookie-wrapper\">\n  <div class=\"mag-cookie-content\">\n    <div class=\"cookie-text\">\n      <strong>Valorizamos a sua privacidade</strong>\n      <p>Utilizamos cookies no nosso site para melhorar a sua experiencia de leitura, memorizar as suas preferencias e analisar o nosso trafego.</p>\n    </div>\n    <div class=\"cookie-buttons\">\n      <a href=\"/p/politica-de-privacidade.html\" class=\"btn-cookie-link\">Saber mais</a>\n      <button id=\"mag-cookie-accept\" class=\"btn-cookie-accept\">Aceitar e Continuar</button>\n    </div>\n  </div>\n</div>",
+  "javascript": "document.addEventListener('DOMContentLoaded', function() {\n  const cookieBanner = document.getElementById('mag-cookie-banner');\n  const acceptBtn = document.getElementById('mag-cookie-accept');\n\n  if (!localStorage.getItem('magConsent')) {\n    setTimeout(() => {\n      cookieBanner.classList.add('show');\n    }, 1500);\n  }\n\n  acceptBtn.addEventListener('click', function() {\n    localStorage.setItem('magConsent', 'accepted');\n    cookieBanner.classList.remove('show');\n    setTimeout(() => {\n      cookieBanner.remove();\n    }, 500);\n  });\n});",
+  "notas_tecnicas": [
+    "bottom: -150px no estado inicial + opacity: 0 + visibility: hidden — triple lock para esconder sem ocupar espaco de clique",
+    ".show adiciona bottom: 20px + opacity: 1 + visibility: visible — a transicao do bottom cria efeito de slide-up de baixo para cima",
+    "cubic-bezier(0.16, 1, 0.3, 1) = efeito spring — mesma curva do banner Bulma Vegan, natural e suave",
+    "cookieBanner.remove() apos 500ms (duracao da animacao de saida) libera o elemento do DOM e memoria do browser",
+    "Delay de 1500ms (vs 800ms do Bulma Vegan) — mais conservador para paginas com mais conteudo a carregar",
+    "Mobile: left/right: 15px + max-width: 100% torna o popup full-width no telemovel",
+    "Mobile: order: -1 no botao aceitar coloca-o em cima — call-to-action mais visivel em telas pequenas",
+    "var(--bs-tertiary-bg) funciona em modo claro e escuro do Bootstrap 5 sem CSS adicional",
+    "Zero IIFE — codigo simples em DOMContentLoaded, sem necessidade de escopo isolado pois IDs sao unicos"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "tema-biolink-social",
+  "titulo": "BioLink Pro Social — Link na Bio Glassmorphism com FOUC Prevention, Web Share API, Blobs Animados e Auto-Detecção de Ícones",
+  "categoria": "tema-completo",
+  "nicho": "link-na-bio-pagina-estatica",
+  "descricao": "Template Blogger de página única estilo 'link na bio' (Linktree/Beacons). Layout single-column max-width 680px. Glassmorphism completo com blobs animados no fundo. FOUC Prevention via script no <head> que aplica data-bs-theme antes do body renderizar. Dark mode com prefers-color-scheme detection. Link buttons glassmorphism com fadeInUp escalonado (animation backwards). Motor JS de ícones que detecta a rede social pela URL automaticamente (15 redes). WhatsApp floating com pulso. Web Share API nativa com fallback clipboard e trava anti-spam. Validado em produção.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (CSS + JS bundle — data-bs-theme dark mode, utilitários)",
+    "Bootstrap Icons 1.11.3 (bi-instagram, bi-twitter-x, bi-youtube, bi-tiktok, bi-whatsapp, bi-linkedin, bi-github, bi-spotify, bi-twitch, bi-threads, bi-telegram, bi-snapchat, bi-pinterest, bi-envelope-at-fill, bi-link-45deg, bi-share-fill, bi-moon-stars-fill, bi-sun-fill, bi-check2-circle)",
+    "Plus Jakarta Sans — Google Fonts (pesos 400;600;700;800)"
+  ],
+  "tokens_css": {
+    "prefixo": "",
+    "light_mode": {
+      "--bio-bg": "#f4f7f6",
+      "--bio-text": "#1e293b",
+      "--bio-card-bg": "rgba(255, 255, 255, 0.7)",
+      "--bio-card-border": "rgba(255, 255, 255, 0.5)",
+      "--bio-card-shadow": "0 10px 25px rgba(0, 0, 0, 0.06)",
+      "--bio-card-hover-bg": "rgba(255, 255, 255, 0.9)",
+      "--bio-card-hover-shadow": "0 15px 35px rgba(0, 0, 0, 0.1)",
+      "--bio-primary": "#06b6d4",
+      "--bio-secondary": "#8b5cf6",
+      "--font-main": "'Plus Jakarta Sans', sans-serif"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--bio-bg": "#0a0a0a",
+      "--bio-text": "#f8fafc",
+      "--bio-card-bg": "rgba(25, 25, 25, 0.4)",
+      "--bio-card-border": "rgba(255, 255, 255, 0.05)",
+      "--bio-card-shadow": "0 8px 32px rgba(0, 0, 0, 0.3)",
+      "--bio-card-hover-bg": "rgba(255, 255, 255, 0.08)",
+      "--bio-card-hover-shadow": "0 0 20px rgba(6, 182, 212, 0.3)"
+    },
+    "nota": "O segundo bloco :root redefine --bio-primary e --bio-secondary com valores fallback (#06b6d4, #8b5cf6). Isso é intencional: se o Theme Designer não estiver ativo (ex: pré-visualização), os valores fallback mantêm o visual correto."
+  },
+  "theme_designer_bridge": {
+    "formato": "Group/Variable dentro de /* */ no CDATA do b:skin. Apenas 2 variáveis (cor.primaria e cor.secundaria) — minimalista.",
+    "codigo": "/*\n<Group description=\"🎨 Cores do Tema (BioLink Pro)\" selector=\":root\">\n  <Variable name=\"cor.primaria\" description=\"Cor Principal (Botões e Ciano do Fundo)\" type=\"color\" default=\"#00f2fe\" value=\"#00f2fe\"/>\n  <Variable name=\"cor.secundaria\" description=\"Cor Secundária (Hover e Roxo do Fundo)\" type=\"color\" default=\"#4facfe\" value=\"#4facfe\"/>\n</Group>\n*/"
+  },
+  "notas_tecnicas": [
+    "FOUC Prevention é o padrão mais crítico deste template. Qualquer site com dark mode persistido deve ter o script de tema no <head> para evitar o flash. Este é o padrão correto — não há alternativa CSS para isso.",
+    "backdrop-filter: blur() tem performance custosa em mobile (GPU). O blur(12px) está no limite aceitável. Valores acima de 20px causam lag perceptível em dispositivos com GPU fraca.",
+    "Os blobs usam position: fixed — não rolam com o conteúdo. Para páginas com scroll longo (não single-page), avaliar mudar para position: absolute no background-blobs para evitar que o efeito de fundo fique 'congelado' enquanto o conteúdo rola.",
+    "animation-fill-mode: backwards é o padrão correto para animações escalonadas. forwards mantém o estado final (útil para aparições únicas), backwards mantém o estado inicial durante delays (útil para entradas sequenciais).",
+    "O motor de ícones (link.href.toLowerCase()) lê o atributo href APÓS o browser resolver a URL. Se o LinkList tiver URLs relativas, o href será a URL absoluta completa — includes() funciona corretamente.",
+    "Limitação do social-icon-btn: o ícone é genérico (bi-link-45deg) até o JS carregar. Em conexões lentas, o usuário pode ver o ícone genérico por frações de segundo. Aceitável para UX de link na bio.",
+    "O WhatsApp floating não aparece se o conteúdo do widget HTML99 estiver vazio (b:if cond='data:content != \"\"'). Para desativar o botão sem deletar o widget, basta deixar o campo de conteúdo vazio."
+  ]
+}

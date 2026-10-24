@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "city-horizon-visitor-forge-2d"
+version = "0.1.0"
+description = "Procedural 2D visitor compositor for City Horizon"
+requires-python = ">=3.11"
+dependencies = [
+  "Pillow>=10.4,<13"
+]
+
+[project.scripts]
+a7-forge-2d = "visitor_forge_2d.cli:main"
+ch-visitor-forge-2d = "visitor_forge_2d.cli:main"
+ch-fence-2d = "visitor_forge_2d.fence_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+license-files = ["third_party/libmypaint/NOTICE.txt"]
+
+[tool.setuptools.package-data]
+visitor_forge_2d = ["brush_library/**/*.png", "component_library/*.json"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

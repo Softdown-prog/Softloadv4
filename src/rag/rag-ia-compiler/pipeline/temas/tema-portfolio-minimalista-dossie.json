@@ -1,0 +1,10 @@
+{
+  "nicho": "portfolio-minimalista",
+  "versaoDossie": 1,
+  "chassis": "portfolio",
+  "pageType": "landing-page",
+  "tokensCss": {
+    "light_mode": {}
+  },
+  "pecas": []
+}

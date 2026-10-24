@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %></title>
+    <link href="/vendor/bootstrap/css/bootstrap.min.css?v=<%= gitSha %>" rel="stylesheet">
+    <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+    <script src="/vendor/chart.js/chart.umd.min.js?v=<%= gitSha %>"></script>
+    <style>
+        /* ── BASE ─────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { overflow-x: hidden; }
+        body { background: var(--sl-bg-950); color: var(--sl-text-300); }
+
+        /* ── TOPBAR ───────────────────────────── */
+        .workers-topbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1050;
+            height: 52px; background: rgba(15,23,42,0.95);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--sl-bg-800);
+            display: flex; align-items: center; padding: 0 1rem; gap: 0.65rem;
+        }
+        .workers-badge {
+            font-size: 9px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 0.12em; color: var(--sl-text-500);
+            border: 1px solid var(--sl-bg-800); padding: 2px 7px;
+            border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+        }
+        .topbar-btn {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; border-radius: 6px;
+            padding: 5px 10px; white-space: nowrap; flex-shrink: 0;
+        }
+        .pulse-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e; display: inline-block;
+            animation: pulse 2s infinite; flex-shrink: 0;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes spin  { to { transform: rotate(360deg); } }
+
+        /* ── LAYOUT ───────────────────────────── */
+        .page-wrap {
+            padding-top: 52px;
+            padding-left:  max(0.75rem, env(safe-area-inset-left));
+            padding-right: max(0.75rem, env(safe-area-inset-right));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+        .page-inner { max-width: 1400px; margin: 0 auto; padding-top: 1.25rem; }
+
+        /* ── CARDS ────────────────────────────── */
+        .metric-card {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+            border-radius: 12px; padding: 1rem;
+        }
+        .section-card {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--sl-bg-800);
+            border-radius: 12px; overflow: hidden;
+        }
+        .section-label {
+            font-size: 10px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 0.15em; color: var(--sl-text-400);
+        }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.5rem;
+            padding: 0.875rem 1rem; border-bottom: 1px solid var(--sl-bg-800);
+        }
+        .panel-body { padding: 1rem; }
+
+        /* ── BADGES ───────────────────────────── */
+        .status-badge { font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+        .status-healthy  { background: rgba(34,197,94,0.15);  color: #4ade80; }
+        .status-warning  { background: rgba(234,179,8,0.15);  color: #eab308; }
+        .status-critical { background: rgba(239,68,68,0.15);  color: #f87171; }
+        .trend-chip { display: inline-flex; align-items: center; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+        .trend-melhorando { background: rgba(34,197,94,0.12);  color: #4ade80; }
+        .trend-degradando { background: rgba(239,68,68,0.12);  color: #f87171; }
+        .trend-estavel    { background: rgba(148,163,184,0.1); color: #94a3b8; }
+
+        /* ── BARS ─────────────────────────────── */
+        .bar-track { background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 5px; margin-top: 8px; }
+        .bar-fill  { height: 100%; transition: width .5s, background .5s; border-radius: 4px; }
+
+        /* ── METRIC NUMBER ────────────────────── */
+        .metric-num  { font-size: clamp(1.4rem,5.5vw,2.1rem); font-weight: 900; color: #fff; line-height: 1; }
+        .metric-unit { font-size: 0.68rem; text-transform: uppercase; color: var(--sl-text-500); margin-bottom: .15rem; align-self: flex-end; }
+
+        /* ── TESTS GRID ───────────────────────── */
+        .tests-grid { display: grid; gap: .65rem; grid-template-columns: 1fr; }
+        @media(min-width:600px)  { .tests-grid { grid-template-columns: repeat(2,1fr); } }
+        @media(min-width:1024px) { .tests-grid { grid-template-columns: repeat(3,1fr); } }
+        .test-item  { display:flex; gap:.6rem; align-items:flex-start; padding:.65rem .75rem; border-radius:8px; background:rgba(0,0,0,.12); border-left:3px solid; }
+        .test-name  { font-size:.8rem; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .test-msg   { font-size:.73rem; color:var(--sl-text-500); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .consec-badge { font-size:7px; font-weight:900; padding:1px 5px; border-radius:999px; background:rgba(239,68,68,.15); color:#f87171; text-transform:uppercase; flex-shrink:0; }
+
+        /* ── REC / ANOMALY ────────────────────── */
+        .rec-item   { display:flex; gap:.6rem; align-items:flex-start; padding:.6rem .75rem; border-radius:8px; background:rgba(0,0,0,.15); border-left:3px solid; }
+        .rec-urgent { border-color:#ef4444; }
+        .rec-fail   { border-color:#f59e0b; }
+        .rec-warn   { border-color:#eab308; }
+        .anomaly-item { padding:.65rem .75rem; border-radius:8px; background:rgba(0,0,0,.1); border-left:3px solid #eab308; }
+
+        /* ── CHART WRAP ───────────────────────── */
+        .chart-wrap { position: relative; }
+        @media(max-width:575px) { .chart-wrap { height: 190px !important; } }
+
+        /* ── MOBILE ───────────────────────────── */
+        @media(max-width:575px) {
+            .workers-topbar { padding: 0 .65rem; gap: .4rem; }
+            .metric-card { padding: .8rem; border-radius: 10px; }
+            .section-card { border-radius: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── TOPBAR ─────────────────────────────────────── -->
+<nav class="workers-topbar">
+    <span class="fw-black text-white sl-brand" style="font-size:.9rem;white-space:nowrap;flex-shrink:0">
+        SOFTLOAD<span class="sl-accent">WORKERS</span>
+    </span>
+    <span class="workers-badge d-none d-sm-inline">
+        <%- include('../../partials/icon', { name: 'shield-check', style: 'font-size:10px' }) %> Sentinel
+    </span>
+    <div class="flex-grow-1"></div>
+    <span class="d-none d-sm-flex align-items-center gap-1" style="font-size:10px;color:var(--sl-text-500);white-space:nowrap">
+        <span class="pulse-dot"></span>60s
+    </span>
+    <a href="/workerlog" class="btn topbar-btn" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25)">
+        <%- include('../../partials/icon', { name: 'bug' }) %><span class="d-none d-md-inline"> Error Log</span>
+    </a>
+
+    <a href="/eu" class="btn topbar-btn" style="background:var(--sl-bg-800);color:var(--sl-text-300);border:1px solid var(--sl-bg-800)">
+        <%- include('../../partials/icon', { name: 'gauge' }) %><span class="d-none d-md-inline"> Admin</span>
+    </a>
+    <a href="/logout" class="btn topbar-btn" style="background:transparent;color:#f87171;border:1px solid rgba(239,68,68,0.3)">
+        <%- include('../../partials/icon', { name: 'log-out' }) %><span class="d-none d-md-inline"> Sair</span>
+    </a>
+</nav>
+
+<main class="page-wrap">
+<div class="page-inner">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <%- include('../../partials/icon', { name: 'shield-check', style: 'color:var(--sl-primary);font-size:1.1rem;flex-shrink:0' }) %>
+            <h1 class="fw-bolder text-white text-uppercase mb-0"
+                style="font-size:clamp(1rem,4vw,1.5rem);letter-spacing:-.02em">Sentinel Worker Monitor</h1>
+        </div>
+        <p class="mb-0" style="font-size:.78rem;color:var(--sl-text-500)">
+            Operador: <span style="color:var(--sl-primary)"><%= user.email %></span>
+        </p>
+    </div>
+
+    <!-- ── METRIC CARDS ────────────────────────────── -->
+    <div class="row g-2 g-sm-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <p class="mb-0" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Score</p>
+                    <span class="status-badge status-healthy" id="healthStatus">OK</span>
+                </div>
+                <div class="d-flex align-items-end gap-1 mb-2">
+                    <span class="metric-num" id="healthScore">—</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <div class="bar-track"><div id="healthScoreBar" class="bar-fill" style="background:#22c55e;width:0%"></div></div>
+                <p class="mb-0 mt-2" style="font-size:.7rem;color:var(--sl-text-500)">
+                    <span id="passCount">—</span>/<span id="totalTests">9</span> testes OK
+                </p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <p class="mb-0" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Uptime</p>
+                    <span class="trend-chip trend-estavel" id="trendChip">→ Estável</span>
+                </div>
+                <div class="d-flex align-items-end gap-1 mb-2">
+                    <span class="metric-num" id="uptimeScore">—</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">
+                    Último: <span id="lastTestTime">—</span>
+                </p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card h-100">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Heap</p>
+                <div class="d-flex align-items-end gap-1 mb-2">
+                    <span class="metric-num" id="heapUsage">—</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <div class="bar-track"><div id="heapBar" class="bar-fill" style="background:#a855f7;width:0%"></div></div>
+                <p class="mb-0 mt-2" style="font-size:.7rem;color:var(--sl-text-500)">Node.js heap</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card h-100">
+                <p class="mb-2" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Resp. Médio</p>
+                <div class="d-flex align-items-end gap-1 mb-2">
+                    <span class="metric-num" id="avgResponseTime">—</span>
+                    <span class="metric-unit">ms</span>
+                </div>
+                <p class="mb-0 mt-1" style="font-size:.7rem;color:var(--sl-text-500)">Média dos testes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PAINEL DE MEMÓRIA ─────────────────────── -->
+    <div class="section-card mb-4" id="memoryPanel">
+        <div class="panel-header">
+            <div class="d-flex align-items-center gap-2">
+                <%- include('../../partials/icon', { name: 'memory-stick', style: 'color:#a855f7;font-size:1rem' }) %>
+                <div>
+                    <p class="section-label mb-0">Memória do Processo</p>
+                    <p class="mb-0 mt-1" style="font-size:.72rem;color:var(--sl-text-500)">Heap Node.js · RSS · Tendência de vazamento</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span id="memAlertBadge" style="display:none" class="status-badge status-warning">Atenção</span>
+                <button id="btnAnalisar" class="btn btn-sm fw-bold"
+                        onclick="solicitarAnaliseMemoria()"
+                        style="background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);font-size:10px;padding:5px 10px;border-radius:8px">
+                    <%- include('../../partials/icon', { name: 'search', cls: 'me-1' }) %>Analisar Agora
+                </button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="row g-3">
+                <div class="col-6 col-sm-3">
+                    <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.75rem">
+                        <p class="mb-1" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Heap Usado</p>
+                        <div class="d-flex align-items-end gap-1">
+                            <span class="fw-bolder text-white" id="memHeapUsed" style="font-size:1.3rem">—</span>
+                            <span style="font-size:.65rem;color:var(--sl-text-500);margin-bottom:.15rem">MB</span>
+                        </div>
+                        <div class="bar-track mt-2"><div id="memHeapBar" class="bar-fill" style="background:#a855f7;width:0%"></div></div>
+                        <p class="mb-0 mt-1" style="font-size:.68rem;color:var(--sl-text-500)">de <span id="memHeapTotal">—</span>MB total</p>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.75rem">
+                        <p class="mb-1" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">RSS Total</p>
+                        <div class="d-flex align-items-end gap-1">
+                            <span class="fw-bolder text-white" id="memRss" style="font-size:1.3rem">—</span>
+                            <span style="font-size:.65rem;color:var(--sl-text-500);margin-bottom:.15rem">MB</span>
+                        </div>
+                        <p class="mb-0 mt-2" style="font-size:.68rem;color:var(--sl-text-500)">Memória real do processo</p>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.75rem">
+                        <p class="mb-1" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">External</p>
+                        <div class="d-flex align-items-end gap-1">
+                            <span class="fw-bolder text-white" id="memExternal" style="font-size:1.3rem">—</span>
+                            <span style="font-size:.65rem;color:var(--sl-text-500);margin-bottom:.15rem">MB</span>
+                        </div>
+                        <p class="mb-0 mt-2" style="font-size:.68rem;color:var(--sl-text-500)">Buffers e bindings nativos</p>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.75rem">
+                        <p class="mb-1" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-text-500)">Tendência</p>
+                        <div class="d-flex align-items-end gap-1">
+                            <span class="fw-bolder text-white" id="memTrend" style="font-size:1.1rem;line-height:1.4">—</span>
+                        </div>
+                        <p class="mb-0 mt-1" style="font-size:.68rem;color:var(--sl-text-500)">Crescimento: <span id="memGrowth">—</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memAlertas" style="display:none;margin-top:1rem">
+                <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:.75rem">
+                    <p class="mb-2" style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#f87171">
+                        <%- include('../../partials/icon', { name: 'alert-triangle', cls: 'me-1' }) %>Alertas de Memória
+                    </p>
+                    <div id="memAlertasList" style="display:flex;flex-direction:column;gap:.4rem"></div>
+                </div>
+            </div>
+
+            <div id="memSugestoes" style="display:none;margin-top:.75rem">
+                <div style="background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.15);border-radius:8px;padding:.75rem">
+                    <p class="mb-2" style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--sl-primary)">
+                        <%- include('../../partials/icon', { name: 'lightbulb', cls: 'me-1' }) %>Ações Sugeridas
+                    </p>
+                    <div id="memSugestoesList" style="display:flex;flex-direction:column;gap:.3rem"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TESTES DO SENTINEL ──────────────────────── -->
+    <div class="section-card mb-4">
+        <div class="panel-header">
+            <div>
+                <p class="section-label mb-0">Testes do Sentinel</p>
+                <p class="mb-0 mt-1" style="font-size:.75rem;color:var(--sl-text-500)">Status em tempo real</p>
+            </div>
+            <button id="btnAtualizar" class="btn btn-sm fw-bold text-uppercase"
+                    onclick="workerRefresh()"
+                    style="background:var(--sl-bg-800);color:var(--sl-text-300);border:1px solid var(--sl-bg-800);font-size:10px;padding:5px 10px">
+                <span id="iconAtualizar"><%- include('../../partials/icon', { name: 'refresh-cw' }) %></span> Atualizar
+            </button>
+        </div>
+        <div class="panel-body">
+            <div id="testsGrid" class="tests-grid">
+                <p class="mb-0 text-center" style="color:var(--sl-text-500);font-size:.8rem;grid-column:1/-1">Carregando...</p>
+            </div>
+        </div>
+
+        <div id="recommendationsWrap" style="display:none;border-top:1px solid var(--sl-bg-800)">
+            <div class="panel-body">
+                <p class="section-label mb-3"><%- include('../../partials/icon', { name: 'lightbulb', cls: 'me-1', style: 'color:#f59e0b' }) %>Recomendações</p>
+                <div id="recommendationsList" style="display:flex;flex-direction:column;gap:.5rem"></div>
+            </div>
+        </div>
+
+        <div id="anomaliesWrap" style="display:none;border-top:1px solid var(--sl-bg-800)">
+            <div class="panel-body">
+                <p class="section-label mb-3"><%- include('../../partials/icon', { name: 'alert-triangle', cls: 'me-1', style: 'color:#eab308' }) %>Anomalias</p>
+                <div id="anomaliesList" style="display:flex;flex-direction:column;gap:.4rem"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHARTS ──────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-8">
+            <div class="section-card p-3">
+                <p class="section-label mb-3">Histórico de Score (últimas 20 execuções)</p>
+                <div class="chart-wrap" style="height:220px">
+                    <canvas id="chartHistory"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="section-card p-3">
+                <p class="section-label mb-3">Distribuição de Status</p>
+                <div class="chart-wrap d-flex align-items-center justify-content-center" style="height:220px">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js?v=<%= gitSha %>"></script>
+<script src="/js/workers/w-utils.js"></script>
+<script src="/js/workers/w-sentinel.js"></script>
+<script src="/js/workers/w-init.js"></script>
+</body>
+</html>

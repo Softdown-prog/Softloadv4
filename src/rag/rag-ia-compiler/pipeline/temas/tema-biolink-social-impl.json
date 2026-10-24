@@ -1,0 +1,113 @@
+{
+  "fouc_prevention": {
+    "titulo": "FOUC Prevention — Script no <head> ANTES do body renderizar",
+    "descricao": "Flash Of Unstyled Content ocorre quando o usuário vê um flash do tema errado (light quando deveria ser dark). A solução é aplicar o data-bs-theme no <html> via script no <head>, ANTES do body ser pintado.",
+    "codigo": "<script>\n  //<![CDATA[\n    const savedTheme = localStorage.getItem('biolink-theme')\n      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');\n    document.documentElement.setAttribute('data-bs-theme', savedTheme);\n  //]]>\n</script>",
+    "logica": "1. Lê o tema salvo pelo usuário no localStorage. 2. Se não houver tema salvo, lê a preferência do sistema operacional via prefers-color-scheme. 3. Aplica data-bs-theme no documentElement (<html>) imediatamente — antes do browser pintar qualquer elemento do body.",
+    "posicionamento": "Deve estar no <head> APÓS os CDNs de CSS e ANTES do </head>. Se colocado no body ou no DOMContentLoaded, o FOUC já ocorreu.",
+    "notas": [
+      "window.matchMedia('(prefers-color-scheme: dark)').matches é síncrono — não precisa de listener, lê o valor no momento da execução.",
+      "document.documentElement é o <html> — é o nó raiz onde Bootstrap 5.3 lê o data-bs-theme.",
+      "O CDATA é obrigatório no script dentro do XML do Blogger para prevenir que < e > quebrem o parser."
+    ]
+  },
+  "glassmorphism_system": {
+    "descricao": "Sistema completo de glassmorphism com variáveis CSS para light e dark mode. Três propriedades principais: backdrop-filter blur, background rgba translúcido, border rgba.",
+    "css_base": ".link-btn {\n  background-color: var(--bio-card-bg);\n  border: 1px solid var(--bio-card-border);\n  border-radius: 50px;\n  box-shadow: var(--bio-card-shadow);\n  backdrop-filter: blur(12px);\n  -webkit-backdrop-filter: blur(12px);\n  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);\n}\n.link-btn:hover {\n  background-color: var(--bio-card-hover-bg);\n  box-shadow: var(--bio-card-hover-shadow);\n  border-color: var(--bio-primary);\n  transform: translateY(-4px) scale(1.02);\n}",
+    "token_light_dark": {
+      "card_bg_light": "rgba(255, 255, 255, 0.7) — vidro fosco branco",
+      "card_bg_dark": "rgba(25, 25, 25, 0.4) — vidro fosco escuro",
+      "border_light": "rgba(255, 255, 255, 0.5) — borda branca translúcida",
+      "border_dark": "rgba(255, 255, 255, 0.05) — borda quase invisível no dark",
+      "hover_shadow_dark": "0 0 20px rgba(6, 182, 212, 0.3) — halo ciano neon no dark mode"
+    },
+    "requisito_fundo": "backdrop-filter funciona APENAS quando há algo visível atrás do elemento. Os blobs animados são o 'fundo' que o blur processa. Sem os blobs (ou sem fundo colorido), o glassmorphism fica invisível.",
+    "prefixo_webkit": "-webkit-backdrop-filter é obrigatório para Safari (iOS Safari, macOS Safari). Sem ele, iPhones não renderizam o efeito."
+  },
+  "blobs_animados": {
+    "descricao": "Dois círculos grandes absolutamente posicionados com filter:blur(80px). Animados com translate+scale via @keyframes blob-float. Ficam no z-index:-1 (atrás de todo o conteúdo). São a 'tela' que o backdrop-filter do glassmorphism processa.",
+    "css": ".background-blobs {\n  position: fixed; top: 0; left: 0;\n  width: 100vw; height: 100vh;\n  overflow: hidden; z-index: -1; pointer-events: none;\n}\n.blob {\n  position: absolute; border-radius: 50%;\n  filter: blur(80px); opacity: 0.6;\n  animation: blob-float 20s infinite alternate ease-in-out;\n}\n.blob-1 {\n  width: 400px; height: 400px;\n  background: var(--bio-secondary);\n  top: -100px; left: -100px;\n  animation-delay: 0s;\n}\n.blob-2 {\n  width: 300px; height: 300px;\n  background: var(--bio-primary);\n  bottom: -50px; right: -50px;\n  animation-delay: -5s;\n}\n[data-bs-theme=\"dark\"] .blob { opacity: 0.3; }\n\n@keyframes blob-float {\n  0% { transform: translate(0, 0) scale(1); }\n  50% { transform: translate(150px, 100px) scale(1.2); }\n  100% { transform: translate(50px, 200px) scale(0.9); }\n}",
+    "html": "<div class=\"background-blobs\">\n  <div class=\"blob blob-1\"></div>\n  <div class=\"blob blob-2\"></div>\n</div>",
+    "notas": [
+      "position: fixed em .background-blobs — o fundo acompanha o scroll (não rola com o conteúdo). Ideal para single-page.",
+      "animation-delay: -5s no blob-2 — atraso negativo inicia a animação a partir do meio do ciclo, garantindo que os dois blobs nunca estejam na mesma posição.",
+      "alternate no blob-float — a animação vai e volta (0→100→0) criando movimento orgânico infinito.",
+      "opacity: 0.3 no dark mode — blobs mais discretos para não competir com o conteúdo em fundo escuro.",
+      "overflow: hidden em .background-blobs — blobs parcialmente fora do viewport (top:-100px) não causam scrollbar horizontal."
+    ]
+  },
+  "profile_gradient_ring": {
+    "descricao": "Avatar de perfil com anel de gradiente animado (pulse-ring). O wrapper tem o gradiente como background e o img tem border branca para criar o efeito de 'frame colorido'.",
+    "css": ".profile-img-wrapper {\n  width: 120px; height: 120px;\n  padding: 4px;\n  border-radius: 50%;\n  background: linear-gradient(45deg, var(--bio-primary), var(--bio-secondary));\n  animation: pulse-ring 3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);\n}\n.profile-img {\n  width: 100%; height: 100%;\n  border: 4px solid var(--bio-bg);\n  border-radius: 50%;\n  object-fit: cover;\n  background-color: var(--bio-bg);\n  transition: border-color 0.4s ease;\n}\n@keyframes pulse-ring {\n  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }\n  70% { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); }\n  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }\n}",
+    "html": "<div class=\"profile-img-wrapper mb-3 mx-auto\">\n  <img class=\"profile-img img-fluid rounded-circle object-fit-cover\" src=\"URL_DA_FOTO\" alt=\"Nome\" />\n</div>",
+    "mecanismo": "O wrapper (120x120, padding:4px) tem o gradiente como background. O img tem border:4px solid var(--bio-bg) — a cor de fundo. Resultado: gradiente visível como anel entre o wrapper e a borda do img."
+  },
+  "layout_single_column": {
+    "descricao": "Layout de página única centrado. Container com max-width 680px, min-vh-100 e flex-column. Footer com mt-auto fica naturalmente no rodapé sem position:fixed.",
+    "html_wrapper": "<div class=\"biolink-wrapper container-fluid d-flex flex-column align-items-center min-vh-100 py-5\"\n  style=\"max-width: 680px; margin: 0 auto;\">\n  <header class=\"w-100 mb-4 animate-item\">...</header>\n  <main class=\"w-100 mb-5 px-3 animate-item\">...</main>\n  <footer class=\"w-100 mt-auto text-center px-3\">...</footer>\n</div>",
+    "estrutura_semantica": "header (perfil) + main (links) + footer (ícones sociais + controles) — sem navbar, sem sidebar. Todos os elementos em w-100 dentro do container centralizado.",
+    "nota": "mt-auto no footer empurra-o para o rodapé quando o conteúdo não preenche a tela inteira (min-vh-100). Funciona porque o container é display:flex flex-column."
+  },
+  "fadein_escalonado_backwards": {
+    "descricao": "Animação fadeInUp escalonada por nth-child com animation-fill-mode: backwards. O 'backwards' garante que o elemento começa invisible durante o delay — sem ele, o elemento aparece e desaparece repentinamente.",
+    "css": ".animate-item { animation: fadeInUp 0.6s ease backwards; position: relative; z-index: 10; }\nheader.animate-item { animation-delay: 0.1s; }\nmain.animate-item { animation-delay: 0.2s; }\nfooter .animate-item { animation-delay: 0.3s; }\n\n.links-container .link-btn { animation: fadeInUp 0.5s ease backwards; }\n.links-container .link-btn:nth-child(1) { animation-delay: 0.2s; }\n.links-container .link-btn:nth-child(2) { animation-delay: 0.3s; }\n.links-container .link-btn:nth-child(3) { animation-delay: 0.4s; }\n.links-container .link-btn:nth-child(4) { animation-delay: 0.5s; }\n.links-container .link-btn:nth-child(5) { animation-delay: 0.6s; }\n\n@keyframes fadeInUp {\n  from { opacity: 0; transform: translateY(30px); }\n  to { opacity: 1; transform: translateY(0); }\n}",
+    "fill_mode_backwards": "animation-fill-mode: backwards aplica o estado do keyframe 'from' durante o animation-delay. Sem backwards, o elemento fica visível (opacity:1) durante o delay e depois pisca para opacity:0 quando a animação começa — efeito indesejado. Com backwards, permanece invisible até a animação iniciar.",
+    "z_index_10": "z-index: 10 nos .animate-item garante que os links ficam acima dos blobs (z-index: -1). Necessário porque blobs usam position:fixed e podem interceptar eventos sem essa proteção.",
+    "para_6_links": ".links-container .link-btn:nth-child(6) { animation-delay: 0.7s; }"
+  },
+  "icones_auto_deteccao": {
+    "descricao": "Motor JS que lê a URL de cada link e substitui o ícone genérico bi-link-45deg pelo ícone correto da rede social. 15 redes suportadas + fallback genérico.",
+    "javascript": "const socialLinks = document.querySelectorAll('.social-icon-btn');\nsocialLinks.forEach(link => {\n  const url = link.href.toLowerCase();\n  const icon = link.querySelector('i');\n  if (!icon) return;\n\n  if (url.includes('instagram.com'))          icon.className = 'bi bi-instagram';\n  else if (url.includes('twitter.com') || url.includes('x.com')) icon.className = 'bi bi-twitter-x';\n  else if (url.includes('facebook.com'))       icon.className = 'bi bi-facebook';\n  else if (url.includes('youtube.com') || url.includes('youtu.be')) icon.className = 'bi bi-youtube';\n  else if (url.includes('tiktok.com'))         icon.className = 'bi bi-tiktok';\n  else if (url.includes('whatsapp.com') || url.includes('wa.me')) icon.className = 'bi bi-whatsapp';\n  else if (url.includes('linkedin.com'))       icon.className = 'bi bi-linkedin';\n  else if (url.includes('github.com'))         icon.className = 'bi bi-github';\n  else if (url.includes('spotify.com'))        icon.className = 'bi bi-spotify';\n  else if (url.includes('twitch.tv'))          icon.className = 'bi bi-twitch';\n  else if (url.includes('threads.net'))        icon.className = 'bi bi-threads';\n  else if (url.includes('t.me') || url.includes('telegram.org')) icon.className = 'bi bi-telegram';\n  else if (url.includes('snapchat.com'))       icon.className = 'bi bi-snapchat';\n  else if (url.includes('pinterest.com'))      icon.className = 'bi bi-pinterest';\n  else if (url.includes('mailto:'))            icon.className = 'bi bi-envelope-at-fill';\n  // else: mantém bi-link-45deg como fallback genérico\n});",
+    "html_inicial": "<a class=\"social-icon-btn fs-3\" href=\"URL_DA_REDE\" aria-label=\"Nome da Rede\" rel=\"noopener noreferrer\" target=\"_blank\">\n  <i class=\"bi bi-link-45deg\"></i>\n</a>",
+    "redes_suportadas": {
+      "instagram": "instagram.com → bi-instagram",
+      "twitter_x": "twitter.com ou x.com → bi-twitter-x",
+      "facebook": "facebook.com → bi-facebook",
+      "youtube": "youtube.com ou youtu.be → bi-youtube",
+      "tiktok": "tiktok.com → bi-tiktok",
+      "whatsapp": "whatsapp.com ou wa.me → bi-whatsapp",
+      "linkedin": "linkedin.com → bi-linkedin",
+      "github": "github.com → bi-github",
+      "spotify": "spotify.com → bi-spotify",
+      "twitch": "twitch.tv → bi-twitch",
+      "threads": "threads.net → bi-threads",
+      "telegram": "t.me ou telegram.org → bi-telegram",
+      "snapchat": "snapchat.com → bi-snapchat",
+      "pinterest": "pinterest.com → bi-pinterest",
+      "email": "mailto: → bi-envelope-at-fill",
+      "fallback": "qualquer outro URL → bi-link-45deg (corrente genérica)"
+    },
+    "nota": "url.toLowerCase() antes de includes() — URLs são case-insensitive mas o includes() é case-sensitive. Sem o toLowerCase(), 'Instagram.com' (capital I) não seria detectado."
+  },
+  "whatsapp_floating": {
+    "descricao": "Botão flutuante verde do WhatsApp com SVG inline oficial, pulso animado e número configurável via conteúdo do widget. Posicionado fixed no canto inferior direito.",
+    "css": ".whatsapp-widget-container { position: fixed; bottom: 25px; right: 25px; z-index: 9999; }\n.whatsapp-btn {\n  display: flex; align-items: center; justify-content: center;\n  width: 60px; height: 60px;\n  background-color: #25D366;\n  color: #ffffff !important;\n  border-radius: 50%;\n  text-decoration: none;\n  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);\n  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);\n  animation: pulse-wa 2s infinite;\n}\n.whatsapp-btn:hover { background-color: #1ebe57; transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6); }\n@keyframes pulse-wa {\n  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }\n  70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }\n  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }\n}\n@media (max-width: 768px) { .whatsapp-btn { width: 55px; height: 55px; } }",
+    "html": "<div class=\"whatsapp-widget-container\">\n  <a class=\"whatsapp-btn\"\n    href=\"https://wa.me/5511999999999\"\n    rel=\"noopener noreferrer\" target=\"_blank\"\n    title=\"Fale connosco no WhatsApp\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"currentColor\" width=\"30\" height=\"30\" viewBox=\"0 0 16 16\">\n      <path d=\"M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z\"/>\n    </svg>\n  </a>\n</div>",
+    "formato_numero": "wa.me/XXXXXXXXXXX — somente dígitos, incluindo código do país sem + ou 00. Exemplo: wa.me/5511999999999 (Brasil DDD + número)",
+    "nota": "SVG inline é obrigatório aqui — Bootstrap Icons não tem bi-whatsapp com a logo oficial (apenas ícone estilizado). O path SVG é a logo oficial do WhatsApp."
+  },
+  "web_share_api": {
+    "descricao": "API nativa do browser para abrir o menu de partilha do sistema operacional. Funciona em mobile (Android/iOS). Fallback com navigator.clipboard para desktop. Trava anti-spam com flag isSharing.",
+    "javascript": "const btnShare = document.getElementById('btnShare');\nlet isSharing = false;\n\nif (btnShare) {\n  btnShare.addEventListener('click', async () => {\n    if (isSharing) return; // Trava anti-spam\n\n    if (navigator.share) {\n      try {\n        await navigator.share({\n          title: document.title,\n          text: 'Confere os meus links!',\n          url: window.location.href\n        });\n      } catch (err) {\n        // Usuário cancelou — não é erro real\n        console.log('Partilha cancelada.');\n      }\n    } else {\n      // Fallback: copia URL para clipboard (desktop)\n      isSharing = true;\n      navigator.clipboard.writeText(window.location.href);\n      btnShare.innerHTML = '<i class=\"bi bi-check2-circle me-2\"></i> Copiado!';\n      setTimeout(() => {\n        btnShare.innerHTML = '<i class=\"bi bi-share-fill me-2\"></i> Partilhar';\n        isSharing = false; // Liberta a trava após feedback\n      }, 2500);\n    }\n  });\n}",
+    "notas": [
+      "navigator.share() retorna uma Promise — async/await obrigatório para capturar o cancelamento no catch.",
+      "O erro de cancelamento (AbortError) é esperado quando o usuário fecha o menu de partilha sem selecionar nada. O catch deve ser silencioso.",
+      "navigator.clipboard.writeText() também é assíncrono mas o await é opcional no fallback — o feedback visual ocorre independentemente do sucesso.",
+      "isSharing = true no fallback (não no share nativo) porque o menu nativo bloqueia naturalmente re-cliques até ser fechado.",
+      "navigator.share só funciona em HTTPS. Em HTTP, navigator.share é undefined e cai automaticamente no fallback."
+    ]
+  },
+  "dark_mode_avancado": {
+    "descricao": "Dark mode com três camadas: 1) FOUC Prevention no head, 2) prefers-color-scheme detection, 3) toggle manual persistido no localStorage.",
+    "javascript_toggle": "const setTheme = (theme) => {\n  document.documentElement.setAttribute('data-bs-theme', theme);\n  localStorage.setItem('biolink-theme', theme);\n  if (themeIcon) {\n    themeIcon.className = theme === 'dark'\n      ? 'bi bi-sun-fill me-2'\n      : 'bi bi-moon-stars-fill me-2';\n  }\n};\n\n// Sincroniza o ícone com o tema atual (pode ter sido aplicado pelo FOUC script)\nif (themeIcon) {\n  themeIcon.className = document.documentElement.getAttribute('data-bs-theme') === 'dark'\n    ? 'bi bi-sun-fill me-2'\n    : 'bi bi-moon-stars-fill me-2';\n}\n\nbtnTheme.addEventListener('click', () => {\n  const current = document.documentElement.getAttribute('data-bs-theme');\n  setTheme(current === 'dark' ? 'light' : 'dark');\n});",
+    "storage_key": "biolink-theme",
+    "fouc_prevention_head": "const saved = localStorage.getItem('biolink-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');\ndocument.documentElement.setAttribute('data-bs-theme', saved);",
+    "sincronizacao_icone": "O ícone é sincronizado no DOMContentLoaded (não apenas no click) porque o tema pode ter sido aplicado pelo script do head — o JS do body precisa atualizar o ícone para refletir o estado atual.",
+    "body_transition": "body { transition: background-color 0.4s ease, color 0.4s ease; } — transição suave ao trocar de tema manualmente. Não aplicar ao FOUC script (a troca pelo script deve ser instantânea)."
+  },
+  "links_widget_como_biolink": {
+    "descricao": "O widget LinkList do Blogger é usado como motor dos botões de link na bio. Cada item do LinkList vira um botão com class link-btn. O usuário edita os links no painel do Blogger sem tocar no XML.",
+    "html_includable": "<b:includable id='main'>\n  <div class='links-container d-flex flex-column gap-3'>\n    <b:loop values='data:links' var='link'>\n      <a class='link-btn d-flex align-items-center justify-content-center position-relative'\n        expr:href='data:link.target'\n        rel='noopener noreferrer'\n        target='_blank'>\n        <span class='link-text fw-bold'><data:link.name/></span>\n      </a>\n    </b:loop>\n  </div>\n</b:includable>",
+    "nota": "target='_blank' obrigatório em link na bio — o objetivo é abrir redes externas sem sair da página. rel='noopener noreferrer' por segurança (previne tab-napping)."
+  }
+}

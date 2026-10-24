@@ -1,0 +1,45 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "pine_tall_v1",
+  "canvas": [
+    176,
+    264
+  ],
+  "anchor": [
+    88,
+    249
+  ],
+  "bounds": [
+    26,
+    7,
+    153,
+    259
+  ],
+  "seed": 73047,
+  "crownStyle": "conifer",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "raster": {
+    "shadowDabs": 340,
+    "highlightDabs": 280,
+    "needleStrokes": 620,
+    "finalGrain": 330,
+    "finalNeedles": 330
+  },
+  "runtimePromotion": false,
+  "artApproved": false,
+  "recipe": "tools/visitor_forge_2d/examples/pine_tall_v1.json",
+  "recipeSha256": "58b64f751106eb56bebd513d4f5b20028fec64c846ba40824796d53e6f0b9d80",
+  "png": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_tall_v1.png",
+  "review": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_tall_v1_review.png",
+  "isometricReview": "tools/visitor_forge_2d/art/concepts/pine_family_v1/pine_tall_v1_isometric_review.png"
+}

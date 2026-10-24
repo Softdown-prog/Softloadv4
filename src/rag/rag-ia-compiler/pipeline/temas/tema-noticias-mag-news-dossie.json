@@ -1,0 +1,587 @@
+{
+  "nicho": "noticias-mag-news",
+  "versaoDossie": 1,
+  "chassis": "magazine",
+  "pageType": "portal-noticias",
+  "tokensCss": {
+    "light_mode": {
+      "--mag-primary": "#2563eb",
+      "--mag-dark": "#111827",
+      "--mag-bg": "#f9fafb",
+      "--mag-surface": "#ffffff",
+      "--mag-text": "#374151",
+      "--mag-title": "#030712",
+      "--mag-border": "#e5e7eb",
+      "--font-title": "Playfair Display, serif",
+      "--font-text": "Inter, sans-serif",
+      "--radius": "12px",
+      "--mag-secondary": "#6c757d",
+      "--border-color": "#dee2e6"
+    },
+    "dark_mode": {
+      "seletor": "[data-bs-theme='dark']",
+      "--mag-bg": "#0f172a",
+      "--mag-surface": "#1e293b",
+      "--mag-text": "#cbd5e1",
+      "--mag-title": "#f8fafc",
+      "--mag-border": "#334155",
+      "--mag-dark": "#0f172a"
+    }
+  },
+  "pecas": [
+    {
+      "id": "modulo-aplicacao-global-inicial",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "body { background-color: var(--mag-bg); color: var(--mag-text); font-family: var(--font-text); -webkit-font-smoothing: antialiased; }\n\nh1, h2, h3, h4, h5, h6, .playfair { font-family: var(--font-title); color: var(--mag-title); }\n\na { color: var(--mag-primary); text-decoration: none; transition: color 0.3s; }\n\na:hover { color: #1d4ed8; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Aplicação Global Inicial (bloco :root/$(mag.*) e bloco [data-bs-theme=dark] redundantes removidos — já cobertos pelo tokensCss do dossiê; mantidas só as regras finais que realmente vencem a cascata no arquivo original)"
+    },
+    {
+      "id": "modulo-cabecalho-editorial-style",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-header-content { padding-top: 1rem; padding-bottom: 1rem; text-align: center; }\n\n.mag-logo-link { display: inline-block; }\n\n.mag-logo-img { max-height: 90px; width: auto; }\n\n.navbar-container { border-top: 1px solid var(--mag-border); border-bottom: 4px solid var(--mag-dark); background-color: var(--mag-surface); }\n\n[data-bs-theme=\"dark\"] .navbar-container { border-bottom-color: var(--mag-primary); }\n\n.navbar .nav-link { font-family: var(--font-text); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; color: var(--mag-title) !important; padding: 15px 20px !important; }\n\n.navbar .nav-link:hover { color: var(--mag-primary) !important; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo do cabeçalho. CORRIGIDO (esqueleto próprio, achado real): a versão anterior remapeava pra .sl-header/.sl-nav (classes do chassis magazine compartilhado, época em que a estrutura física era o chassis genérico) — agora que o esqueleto tem markup real, revertido pros seletores reais confirmados em exemplos/noticias-mag-news.xml: .mag-header-content/.mag-logo-link (header) e .navbar-container/.navbar/.nav-link (nav)."
+    },
+    {
+      "id": "modulo-cards-de-noticias-feed-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".news-card { background: transparent; border: none; transition: transform 0.3s; height: 100%; }\n\n.news-card:hover .news-title a { color: var(--mag-primary); }\n\n.news-card-img { overflow: hidden; border-radius: 4px; position: relative; margin-bottom: 1rem; }\n\n.news-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }\n\n.news-card:hover .news-card-img img { transform: scale(1.03); }\n\n.news-title { font-weight: 700; font-size: 1.4rem; line-height: 1.3; }\n\n.news-title a { color: var(--mag-title); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === CARDS DE NOTÍCIAS (FEED PREMIUM) ==="
+    },
+    {
+      "id": "modulo-single-post-dropcap",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-header-single { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--mag-border); }\n\n.post-title-single { font-weight: 900; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; margin: 15px 0; letter-spacing: -1px; }\n\n.post-body-content { font-size: 1.15rem; line-height: 1.8; color: var(--mag-text); }\n\n.post-body-content img, .post-body-content iframe { max-width: 100% !important; height: auto !important; margin: 2rem 0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === SINGLE POST & DROPCAP === CORRIGIDO (esqueleto próprio, achado real): .post-body nunca existiu no arquivo real — a classe real do corpo do post é .post-body-content (confirmado em exemplos/noticias-mag-news.xml). Herdado da fase em que o nicho ainda usava o chassis magazine compartilhado; agora que o esqueleto tem markup real, revertido pro seletor real."
+    },
+    {
+      "id": "modulo-letra-capitular-dropcap",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body-content > p:first-of-type::first-letter, \n    .post-body-content > div:first-of-type::first-letter {\n      font-family: var(--font-title);\n      font-size: 4.5rem;\n      font-weight: 900;\n      color: var(--mag-primary);\n      float: left;\n      line-height: 0.8;\n      margin-right: 12px;\n      margin-top: 5px;\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: LETRA CAPITULAR (DROPCAP) CORRIGIDO (esqueleto próprio, achado real): .post-body → .post-body-content (classe real, mesmo achado da peça modulo-single-post-dropcap)."
+    },
+    {
+      "id": "modulo-pagina-404-editorial",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".error-404-wrapper { min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 1rem; }\n\n.error-code { font-family: var(--font-title); font-size: clamp(6rem, 15vw, 12rem); color: var(--mag-title); font-weight: 900; line-height: 1; letter-spacing: -5px; }\n\n.error-subtitle { font-family: var(--font-title); font-style: italic; color: var(--mag-primary); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === PÁGINA 404 EDITORIAL ==="
+    },
+    {
+      "id": "modulo-tags-marcadores-pilulas-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".list-label-widget-content ul, .cloud-label-widget-content { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-wrap: wrap; gap: 8px; }\n\n.list-label-widget-content ul li, .cloud-label-widget-content .label-size { display: inline-flex; align-items: center; margin: 0; }\n\n.list-label-widget-content ul li a, .cloud-label-widget-content .label-size a, .post-bottom-tags a {\n      display: inline-flex; align-items: center; background: transparent; color: var(--mag-text);\n      font-size: 0.8rem !important; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;\n      padding: 8px 18px; border-radius: 30px; border: 1px solid var(--mag-border);\n      transition: all 0.3s ease; text-decoration: none !important;\n    }\n\n.list-label-widget-content ul li a:hover, .cloud-label-widget-content .label-size a:hover, .post-bottom-tags a:hover {\n      background: var(--mag-primary); color: #ffffff !important; border-color: var(--mag-primary); transform: translateY(-3px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.2);\n    }\n\n.list-label-widget-content ul li span[dir='ltr'], .cloud-label-widget-content .label-count {\n      background: var(--mag-dark); color: #ffffff; font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; margin-left: -12px; margin-top: -15px; font-weight: 700; z-index: 2; border: 2px solid var(--mag-surface);\n    }\n\n[data-bs-theme=\"dark\"] .list-label-widget-content ul li a, [data-bs-theme=\"dark\"] .cloud-label-widget-content .label-size a { border-color: #334155; }\n\n[data-bs-theme=\"dark\"] .list-label-widget-content ul li span[dir='ltr'], [data-bs-theme=\"dark\"] .cloud-label-widget-content .label-count { border-color: var(--mag-surface); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === TAGS / MARCADORES (PÍLULAS PREMIUM) ==="
+    },
+    {
+      "id": "modulo-widgets-sidebar",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".widget-title { font-family: var(--font-title); font-weight: 900; font-size: 1.5rem; border-bottom: 2px solid var(--mag-primary); padding-bottom: 10px; margin-bottom: 20px; color: var(--mag-title); display: inline-block; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === WIDGETS SIDEBAR ==="
+    },
+    {
+      "id": "modulo-newsletter-estilo-revista",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-newsletter { background: var(--mag-dark); color: #fff; padding: 2rem; border-radius: 8px; text-align: center; }\n\n.mag-newsletter h4 { font-family: var(--font-title); color: #fff; font-size: 1.8rem; margin-bottom: 1rem; }\n\n[data-bs-theme=\"dark\"] .mag-newsletter { background: var(--mag-surface); border: 1px solid var(--mag-border); }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: NEWSLETTER ESTILO REVISTA"
+    },
+    {
+      "id": "modulo-footer-premium-editorial",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-footer { background-color: var(--sl-footer-bg); color: var(--sl-text-main); padding-top: 5rem; margin-top: 5rem; }\n\n.mag-footer .playfair { color: #ffffff; }\n\n.mag-footer .widget-title { color: #ffffff; border-bottom-color: #374151; }\n\n.mag-footer a { color: var(--sl-text-main); text-decoration: none; transition: color 0.3s ease; }\n\n.mag-footer a:hover { color: var(--mag-primary); }\n\n.mag-footer .btn-social { border-color: #374151; color: #d1d5db; transition: all 0.3s ease; }\n\n.mag-footer .btn-social:hover { background-color: var(--mag-primary); border-color: var(--mag-primary); color: #ffffff; transform: translateY(-3px); }\n\n.mag-footer-bottom { border-top: 1px solid #1f2937; padding: 1.5rem 0; margin-top: 3rem; }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === FOOTER PREMIUM EDITORIAL === (CORRIGIDO (esqueleto próprio, achado real): revertido de volta pra .mag-footer — essa SEMPRE foi a classe real (exemplos/noticias-mag-news.xml, <footer class='mag-footer'>); a troca pra .sl-footer só fazia sentido enquanto o nicho usava o chassis magazine compartilhado; cor de fundo/texto trocada de hex fixo pra var(--sl-footer-bg)/var(--sl-text-main), tokens dinâmicos do colorPreset já usados no dossiê anterior)"
+    },
+    {
+      "id": "modulo-botao-voltar-ao-topo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "#sl-back-top {\n      position: fixed;\n      bottom: 30px;\n      right: 30px;\n      width: 50px;\n      height: 50px;\n      background-color: var(--mag-primary);\n      color: #ffffff;\n      border: none;\n      border-radius: 50%;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 1.8rem;\n      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);\n      cursor: pointer;\n      opacity: 0;\n      visibility: hidden;\n      transform: translateY(20px);\n      transition: all 0.3s ease;\n      z-index: 999;\n    }\n\n#sl-back-top.show {\n      opacity: 1;\n      visibility: visible;\n      transform: translateY(0);\n    }\n\n#sl-back-top:hover {\n      background-color: #1d4ed8;\n      transform: translateY(-5px);\n      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);\n    }",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: === BOTÃO VOLTAR AO TOPO === CORRIGIDO (esqueleto próprio, achado real): #backToTop nunca teve elemento correspondente no chassis (o botão real do arquivo original usava esse id, mas nunca foi extraído/ligado) — retargetado pro id real do módulo genérico BACK_TO_TOP_MODULE (#sl-back-top, já ligado via backToTop:true), que agora recebe o visual editorial desta peça."
+    },
+    {
+      "id": "modulo-animacoes",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".animate-up { opacity: 0; transform: translateY(20px); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }\n\n.animate-up.visible { opacity: 1; transform: translateY(0); }",
+      "html": "",
+      "js": "// [8] caminho: animate_up.js_intersection_observer\nconst obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }), { threshold: 0.1 });\ndocument.querySelectorAll('.animate-up, .news-card').forEach((el, i) => {\n  if(el.classList.contains('news-card')) el.style.transitionDelay = `${(i % 2) * 0.1}s`;\n  el.classList.add('animate-up');\n  obs.observe(el);\n});",
+      "descricao": "Estilo: === ANIMAÇÕES ==="
+    },
+    {
+      "id": "modulo-widget-postagens-mais-vistas-alta-qualidade",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".PopularPosts .item-content {\n  display: flex;\n  flex-direction: column; /* Coloca a imagem em cima e o texto embaixo */\n  margin-bottom: 2rem;\n}\n\n.PopularPosts .item-thumbnail {\n  width: 100%;\n  height: 200px; /* Altura do banner da imagem */\n  margin: 0 0 1rem 0 !important; /* Remove a margem nativa do Blogger */\n  overflow: hidden;\n  border-radius: 8px; /* Bordas arredondadas modernas */\n  box-shadow: 0 4px 10px rgba(0,0,0,0.05);\n}\n\n.PopularPosts .item-thumbnail img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover; /* Garante que a imagem não fique esticada */\n  transition: transform 0.5s ease;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  WIDGET: POSTAGENS MAIS VISTAS (Alta Qualidade)\n-----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-efeito-de-zoom-suave-ao-passar-o-mouse",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".PopularPosts .item-thumbnail a:hover img {\n  transform: scale(1.05);\n}\n\n.PopularPosts .item-title {\n  font-family: var(--font-title);\n  font-weight: 700;\n  font-size: 1.2rem;\n  line-height: 1.3;\n  margin-bottom: 0.5rem;\n}\n\n.PopularPosts .item-title a {\n  color: var(--mag-title);\n  text-decoration: none;\n  transition: color 0.3s ease;\n}\n\n.PopularPosts .item-title a:hover {\n  color: var(--mag-primary);\n}\n\n.PopularPosts .item-snippet {\n  font-size: 0.9rem;\n  color: var(--mag-text);\n  line-height: 1.6;\n  opacity: 0.85;\n  /* Truque para limitar o resumo a 2 linhas com \"...\" no final */\n  display: -webkit-box;\n  -webkit-line-clamp: 2; \n  -webkit-box-orient: vertical;\n  overflow: hidden;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito de zoom suave ao passar o mouse"
+    },
+    {
+      "id": "modulo-container-principal-do-formulario",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-widget {\n  max-width: 100%;\n  margin: 0 auto;\n  background-color: var(--bs-body-bg);\n  padding: 2rem;\n  border-radius: 12px;\n  box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n  border: 1px solid var(--bs-border-color);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Container principal do formulário"
+    },
+    {
+      "id": "modulo-campos-de-entrada-nome-email-mensagem",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-name,\n.contact-form-email,\n.contact-form-email-message {\n  width: 100% !important;\n  max-width: 100% !important;\n  margin-bottom: 1.5rem;\n  padding: 0.8rem 1.2rem;\n  border: 1px solid var(--bs-border-color-translucent);\n  border-radius: 8px;\n  font-family: 'Inter', sans-serif;\n  font-size: 1rem;\n  color: var(--bs-body-color);\n  background-color: var(--bs-tertiary-bg);\n  transition: border-color 0.3s ease, box-shadow 0.3s ease;\n  box-sizing: border-box;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Campos de entrada (Nome, Email, Mensagem)"
+    },
+    {
+      "id": "modulo-area-de-texto-maior-para-a-mensagem",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-email-message {\n  min-height: 160px;\n  resize: vertical;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Área de texto maior para a mensagem"
+    },
+    {
+      "id": "modulo-efeito-de-foco-acessibilidade-e-ux",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-name:focus,\n.contact-form-email:focus,\n.contact-form-email-message:focus {\n  outline: none;\n  border-color: var(--bs-primary);\n  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito de Foco (Acessibilidade e UX)"
+    },
+    {
+      "id": "modulo-botao-de-envio-estilo-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-button-submit {\n  width: 100% !important;\n  max-width: 100% !important;\n  padding: 1rem 1.5rem;\n  background-color: var(--bs-primary);\n  color: #ffffff;\n  border: none;\n  border-radius: 8px;\n  font-family: 'Inter', sans-serif;\n  font-weight: 700;\n  font-size: 1rem;\n  cursor: pointer;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  transition: background-color 0.3s ease, transform 0.1s ease;\n}\n\n.contact-form-button-submit:hover {\n  background-color: var(--bs-primary-text-emphasis);\n}\n\n.contact-form-button-submit:active {\n  transform: translateY(2px);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Botão de Envio (Estilo Premium)"
+    },
+    {
+      "id": "modulo-mensagens-de-status-nativas-erro-sucesso",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-error-message-with-border,\n.contact-form-success-message-with-border {\n  margin-top: 1.5rem;\n  padding: 1rem;\n  border-radius: 8px;\n  font-weight: 500;\n  text-align: center;\n  font-family: 'Inter', sans-serif;\n}\n\n.contact-form-error-message-with-border {\n  background-color: var(--bs-danger-bg-subtle);\n  color: var(--bs-danger-text-emphasis);\n  border: 1px solid var(--bs-danger-border-subtle);\n}\n\n.contact-form-success-message-with-border {\n  background-color: var(--bs-success-bg-subtle);\n  color: var(--bs-success-text-emphasis);\n  border: 1px solid var(--bs-success-border-subtle);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Mensagens de Status Nativas (Erro/Sucesso)"
+    },
+    {
+      "id": "modulo-esconde-elementos-desnecessarios-injetados-pelo-blogger",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".contact-form-cross,\n.contact-form-widget br {\n  display: none !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Esconde elementos desnecessários injetados pelo Blogger"
+    },
+    {
+      "id": "modulo-container-do-gadget",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-form {\n  display: flex;\n  align-items: center;\n  position: relative;\n  background-color: var(--bs-tertiary-bg); /* Usa o fundo do Bootstrap 5 */\n  border: 1px solid var(--border-color);\n  border-radius: var(--radius);\n  padding: 4px;\n  transition: all 0.3s ease;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Container do Gadget"
+    },
+    {
+      "id": "modulo-efeito-ao-clicar-focar-na-barra-toda",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-form:focus-within {\n  border-color: var(--mag-primary);\n  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);\n  background-color: var(--bs-body-bg);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito ao clicar/focar na barra toda"
+    },
+    {
+      "id": "modulo-campo-de-texto-input",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-input {\n  width: 100%;\n  background: none !important;\n  border: none !important;\n  padding: 10px 15px !important;\n  font-family: var(--font-text);\n  font-size: 0.95rem;\n  color: var(--mag-text);\n  outline: none !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Campo de Texto (Input)"
+    },
+    {
+      "id": "modulo-placeholder-texto-de-exemplo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-input::placeholder {\n  color: var(--bs-secondary-color);\n  opacity: 0.7;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Placeholder (Texto de exemplo)"
+    },
+    {
+      "id": "modulo-botao-de-pesquisa-action",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-action {\n  background-color: var(--mag-primary) !important;\n  color: #ffffff !important;\n  border: none !important;\n  border-radius: calc(var(--radius) - 2px) !important;\n  padding: 8px 20px !important;\n  font-family: var(--font-text);\n  font-weight: 600;\n  font-size: 0.85rem;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n  cursor: pointer;\n  transition: filter 0.2s ease, transform 0.1s ease;\n}\n\n.BlogSearch .search-action:hover {\n  filter: brightness(1.1);\n}\n\n.BlogSearch .search-action:active {\n  transform: scale(0.96);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Botão de Pesquisa (Action)"
+    },
+    {
+      "id": "modulo-ajuste-para-mobile",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "@media (max-width: 480px) {\n  .BlogSearch .search-action {\n    padding: 8px 12px !important;\n  }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Ajuste para Mobile"
+    },
+    {
+      "id": "modulo-limpeza-de-elementos-extras-que-o-blogger-injeta",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogSearch .search-cancel {\n  display: none !important; /* Esconde o botão de cancelar nativo */\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Limpeza de elementos extras que o Blogger injeta"
+    },
+    {
+      "id": "modulo-widget-header-logo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-header-content {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center; /* Centraliza a logo */\n  padding: 1.5rem 0;\n}\n\n.mag-logo-link {\n  display: inline-block;\n  max-width: 100%;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  WIDGET: HEADER & LOGO\n-----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-forca-a-imagem-a-nunca-ultrapassar-o-tamanho-da-tela-no-mobi",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-logo-img {\n  max-width: 280px; /* Tamanho máximo ideal para mobile/desktop */\n  height: auto;\n  object-fit: contain;\n  transition: transform 0.3s ease;\n}\n\n.mag-logo-img:hover {\n  transform: scale(1.02);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Força a imagem a nunca ultrapassar o tamanho da tela no Mobile"
+    },
+    {
+      "id": "modulo-estilo-alternativo-caso-o-usuario-use-apenas-texto-sem-logo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-title-text {\n  font-family: var(--font-title, 'Playfair Display', serif);\n  font-size: 2.5rem;\n  font-weight: 800;\n  margin: 0;\n  text-align: center;\n}\n\n.mag-title-text a {\n  color: var(--mag-title, #1a1a1a);\n  text-decoration: none;\n}\n\n.mag-header-desc {\n  font-family: var(--font-text, 'Inter', sans-serif);\n  font-size: 0.9rem;\n  color: var(--mag-secondary, #6c757d);\n  margin-top: 0.5rem;\n  text-align: center;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Estilo alternativo caso o usuário use apenas Texto (Sem Logo)"
+    },
+    {
+      "id": "modulo-component-blockquote-rede-de-captura-larga",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body blockquote,\n.post-content blockquote,\n.entry-content blockquote,\narticle blockquote,\nblockquote.tr_bq {\n  position: relative !important;\n  margin: 2.5rem 0 !important;\n  padding: 1.5rem 2rem 1.5rem 3rem !important;\n  background-color: var(--bs-tertiary-bg) !important; \n  border-left: 5px solid var(--mag-primary) !important; \n  border-radius: 0 var(--radius) var(--radius) 0 !important;\n  font-family: var(--font-title) !important; \n  font-style: italic !important;\n  font-size: 1.35rem !important;\n  line-height: 1.6 !important;\n  color: var(--mag-title) !important;\n  box-shadow: 5px 5px 15px rgba(0,0,0,0.03) !important;\n  border-right: none !important;\n  border-top: none !important;\n  border-bottom: none !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  COMPONENT: BLOCKQUOTE (Rede de Captura Larga)\n-----------------------------------------------------------"
+    },
+    {
+      "id": "modulo-icone-de-aspas-decorativo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body blockquote::before,\n.post-content blockquote::before,\n.entry-content blockquote::before,\narticle blockquote::before,\nblockquote.tr_bq::before {\n  content: \"\\f6b0\" !important; \n  font-family: \"bootstrap-icons\" !important;\n  position: absolute !important;\n  top: 10px !important;\n  left: 10px !important;\n  font-size: 2rem !important;\n  color: var(--mag-primary) !important;\n  opacity: 0.2 !important; \n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Ícone de Aspas Decorativo"
+    },
+    {
+      "id": "modulo-estilizacao-para-o-autor-da-citacao",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".post-body blockquote cite,\n.post-content blockquote cite,\n.entry-content blockquote cite,\narticle blockquote cite,\nblockquote.tr_bq cite {\n  display: block !important;\n  margin-top: 1rem !important;\n  font-family: var(--font-text) !important; \n  font-style: normal !important;\n  font-weight: 700 !important;\n  font-size: 0.9rem !important;\n  text-transform: uppercase !important;\n  letter-spacing: 1px !important;\n  color: var(--mag-secondary) !important;\n}\n\n.post-body blockquote cite::before,\n.post-content blockquote cite::before,\n.entry-content blockquote cite::before,\narticle blockquote cite::before,\nblockquote.tr_bq cite::before {\n  content: \"— \" !important; \n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Estilização para o Autor da Citação"
+    },
+    {
+      "id": "modulo-ajuste-responsivo-para-mobile",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "@media (max-width: 768px) {\n  .post-body blockquote,\n  .post-content blockquote,\n  .entry-content blockquote,\n  article blockquote,\n  blockquote.tr_bq {\n    padding: 1.2rem 1.5rem 1.2rem 2.2rem !important;\n    font-size: 1.15rem !important;\n    margin: 1.5rem 0 !important;\n  }\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Ajuste Responsivo para Mobile"
+    },
+    {
+      "id": "modulo-a-caixa-principal-card",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats .widget-content {\n  position: relative !important;\n  background-color: var(--bs-tertiary-bg) !important;\n  border: 1px solid var(--border-color) !important;\n  border-radius: var(--radius) !important;\n  padding: 1.5rem 1.5rem 1.5rem 5.5rem !important; \n  box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;\n  transition: all 0.3s ease;\n  overflow: hidden;\n  \n  /* MUDANÇA DE EIXO: Coloca elementos lado a lado */\n  display: flex !important;\n  flex-direction: row !important; \n  align-items: baseline !important; /* Alinha o texto pela base das letras */\n  flex-wrap: wrap; /* Se a tela for muito fina, não quebra o card */\n  gap: 12px; /* Espaço exato entre o texto e o número */\n  \n  /* O texto do Blogger herda este estilo base */\n  font-family: var(--font-text) !important;\n  font-size: 0.8rem !important;\n  color: var(--mag-secondary) !important;\n  text-transform: uppercase;\n  font-weight: 700;\n  letter-spacing: 0.5px;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: A Caixa Principal (Card)"
+    },
+    {
+      "id": "modulo-oculta-o-grafico-nativo",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats img {\n  display: none !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Oculta o gráfico nativo"
+    },
+    {
+      "id": "modulo-1-o-fundo-redondo-do-icone",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats .widget-content::before {\n  content: \"\" !important;\n  position: absolute;\n  left: 1.2rem;\n  top: 50%;\n  transform: translateY(-50%);\n  width: 3.2rem;\n  height: 3.2rem;\n  background-color: var(--mag-primary);\n  opacity: 0.15; \n  border-radius: 50%;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 1. O Fundo Redondo do Ícone"
+    },
+    {
+      "id": "modulo-2-o-icone-de-grafico-svg-mask-a-prova-de-falhas",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats .widget-content::after {\n  content: \"\" !important;\n  position: absolute;\n  left: 2.05rem; \n  top: 50%;\n  transform: translateY(-50%);\n  width: 1.5rem;\n  height: 1.5rem;\n  background-color: var(--mag-primary);\n  -webkit-mask-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z'/%3E%3C/svg%3E\");\n  mask-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z'/%3E%3C/svg%3E\");\n  -webkit-mask-repeat: no-repeat;\n  mask-repeat: no-repeat;\n  -webkit-mask-size: contain;\n  mask-size: contain;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: 2. O Ícone de Gráfico (SVG Mask - À prova de falhas)"
+    },
+    {
+      "id": "modulo-o-numero-do-contador",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats span {\n  display: inline-block !important; /* A chave para ficarem na mesma linha */\n  font-family: var(--font-title) !important;\n  font-size: 2.2rem !important;\n  font-weight: 800 !important;\n  color: var(--mag-title) !important;\n  letter-spacing: -0.5px !important;\n  line-height: 1 !important;\n  margin: 0 !important; /* Zera qualquer margem antiga */\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: O Número do Contador"
+    },
+    {
+      "id": "modulo-efeito-hover",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".Stats .widget-content:hover {\n  transform: translateY(-3px);\n  border-color: var(--mag-primary) !important;\n  box-shadow: 0 8px 25px rgba(0,0,0,0.06) !important;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Efeito Hover"
+    },
+    {
+      "id": "modulo-reseta-a-lista-feia-do-blogger-e-aplica-grid-flex",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList ul {\n  list-style: none !important;\n  padding: 0 !important;\n  margin: 0 !important;\n  display: flex;\n  flex-direction: column;\n  gap: 1.2rem; /* Espaço elegante entre os cards */\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Reseta a lista feia do Blogger e aplica Grid/Flex"
+    },
+    {
+      "id": "modulo-o-card-principal",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList li {\n  display: flex;\n  align-items: flex-start;\n  gap: 15px;\n  padding: 1.5rem;\n  background-color: var(--bs-tertiary-bg); /* Sincronizado com seu Dark Mode */\n  border: 1px solid var(--border-color);\n  border-radius: var(--radius);\n  transition: all 0.3s ease;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: O Card Principal"
+    },
+    {
+      "id": "modulo-micro-interacao-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList li:hover {\n  transform: translateY(-3px);\n  border-color: var(--mag-primary);\n  box-shadow: 0 8px 20px rgba(0,0,0,0.04);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Micro-interação Premium"
+    },
+    {
+      "id": "modulo-o-icone-favicon-do-blog-parceiro",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .blog-icon {\n  width: 35px !important;\n  height: 35px !important;\n  border-radius: 6px;\n  object-fit: cover;\n  margin: 0 !important;\n  box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: O Ícone/Favicon do Blog Parceiro"
+    },
+    {
+      "id": "modulo-organiza-o-conteudo-de-texto",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .blog-content {\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Organiza o conteúdo de texto"
+    },
+    {
+      "id": "modulo-nome-do-blog-parceiro-ex-the-new-york-times",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .blog-title {\n  font-family: var(--font-text);\n  font-weight: 800;\n  font-size: 0.75rem;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  margin-bottom: 0.5rem;\n  display: block;\n}\n\n.BlogList .blog-title a {\n  color: var(--mag-primary);\n  text-decoration: none;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Nome do Blog Parceiro (Ex: The New York Times)"
+    },
+    {
+      "id": "modulo-titulo-da-postagem-recente-a-manchete",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .item-title {\n  font-family: var(--font-title); /* Usando a Playfair Display */\n  font-weight: 700;\n  font-size: 1.1rem;\n  line-height: 1.3;\n  margin-bottom: 0.5rem;\n  display: block;\n}\n\n.BlogList .item-title a {\n  color: var(--mag-title);\n  text-decoration: none;\n  transition: color 0.2s ease;\n}\n\n.BlogList .item-title a:hover {\n  color: var(--mag-primary);\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Título da Postagem Recente (A manchete)"
+    },
+    {
+      "id": "modulo-resumo-da-postagem-snippet",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .item-snippet {\n  font-family: var(--font-text);\n  font-size: 0.85rem;\n  color: var(--mag-secondary);\n  line-height: 1.6;\n  /* Engenharia para truncar o texto em 2 linhas com \"...\" */\n  display: -webkit-box;\n  -webkit-line-clamp: 2; \n  -webkit-box-orient: vertical;\n  overflow: hidden;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Resumo da Postagem (Snippet)"
+    },
+    {
+      "id": "modulo-tempo-desde-a-ultima-atualizacao-ex-ha-2-horas",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".BlogList .item-time {\n  font-family: var(--font-text);\n  font-size: 0.75rem;\n  color: var(--bs-secondary-color);\n  margin-top: 0.8rem;\n  font-style: italic;\n  display: block;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: Tempo desde a última atualização (Ex: \"Há 2 horas\")"
+    },
+    {
+      "id": "modulo-componente-video-responsivo-16-9-premium",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": ".mag-video-wrapper {\n    position: relative;\n    width: 100%;\n    padding-bottom: 56.25%; /* Matemática exata para a proporção 16:9 */\n    height: 0;\n    border-radius: var(--radius, 12px); /* Arredondamento premium */\n    overflow: hidden;\n    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Sombra elegante */\n    margin: 2rem 0; /* Espaçamento para respirar no texto */\n    background-color: #000; /* Fundo preto enquanto o vídeo carrega */\n}\n\n.mag-video-wrapper iframe {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    border: none;\n}",
+      "html": "",
+      "js": "",
+      "descricao": "Estilo: ---------------------------------------------------------\n  COMPONENTE: VÍDEO RESPONSIVO (16:9 PREMIUM)\n-----------------------------------------------------------"
+    },
+    {
+      "id": "popular-posts-imagem-upgrade",
+      "tipo": "modulo",
+      "protegida": false,
+      "domIds": [],
+      "css": "",
+      "html": "",
+      "js": "// [11] caminho: popular_posts_imagem_upgrade.javascript\nconst popImages = document.querySelectorAll('.PopularPosts .item-thumbnail img');\npopImages.forEach(img => {\n  let src = img.getAttribute('src');\n  if (src) {\n    if (src.match(/\\/s[0-9]+(\\-c)?\\//))\n      img.setAttribute('src', src.replace(/\\/s[0-9]+(\\-c)?\\//, '/w500-h350-c/'));\n    else if (src.match(/\\/w[0-9]+\\-h[0-9]+(.*?)\\//))\n      img.setAttribute('src', src.replace(/\\/w[0-9]+\\-h[0-9]+(.*?)\\//, '/w500-h350-c/'));\n  }\n});",
+      "descricao": "Upgrade de resolução das imagens do widget PopularPosts nativo. Seletor corrigido de .popular-posts (nunca existiu) para .PopularPosts (classe real do widget Blogger, PascalCase)."
+    },
+    {
+      "id": "hero-mosaico-noticias",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "heroMosaicoNoticias"
+      ],
+      "css": ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 300px; background: #000; }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); opacity: 1; }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 80%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.2; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }\n@media (min-width: 992px) {\n  .hero-mosaic { grid-template-columns: 2fr 1fr; grid-template-rows: 250px 250px; }\n  .hero-item-0 { grid-row: 1 / -1; height: 100%; }\n  .hero-item-0 .hero-title { font-size: 2.5rem; }\n  .hero-item-1, .hero-item-2 { height: 100%; }\n  .hero-item-1 .hero-title, .hero-item-2 .hero-title { font-size: 1.3rem; }\n}\n\n.mag-badge { position: absolute; top: 20px; left: 20px; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 5px 12px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 20px; }",
+      "html": "",
+      "descricao": "Hero servido por widget nativo FeaturedPost (data:postTitle/postUrl/postFirstImage reais do post mais recente) — CSS do mosaico (hero-mosaic/hero-card/hero-overlay/mag-badge) reaproveitado do design original, mas só o card 0 (hero-item-0) é usado; substituiu o HTML estático anterior, que tinha placeholders [TITULO]/[URL_POST_0]/[AUTOR]/[DATA] nunca preenchidos. 5 variações de restyle visual (cssVariantes) escolhidas por seed determinístico — overlay escuro original/card com moldura suave/duotone full-bleed/faixa lateral editorial/legenda em vidro fosco. Restyla só .hero-mosaic/.hero-card/.hero-overlay/.mag-badge/.hero-title (a estrutura real gerada por gerarHeroDestaqueMosaico), sem htmlVariantes (widgetNativo gera o html fixo, ignora peca.html).",
+      "widgetNativo": "featured-post",
+      "tituloWidget": "Destaque",
+      "cssVariantes": [
+        ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 300px; background: #000; }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); opacity: 1; }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 80%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.2; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }\n@media (min-width: 992px) {\n  .hero-mosaic { grid-template-columns: 2fr 1fr; grid-template-rows: 250px 250px; }\n  .hero-item-0 { grid-row: 1 / -1; height: 100%; }\n  .hero-item-0 .hero-title { font-size: 2.5rem; }\n  .hero-item-1, .hero-item-2 { height: 100%; }\n  .hero-item-1 .hero-title, .hero-item-2 .hero-title { font-size: 1.3rem; }\n}\n\n.mag-badge { position: absolute; top: 20px; left: 20px; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 5px 12px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 20px; }",
+        ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 380px; background: #000; border-radius: 16px; border: 1px solid var(--mag-border); }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); opacity: 1; }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 60%); display: flex; flex-direction: column-reverse; padding: 2rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.2; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 2rem; margin-top: 0.75rem; }\n.mag-badge { position: absolute; bottom: 20px; left: 20px; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 5px 12px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 20px; }\n.hero-overlay .hero-title { position: relative; z-index: 1; }",
+        ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 0; }\n.hero-card { position: relative; overflow: hidden; height: 420px; background: #000; }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.3) sepia(0.15) hue-rotate(180deg) saturate(1.4) brightness(0.75); transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.15) 85%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.25rem; }\n.hero-title { color: #fff; font-weight: 800; line-height: 1.15; text-transform: uppercase; letter-spacing: 0.5px; font-size: 2.1rem; }\n.mag-badge { position: absolute; top: 24px; left: 24px; background: #000; border: 1px solid var(--mag-primary); color: var(--mag-primary); font-family: monospace; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 0; }",
+        ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 340px; background: #000; border-left: 6px solid var(--mag-primary); }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); opacity: 1; }\n.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 45%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem 2rem 2rem 2.5rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.2; font-family: var(--font-title); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 2.2rem; }\n.mag-badge { position: absolute; top: 0; right: 24px; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 8px 14px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-radius: 0 0 6px 6px; }",
+        ".hero-mosaic { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }\n.hero-card { position: relative; overflow: hidden; height: 360px; background: #000; border-radius: 20px; }\n.hero-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.95; transition: transform 0.7s ease; }\n.hero-card:hover img { transform: scale(1.05); }\n.hero-overlay { position: absolute; left: 16px; right: 16px; bottom: 16px; top: auto; background: rgba(17,24,39,0.55); backdrop-filter: blur(10px); border-radius: 14px; display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 1rem 1.25rem; }\n.hero-title { color: #fff; font-weight: 700; line-height: 1.25; text-shadow: none; font-size: 1.4rem; margin: 0; }\n.mag-badge { position: static; background: var(--mag-primary); color: #fff; font-family: var(--font-text); font-size: 0.7rem; font-weight: 700; padding: 5px 12px; text-transform: uppercase; letter-spacing: 1px; border-radius: 20px; white-space: nowrap; }"
+      ]
+    },
+    {
+      "id": "sidebar-trending-slider",
+      "tipo": "secao",
+      "protegida": true,
+      "domIds": [
+        "mag-slider-widget",
+        "mag-slider-loading",
+        "mag-slider-track"
+      ],
+      "descricao": "Slider premium de destaques recentes (fetch de posts via feed do Blogger, rotação automática) — extraído verbatim de exemplos/noticias-mag-news.xml (b:widget HTML4, dentro da seção real sidebar-trending). Section id próprio (sidebar-trending-slider, não sidebar-trending) porque o mecanismo de peça tipo secao (nichoBlocks.js:_montarSecaoPeca) só permite 1 b:section por peça — a seção real sidebar-trending tem 4 widgets (slider + newsletter + cookie banner + FeaturedPost1); aqui ela foi dividida em 2 b:section adjacentes na sidebar (esta pro slider, sidebar-trending pro FEATURED_POST_WIDGET) em vez de tentar encaixar tudo numa peça só. Newsletter/cookie banner customizados do arquivo original NÃO foram extraídos nesta migração (fora do escopo — mesmo padrão de slots deferidos já usado em viral-magazine/appstore-bulma-mobile); cookieBanner:true (módulo genérico) cobre o consentimento.",
+      "html": "          <b:widget id='HTML4' locked='false' title='' type='HTML'>\n            <b:widget-settings>\n              <b:widget-setting name='content'><![CDATA[<style>\n/* --- Design do Slider Premium --- */\n#mag-slider-widget {\n    position: relative;\n    width: 100%;\n    /* Altura imponente para parecer capa de revista */\n    height: 450px;      \n    margin: 0 auto 2rem auto;\n    background-color: var(--bs-tertiary-bg, #f8f9fa);\n    border: 1px solid var(--border-color, #eaeaea);\n    border-radius: var(--radius, 8px);\n    overflow: hidden;\n    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);\n}\n\n#mag-slider-loading {\n    position: absolute;\n    top: 50%; left: 50%;\n    transform: translate(-50%, -50%);\n    font-family: var(--font-body, 'Inter', sans-serif);\n    color: var(--mag-secondary, #6c757d);\n    font-size: 0.85rem;\n    font-weight: 700;\n    letter-spacing: 2px;\n    text-transform: uppercase;\n    animation: fadePulse 2s infinite;\n}\n\n@keyframes fadePulse {\n    0%, 100% { opacity: 0.5; }\n    50% { opacity: 1; }\n}\n\n.mag-slide {\n    position: absolute;\n    top: 0; left: 0;\n    width: 100%; height: 100%;\n    opacity: 0;\n    transition: opacity 0.8s ease-in-out;\n    display: block;\n    text-decoration: none;\n    z-index: 1;\n}\n\n.mag-slide.active-slide {\n    opacity: 1;\n    z-index: 5;\n}\n\n.mag-slide img {\n    width: 100%;\n    height: 100%;\n    object-fit: cover;\n    /* Escurece a imagem suavemente para o texto branco sobressair */\n    filter: brightness(0.6) contrast(1.05); \n    /* Zoom super lento e elegante típico de sites de notícias */\n    transition: transform 8s ease-out; \n}\n\n.mag-slide.active-slide img {\n    transform: scale(1.04);\n}\n\n/* --- Informação da Postagem (Overlay) --- */\n.mag-slide-info {\n    position: absolute;\n    bottom: 0; left: 0; right: 0;\n    padding: 80px 40px 30px 40px;\n    background: linear-gradient(to top, rgba(0,0,0, 0.85) 0%, rgba(0,0,0, 0) 100%);\n    /* Linha de destaque com a tua cor principal */\n    border-bottom: 4px solid var(--mag-primary, #0d6efd);\n}\n\n.mag-slide-title {\n    font-family: var(--font-title, 'Playfair Display', serif);\n    font-weight: 700;\n    font-size: 2.2rem;\n    line-height: 1.2;\n    color: #ffffff;\n    margin: 0 0 10px 0;\n    text-shadow: 0 2px 5px rgba(0,0,0,0.4);\n    display: -webkit-box;\n    -webkit-line-clamp: 2;\n    -webkit-box-orient: vertical;\n    overflow: hidden;\n}\n\n.mag-badge-news {\n    display: inline-block;\n    background: var(--mag-primary, #0d6efd);\n    color: #ffffff;\n    font-family: var(--font-body, 'Inter', sans-serif);\n    font-weight: 700;\n    font-size: 0.75rem;\n    padding: 4px 12px;\n    letter-spacing: 1px;\n    text-transform: uppercase;\n    margin-bottom: 12px;\n    border-radius: 4px;\n}\n\n/* --- Controlos de Navegação --- */\n.mag-slider-nav {\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    background: rgba(255, 255, 255, 0.15);\n    color: #ffffff;\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    border-radius: 50%;\n    width: 45px; height: 45px;\n    cursor: pointer;\n    z-index: 10;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 1.2rem;\n    transition: all 0.3s ease;\n    backdrop-filter: blur(5px);\n}\n\n.mag-slider-nav:hover {\n    background: var(--mag-primary, #0d6efd);\n    border-color: var(--mag-primary, #0d6efd);\n    transform: translateY(-50%) scale(1.05);\n}\n\n.mag-slider-prev { left: 20px; }\n.mag-slider-next { right: 20px; }\n\n/* Responsividade Mobile */\n@media (max-width: 768px) {\n    #mag-slider-widget { height: 320px; }\n    .mag-slide-title { font-size: 1.5rem; }\n    .mag-slide-info { padding: 60px 20px 20px 20px; }\n    .mag-slider-nav { width: 35px; height: 35px; font-size: 1rem; left: 10px; }\n    .mag-slider-next { right: 10px; left: auto; }\n}\n</style>\n\n<div id=\"mag-slider-widget\">\n    <div id=\"mag-slider-loading\">A carregar destaques...</div>\n    <div id=\"mag-slider-track\"></div>\n    \n    <div class=\"mag-slider-nav mag-slider-prev\" onclick=\"window.moveMagSlide(-1)\">&#10094;</div>\n    <div class=\"mag-slider-nav mag-slider-next\" onclick=\"window.moveMagSlide(1)\">&#10095;</div>\n</div>\n\n<script>\ndocument.addEventListener('DOMContentLoaded', () => {\n    const maxPosts = 5; \n    // Puxa as últimas postagens (alt=json)\n    const feedUrl = '/feeds/posts/default?alt=json&max-results=' + maxPosts;\n    \n    const track = document.getElementById('mag-slider-track');\n    const loading = document.getElementById('mag-slider-loading');\n    \n    if (!track || !loading) return; \n\n    fetch(feedUrl)\n        .then(response => {\n            if (!response.ok) throw new Error('Erro HTTP: ' + response.status);\n            return response.json();\n        })\n        .then(data => {\n            const posts = data.feed && data.feed.entry ? data.feed.entry : [];\n            \n            if(posts.length === 0) {\n                loading.innerText = \"Nenhuma postagem encontrada.\";\n                return;\n            }\n\n            let slidesHtml = '';\n\n            posts.forEach((post, index) => {\n                let postLink = post.link.find(l => l.rel === 'alternate')?.href || '#';\n                let postTitle = post.title.$t;\n\n                // Placeholder elegante em tons escuros caso não haja imagem\n                let imgUrl = 'https://placehold.co/1000x500/212529/6c757d?text=SEM+IMAGEM';\n                \n                // 1. Tenta a miniatura do Google\n                if (post.media$thumbnail) {\n                    imgUrl = post.media$thumbnail.url;\n                } \n                // 2. Extrai a primeira imagem de dentro da postagem via DOM\n                else if (post.content && post.content.$t) {\n                    const tempDiv = document.createElement('div');\n                    tempDiv.innerHTML = post.content.$t;\n                    const firstImg = tempDiv.querySelector('img');\n                    if (firstImg) imgUrl = firstImg.src;\n                }\n\n                // 3. Força Alta Resolução APENAS se a imagem for hospedada no Google\n                if (imgUrl.includes('bp.blogspot.com') || imgUrl.includes('googleusercontent.com')) {\n                    imgUrl = imgUrl.replace(/\\/(s|w|h)\\d+.*?(\\/)/g, '/w1000-h500-c$2');\n                    imgUrl = imgUrl.replace(/=(s|w|h)\\d+.*$/g, '=w1000-h500-c');\n                }\n\n                const activeClass = index === 0 ? 'active-slide' : '';\n\n                slidesHtml += `\n                    <a href=\"${postLink}\" class=\"mag-slide ${activeClass}\">\n                        <img src=\"${imgUrl}\" alt=\"${postTitle}\" loading=\"lazy\">\n                        <div class=\"mag-slide-info\">\n                            <span class=\"mag-badge-news\">Em Destaque</span>\n                            <h3 class=\"mag-slide-title\">${postTitle}</h3>\n                        </div>\n                    </a>\n                `;\n            });\n\n            track.innerHTML = slidesHtml;\n            loading.style.display = 'none';\n            \n            window.iniciarMagRotacao();\n        })\n        .catch(error => {\n            console.error('Falha ao carregar o Slider:', error);\n            loading.innerText = \"Falha ao carregar destaques.\";\n        });\n});\n\n// Lógica Global de Rotação\nlet magSlideIndex = 0;\nlet magSlideInterval;\n\nwindow.moveMagSlide = function(direcao) {\n    const slides = document.querySelectorAll('#mag-slider-track .mag-slide');\n    if(slides.length === 0) return;\n\n    slides[magSlideIndex].classList.remove('active-slide');\n\n    magSlideIndex += direcao;\n    if (magSlideIndex >= slides.length) magSlideIndex = 0;\n    if (magSlideIndex < 0) magSlideIndex = slides.length - 1;\n\n    slides[magSlideIndex].classList.add('active-slide');\n    window.resetMagRotacao();\n};\n\nwindow.iniciarMagRotacao = function() {\n    // Roda as imagens a cada 6 segundos (padrão de leitura confortável)\n    magSlideInterval = setInterval(() => { window.moveMagSlide(1); }, 6000); \n};\n\nwindow.resetMagRotacao = function() {\n    clearInterval(magSlideInterval);\n    window.iniciarMagRotacao();\n};\n</script>]]></b:widget-setting>\n            </b:widget-settings>\n            <b:includable id='main'>\n  <!-- only display title if it's non-empty -->\n  <b:if cond='data:title != &quot;&quot;'>\n    <h2 class='title'><data:title/></h2>\n  </b:if>\n  <div class='widget-content'>\n    <data:content/>\n  </div>\n\n  <b:include name='quickedit'/>\n</b:includable>\n          </b:widget>\n",
+      "css": "",
+      "js": ""
+    }
+  ]
+}

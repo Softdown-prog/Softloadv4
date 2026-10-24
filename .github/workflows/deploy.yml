@@ -1,0 +1,271 @@
+name: Deploy Softload VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A VPS recebe uma revisão por vez. Runs seguintes aguardam, sem cancelar
+# uma troca de containers em andamento.
+concurrency:
+  group: softload-vps-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run typecheck
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Forge test dependencies
+        timeout-minutes: 12
+        run: |
+          python -m pip install --retries 3 --timeout 30 -r agent/forge/requirements.txt
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y ffmpeg fonts-dejavu-core
+      - run: npm test
+      - run: npm run test:quality
+      - run: npm run build
+      - name: Proibir referências ao ChatGPT no frontend e no bundle
+        run: node scripts/check-frontend-branding.js
+
+  plan:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      agent: ${{ steps.diff.outputs.agent }}
+      sandbox: ${{ steps.diff.outputs.sandbox }}
+      embeddings: ${{ steps.diff.outputs.embeddings }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure restricted SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/softload_deploy"
+          chmod 600 "$HOME/.ssh/softload_deploy"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Compare with running revision
+        id: diff
+        shell: bash
+        env:
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if base="$(ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 root@164.163.9.7 current)"; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 10))
+          done
+          [[ "$base" =~ ^[0-9a-f]{40}$ ]]
+          if git cat-file -e "$base^{commit}" 2>/dev/null; then
+            if git diff --quiet "$base" "$TARGET_SHA" -- agent/ Power-up/; then echo 'agent=false' >> "$GITHUB_OUTPUT"; else echo 'agent=true' >> "$GITHUB_OUTPUT"; fi
+            if git diff --quiet "$base" "$TARGET_SHA" -- sandbox-efemoro/; then echo 'sandbox=false' >> "$GITHUB_OUTPUT"; else echo 'sandbox=true' >> "$GITHUB_OUTPUT"; fi
+            if git diff --quiet "$base" "$TARGET_SHA" -- Embedings-python/; then echo 'embeddings=false' >> "$GITHUB_OUTPUT"; else echo 'embeddings=true' >> "$GITHUB_OUTPUT"; fi
+          else
+            # First deployment from Softloadv4: the running SHA belongs to the old repository.
+            # Rebuild every service once, then compare commits normally on future deployments.
+            echo 'agent=true' >> "$GITHUB_OUTPUT"
+            echo 'sandbox=true' >> "$GITHUB_OUTPUT"
+            echo 'embeddings=true' >> "$GITHUB_OUTPUT"
+          fi
+          echo "[DEPLOY] Running revision: $base"
+  build_and_transfer:
+    needs: [verify, plan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      # A VPS tem uma conexao limitada; transferencias simultaneas derrubam o SSH.
+      max-parallel: 1
+      matrix:
+        include:
+          - service: app
+            context: .
+            dockerfile: Dockerfile
+          - service: agent
+            context: agent
+            dockerfile: agent/Dockerfile
+          - service: sandbox
+            context: sandbox-efemoro
+            dockerfile: sandbox-efemoro/Dockerfile
+          - service: embeddings
+            context: Embedings-python
+            dockerfile: Embedings-python/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine whether this service changed
+        id: changes
+        env:
+          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
+          SANDBOX_CHANGED: ${{ needs.plan.outputs.sandbox }}
+          EMBEDDINGS_CHANGED: ${{ needs.plan.outputs.embeddings }}
+        run: |
+          case '${{ matrix.service }}' in
+            app) changed=true ;;
+            agent) changed="$AGENT_CHANGED" ;;
+            sandbox) changed="$SANDBOX_CHANGED" ;;
+            embeddings) changed="$EMBEDDINGS_CHANGED" ;;
+          esac
+          [[ "$changed" == true || "$changed" == false ]]
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+      - name: Prepare Agent native source
+        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        run: node agent/scripts/vendorPowerUp.js
+      - name: Build versioned image
+        if: steps.changes.outputs.changed == 'true'
+        run: docker build -t softload-${{ matrix.service }}:${{ github.sha }} -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
+      - name: Configure restricted SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/softload_deploy"
+          chmod 600 "$HOME/.ssh/softload_deploy"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Transfer resumable image to VPS
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"
+          docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -1 > "$archive"
+          digest="$(sha256sum "$archive" | cut -d' ' -f1)"
+          for attempt in $(seq 1 24); do
+            echo "[DEPLOY] Enviando ${{ matrix.service }} com retomada (tentativa $attempt/24)"
+            if timeout --signal=TERM --kill-after=10s 180s rsync --append-verify --partial --timeout=90 --no-compress --progress \
+                -e "ssh -i $HOME/.ssh/softload_deploy -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
+                "$archive" "root@164.163.9.7:softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"; then
+              break
+            fi
+            if [ "$attempt" -eq 24 ]; then
+              echo "::error::Falha ao enviar a imagem ${{ matrix.service }} apos 24 tentativas"
+              exit 1
+            fi
+            sleep 5
+          done
+          for attempt in 1 2 3 4; do
+            if ssh -i "$HOME/.ssh/softload_deploy" \
+                -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+                -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+                root@164.163.9.7 'finish:${{ matrix.service }}:${{ github.sha }}:'"$digest"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 4 ]; then sleep $((attempt * 10)); fi
+          done
+          echo "::error::Falha ao validar e carregar a imagem ${{ matrix.service }}"
+          exit 1
+      - name: Reuse unchanged VPS image
+        if: steps.changes.outputs.changed == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if ssh -i "$HOME/.ssh/softload_deploy" \
+                -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+                -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+                root@164.163.9.7 'reuse:${{ matrix.service }}:${{ github.sha }}'; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 4 ]; then sleep $((attempt * 10)); fi
+          done
+          exit 1
+
+  activate:
+    needs: build_and_transfer
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Configure restricted SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/softload_deploy"
+          chmod 600 "$HOME/.ssh/softload_deploy"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Activate only after every image arrives
+        run: ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes root@164.163.9.7 'deploy:${{ github.sha }}'
+
+      # The SSH command can succeed while the public site still serves a
+      # previous image. Verify the commit from the application's own /health.
+      - name: Confirm public VPS is serving this commit
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 15); do
+            echo "[DEPLOY] Public revision check ($attempt/15)"
+            if curl --fail --silent --show-error --max-time 15 \
+                -H 'Cache-Control: no-cache' \
+                "https://softload.analysepro.com/health?deploy_sha=${EXPECTED_SHA}" \
+                | node -e '
+                  let raw = "";
+                  process.stdin.setEncoding("utf8");
+                  process.stdin.on("data", chunk => raw += chunk);
+                  process.stdin.on("end", () => {
+                    try {
+                      const payload = JSON.parse(raw);
+                      const live = String(payload?.deploy?.gitSha || "");
+                      const expected = process.env.EXPECTED_SHA;
+                      if (/^[a-f0-9]{7,40}$/.test(live) && expected.startsWith(live)) {
+                        console.log("[DEPLOY] Confirmed live git SHA:", live);
+                        return;
+                      }
+                      console.error("[DEPLOY] SHA mismatch: expected", expected.slice(0, 12), "got", live || "(missing)");
+                    } catch (error) {
+                      console.error("[DEPLOY] Invalid /health response:", error.message);
+                    }
+                    process.exitCode = 1;
+                  });
+                '; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 15 ]; then sleep 6; fi
+          done
+          echo "::error::VPS public /health did not report commit ${EXPECTED_SHA} after activation"
+          exit 1
+
+      # Além do SHA de /health, confirma que o React compilado no domínio
+      # público já não oferece o provedor temporariamente sem orçamento.
+      - name: Confirm public React bundle has no disabled provider
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 40 \
+            -H 'Cache-Control: no-cache' \
+            "https://softload.analysepro.com/dist/assets/main.js?v=${EXPECTED_SHA}&audit=1" \
+            -o "$RUNNER_TEMP/softload-live-main.js"
+          node - "$RUNNER_TEMP/softload-live-main.js" <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync(process.argv[2], 'utf8');
+          if (/chat[\s_-]*gpt|IA\s+Avan[cç]ada|gpt-5\.4/i.test(source)) {
+            console.error('[DEPLOY] A interface publicada ainda anuncia um modelo sem saldo.');
+            process.exit(1);
+          }
+          console.log('[DEPLOY] OK: bundle React público sem modelo indisponível.');
+          NODE

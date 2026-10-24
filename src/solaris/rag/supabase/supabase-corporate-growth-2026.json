@@ -1,0 +1,74 @@
+{
+  "id": "supabase-corporate-growth-2026",
+  "slug": "supabase-corporate-growth-2026",
+  "categoria": "corporate",
+  "pasta": "supabase",
+  "titulo": "Crescimento Corporativo do Supabase em 2026",
+  "descricao": "Em 2026, o Supabase ampliou sua presença no mercado corporativo com foco em escalabilidade de PostgreSQL, infraestrutura para aplicações modernas e integração com inteligência artificial. O marco financeiro destacado foi uma rodada Series F de US$ 500 milhões liderada pela GIC, elevando a avaliação da empresa para aproximadamente US$ 10 bilhões.",
+  "componentes": [
+    {
+      "nome": "technology",
+      "conteudo": "supabase"
+    },
+    {
+      "nome": "feature-type",
+      "conteudo": "company-growth"
+    },
+    {
+      "nome": "year",
+      "conteudo": 2026
+    },
+    {
+      "nome": "release-status",
+      "conteudo": "available"
+    },
+    {
+      "nome": "confidence-score",
+      "conteudo": 0.95
+    },
+    {
+      "nome": "related-concepts",
+      "conteudo": [
+        "cloud-database",
+        "developer-platform",
+        "postgres-ecosystem"
+      ]
+    },
+    {
+      "nome": "sources",
+      "conteudo": [
+        {
+          "type": "official",
+          "provider": "Supabase",
+          "reference": "Developer Update June 2026"
+        }
+      ]
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "supabase-corporate-growth-2026",
+    "supabase",
+    "corporate",
+    "growth",
+    "2026",
+    "Crescimento Corporativo do Supabase em 2026",
+    "crescimento",
+    "corporativo",
+    "company-growth",
+    "company",
+    "investment",
+    "series-f",
+    "series",
+    "valuation",
+    "enterprise",
+    "postgres",
+    "cloud-database",
+    "database",
+    "developer-platform",
+    "developer",
+    "platform",
+    "postgres-ecosystem",
+    "ecosystem"
+  ]
+}

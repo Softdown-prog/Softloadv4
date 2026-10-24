@@ -1,0 +1,130 @@
+name: Softload - Gate TypeScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**/*.ts'
+      - 'src/**/*.js'
+      - 'src/solaris/code-examples/**'
+      - 'examples/solaris-code/**'
+      - 'scripts/codeCorpus/**'
+      - 'scripts/ragCodeIndex.js'
+      - 'tsconfig.json'
+      - 'scripts/typescript-mirror-sources.json'
+      - 'scripts/check-typescript-mirrors.js'
+      - 'scripts/audit-typescript-migration.js'
+      - 'scripts/vendorAssets.ts'
+      - 'scripts/vendorAssets.js'
+      - 'scripts/vendorTemplateRefs.ts'
+      - 'scripts/vendorTemplateRefs.js'
+      - 'scripts/vendorCachePolicy.ts'
+      - 'scripts/vendorCachePolicy.js'
+      - 'scripts/check-frontend-branding.ts'
+      - 'scripts/check-frontend-branding.js'
+      - 'scripts/compile-batch.ts'
+      - 'scripts/compile-batch.js'
+      - 'scripts/extractTemplate.ts'
+      - 'scripts/extractTemplate.js'
+      - 'server.js'
+      - 'views/**/*.ejs'
+      - 'package.json'
+      - 'Dockerfile'
+      - '.github/workflows/softload-typescript-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: Contratos e espelhos TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependências
+        run: npm ci --legacy-peer-deps
+      - name: Verificar integridade dos assets vendor
+        run: npm run verify:vendor
+      - name: Conferir links vendor dos templates EJS
+        run: npm run verify:vendor:templates
+      - name: Verificar biblioteca autoral Solaris Code
+        run: npm run rag:code-test
+      - name: Verificar isolamento dos três RAGs
+        run: npm run rag:boundaries-test
+      - name: Verificar TypeScript, espelhos e auditoria
+        run: npm run typecheck
+      - name: Regressões do editor e auditoria TypeScript
+        run: |
+          node src/ai/templateEditSchema.test.js
+          node src/ai/templateEditAgent.test.js
+          node src/ai/pecaRequestSchema.test.js
+          node src/ai/pecaRequestSchemaContract.test.js
+          node src/ai/templateEditAgentContract.test.js
+          node src/core/typescriptMigrationAudit.test.js
+          node src/core/vendorAssets.test.js
+          node src/core/vendorTemplateRefs.test.js
+          node src/core/vendorStaticPolicy.test.js
+          node src/core/brandingMigration.test.js
+          node scripts/compile-batch.test.js
+          node scripts/extractTemplate.test.js
+          node src/core/parser/ejsParser.test.js
+          node src/core/parser/phpParser.test.js
+          node src/core/parser/cssParser.test.js
+          node src/core/parser/htmlParser.test.js
+          node src/core/parser/xmlParser.test.js
+          node src/core/parser/jsParser.test.js
+          node src/core/telemetria.test.js
+          node src/core/designVoicePresets.test.js
+          node src/core/nichoModuleDefaults.test.js
+          node src/core/presets.test.js
+          node src/core/codeValidator.test.js
+          node src/core/skeletonRedactor.test.js
+          node src/ai/solConhecimentoTecnico.test.js
+          node src/core/xmlValidator.test.js
+          node src/core/templateExtractor.test.js
+          node src/core/modules.test.js
+          node src/ai/solAgent.test.js
+          node src/solaris/rag/codeCorpus.test.js
+          node src/solaris/rag/ragChunker.test.js
+          node src/solaris/rag/ragEntryText.test.js
+          node src/solaris/rag/ragTopicMatrix.test.js
+          node src/solaris/rag/ragDeduplicator.test.js
+          node src/solaris/rag/ragVectorStore.test.js
+          node src/solaris/rag/ragSearchService.test.js
+          node src/solaris/rag/ragPromptContext.test.js
+          node src/solaris/rag/ragEmbeddingsClient.test.js
+          node src/solaris/rag/ragEntryGenerator.test.js
+          node src/solaris/rag/ragCatalogLoader.test.js
+          node src/solaris/workers/ragOrganizerWorker.test.js
+          node src/solaris/workers/ragDraftWorker.test.js
+          node src/solaris/workers/ragKebabWorker.test.js
+          node src/solaris/workers/htmlWorker.test.js
+          node src/solaris/workers/cssWorker.test.js
+          node src/solaris/workers/jsWorker.test.js
+          node src/solaris/workers/jsonWorker.test.js
+          node src/solaris/workers/phpWorker.test.js
+          node src/solaris/workers/pythonWorker.test.js
+          node src/solaris/workers/ejsWorker.test.js
+          node src/solaris/manifest/manifestSchema.test.js
+          node src/solaris/tools/frameworkDetector.test.js
+          node src/solaris/pipeline/projectInspector.test.js
+          node src/solaris/pipeline/projectMemory.test.js
+          node src/solaris/tools/fileTools.test.js
+          node src/solaris/tools/archiveExtractClient.test.js
+          node src/solaris/tools/projectStorage.test.js
+          node src/solaris/tools/projectStorage.transaction.test.js
+          node src/solaris/chat/solarisGenerationTrigger.test.js
+          node src/solaris/prompts/systemPrompt.test.js
+          # Asset Forge rendering tests run in asset-forge.yml with Python/Pillow/ffmpeg.
+          node src/solaris/pipeline/projectEditor.test.js
+          node src/solaris/pipeline/orchestrator.test.js
+          node src/solaris/llm/modelRouter.test.js
+          node src/solaris/chat/solarisChat.test.js
+          node src/solaris/http/solarisHttpProtocol.test.js
+          node src/solaris/http/solarisHttpHandlers.test.js
+          node src/solaris/http/solarisBilling.test.js

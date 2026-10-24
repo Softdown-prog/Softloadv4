@@ -1,0 +1,18 @@
+{
+  "recurso-gsc-2026": {
+    "funcionalidade": "monitoramento-de-visibilidade-na-ia",
+    "tecnologias-rastreadas": [
+      "ai-mode",
+      "ai-overviews"
+    ],
+    "contexto-de-mercado": "com-a-consolidacao-do-ai-mode-e-dos-resumos-gerados-por-ia-integrados-por-padrao-na-busca-o-search-console-expandiu-seus-relatorios-de-desempenho"
+  },
+  "novas-metricas-desempenho": {
+    "nome-do-indicador": "metricas-de-exposicao-de-ia",
+    "origem-dos-dados": [
+      "impressoes",
+      "cliques"
+    ],
+    "especificidade-do-rastreamento": "dados-vindos-especificamente-de-mencoes-e-links-contidos-nos-blocos-de-ai-overviews"
+  }
+}

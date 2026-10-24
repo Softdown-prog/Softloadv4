@@ -1,0 +1,28 @@
+{
+  "titulo": "bootstrap5 — tooltip",
+  "categoria": "topico",
+  "descricao": "Texto de ajuda curto que aparece ao passar o mouse ou focar um elemento, posicionado automaticamente (top/bottom/left/right) conforme o espaço disponível na tela. Precisa ser inicializado via JavaScript — não funciona só com atributos HTML.",
+  "componentes": [
+    "data-bs-toggle=\"tooltip\"",
+    "data-bs-placement",
+    "title",
+    "tooltip-inner",
+    "tooltip-arrow"
+  ],
+  "exemplos": [
+    "<button type=\"button\" class=\"btn btn-secondary\" data-bs-toggle=\"tooltip\" data-bs-placement=\"top\" title=\"Informação adicional\">Passe o mouse</button>"
+  ],
+  "boas_praticas": [
+    "Precisa inicializar manualmente: new bootstrap.Tooltip(elemento) — o Bootstrap não ativa tooltips automaticamente por performance.",
+    "Nunca colocar informação crítica só no tooltip — ele não é acessível em toque (mobile) da mesma forma que no hover de mouse.",
+    "data-bs-trigger=\"focus\" pra tooltip que também aparece ao navegar por teclado (Tab)."
+  ],
+  "keywords": [
+    "dica",
+    "texto de ajuda",
+    "hover",
+    "balão de informação"
+  ],
+  "id": "bootstrap5-tooltip",
+  "slug": "bootstrap5-tooltip"
+}

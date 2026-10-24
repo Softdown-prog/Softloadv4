@@ -1,0 +1,66 @@
+{
+  "id": "tema-gamer-playerone",
+  "titulo": "Tema Gamer / PlayerOne V2 — Design Tokens e Padroes CSS Cyberpunk",
+  "categoria": "tema-nicho",
+  "nicho": "gaming",
+  "versao_fonte": "PlayerOne V2.1 Cyberpunk Edition",
+  "descricao": "Design tokens, componentes CSS e estruturas HTML extraidos de template real de blog gamer/gaming. Paleta neon roxo-ciano sobre fundo escuro slate. Dark mode como PADRAO (nao prefers-color-scheme — gaming sites sao sempre dark-first). Tipografia Oswald uppercase para titulos + Inter corpo. Bootstrap 5 col-lg-8 + sidebar col-lg-4. Shortcode [review] exclusivo processado por JS no frontend.",
+  "atributos_html_raiz": {
+    "b_css": "false",
+    "b_defaultmessages": "true",
+    "b_layoutsVersion": "3",
+    "nota": "Mesmo padrao do MAG News. b:css=false desativa bundle CSS legado do Blogger."
+  },
+  "blogger_theme_designer_bridge": {
+    "nota_formato": "PlayerOne usa Group/Variable DENTRO de comentario CSS /* ... */ — tecnica alternativa valida. O Blogger processa <Group>/<Variable> mesmo dentro de comentarios no CDATA do b:skin.",
+    "bloco_comentado": "/*\n<Group description=\"Cores do Tema (PlayerOne)\" selector=\":root\">\n  <Variable name=\"gamer.primaria\" description=\"Cor Neon Principal (Roxo)\" type=\"color\" default=\"#8b5cf6\" value=\"#8b5cf6\"/>\n  <Variable name=\"gamer.secundaria\" description=\"Cor Neon Secundaria (Ciano)\" type=\"color\" default=\"#06b6d4\" value=\"#06b6d4\"/>\n  <Variable name=\"gamer.fundo\" description=\"Fundo do Site (Modo Escuro)\" type=\"color\" default=\"#0f172a\" value=\"#0f172a\"/>\n</Group>\n*/",
+    "mapeamento_css": ":root {\n  --gamer-primary: $(gamer.primaria);\n  --gamer-secondary: $(gamer.secundaria);\n  --gamer-bg-dark: $(gamer.fundo);\n}"
+  },
+  "tokens_css": {
+    "prefixo": "--gamer-",
+    "valores_padrao_light_root": {
+      "--gamer-primary": "#8b5cf6",
+      "--gamer-secondary": "#06b6d4",
+      "--gamer-bg-dark": "#0f172a",
+      "--font-main": "'Inter', sans-serif",
+      "--font-display": "'Oswald', sans-serif"
+    },
+    "valores_dark_mode": {
+      "--gamer-bg": "#0f172a",
+      "--gamer-surface": "#1e293b",
+      "--gamer-text": "#e2e8f0",
+      "--gamer-border": "#334155"
+    },
+    "nota_dark_first": "--gamer-bg, --gamer-surface, --gamer-text e --gamer-border so estao definidos no bloco [data-bs-theme='dark']. O tema nao tem fallback de light mode para essas variaveis — e intencional: sites gamer sao dark-first.",
+    "fontes": {
+      "corpo": "Inter, sans-serif (wght 400;600;800)",
+      "titulos_display": "Oswald, sans-serif (wght 500;700) — uppercase obrigatorio",
+      "google_fonts_query": "Inter:wght@400;600;800|Oswald:wght@500;700"
+    }
+  },
+  "layout": {
+    "estrutura": "container > row: col-lg-8 (main) + col-lg-4 (sidebar direita)",
+    "grid_cards_posts": "row-cols-1 row-cols-md-2 g-4 — 1 coluna mobile, 2 colunas tablet+",
+    "header": "navbar sticky-top, border-bottom: 2px solid var(--gamer-border)",
+    "footer": "3 colunas col-lg-4, fundo #020617, border-top: 4px solid var(--gamer-primary)"
+  },
+  "regras_nicho": [
+    "Paleta neon: roxo #8b5cf6 (primaria) + ciano #06b6d4 (secundaria) sobre slate escuro #0f172a — identidade cyberpunk",
+    "Dark mode e o PADRAO — nao perguntar ao usuario, aplicar sempre. Gaming sites sao dark-first por convencao de nicho",
+    "Tipografia Oswald UPPERCASE em todos os titulos e elementos de UI — transmite forca e energia esportiva",
+    "Gradiente 45deg primaria→secundaria em badges, botoes CTA e barras de progresso — efeito neon consistente",
+    "Hover com box-shadow roxo neon (rgba(139,92,246,0.4)) nos cards — sensacao de elementos eletrizados",
+    "aspect-ratio: 16/9 na cobertura dos cards — padrao de screenshots e trailers de jogos",
+    "Blockquote vermelho #dc2626 (nao primaria) — vermelho = perigo/intensidade, reforca energia gamer",
+    "Icone bi-controller (\\F325 Bootstrap Icons) em tags/labels — identidade gaming nos elementos de navegacao",
+    "border-radius 4px (quad) para tags/labels — ar tech/gamer vs border-radius 50rem (pill) dos nichos lifestyle",
+    "text-shadow ciano no erro 404 (5px 5px 0 rgba(6,182,212,0.4)) — efeito 3D/glitch tipico de game over screens",
+    "Shortcode [review] transforma texto plano em review box com barras de nota e score circle neon"
+  ],
+  "widgets_complementares": [
+    "widget-shortcode-review",
+    "widget-dark-mode",
+    "widget-cookie-popup",
+    "widget-newsletter-formspree"
+  ]
+}

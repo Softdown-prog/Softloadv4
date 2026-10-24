@@ -1,0 +1,101 @@
+{
+  "id": "git-agent-pull-request",
+  "slug": "git-agent-pull-request",
+  "categoria": "git",
+  "descricao": "Ensina o agente a transformar uma branch publicada em uma proposta de alteração revisável por meio de um Pull Request.",
+  "quando_usar": [
+    "quando uma unidade de trabalho estiver implementada e publicada",
+    "quando alterações precisarem passar por revisão",
+    "quando o projeto utilizar Pull Requests como mecanismo de integração"
+  ],
+  "instrucao": [
+    "Confirme que a branch contém somente alterações relacionadas à tarefa.",
+    "Confirme que os commits necessários estão disponíveis no remoto.",
+    "Identifique corretamente a branch de origem e a branch de destino.",
+    "Descreva no Pull Request o problema, a solução e as validações realizadas.",
+    "Inclua informações relevantes para que outro desenvolvedor consiga revisar a alteração.",
+    "Não declare que o Pull Request foi criado sem verificar o resultado da operação."
+  ],
+  "padrao": [
+    "verificar_branch_origem",
+    "verificar_branch_destino",
+    "verificar_commits",
+    "resumir_alteracoes",
+    "registrar_validacoes",
+    "criar_pull_request",
+    "verificar_pull_request"
+  ],
+  "exemplo": {
+    "contexto": "O Solaris corrigiu um erro no PathGuard, executou os testes e publicou a branch.",
+    "resposta": "Criar um Pull Request da branch de correção para a branch de destino, explicando o problema corrigido, as alterações realizadas e os testes executados."
+  },
+  "anti_padroes": [
+    "Abrir Pull Request com alterações não relacionadas.",
+    "Usar uma descrição que não explique o propósito da alteração.",
+    "Omitir validações relevantes.",
+    "Assumir que o Pull Request foi criado sem verificar seu estado."
+  ],
+  "keywords": [
+    "pull-request",
+    "pull",
+    "request",
+    "pr",
+    "github",
+    "code-review",
+    "code",
+    "review",
+    "branch",
+    "merge",
+    "git-agent-pull-request",
+    "git",
+    "agent"
+  ],
+  "componentes": [
+    {
+      "nome": "quando_usar",
+      "itens": [
+        "quando uma unidade de trabalho estiver implementada e publicada",
+        "quando alterações precisarem passar por revisão",
+        "quando o projeto utilizar Pull Requests como mecanismo de integração"
+      ]
+    },
+    {
+      "nome": "instrucao",
+      "itens": [
+        "Confirme que a branch contém somente alterações relacionadas à tarefa.",
+        "Confirme que os commits necessários estão disponíveis no remoto.",
+        "Identifique corretamente a branch de origem e a branch de destino.",
+        "Descreva no Pull Request o problema, a solução e as validações realizadas.",
+        "Inclua informações relevantes para que outro desenvolvedor consiga revisar a alteração.",
+        "Não declare que o Pull Request foi criado sem verificar o resultado da operação."
+      ]
+    },
+    {
+      "nome": "padrao",
+      "itens": [
+        "verificar_branch_origem",
+        "verificar_branch_destino",
+        "verificar_commits",
+        "resumir_alteracoes",
+        "registrar_validacoes",
+        "criar_pull_request",
+        "verificar_pull_request"
+      ]
+    },
+    {
+      "nome": "anti_padroes",
+      "itens": [
+        "Abrir Pull Request com alterações não relacionadas.",
+        "Usar uma descrição que não explique o propósito da alteração.",
+        "Omitir validações relevantes.",
+        "Assumir que o Pull Request foi criado sem verificar seu estado."
+      ]
+    }
+  ],
+  "exemplos": [
+    {
+      "contexto": "O Solaris corrigiu um erro no PathGuard, executou os testes e publicou a branch.",
+      "resposta": "Criar um Pull Request da branch de correção para a branch de destino, explicando o problema corrigido, as alterações realizadas e os testes executados."
+    }
+  ]
+}

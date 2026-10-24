@@ -1,0 +1,104 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_red_mapple_golden_v1",
+  "pipelineRevision": 5,
+  "sceneryType": "red_mapple",
+  "canvas": [256, 320],
+  "anchor": [128, 308],
+  "seed": 41527,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 92,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": ["south", "west", "north", "east"],
+    "yawDeg": {"south": 45, "west": 135, "north": 225, "east": 315}
+  },
+  "lightingIntent": {
+    "top": "small bright scarlet maple leaves with warm orange-red tips",
+    "front": "dense overlapping branch-borne leaf groups with visible wood windows",
+    "base": "deep crimson interior shadow around the main fork",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "mapleStyle": {
+    "center": [128, 126],
+    "crownRadius": [90, 105],
+    "leafScalePx": [2.8, 5.0],
+    "branchLeafSteps": [0.46, 0.62, 0.78, 0.92, 1.06],
+    "definedLeaves": true,
+    "preserveBranchGaps": true
+  },
+  "broadleafStructure": {
+    "layout": "painted_canopy",
+    "profile": "branching",
+    "center": [128, 126],
+    "radius": [90, 105],
+    "density": 1.04
+  },
+  "palette": {
+    "ground_shadow": "#2A1C1C",
+    "trunk_top": "#775548",
+    "trunk_bottom": "#362622",
+    "trunk_light": "#B58B73",
+    "back_top": "#81142A",
+    "back_bottom": "#3F0C19",
+    "mid_top": "#C42130",
+    "mid_bottom": "#6F121D",
+    "front_top": "#F33D31",
+    "front_bottom": "#B61B25",
+    "highlight": "#FF694B",
+    "occlusion": "#3C0E1A",
+    "leaf_shadow_top": "#6B1123",
+    "leaf_shadow_bottom": "#360B18",
+    "leaf_light_top": "#FF6D4D",
+    "leaf_light_bottom": "#DD2930"
+  },
+  "raster": {
+    "shadowDabs": 8,
+    "highlightDabs": 12,
+    "needleStrokes": 0,
+    "finalGrain": 10,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {"p0": [128, 308], "p1": [127, 244], "p2": [127, 184], "w0": 14.5, "w1": 6.8},
+    {"p0": [126, 222], "p1": [111, 195], "p2": [91, 169], "w0": 7.8, "w1": 3.0},
+    {"p0": [130, 220], "p1": [146, 194], "p2": [166, 168], "w0": 7.8, "w1": 3.0},
+    {"p0": [119, 202], "p1": [99, 174], "p2": [72, 149], "w0": 6.0, "w1": 2.3},
+    {"p0": [137, 201], "p1": [157, 173], "p2": [184, 148], "w0": 6.0, "w1": 2.3},
+    {"p0": [117, 187], "p1": [95, 157], "p2": [61, 133], "w0": 4.8, "w1": 1.8},
+    {"p0": [139, 187], "p1": [161, 157], "p2": [195, 132], "w0": 4.8, "w1": 1.8},
+    {"p0": [123, 181], "p1": [107, 149], "p2": [96, 116], "w0": 5.1, "w1": 1.9},
+    {"p0": [133, 180], "p1": [149, 148], "p2": [160, 115], "w0": 5.1, "w1": 1.9},
+    {"p0": [124, 163], "p1": [114, 130], "p2": [111, 94], "w0": 4.1, "w1": 1.5},
+    {"p0": [132, 163], "p1": [142, 129], "p2": [146, 92], "w0": 4.1, "w1": 1.5},
+    {"p0": [121, 147], "p1": [106, 117], "p2": [91, 85], "w0": 3.4, "w1": 1.3},
+    {"p0": [135, 147], "p1": [151, 117], "p2": [166, 84], "w0": 3.4, "w1": 1.3},
+    {"p0": [126, 143], "p1": [124, 111], "p2": [127, 70], "w0": 3.3, "w1": 1.2},
+    {"p0": [105, 172], "p1": [84, 151], "p2": [52, 145], "w0": 3.1, "w1": 1.15},
+    {"p0": [151, 171], "p1": [172, 150], "p2": [204, 143], "w0": 3.1, "w1": 1.15},
+    {"p0": [108, 151], "p1": [87, 128], "p2": [62, 111], "w0": 2.8, "w1": 1.05},
+    {"p0": [149, 151], "p1": [171, 128], "p2": [196, 110], "w0": 2.8, "w1": 1.05},
+    {"p0": [112, 130], "p1": [94, 107], "p2": [76, 88], "w0": 2.5, "w1": 0.95},
+    {"p0": [144, 130], "p1": [162, 106], "p2": [181, 87], "w0": 2.5, "w1": 0.95},
+    {"p0": [116, 111], "p1": [105, 91], "p2": [98, 67], "w0": 2.2, "w1": 0.85},
+    {"p0": [140, 110], "p1": [152, 89], "p2": [159, 65], "w0": 2.2, "w1": 0.85},
+    {"p0": [126, 103], "p1": [121, 84], "p2": [120, 54], "w0": 2.0, "w1": 0.8},
+    {"p0": [131, 102], "p1": [137, 82], "p2": [139, 53], "w0": 2.0, "w1": 0.8}
+  ],
+  "tiers": [
+    {"y": 61, "span": 48, "thickness": 31, "skew": -3, "lobes": 22},
+    {"y": 91, "span": 66, "thickness": 37, "skew": 4, "lobes": 24},
+    {"y": 124, "span": 75, "thickness": 42, "skew": -2, "lobes": 26},
+    {"y": 158, "span": 68, "thickness": 39, "skew": 5, "lobes": 24}
+  ]
+}

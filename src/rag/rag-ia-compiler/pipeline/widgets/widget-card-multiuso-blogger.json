@@ -1,0 +1,97 @@
+{
+  "id": "widget-card-multiuso-blogger",
+  "titulo": "Card Editável Multiuso — Mesmo HTML, Quatro Papéis (News, Produto em Oferta, AdSense, Vídeo)",
+  "categoria": "widget-reutilizavel",
+  "descricao": "Padrão de card Bootstrap que assume 4 papéis diferentes dependendo do conteúdo injetado. A estrutura HTML é idêntica em todos os casos — card.border-0.shadow-sm com border-bottom colorida. O que muda é apenas o corpo do card. Aplicado em gadgets HTML do Blogger (featured-small-1, featured-small-2, sidebar) sem alterar o CSS do tema. Validado em produção no TechWind.",
+  "conceito": "Um único card CSS → N cases de conteúdo. Não é um componente com variantes em código — é o mesmo HTML colado em gadgets diferentes com conteúdo substituído manualmente. O CSS do tema não precisa saber qual 'tipo' está sendo exibido.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (card, badge, btn, ratio, d-flex, gap-2, fw-bold, text-muted, small)",
+    "Bootstrap Icons 1.11.x (bi-tag, bi-cart3, bi-play-circle-fill, bi-lightning-charge-fill)",
+    "CSS do tema: --sd-primary (cor de destaque) e .card-img-top aspect-ratio: 16/9 object-fit: cover"
+  ],
+  "base_css": {
+    "descricao": "CSS compartilhado por todos os 4 tipos de card — definido uma vez no tema, reutilizado em todos os gadgets",
+    "css": ".featured-card {\n  border: none !important;\n  border-bottom: 4px solid var(--sd-primary);\n  transition: transform 0.3s ease, box-shadow 0.3s ease;\n  cursor: pointer;\n}\n.featured-card:hover {\n  transform: translateY(-5px);\n  box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;\n}\n.featured-card .card-img-top {\n  object-fit: cover;\n  width: 100%;\n  aspect-ratio: 16 / 9;\n}\n.badge-categoria {\n  font-size: 0.7rem;\n  text-transform: uppercase;\n  letter-spacing: 0.5px;\n}",
+    "nota": "border-bottom: 4px solid var(--sd-primary) é a assinatura visual do card no tema TechWind — identifica o elemento como 'featured' independente do conteúdo"
+  },
+  "variantes": {
+    "tipo_1_news_teaser": {
+      "descricao": "Card de chamada para notícia ou post — imagem + categoria + título + snippet + link",
+      "caso_de_uso": "Gadget 'Notícias em Destaque' na sidebar ou em seção featured-small. Aponta para posts reais do blog.",
+      "html": "<div class=\"card featured-card shadow-sm h-100\">\n  <img\n    src=\"URL_DA_IMAGEM\"\n    alt=\"Título da Notícia\"\n    class=\"card-img-top\"\n  />\n  <div class=\"card-body\">\n    <span class=\"badge bg-primary badge-categoria mb-2\">Tecnologia</span>\n    <h3 class=\"h6 card-title fw-bold lh-sm mb-1\">\n      <a href=\"URL_DO_POST\" class=\"text-decoration-none text-dark stretched-link\">\n        Título da Notícia em Destaque\n      </a>\n    </h3>\n    <p class=\"text-muted small mb-0\">Resumo breve do conteúdo da notícia em até duas linhas...</p>\n  </div>\n</div>",
+      "notas": [
+        "stretched-link no <a> torna o card inteiro clicável sem JS",
+        "badge-categoria com bg-primary segue a cor do tema — trocar por bg-danger para 'Breaking', bg-success para 'Review' etc",
+        "h-100 no card garante altura uniforme em row g-4 col-md-6"
+      ]
+    },
+    "tipo_2_produto_em_oferta": {
+      "descricao": "Card de produto hardware em oferta — imagem do produto + specs + preço em destaque + CTA comprar",
+      "caso_de_uso": "Sidebar 'GPU em Oferta', 'Notebook Recomendado', qualquer produto com preço e link afiliado. Gadget HTML na sidebar col-lg-4.",
+      "html": "<div class=\"card featured-card shadow-sm\">\n  <div class=\"position-relative\">\n    <img\n      src=\"URL_DA_IMAGEM_DO_PRODUTO\"\n      alt=\"Nome do Produto\"\n      class=\"card-img-top\"\n    />\n    <span class=\"position-absolute top-0 end-0 m-2 badge bg-danger fs-6\">\n      <i class=\"bi bi-lightning-charge-fill\"></i> OFERTA\n    </span>\n  </div>\n  <div class=\"card-body\">\n    <span class=\"badge bg-secondary badge-categoria mb-2\">Placa de Vídeo</span>\n    <h3 class=\"h6 card-title fw-bold mb-1\">RTX 4060 Ti 16GB GDDR6</h3>\n    <p class=\"text-muted small mb-2\">DLSS 3.5 · Ray Tracing · 4K Gaming Ready</p>\n    <div class=\"d-flex align-items-center gap-2 mb-3\">\n      <span class=\"text-muted text-decoration-line-through small\">R$ 3.499</span>\n      <span class=\"fw-bold fs-5\" style=\"color: var(--sd-primary);\">R$ 2.899</span>\n    </div>\n    <a href=\"URL_AFILIADO\" class=\"btn btn-sm w-100\" style=\"background-color: var(--sd-primary); color: #fff;\" target=\"_blank\" rel=\"noopener\">\n      <i class=\"bi bi-cart3\"></i> Ver Oferta\n    </a>\n  </div>\n</div>",
+      "notas": [
+        "badge OFERTA no canto superior direito usa position-absolute top-0 end-0 — não afeta o layout do card",
+        "preço riscado (text-decoration-line-through) + preço atual em destaque: hierarquia visual de desconto sem JS",
+        "rel='noopener' obrigatório em links afiliados que abrem nova aba (target='_blank')",
+        "btn w-100 cobre a largura total do card — CTA proeminente adequado para conversão"
+      ]
+    },
+    "tipo_3_adsense_placeholder": {
+      "descricao": "Card placeholder de anúncio AdSense ou banner publicitário — substitui o conteúdo do card por um script de ad",
+      "caso_de_uso": "Gadget de anúncio na sidebar, entre posts, ou em seção featured. O .card wraps o ad para manter consistência visual com os outros cards da página.",
+      "html": "<div class=\"card featured-card shadow-sm text-center\" style=\"min-height: 250px; display: flex; align-items: center; justify-content: center;\">\n  <div class=\"card-body p-2\">\n    <!-- AdSense ou rede de anúncios -->\n    <ins class=\"adsbygoogle\"\n      style=\"display:block\"\n      data-ad-client=\"ca-pub-XXXXXXXXXXXXXXXXX\"\n      data-ad-slot=\"XXXXXXXXXX\"\n      data-ad-format=\"auto\"\n      data-full-width-responsive=\"true\">\n    </ins>\n    <script>(adsbygoogle = window.adsbygoogle || []).push({});<\\/script>\n    <!-- Fallback visível antes do ad carregar -->\n    <p class=\"text-muted small mt-2 mb-0\">Anúncio</p>\n  </div>\n</div>",
+      "html_banner_imagem": "<div class=\"card featured-card shadow-sm overflow-hidden\">\n  <a href=\"URL_DO_ANUNCIANTE\" target=\"_blank\" rel=\"noopener sponsored\">\n    <img\n      src=\"URL_DO_BANNER_300x250\"\n      alt=\"Anúncio\"\n      class=\"card-img-top\"\n      style=\"aspect-ratio: 300/250; object-fit: cover;\"\n    />\n  </a>\n  <div class=\"card-body py-2\">\n    <p class=\"text-muted small text-center mb-0\">Publicidade</p>\n  </div>\n</div>",
+      "notas": [
+        "Card wrapping AdSense mantém a sidebar visualmente coesa — sem 'buraco branco' enquanto o ad não carrega",
+        "rel='sponsored' em links de anúncio pagos — requisito do Google Search Console para evitar penalidades",
+        "Barra vertical border-bottom: 4px solid var(--sd-primary) no card de ad sinaliza ao leitor que o bloco é parte da sidebar (não conteúdo editorial, mas design integrado)",
+        "min-height: 250px evita colapso de layout quando o AdSense está carregando"
+      ]
+    },
+    "tipo_4_video_embed": {
+      "descricao": "Card com vídeo embed responsivo 16:9 — YouTube ou qualquer iframe. ratio ratio-16x9 do Bootstrap.",
+      "caso_de_uso": "Gadget 'Vídeo Review' ou 'Tutorial em Destaque' na sidebar ou área featured. Sem JS customizado — Bootstrap ratio cuida do aspecto responsivo.",
+      "html": "<div class=\"card featured-card shadow-sm\">\n  <div class=\"ratio ratio-16x9\">\n    <iframe\n      src=\"https://www.youtube.com/embed/VIDEO_ID\"\n      title=\"Título do Vídeo Review\"\n      frameborder=\"0\"\n      allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\"\n      allowfullscreen=\"allowfullscreen\"\n      loading=\"lazy\"\n    ></iframe>\n  </div>\n  <div class=\"card-body\">\n    <span class=\"badge bg-danger badge-categoria mb-2\">\n      <i class=\"bi bi-play-circle-fill\"></i> Review\n    </span>\n    <h3 class=\"h6 card-title fw-bold mb-1\">RTX 4090 vs RX 7900 XTX — Qual Comprar em 2026?</h3>\n    <p class=\"text-muted small mb-0\">Benchmark completo em 4K, 1440p e 1080p com 20 jogos testados.</p>\n  </div>\n</div>",
+      "notas": [
+        "ratio ratio-16x9 do Bootstrap usa padding-top: 56.25% no wrapper — iframe preenche 100% sem height fixo",
+        "loading='lazy' no iframe adia o carregamento do player YouTube até o card ficar visível — impacto direto no LCP da página",
+        "badge bg-danger com bi-play-circle-fill = sinalizador visual de conteúdo em vídeo (vs notícia bg-primary)",
+        "Não usar autoplay na URL do YouTube embed para não violar políticas do AdSense e não degradar UX"
+      ]
+    }
+  },
+  "uso_em_gadgets_blogger": {
+    "descricao": "Como aplicar os 4 tipos de card em gadgets HTML do Blogger sem alterar o CSS do tema",
+    "instrucoes": [
+      "1. No painel do Blogger → Layout → clicar em 'Adicionar gadget' na área desejada",
+      "2. Escolher 'HTML/JavaScript'",
+      "3. Colar o HTML do tipo de card desejado (news, produto, ad ou vídeo)",
+      "4. Substituir URL_DA_IMAGEM, URL_DO_POST, etc. pelos valores reais",
+      "5. Salvar — o CSS .featured-card já está no tema, nenhum CSS adicional necessário"
+    ],
+    "gadgets_tipicos": {
+      "featured-small-1": "col-lg-4 da área featured → tipo_1_news_teaser ou tipo_2_produto_em_oferta",
+      "featured-small-2": "col-lg-4 da área featured → tipo_1_news_teaser ou tipo_4_video_embed",
+      "sidebar-widget": "col-lg-4 da sidebar → tipo_2_produto_em_oferta ou tipo_3_adsense_placeholder",
+      "entre-posts": "area_conteudo → tipo_3_adsense_placeholder com banner 728x90 (leaderboard)"
+    }
+  },
+  "html_simulado_sidebar": {
+    "descricao": "Sidebar col-lg-4 com 3 cards empilhados — news teaser + produto em oferta + AdSense. Saída real de preview.",
+    "html": "<aside class=\"col-lg-4\">\n  <!-- Card News Teaser -->\n  <div class=\"card featured-card shadow-sm mb-4\">\n    <img src=\"https://via.placeholder.com/400x225\" alt=\"Review RTX 4060\" class=\"card-img-top\" />\n    <div class=\"card-body\">\n      <span class=\"badge bg-primary badge-categoria mb-2\">Review</span>\n      <h3 class=\"h6 card-title fw-bold lh-sm mb-1\">\n        <a href=\"#\" class=\"text-decoration-none text-dark stretched-link\">RTX 4060 Vale a Pena em 2026?</a>\n      </h3>\n      <p class=\"text-muted small mb-0\">Testamos a placa em 15 jogos AAA. Resultado surpreendeu.</p>\n    </div>\n  </div>\n\n  <!-- Card Produto em Oferta -->\n  <div class=\"card featured-card shadow-sm mb-4\">\n    <div class=\"position-relative\">\n      <img src=\"https://via.placeholder.com/400x225\" alt=\"RTX 4060 Ti\" class=\"card-img-top\" />\n      <span class=\"position-absolute top-0 end-0 m-2 badge bg-danger fs-6\">\n        <i class=\"bi bi-lightning-charge-fill\"></i> OFERTA\n      </span>\n    </div>\n    <div class=\"card-body\">\n      <span class=\"badge bg-secondary badge-categoria mb-2\">Placa de Vídeo</span>\n      <h3 class=\"h6 card-title fw-bold mb-1\">RTX 4060 Ti 16GB GDDR6</h3>\n      <p class=\"text-muted small mb-2\">DLSS 3.5 · Ray Tracing · 4K Ready</p>\n      <div class=\"d-flex align-items-center gap-2 mb-3\">\n        <span class=\"text-muted text-decoration-line-through small\">R$ 3.499</span>\n        <span class=\"fw-bold fs-5\" style=\"color: var(--sd-primary);\">R$ 2.899</span>\n      </div>\n      <a href=\"#\" class=\"btn btn-sm w-100\" style=\"background-color: var(--sd-primary); color: #fff;\" target=\"_blank\" rel=\"noopener\">\n        <i class=\"bi bi-cart3\"></i> Ver Oferta\n      </a>\n    </div>\n  </div>\n\n  <!-- Card AdSense -->\n  <div class=\"card featured-card shadow-sm text-center\" style=\"min-height: 250px; display: flex; align-items: center; justify-content: center;\">\n    <div class=\"card-body p-2\">\n      <p class=\"text-muted small mb-0\">[ Espaço Publicitário ]</p>\n    </div>\n  </div>\n</aside>"
+  },
+  "html_simulado_featured_area": {
+    "descricao": "Área featured com 3 colunas: col-lg-4 carousel (principal) + col-lg-4 news teaser + col-lg-4 vídeo embed",
+    "html": "<div class=\"row g-3 mb-5\">\n  <!-- Principal: Carousel -->\n  <div class=\"col-lg-4\">\n    <div class=\"card featured-card shadow-sm h-100\">\n      <!-- Carousel aqui -->\n      <div class=\"card-body\">\n        <span class=\"badge bg-primary badge-categoria\">Destaque</span>\n        <h2 class=\"h5 fw-bold mt-2\">Notícia Principal em Destaque</h2>\n      </div>\n    </div>\n  </div>\n\n  <!-- News Teaser -->\n  <div class=\"col-lg-4\">\n    <div class=\"card featured-card shadow-sm h-100\">\n      <img src=\"https://via.placeholder.com/400x225\" alt=\"\" class=\"card-img-top\" />\n      <div class=\"card-body\">\n        <span class=\"badge bg-success badge-categoria mb-2\">Hardware</span>\n        <h3 class=\"h6 fw-bold\"><a href=\"#\" class=\"text-dark text-decoration-none stretched-link\">Intel Core Ultra 9 — Benchmark Completo</a></h3>\n        <p class=\"text-muted small\">Performance vs Ryzen 9 em workloads reais de 2026.</p>\n      </div>\n    </div>\n  </div>\n\n  <!-- Vídeo Embed -->\n  <div class=\"col-lg-4\">\n    <div class=\"card featured-card shadow-sm h-100\">\n      <div class=\"ratio ratio-16x9\">\n        <iframe src=\"https://www.youtube.com/embed/VIDEO_ID\" title=\"Review\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\" loading=\"lazy\"></iframe>\n      </div>\n      <div class=\"card-body\">\n        <span class=\"badge bg-danger badge-categoria mb-2\"><i class=\"bi bi-play-circle-fill\"></i> Review</span>\n        <h3 class=\"h6 fw-bold\">RTX 4090 vs RX 7900 XTX — 4K Benchmark 2026</h3>\n      </div>\n    </div>\n  </div>\n</div>"
+  },
+  "notas_tecnicas": [
+    "O padrão Card Editável não é um componente com lógica condicional — é copy-paste intencional. Cada gadget HTML é independente. Isso respeita o modelo mental do Blogger: gadgets são blocos de conteúdo estático gerenciados via painel de layout.",
+    "border-bottom: 4px solid var(--sd-primary) é o único elo visual entre os 4 tipos de card — garante que cards completamente diferentes (news, produto, ad, vídeo) pareçam parte do mesmo sistema de design.",
+    "stretched-link: a classe Bootstrap que torna o card inteiro clicável via pseudo-element ::after com position:absolute. Funciona apenas quando o card tem position:relative (Bootstrap .card já tem). Usar APENAS em cards de news/editorial — não usar em cards de produto (o link de CTA deve ser clicado individualmente).",
+    "ratio ratio-16x9 do Bootstrap usa padding-bottom: 56.25% no wrapper + position:absolute no iframe filho. Zero JS, zero resize listeners, responsivo por CSS puro.",
+    "loading='lazy' em iframes de YouTube adia o parse do player até o elemento entrar no viewport — comportamento nativo do browser, sem IntersectionObserver customizado necessário.",
+    "rel='noopener' obrigatório em qualquer target='_blank'. rel='sponsored' adicional em links de afiliado e publicidade paga — requisito do Google para conformidade de SEO.",
+    "h-100 nas colunas de grid (col-lg-4) garante que os 3 cards da featured area tenham a mesma altura — imprescindível quando um card tem iframe (vídeo) e outro tem apenas texto.",
+    "position-absolute top-0 end-0 no badge OFERTA não afeta o layout do card — posicionado dentro do wrapper position-relative da imagem, não do card inteiro."
+  ]
+}

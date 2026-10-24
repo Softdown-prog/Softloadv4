@@ -1,0 +1,344 @@
+{
+  "id": "django-frontend-backend-cloud-architecture",
+  "slug": "django-frontend-backend-cloud-architecture",
+  "categoria": "full-stack-web-architecture",
+  "descricao": "Arquitetura moderna para integração entre front-end e backend Django em ambientes de hospedagem em nuvem, priorizando desacoplamento, escalabilidade, segurança e APIs.",
+  "componentes": [
+    {
+      "nome": "architecture",
+      "conteudo": {
+        "pattern": "api-first",
+        "deployment-models": [
+          "monolithic-web-application",
+          "decoupled-frontend-backend",
+          "backend-for-frontend",
+          "hybrid-rendering"
+        ],
+        "recommended-pattern": {
+          "frontend": "independent-client",
+          "backend": "django-rest-api",
+          "communication": "https-json-api"
+        }
+      }
+    },
+    {
+      "nome": "frontend",
+      "conteudo": {
+        "supported-technologies": [
+          "html5",
+          "css3",
+          "javascript",
+          "bootstrap",
+          "alpinejs",
+          "vue",
+          "react",
+          "svelte"
+        ],
+        "responsibilities": [
+          "user-interface",
+          "form-validation",
+          "client-routing",
+          "api-consumption",
+          "state-management"
+        ]
+      }
+    },
+    {
+      "nome": "backend",
+      "conteudo": {
+        "framework": "django",
+        "api-layer": [
+          "django-rest-framework",
+          "graphql-optional"
+        ],
+        "responsibilities": [
+          "authentication",
+          "authorization",
+          "business-rules",
+          "database-access",
+          "file-management",
+          "api-endpoints"
+        ]
+      }
+    },
+    {
+      "nome": "client-server-communication",
+      "conteudo": {
+        "protocol": "https",
+        "data-format": "json",
+        "http-methods": [
+          "get",
+          "post",
+          "put",
+          "patch",
+          "delete"
+        ],
+        "recommended-pattern": {
+          "frontend": "consume-rest-api",
+          "backend": "return-json-responses"
+        }
+      }
+    },
+    {
+      "nome": "authentication",
+      "conteudo": {
+        "recommended-options": [
+          "jwt",
+          "oauth2",
+          "session-authentication"
+        ],
+        "security-practices": [
+          "https-only",
+          "secure-cookies",
+          "token-expiration",
+          "refresh-tokens",
+          "csrf-protection-when-applicable"
+        ]
+      }
+    },
+    {
+      "nome": "api-design",
+      "conteudo": {
+        "principles": [
+          "resource-oriented",
+          "consistent-endpoints",
+          "pagination",
+          "filtering",
+          "sorting",
+          "versioning"
+        ],
+        "response-pattern": {
+          "success": {
+            "success": true,
+            "data": {}
+          },
+          "error": {
+            "success": false,
+            "error": {
+              "code": "error-code",
+              "message": "human-readable-message"
+            }
+          }
+        }
+      }
+    },
+    {
+      "nome": "cloud-hosting",
+      "conteudo": {
+        "supported-platforms": [
+          "google-cloud-run",
+          "google-kubernetes-engine",
+          "aws",
+          "azure",
+          "digitalocean",
+          "railway",
+          "render"
+        ],
+        "recommended-components": {
+          "application": "django-container",
+          "database": "managed-postgresql",
+          "object-storage": "cloud-storage",
+          "cache": "redis",
+          "cdn": "global-content-delivery-network"
+        }
+      }
+    },
+    {
+      "nome": "static-and-media-files",
+      "conteudo": {
+        "static-assets": {
+          "examples": [
+            "css",
+            "javascript",
+            "fonts",
+            "images"
+          ],
+          "recommended-storage": "object-storage"
+        },
+        "user-uploads": {
+          "recommended-storage": "object-storage",
+          "recommendations": [
+            "file-validation",
+            "virus-scanning",
+            "signed-urls"
+          ]
+        }
+      }
+    },
+    {
+      "nome": "real-time-features",
+      "conteudo": {
+        "supported-technologies": [
+          "websocket",
+          "server-sent-events",
+          "polling"
+        ],
+        "common-use-cases": [
+          "chat",
+          "notifications",
+          "live-dashboard",
+          "progress-monitoring"
+        ]
+      }
+    },
+    {
+      "nome": "background-processing",
+      "conteudo": {
+        "recommended-tasks": [
+          "email-delivery",
+          "report-generation",
+          "image-processing",
+          "document-processing",
+          "ai-processing"
+        ],
+        "recommended-tools": [
+          "celery",
+          "redis",
+          "task-queue"
+        ]
+      }
+    },
+    {
+      "nome": "frontend-backend-flow",
+      "conteudo": {
+        "pipeline": [
+          {
+            "step": 1,
+            "actor": "user",
+            "action": "interacts-with-interface"
+          },
+          {
+            "step": 2,
+            "actor": "frontend",
+            "action": "validate-input"
+          },
+          {
+            "step": 3,
+            "actor": "frontend",
+            "action": "send-api-request"
+          },
+          {
+            "step": 4,
+            "actor": "backend",
+            "action": "authenticate-request"
+          },
+          {
+            "step": 5,
+            "actor": "backend",
+            "action": "execute-business-rules"
+          },
+          {
+            "step": 6,
+            "actor": "backend",
+            "action": "access-database"
+          },
+          {
+            "step": 7,
+            "actor": "backend",
+            "action": "return-json-response"
+          },
+          {
+            "step": 8,
+            "actor": "frontend",
+            "action": "update-user-interface"
+          }
+        ]
+      }
+    },
+    {
+      "nome": "performance",
+      "conteudo": {
+        "frontend": [
+          "lazy-loading",
+          "asset-minification",
+          "browser-caching",
+          "code-splitting"
+        ],
+        "backend": [
+          "database-indexing",
+          "query-optimization",
+          "response-caching",
+          "connection-pooling"
+        ],
+        "cloud": [
+          "auto-scaling",
+          "load-balancing",
+          "cdn",
+          "health-checks"
+        ]
+      }
+    },
+    {
+      "nome": "security",
+      "conteudo": {
+        "frontend": [
+          "content-security-policy",
+          "input-validation",
+          "secure-storage-of-tokens"
+        ],
+        "backend": [
+          "csrf-protection",
+          "xss-protection",
+          "sql-injection-protection",
+          "rate-limiting",
+          "permission-validation"
+        ],
+        "cloud": [
+          "https",
+          "managed-secrets",
+          "identity-and-access-management",
+          "encrypted-storage"
+        ]
+      }
+    },
+    {
+      "nome": "recommended-stack",
+      "conteudo": {
+        "frontend": [
+          "html5",
+          "bootstrap-5",
+          "vanilla-javascript-or-alpinejs"
+        ],
+        "backend": [
+          "django",
+          "django-rest-framework"
+        ],
+        "database": "postgresql",
+        "cache": "redis",
+        "storage": "object-storage",
+        "deployment": "container-based-cloud-platform"
+      }
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "django-frontend-backend-cloud-architecture",
+    "django",
+    "full-stack-web-architecture",
+    "client-server-communication",
+    "client",
+    "server",
+    "communication",
+    "authentication",
+    "api-design",
+    "api",
+    "cloud-hosting",
+    "hosting",
+    "static-and-media-files",
+    "static",
+    "media",
+    "files",
+    "real-time-features",
+    "real",
+    "time",
+    "features",
+    "background-processing",
+    "background",
+    "processing",
+    "frontend-backend-flow",
+    "flow",
+    "performance",
+    "security",
+    "recommended-stack"
+  ]
+}

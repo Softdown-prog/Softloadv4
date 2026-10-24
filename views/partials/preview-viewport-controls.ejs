@@ -1,0 +1,20 @@
+<div class="btn-group" role="group" aria-label="Viewport">
+    <button type="button" class="btn vp-btn active-vp" data-vp="desktop"
+            onclick="setViewport('desktop')" title="Desktop (1280px)">
+        <%- include('./icon', { name: 'monitor' }) %>
+    </button>
+    <button type="button" class="btn vp-btn" data-vp="tablet"
+            onclick="setViewport('tablet')" title="Tablet (768px)">
+        <%- include('./icon', { name: 'tablet' }) %>
+    </button>
+    <button type="button" class="btn vp-btn" data-vp="mobile"
+            onclick="setViewport('mobile')" title="Mobile (390px)">
+        <%- include('./icon', { name: 'smartphone' }) %>
+    </button>
+</div>
+<a href="/dashboard/compilacao/<%= compilacaoId %>/download"
+   class="btn btn-baixar-preview fw-bolder text-uppercase d-flex align-items-center gap-1"
+   style="background:var(--sl-primary);color:#fff;border:none;text-decoration:none">
+    <%- include('./icon', { name: 'download' }) %>
+    <span>Baixar</span>
+</a>

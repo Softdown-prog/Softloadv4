@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho tecnologia-techwind — ver plano "esqueleto
+     por nicho" (/root/.claude/plans/indexed-jumping-treehouse.md), Fase 2
+     (2/11): segundo dos 11 nichos restantes com exemplos/ real, escolhido
+     por ter a menor densidade de gambiarra pro chassis genérico entre os
+     candidatos restantes (achado 6 do plano — 4 achados no teste antigo,
+     nenhum remapeamento de seletor pro chassis 'magazine').
+
+     A estrutura física (b:section, ids, ordem) abaixo foi extraída de
+     exemplos/tecnologia-techwind.xml (arquivo hand-authored real) — não é
+     mais o chassis genérico 'magazine' compartilhado com
+     tecnologia-mag-tech/noticias-mag-news (antes da migração desta). O
+     b:widget Blog1 (main/post) também foi extraído verbatim (mesmo achado
+     já corrigido em viral-magazine/appstore-bulma-mobile/noticias-mag-news:
+     só copiar os ids de b:section não basta).
+
+     Diferenças estruturais reais vs. template_magazine.xml:
+       - 'top-ticker'/'top-social': dentro de um '.top-bar' próprio (id
+         'topbar-wrapper'), estrutura real preservada — 2 slots nativos,
+         ambos vazios por padrão no arquivo real (baixo valor herdar
+         conteúdo de exemplo do dono original).
+       - 'header-logo'/'main-menu': mesma função de sempre (Header/PageList),
+         nomes reais mantidos. main-menu no arquivo real tem uma navbar
+         customizada com ícones Bootstrap por item e um dropdown "Mais",
+         mas os hrefs são o blog real do dono original
+         (tnews-web.blogspot.com) mais um link pessoal do Google Drive —
+         dado real, não reutilizável por outro usuário. Substituído por
+         NAV_WIDGET genérico (data:pages dinâmico, mesmo padrão de
+         editabilidade "Full-Gadget" — nunca link morto/de outro dono).
+       - Achado (auditoria desta migração): o b:widget 'featured-big'
+         (destaque grande) tem um b:widget-setting 'content' com um
+         carousel de 3 slides — mas TAMBÉM declara seu próprio
+         <b:includable id='main'> customizado, que NUNCA referencia
+         <data:content/>. Ou seja, o carousel armazenado no widget-setting
+         é órfão — o que renderiza de fato é o banner estático fixo
+         ("O teu portal de Conteúdos Exclusivos"). A migração anterior
+         (3º nicho PoC, achado 4 do dossiê) tinha identificado o problema
+         core certo (hero 100% estático, CTA morto) mas descreveu o
+         conteúdo errado (achava que era o carousel) — o fix already
+         aplicado (widgetNativo 'featured-post-card', hero real
+         data-bound) continua correto e superior de qualquer forma, não
+         precisou de nenhuma mudança nesta migração.
+       - 'featured-full'/'featured-small-2': vazios no arquivo real
+         (slots nativos opcionais, mantidos vazios por design).
+       - 'featured-small-1': no arquivo real tem um 2º carousel cujo
+         includable DEFAULT referencia <data:content/> de verdade — mas o
+         conteúdo são 3 imagens com src = "COLAR_LINK_DA_IMAGEM_AQUI_N.jpg"
+         (texto literal de instrução pro dono do tema, nunca uma URL real).
+         Incluir isso geraria imagem quebrada em todo site gerado — mesma
+         classe de bug já fechada no hero de noticias-mag-news
+         ("[TITULO]"/"[URL_POST_0]" vazando pro XML). Deixado como slot
+         nativo vazio, mesmo tratamento dos outros 2 slots "Destaque".
+       - 'before-post-content'/'after-post-content': slots nativos vazios
+         no esqueleto (o script de tempo-de-leitura que o arquivo real
+         guarda dentro de before-post-content continua ativo via blob
+         geral — peça 'reading-time' do dossiê, mesmo efeito funcional,
+         sem precisar ocupar a seção).
+       - 'main' (Blog1): main/post extraído verbatim (feed 2 colunas
+         .card-post-grid, post único .post-title-single/.post-body-content
+         com itemprop='articleBody' adicionado — necessário pro
+         DROPCAP_CSS genérico funcionar, ausente no arquivo real —, 404
+         embutido via data:view.isError). widget-settings trimmados pra
+         lista válida (mesmo achado já descoberto em noticias-mag-news:
+         style.*/showAuthorProfile/showLocation são rejeitados pelo
+         Blogger hoje).
+       - 'sidebar': 2 widgets vazios no arquivo real → STATS_WIDGET.
+       - 'footer-1': no arquivo real tem 1 iframe promocional
+         ("Como Instalar o Template", vídeo do vendedor do tema — dado
+         de terceiro, não conteúdo do site) + 1 vazio → BLOG_ARCHIVE_WIDGET.
+       - 'footer-2': vazio no arquivo real → SOCIAL_LINKS_WIDGET.
+       - 'footer-3': Label nativo com selectedLabelsList hardcoded
+         ('hardware,tech' — labels do dono original) + 1 vazio →
+         LABEL_CLOUD_WIDGET (mesmo tipo de widget, sem labels fixas —
+         Blogger mostra todos os labels que o dono do site criar).
+       - 'footer-contact': 5 widgets nativos no arquivo real (FeaturedPost
+         com postId hardcoded do dono original, Translate, PopularPosts,
+         Stats, ContactForm) → 4 tokens genéricos mantendo a mesma
+         composição (FEATURED_POST_WIDGET com useMostRecentPost em vez
+         de postId fixo, TRANSLATE_WIDGET, POPULAR_POSTS_RANKING,
+         CONTACT_FORM — match exato de tipo). Stats realocado pra
+         'sidebar' (só 8 tokens de widget nativo genérico disponíveis no
+         total — cada um só pode aparecer 1x no esqueleto, id fixo no
+         gerador, ver widgets.js/modules.js — 5 aqui deixaria só 3 pras
+         outras 4 seções que precisam de mobília).
+       - 'footer-branding'/'copyright-area': vazios no arquivo real,
+         mesmo tratamento — copyright-area ganha o texto de copyright
+         FORA do b:section (mesmo padrão de noticias-mag-news), a seção
+         em si continua um slot nativo pro dono do site poder trocar.
+       - Dark mode e voltar-ao-topo: o arquivo real já tem sua própria
+         implementação completa (botão .btn-dark-mode na navbar + script
+         de toggle via localStorage; botão #btnScrollToTop com animação
+         PulseGlow) — ambas já existem como peças do dossiê (dark-mode-
+         toggle-logic/scroll-to-top), então os módulos genéricos
+         DARK_MODE_MODULE/BACK_TO_TOP_MODULE NÃO são usados aqui
+         (evita 2 implementações concorrentes) — só COOKIE_MODULE
+         (adicionado, sem consentimento de cookies no arquivo real) e
+         NICHO_WIDGETS_HTML (onde o scroll-to-top autocontido entra).
+       - nichoModuleDefaults.js reauditado: readingTime/shareButtons/toc/
+         error404/error404Theme removidos (404 agora embutido no main
+         real; share buttons e tempo de leitura já cobertos pelas peças
+         reais do dossiê; toc nunca teve seção real correspondente —
+         TOC_MODULE não é injetado em lugar nenhum deste esqueleto);
+         contactForm/popularPostsRanking adicionados (existiam no arquivo
+         real sem flag correspondente); cookieBanner adicionado (mesmo
+         raciocínio de noticias-mag-news — módulo genérico cobre o
+         consentimento, arquivo real não tinha).
+     Ver nichoDossie.tecnologia-techwind.test.js pro achado completo. -->
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+    <b:if cond='data:view.featuredImage'>
+      <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+    </b:if>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /* === VARIÁVEIS DO PAINEL DO BLOGGER (arquivo real, preservadas
+     verbatim — permitem o dono do site trocar as 5 cores pelo painel
+     "Personalizar" do Blogger, sem tocar em código, mesma filosofia
+     "Full-Gadget" documentada pro resto do template) === */
+  <Group description="Cores Principais" selector="body">
+    <Variable name="cor.primaria" description="Cor Principal" type="color" default="#198754" value="#198754"/>
+    <Variable name="cor.primaria.hover" description="Cor Principal - Hover" type="color" default="#0f5132" value="#0f5132"/>
+    <Variable name="cor.fundo" description="Fundo do Site" type="color" default="#f8f9fa" value="#f8f9fa"/>
+    <Variable name="cor.texto" description="Texto Principal" type="color" default="#212529" value="#212529"/>
+    <Variable name="cor.escura" description="Fundo do Topo e Rodapé" type="color" default="#212529" value="#212529"/>
+  </Group>
+
+  :root {
+    --sd-primary: $(cor.primaria);
+    --sd-primary-hover: $(cor.primaria.hover);
+    --sd-bg: $(cor.fundo);
+    --sd-text: $(cor.texto);
+    --sd-dark: $(cor.escura);
+  }
+
+  [[DYNAMIC_CSS]]
+
+  /* === ESTILOS GERAIS (arquivo real) === */
+  a { color: var(--sd-primary); text-decoration: none; transition: all 0.3s ease; }
+  a:hover { color: var(--sd-primary-hover); }
+  img { max-width: 100%; height: auto; display: block; }
+
+  /* === COMPATIBILIDADE BLOGGER × BOOTSTRAP (arquivo real) === */
+  .post-body-content img, .post-body-content iframe, .post-body-content object, .post-body-content embed {
+    max-width: 100% !important; height: auto !important; border-radius: 8px;
+  }
+  .separator a { margin-left: 0 !important; margin-right: 0 !important; }
+  .post-body-content a { color: var(--sd-primary); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(25, 135, 84, 0.4); text-underline-offset: 4px; }
+  .post-body-content a:hover { color: var(--sd-primary-hover); text-decoration-color: var(--sd-primary-hover); }
+
+  /* === CSS DO NICHO (peças do dossiê: body/cards/navbar/sidebar/
+       footer/dark-mode/label-cloud/ripple/animate-up/img-gpu-opt) ===== */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+<body>
+
+  <div class='top-bar border-bottom py-2' id='topbar-wrapper'>
+    <div class='container d-flex flex-column flex-md-row justify-content-between align-items-center'>
+      <div class='ticker-area w-100 text-center text-md-start'>
+        <b:section id='top-ticker' name='Ticker News' showaddelement='yes'/>
+      </div>
+      <div class='social-area flex-shrink-0 mt-2 mt-md-0'>
+        <b:section id='top-social' name='Redes Sociais Topo' showaddelement='yes'/>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <nav class='navbar navbar-expand-lg sticky-top shadow-sm border-bottom border-success border-2'>
+      <div class='container'>
+
+        <div class='navbar-brand-wrapper'>
+          <b:section id='header-logo' maxwidgets='1' name='Logotipo' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+        </div>
+
+        <button aria-controls='mainNavbar' aria-expanded='false' aria-label='Toggle navigation' class='navbar-toggler' data-bs-target='#mainNavbar' data-bs-toggle='collapse' type='button'>
+          <span class='navbar-toggler-icon'/>
+        </button>
+
+        <div class='collapse navbar-collapse' id='mainNavbar'>
+          <div class='me-auto w-100 mt-3 mt-lg-0'>
+            <b:section id='main-menu' name='Menu Principal' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+          </div>
+
+          <div class='d-flex align-items-center justify-content-center gap-3 mt-3 mt-lg-0 pb-3 pb-lg-0'>
+            <div class='dark-mode-wrapper'>
+              <button aria-label='Alternar Tema' class='btn btn-outline-secondary btn-dark-mode d-flex align-items-center justify-content-center' style='width: 40px; height: 40px; border-radius: 50%; transition: all 0.3s;' title='Alternar Tema' type='button'>
+                <i class='bi bi-moon-stars-fill'/>
+              </button>
+            </div>
+            <div class='search-wrapper'>
+              <b:section id='top-search' maxwidgets='1' name='Barra de Pesquisa' showaddelement='yes'/>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </nav>
+  </header>
+
+  <!-- MOSAICO DE DESTAQUES — só na home, igual ao arquivo real
+       (data:view.isHomepage). 'featured-big' é o único slot com conteúdo
+       de verdade (hero protegido do dossiê, widgetNativo featured-post-
+       card — post real, não o banner estático/carousel órfão do arquivo
+       original). Os outros 3 ('featured-full'/'featured-small-1'/
+       'featured-small-2') ficam nativos vazios por design — ver doc do
+       topo do arquivo. -->
+  <b:if cond='data:view.isHomepage'>
+    <section class='featured-area my-4'>
+      <div class='container'>
+        <b:section id='featured-full' name='Destaque Topo (Opcional)' showaddelement='yes'/>
+        <div class='row g-3 mt-1'>
+          <div class='col-lg-8'>
+            <b:section id='featured-big' name='Destaque Grande' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+          </div>
+          <div class='col-lg-4'>
+            <div class='row g-3'>
+              <div class='col-12 col-md-6 col-lg-12'>
+                <b:section id='featured-small-1' name='Destaque Pequeno 1' showaddelement='yes'/>
+              </div>
+              <div class='col-12 col-md-6 col-lg-12'>
+                <b:section id='featured-small-2' name='Destaque Pequeno 2' showaddelement='yes'/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </b:if>
+
+  <div class='container my-5'>
+    <div class='row g-4'>
+
+      <main class='col-lg-8'>
+
+        <div class='before-post-area mb-4'>
+          <b:section id='before-post-content' name='Antes do Post (Topo)' showaddelement='yes'/>
+        </div>
+
+        <!-- id LITERAL 'main' preservado de propósito — marcador canônico
+             que injetarDesignPackage() (compilerWorker.js) busca pra
+             staticSections/heroHtml do chat de edição, zero rede de
+             segurança se a string não existir. -->
+        <b:section id='main' name='Postagens do Blog' showaddelement='no'>
+          <b:widget id='Blog1' locked='true' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+        <!-- Settings limitados à lista válida pro tipo Blog
+             (gerarDiagnostico() rejeita style.*/showAuthorProfile/
+             showLocation — "not a valid setting name", mesmo achado já
+             descoberto em noticias-mag-news; presentes no arquivo real
+             mas fora do schema que o Blogger aceita hoje). -->
+        <b:widget-settings>
+          <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+          <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+          <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+          <b:widget-setting name='showAuthor'>false</b:widget-setting>
+          <b:widget-setting name='showLabels'>true</b:widget-setting>
+          <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+          <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+          <b:widget-setting name='showInlineAds'>true</b:widget-setting>
+          <b:widget-setting name='showReactions'>false</b:widget-setting>
+        </b:widget-settings>
+
+        <!-- ════════ MAIN includable ════════ -->
+        <!-- Extraído verbatim de exemplos/tecnologia-techwind.xml: feed em
+             2 colunas (.card-post-grid), post único com título/corpo em
+             .post-title-single/.post-body-content (itemprop='articleBody'
+             ADICIONADO — ausente no arquivo real, necessário pro
+             DROPCAP_CSS genérico ter o que selecionar), 404 embutido
+             (data:view.isError). -->
+        <b:includable id='main' var='top'>
+
+          <b:if cond='data:view.isError'>
+            <div class='container text-center my-5 py-5 error-404-wrapper animate-up'>
+              <div class='error-icon mb-3'>
+                <i class='bi bi-robot' style='font-size: 5rem;'/>
+              </div>
+              <h1 class='fw-black error-code'>404</h1>
+              <h2 class='h3 fw-bold mb-3'>Ops! Fim da linha.</h2>
+              <p class='text-muted mb-5 mx-auto fs-5' style='max-width: 500px;'>
+                A página que tentaste aceder pode ter sido removida, mudou de nome ou está temporariamente indisponível.
+              </p>
+              <a class='btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm' href='/'>
+                <i class='bi bi-house-door-fill me-2'/> Voltar à Base
+              </a>
+            </div>
+          </b:if>
+
+          <b:if cond='data:view.isMultipleItems'>
+
+            <div class='row row-cols-1 row-cols-md-2 g-4'>
+              <b:loop values='data:posts' var='post'>
+                <div class='col'>
+                  <article class='card card-post-grid h-100 shadow-sm'>
+
+                    <b:if cond='data:post.featuredImage'>
+                      <div class='ratio ratio-16x9'>
+                        <a expr:href='data:post.url'>
+                          <img class='card-img-top object-fit-cover' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 600, &quot;16:9&quot;)' loading='lazy'/>
+                        </a>
+                      </div>
+                    <b:elseif cond='data:post.thumbnailUrl'/>
+                      <div class='ratio ratio-16x9'>
+                        <a expr:href='data:post.url'>
+                          <img class='card-img-top object-fit-cover' expr:alt='data:post.title' expr:src='data:post.thumbnailUrl' loading='lazy'/>
+                        </a>
+                      </div>
+                    <b:else/>
+                      <div class='ratio ratio-16x9' style='background-color: rgba(25, 135, 84, 0.1);'>
+                        <a class='d-flex align-items-center justify-content-center text-decoration-none' expr:href='data:post.url'>
+                          <i class='bi bi-image text-success opacity-50' style='font-size: 3rem;'/>
+                        </a>
+                      </div>
+                    </b:if>
+
+                    <div class='card-body d-flex flex-column'>
+                      <b:if cond='data:post.labels'>
+                        <div class='mb-2'>
+                          <b:loop values='data:post.labels' var='label'>
+                            <a class='badge text-decoration-none me-1' expr:href='data:label.url' style='background-color: rgba(25, 135, 84, 0.1); color: var(--sd-primary);'>
+                              <i class='bi bi-tag-fill me-1'/> <data:label.name/>
+                            </a>
+                          </b:loop>
+                        </div>
+                      </b:if>
+
+                      <h2 class='h5 card-title fw-bold mb-2'>
+                        <a class='text-decoration-none' expr:href='data:post.url' style='color: inherit;'><data:post.title/></a>
+                      </h2>
+
+                      <div class='text-secondary small mb-3 d-flex align-items-center gap-3'>
+                        <span><i class='bi bi-calendar3 text-success me-1'/> <data:post.date/></span>
+                        <span class='d-none d-sm-inline'><i class='bi bi-person text-success me-1'/> <data:post.author.name/></span>
+                      </div>
+
+                      <p class='card-text text-secondary small mb-4'><data:post.snippet/></p>
+
+                      <a class='btn btn-outline-primary mt-auto align-self-start stretched-link' expr:href='data:post.url'>
+                        Ler Mais <i class='bi bi-arrow-right-short fs-5 lh-1 align-middle'/>
+                      </a>
+                    </div>
+                  </article>
+                </div>
+              </b:loop>
+            </div>
+
+            <b:include name='nextprev'/>
+
+          <b:else/>
+
+            <b:loop values='data:posts' var='post'>
+              <article class='card border-0 shadow-sm mb-4' style='border-top: 4px solid var(--sd-primary) !important;'>
+
+                <b:if cond='data:post.featuredImage'>
+                  <img class='card-img-top object-fit-cover' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 1200, &quot;16:9&quot;)' style='max-height: 400px;'/>
+                </b:if>
+
+                <div class='card-body p-md-5 p-4'>
+                  <h1 class='post-title-single fw-bold mb-3'><data:post.title/></h1>
+
+                  <div class='d-flex flex-wrap align-items-center gap-3 text-secondary small border-bottom pb-3 mb-4'>
+                    <span><i class='bi bi-calendar-event text-success me-1'/> <data:post.date/></span>
+                    <span><i class='bi bi-person-circle text-success me-1'/> <data:post.author.name/></span>
+                    <b:if cond='data:post.labels'>
+                      <span class='d-flex gap-1'>
+                        <i class='bi bi-tags text-success me-1'/>
+                        <b:loop values='data:post.labels' var='label'>
+                          <a class='text-secondary text-decoration-none hover-success' expr:href='data:label.url'><data:label.name/></a><b:if cond='not data:label.isLast'>,</b:if>
+                        </b:loop>
+                      </span>
+                    </b:if>
+                  </div>
+
+                  <div class='post-body-content' itemprop='articleBody' style='font-size: 1.1rem; line-height: 1.8;'>
+                    <data:post.body/>
+                  </div>
+
+                  <div class='post-footer mt-5 pt-4 border-top d-flex justify-content-between align-items-center'>
+                    <div>
+                      <strong class='text-success'><i class='bi bi-share-fill me-2'/>Compartilhar:</strong>
+                      <a class='btn btn-sm btn-outline-secondary rounded-circle ms-2' expr:href='&quot;https://www.facebook.com/sharer.php?u=&quot; + data:post.url' target='_blank'><i class='bi bi-facebook'/></a>
+                      <a class='btn btn-sm btn-outline-secondary rounded-circle ms-1' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:post.url + &quot;&amp;text=&quot; + data:post.title' target='_blank'><i class='bi bi-twitter-x'/></a>
+                      <a class='btn btn-sm btn-outline-secondary rounded-circle ms-1' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:post.title + &quot; &quot; + data:post.url' target='_blank'><i class='bi bi-whatsapp'/></a>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <div class='card border-0 shadow-sm p-4 mt-4'>
+                <b:include cond='data:post.allowComments' data='post' name='threaded_comments'/>
+              </div>
+            </b:loop>
+
+          </b:if>
+        </b:includable>
+
+
+        <!-- ════════ POST includable ════════ -->
+        <!-- Não usado pelo main (mesmo achado já documentado em noticias-
+             mag-news): o main real trata o post único inline dentro do
+             b:loop, sem b:include name='post'. Mantido como stub — outros
+             includables padrão referenciam 'post' por nome. -->
+        <b:includable id='post' var='post'><div/></b:includable>
+
+
+        <!-- ════════ PAGINAÇÃO ════════ -->
+        <b:includable id='nextprev'>
+          [[PAGINATION_MODULE]]
+        </b:includable>
+
+        [[BLOGGER_INCLUDABLES_PADRAO]]
+
+      </b:widget>
+      </b:section>
+
+        <div class='after-post-area mt-4'>
+          <b:section id='after-post-content' name='Depois do Post (Rodapé)' showaddelement='yes'/>
+        </div>
+
+      </main>
+
+      <aside class='col-lg-4'>
+        <b:section id='sidebar' name='Barra Lateral' showaddelement='yes'>[[STATS_WIDGET]]</b:section>
+      </aside>
+    </div>
+  </div>
+
+  <footer>
+    <div class='container py-5'>
+      <div class='row g-4'>
+        <div class='col-lg-3 col-md-6'>
+          <b:section id='footer-1' name='Sobre' showaddelement='yes'>[[BLOG_ARCHIVE_WIDGET]]</b:section>
+        </div>
+        <div class='col-lg-3 col-md-6'>
+          <b:section id='footer-2' name='Links' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+        </div>
+        <div class='col-lg-3 col-md-6'>
+          <b:section id='footer-3' name='Marcadores' showaddelement='yes'>[[LABEL_CLOUD_WIDGET]]</b:section>
+        </div>
+        <div class='col-lg-3 col-md-6'>
+          <b:section id='footer-contact' name='Contacto e Extras' showaddelement='yes'>[[FEATURED_POST_WIDGET]][[TRANSLATE_WIDGET]][[POPULAR_POSTS_RANKING]][[CONTACT_FORM]]</b:section>
+        </div>
+      </div>
+      <div class='footer-branding text-center mt-4 pt-4 border-top border-secondary-subtle'>
+        <b:section id='footer-branding' maxwidgets='1' name='Marca do Rodapé' showaddelement='yes'/>
+      </div>
+      <div class='copyright-area text-center small mt-3'>
+        <b:section id='copyright-area' maxwidgets='1' name='Copyright' showaddelement='yes'/>
+        <small>&#169; <data:blog.title/> — Powered by Softload Engine</small>
+      </div>
+    </div>
+  </footer>
+
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+  [[READING_PROGRESS]]
+  [[MENU_DROPDOWN_PREFIXO]]
+
+  <!-- JS do nicho (dark-mode-toggle-logic, scroll observer/animate-up,
+       ripple-effect, popular-posts-upscale, reading-time — peças do
+       dossiê, blob geral) -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

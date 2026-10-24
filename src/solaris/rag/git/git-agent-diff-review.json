@@ -1,0 +1,96 @@
+{
+  "id": "git-agent-diff-review",
+  "slug": "git-agent-diff-review",
+  "categoria": "git",
+  "descricao": "Ensina o agente a revisar as diferenças do código antes de transformar alterações em um commit.",
+  "quando_usar": [
+    "antes de criar um commit",
+    "depois de implementar uma alteração",
+    "quando uma tarefa modificar vários arquivos",
+    "quando for necessário confirmar que somente as mudanças esperadas foram realizadas"
+  ],
+  "instrucao": [
+    "Inspecione as diferenças entre o estado atual e a referência apropriada.",
+    "Identifique arquivos modificados, adicionados e removidos.",
+    "Verifique se cada alteração está relacionada à tarefa.",
+    "Procure alterações acidentais, arquivos temporários e informações sensíveis.",
+    "Corrija ou remova alterações indevidas antes de criar o commit."
+  ],
+  "padrao": [
+    "obter_diff",
+    "identificar_arquivos",
+    "revisar_mudancas",
+    "detectar_alteracoes_indesejadas",
+    "aprovar_conteudo_para_commit"
+  ],
+  "exemplo": {
+    "contexto": "O Solaris terminou uma correção e pretende criar um commit.",
+    "resposta": "Revisar o diff completo, confirmar que somente os arquivos relacionados à correção foram modificados e verificar se nenhum segredo ou arquivo temporário entrou na alteração."
+  },
+  "anti_padroes": [
+    "Criar commit sem revisar o diff.",
+    "Assumir que todas as alterações pertencem à tarefa.",
+    "Ignorar arquivos novos ou removidos.",
+    "Publicar credenciais, tokens ou arquivos sensíveis."
+  ],
+  "keywords": [
+    "git-diff",
+    "git",
+    "diff",
+    "code-review",
+    "code",
+    "review",
+    "changes",
+    "commit",
+    "secrets",
+    "validation",
+    "git-agent-diff-review",
+    "agent"
+  ],
+  "componentes": [
+    {
+      "nome": "quando_usar",
+      "itens": [
+        "antes de criar um commit",
+        "depois de implementar uma alteração",
+        "quando uma tarefa modificar vários arquivos",
+        "quando for necessário confirmar que somente as mudanças esperadas foram realizadas"
+      ]
+    },
+    {
+      "nome": "instrucao",
+      "itens": [
+        "Inspecione as diferenças entre o estado atual e a referência apropriada.",
+        "Identifique arquivos modificados, adicionados e removidos.",
+        "Verifique se cada alteração está relacionada à tarefa.",
+        "Procure alterações acidentais, arquivos temporários e informações sensíveis.",
+        "Corrija ou remova alterações indevidas antes de criar o commit."
+      ]
+    },
+    {
+      "nome": "padrao",
+      "itens": [
+        "obter_diff",
+        "identificar_arquivos",
+        "revisar_mudancas",
+        "detectar_alteracoes_indesejadas",
+        "aprovar_conteudo_para_commit"
+      ]
+    },
+    {
+      "nome": "anti_padroes",
+      "itens": [
+        "Criar commit sem revisar o diff.",
+        "Assumir que todas as alterações pertencem à tarefa.",
+        "Ignorar arquivos novos ou removidos.",
+        "Publicar credenciais, tokens ou arquivos sensíveis."
+      ]
+    }
+  ],
+  "exemplos": [
+    {
+      "contexto": "O Solaris terminou uma correção e pretende criar um commit.",
+      "resposta": "Revisar o diff completo, confirmar que somente os arquivos relacionados à correção foram modificados e verificar se nenhum segredo ou arquivo temporário entrou na alteração."
+    }
+  ]
+}

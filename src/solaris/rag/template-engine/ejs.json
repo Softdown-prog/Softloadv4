@@ -1,0 +1,36 @@
+{
+  "id":"ejs",
+
+  "slug":"ejs",
+
+  "categoria":"template-engine",
+
+  "descricao":"Template Engine para Express.",
+
+  "recursos":[
+    "partials",
+    "layouts",
+    "includes",
+    "loops",
+    "conditionals"
+  ],
+
+  "arquivos":[
+    "views",
+    "partials",
+    "layouts"
+  ],
+
+  "casos_de_uso":[
+    "Sistema administrativo",
+    "CMS",
+    "Landing dinâmica",
+    "Dashboard"
+  ],
+
+  "validadores":[
+    "html",
+    "javascript",
+    "ejs"
+  ]
+}

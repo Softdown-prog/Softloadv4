@@ -1,0 +1,18 @@
+{
+  "id": "migrar-nicho-para-dossie",
+  "categoria": "compilador",
+  "palavras_chave": [
+    "migração de nicho",
+    "dossiê",
+    "tema-dossie.json",
+    "tokens_css",
+    "chassis",
+    "pageType",
+    "validarDossie",
+    "seletores órfãos"
+  ],
+  "titulo": "Como migrar um nicho pro dossiê",
+  "conteudo": "Todos os 14 nichos da Softload já foram migrados (ver `nichoTaxonomy.js` pra lista completa) — este documento registra o MÉTODO, útil se algum dia um 15º nicho for adicionado ou se um dos 14 precisar de revisão.\n\n## Passo a passo\n\n1. **Ler o real, nunca assumir**: `tema-{nicho}-meta.json` (formato de `tokens_css`) e `tema-{nicho}-impl.json` (conteúdo). Muitos nichos legados usavam formatos NÃO-canônicos de `tokens_css` (chaves como `valores_padrao_light_root` em vez de `light_mode`) que o compilador legado silenciosamente NUNCA lia — bug real, corrigido na migração.\n2. **Test-compilar o comportamento ATUAL** via `montarNichoLegado()` direto — nunca assumir o que o `impl.json` \"deveria\" fazer.\n3. **Ler a chassis XML real** (`src/rag/templates/template_*.xml`) e confirmar via grep/read que as classes CSS do `impl.json` realmente existem lá. Achado recorrente: nichos tiveram conteúdo extraído de templates hand-built DIFERENTES do chassis que acabaram usando — seletores como `.post-content`/`.sidebar .widget`/`.site-header` são quase sempre órfãos; os reais costumam ser `.blog-post-body`/`aside .widget`/`.sl-header`.\n4. Se o chassis já absorveu boa parte do design do nicho como baseline (aconteceu com `saas-nexus`, `portfolio-minimalista`, e de forma extrema com `biolink-social`), o dossiê certo é MÍNIMO ou até vazio — migrar tudo de qualquer jeito duplicaria CSS.\n5. Montar `tema-{nicho}-dossie.json` (script Node em `/tmp`, nunca à mão) com `chassis`/`pageType` validados contra `nichoTaxonomy.js`.\n6. Validar: `validarDossie()` → `executarCompilacao()` → `verificarDomIdsNoOutput()` + `cssWorker.validarTokensCss()` + `jsWorker.validarEscopoGlobal()` + `checarSeo()`.\n7. Escrever `nichoDossie.{nicho}.test.js` documentando os achados reais (não só \"passou o teste\" — POR QUE cada seletor foi remapeado).\n8. Rodar a suíte completa (`find src -name \"*.test.js\"` em loop) antes de commitar — zero regressão nos outros nichos é inegociável.\n\n## Bug mais recorrente encontrado\n\n`rgba(var(--sl-primary),X)` — usa a string hex do token onde componentes RGB numéricos são exigidos, CSS inválido silenciosamente descartado. Correto é `rgba(var(--sl-primary-rgb),X)` (token dedicado só pra isso em `designTokensCss.js`).",
+  "origem": "curadoria-manual",
+  "geradoEm": "2026-07-23T00:00:00.000Z"
+}

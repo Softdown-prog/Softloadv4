@@ -1,0 +1,26 @@
+{
+  "id": "firestore-seed-dados-regras-producao",
+  "slug": "firestore-seed-dados-regras-producao",
+  "categoria": "firebase",
+  "descricao": "Script Python de seed pra popular o emulador do Firestore com dados de teste antes do CI/CD, arquivo firestore.rules de produção restringindo leitura/escrita sem autenticação e validando tipos/valores no servidor, e a integração do seed no workflow do GitHub Actions.",
+  "componentes": [
+    "firestore-emulator-host-env",
+    "firestore-rules-producao",
+    "github-actions-firebase-emulators-exec"
+  ],
+  "exemplos": [
+    "os.environ['FIRESTORE_EMULATOR_HOST'] = '127.0.0.1:8080'\nfirebase_admin.initialize_app(credentials.AnonymousCredentials())\ndb = firestore.client()",
+    "match /produtos/{produtoId} {\n  allow create: if usuarioEstaAutenticado() && request.resource.data.nome is string && request.resource.data.preco is number && request.resource.data.preco > 0;\n}",
+    "- name: Executar Suite de Testes com Firebase Emulator\n  run: firebase emulators:exec --only firestore 'python scripts/seed_db.py && npm test'"
+  ],
+  "boas_praticas": [
+    "O comando emulators:exec limpa automaticamente a memória do emulador ao finalizar, sem contaminar execuções seguintes",
+    "Testar as regras localmente com o pacote firebase-rules-unit-testing antes do deploy"
+  ],
+  "keywords": [
+    "firestore seed",
+    "firestore.rules producao",
+    "firebase emulator ci",
+    "github actions firebase emulators exec"
+  ]
+}

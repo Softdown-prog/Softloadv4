@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Softload Engine v3.2.1 | Engenharia de Alta Performance</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <%# Bootstrap 5.3.3 — só CSS (grid/utilitários); a navegação do dashboard
+        (DashboardLayout.jsx) é 100% React, não usa data-bs-toggle. Achado
+        real corrigido aqui: esta view incluía partials/header (a navbar
+        pública fixed-top, com logo redundante) por cima da navegação
+        própria do dashboard — duas barras de navegação sobrepostas no
+        topo de toda página logada, também em mobile. %>
+    <link href="/vendor/bootstrap/css/bootstrap.min.css?v=<%= gitSha %>" rel="stylesheet">
+    <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+</head>
+<body>
+
+<div id="react-root"></div>
+
+<script type="module" src="/dist/assets/main.js?v=<%= gitSha %>"></script>
+</body>
+</html>

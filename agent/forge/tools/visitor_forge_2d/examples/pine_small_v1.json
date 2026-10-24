@@ -1,0 +1,114 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "palette": {
+    "ground_shadow": "#1B2B22",
+    "trunk_top": "#76573A",
+    "trunk_bottom": "#423324",
+    "trunk_light": "#9A7852",
+    "back_top": "#1A3D27",
+    "back_bottom": "#0D291C",
+    "mid_top": "#355F39",
+    "mid_bottom": "#1A3E2A",
+    "front_top": "#476E41",
+    "front_bottom": "#284E32",
+    "highlight": "#74945F",
+    "occlusion": "#102D1D"
+  },
+  "raster": {
+    "shadowDabs": 340,
+    "highlightDabs": 280,
+    "needleStrokes": 620,
+    "finalGrain": 330,
+    "finalNeedles": 330
+  },
+  "id": "pine_small_v1",
+  "canvas": [
+    152,
+    150
+  ],
+  "anchor": [
+    76,
+    137
+  ],
+  "seed": 73031,
+  "trunk": {
+    "topY": 73,
+    "topWidth": 14,
+    "baseWidth": 12
+  },
+  "shadow": {
+    "width": 70,
+    "height": 10
+  },
+  "validation": {
+    "minimumOpaqueHeightPx": 110,
+    "maximumOpaqueHeightPx": 150
+  },
+  "tiers": [
+    {
+      "y": 19,
+      "span": 8,
+      "thickness": 12,
+      "skew": 0
+    },
+    {
+      "y": 29,
+      "span": 14,
+      "thickness": 14,
+      "skew": -1
+    },
+    {
+      "y": 41,
+      "span": 19,
+      "thickness": 15,
+      "skew": 1
+    },
+    {
+      "y": 55,
+      "span": 25,
+      "thickness": 17,
+      "skew": -2
+    },
+    {
+      "y": 69,
+      "span": 31,
+      "thickness": 19,
+      "skew": 1
+    },
+    {
+      "y": 83,
+      "span": 37,
+      "thickness": 21,
+      "skew": -1
+    },
+    {
+      "y": 97,
+      "span": 43,
+      "thickness": 22,
+      "skew": 1
+    },
+    {
+      "y": 108,
+      "span": 50,
+      "thickness": 21,
+      "skew": -1
+    },
+    {
+      "y": 116,
+      "span": 52,
+      "thickness": 18,
+      "skew": 1
+    }
+  ]
+}

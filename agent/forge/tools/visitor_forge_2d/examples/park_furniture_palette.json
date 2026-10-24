@@ -1,0 +1,21 @@
+{
+  "contract": "CH_2D_PALETTE_V1",
+  "slots": {
+    "wood": {"top": "#B88447", "bottom": "#674127"},
+    "trim": {"top": "#E6C983", "bottom": "#A87D42"},
+    "panel": {"top": "#3C765D", "bottom": "#204939"}
+  },
+  "variants": {
+    "garden_green": {
+      "panel": {"top": "#3C765D", "bottom": "#204939"}
+    },
+    "coastal_blue": {
+      "panel": {"top": "#4B8194", "bottom": "#255162"},
+      "trim": {"top": "#E7D29D", "bottom": "#A18C69"}
+    },
+    "terracotta": {
+      "panel": {"top": "#B96751", "bottom": "#713B35"},
+      "trim": {"top": "#E7C894", "bottom": "#AC7E58"}
+    }
+  }
+}

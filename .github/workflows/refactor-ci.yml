@@ -1,0 +1,57 @@
+name: Softload - CI incremental TypeScript
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck + testes + frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+      - name: Verificar contratos TypeScript
+        run: npm run typecheck
+      - name: Python para ferramentas 2D
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dependências dos testes Forge
+        run: |
+          python -m pip install -r agent/forge/requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+
+      - name: Testar motor Blogger e servicos
+        run: npm test
+      - name: Build React
+        run: npm run build
+      - name: Verificar imagem Docker de producao
+        run: docker build --progress plain -t softload-refactor-ci .
+
+  agent:
+    name: Worker Agent - testes
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: agent/package-lock.json
+      - name: Instalar dependencias Agent
+        run: npm ci
+      - name: Testar Agent
+        run: npm test

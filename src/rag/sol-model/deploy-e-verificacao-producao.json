@@ -1,0 +1,18 @@
+{
+  "id": "deploy-e-verificacao-producao",
+  "categoria": "deploy-infra",
+  "palavras_chave": [
+    "deploy",
+    "github actions",
+    "webhook",
+    "cloud run",
+    "GIT_SHA",
+    "sharp-stub",
+    "variaveis de ambiente",
+    "producao"
+  ],
+  "titulo": "Deploy e verificação em produção",
+  "conteudo": "## Como o deploy funciona hoje\n\n`.github/workflows/deploy.yml` dispara em `push` pra `main` (ou `workflow_dispatch` manual). O job faz `docker build` local (só como checagem — a imagem construída aqui NÃO é a que sobe) e depois chama um webhook (`secrets.DEPLOY_WEBHOOK_URL`) que aciona o deploy de verdade (provavelmente um Cloud Build Trigger nativo do GCP, ligado direto no repositório GitHub — fora do workflow do Actions).\n\nImportante: **não existe CI rodando em Pull Request** — o workflow só tem gatilho `push: branches: [main]`, nenhum `pull_request`. Testes (`*.test.js`) não rodam automaticamente em lugar nenhum hoje — só manualmente, um arquivo por vez ou em loop via shell.\n\nSe `DEPLOY_WEBHOOK_URL` não estiver configurado, o job registra um `::warning::` explícito e continua verde — mas ISSO NÃO SIGNIFICA que o deploy aconteceu. Precisa checar produção pra confirmar de verdade.\n\n## Como confirmar que um deploy chegou em produção\n\n- `/health` — expõe SHA curto do commit + data (via `GIT_SHA`/`GIT_DATE` gravados em build-time no `Dockerfile`, stage `build-info`).\n- `/eu` (painel admin) — mesma informação, mais visual.\n\n## Variáveis de ambiente relevantes (não exaustivo)\n\n`GEMINI_API_KEY`, `GEMINI_FLASH_MODEL`, `GEMINI_LITE_MODEL`, `OPENAI_API_KEY`, `GPT_MODEL_NAME`, `FIREBASE_API_KEY`, `GCS_BUCKET_NAME`, `MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET` (Mercado Pago), `SESSION_SECRET`. Nenhuma delas tem valor default hardcoded fora de teste local — produção depende 100% de configuração externa (Cloud Run env vars / secrets), não de `.env` commitado (não existe `.env` no repo).\n\nSeparadamente, `GEMINI_API_KEY` também existe como **secret do GitHub Actions** (escopo diferente do Cloud Run, precisou ser adicionado à parte) — era usado pelo worker de conversão RAG da inbox, hoje removido; nenhum workflow ativo depende dele no momento.\n\n## `vendor/sharp-stub` (removido)\n\nEsse stub local existiu só porque `@xenova/transformers` (`src/core/embeddings.js`, camada de matching semântico opcional da biblioteca de peças) puxava `sharp` como dependência transitiva pra um pipeline de imagem que o projeto nunca usou. Tanto `src/core/embeddings.js` quanto `@xenova/transformers`/`sharp`/`vendor/sharp-stub` foram removidos do projeto — a biblioteca de peças (`bibliotecaPecas.js`) hoje faz só keyword-match (`ragMatcher.js`), sem camada semântica. Isso também eliminou o step de warmup do modelo de embedding no `Dockerfile` (`RUN node -e \\\"require('./src/core/embeddings')...\\\"`), que era a fonte do warning ESM/CJS visto nos logs de build.",
+  "origem": "curadoria-manual",
+  "geradoEm": "2026-07-23T00:00:00.000Z"
+}

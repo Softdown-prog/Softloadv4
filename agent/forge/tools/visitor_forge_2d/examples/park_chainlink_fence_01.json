@@ -1,0 +1,37 @@
+{
+  "contract": "CH_2D_FENCE_SCENERY_V1",
+  "variant": "chainlink",
+  "id": "park_chainlink_fence_01",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30
+  },
+  "canvas": [192, 128],
+  "anchor": [96, 64],
+  "geometry": {
+    "heightPx": 30,
+    "meshSpacingPx": 6,
+    "postWidthPx": 4,
+    "railWidthPx": 2.4
+  },
+  "palette": {
+    "metal": "#768288",
+    "metalHighlight": "#CCD7DB",
+    "metalShadow": "#384248",
+    "mesh": "#849196",
+    "meshShadow": "#3D494F",
+    "groundShadow": "#000000"
+  },
+  "referenceIntent": [
+    "galvanized chain-link security fence",
+    "diamond wire mesh without stone curb",
+    "round capped steel posts on grid vertices",
+    "continuous top and lower rails",
+    "two-leaf gate with center latch",
+    "modular one-tile segments for automatic tycoon-style turns"
+  ],
+  "artApproved": false,
+  "runtimePromotion": false
+}

@@ -1,0 +1,12 @@
+'use strict';
+const assert = require('node:assert/strict');
+const { NICHO_MODULE_DEFAULTS, modulosPadraoDoNicho } = require('./nichoModuleDefaults');
+assert.ok(Object.keys(NICHO_MODULE_DEFAULTS).length >= 15);
+assert.strictEqual(modulosPadraoDoNicho('gamer-playerone'), NICHO_MODULE_DEFAULTS['gamer-playerone']);
+assert.strictEqual(modulosPadraoDoNicho('gamer-playerone').reviewEngine, true);
+assert.strictEqual(modulosPadraoDoNicho('gamer-playerone').error404Theme, 'gamer');
+assert.deepEqual(modulosPadraoDoNicho('biolink-social'), { shareButtons: true });
+assert.deepEqual(modulosPadraoDoNicho('desconhecido'), {});
+assert.deepEqual(modulosPadraoDoNicho(undefined), {});
+assert.deepEqual(modulosPadraoDoNicho(null), {});
+console.log('✅ nichoModuleDefaults: API e defaults compatíveis');

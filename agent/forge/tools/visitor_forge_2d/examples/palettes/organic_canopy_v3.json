@@ -1,0 +1,89 @@
+{
+  "contract": "CH_2D_ORGANIC_PALETTES_V1",
+  "palettes": {
+    "spring_lime": {
+      "ground_shadow": "#273025",
+      "trunk_top": "#73513A",
+      "trunk_bottom": "#382A21",
+      "trunk_light": "#95724B",
+      "back_top": "#3B6042",
+      "back_bottom": "#213D2D",
+      "mid_top": "#769653",
+      "mid_bottom": "#3F5F3E",
+      "front_top": "#A6BD6F",
+      "front_bottom": "#5F7848",
+      "highlight": "#C6D889",
+      "occlusion": "#2A4030"
+    },
+    "summer_deep": {
+      "ground_shadow": "#222B22",
+      "trunk_top": "#70513D",
+      "trunk_bottom": "#38291F",
+      "trunk_light": "#91704D",
+      "back_top": "#31553B",
+      "back_bottom": "#1B3526",
+      "mid_top": "#66894F",
+      "mid_bottom": "#2D5136",
+      "front_top": "#88A866",
+      "front_bottom": "#426B44",
+      "highlight": "#B5CB82",
+      "occlusion": "#203B2B"
+    },
+    "dry_olive": {
+      "ground_shadow": "#2D2D22",
+      "trunk_top": "#875A39",
+      "trunk_bottom": "#3E2A1D",
+      "trunk_light": "#B37C4D",
+      "back_top": "#626849",
+      "back_bottom": "#363F2F",
+      "mid_top": "#888350",
+      "mid_bottom": "#596244",
+      "front_top": "#AD9B5C",
+      "front_bottom": "#777549",
+      "highlight": "#D4BD76",
+      "occlusion": "#37412F"
+    },
+    "autumn_amber": {
+      "ground_shadow": "#2D2B20",
+      "trunk_top": "#8D5A38",
+      "trunk_bottom": "#3E291C",
+      "trunk_light": "#B9804C",
+      "back_top": "#596447",
+      "back_bottom": "#303C2C",
+      "mid_top": "#A28A4E",
+      "mid_bottom": "#615D3B",
+      "front_top": "#D0A25C",
+      "front_bottom": "#8F7043",
+      "highlight": "#E9BF72",
+      "occlusion": "#35412E"
+    },
+    "oiti_evergreen": {
+      "ground_shadow": "#26302B",
+      "trunk_top": "#6E6658",
+      "trunk_bottom": "#38392F",
+      "trunk_light": "#9A8B73",
+      "back_top": "#31563B",
+      "back_bottom": "#1D3929",
+      "mid_top": "#66874E",
+      "mid_bottom": "#365A3D",
+      "front_top": "#91AB6A",
+      "front_bottom": "#55774B",
+      "highlight": "#BDCD84",
+      "occlusion": "#1A362A"
+    },
+    "angico_feather": {
+      "ground_shadow": "#29302B",
+      "trunk_top": "#756959",
+      "trunk_bottom": "#3F3A32",
+      "trunk_light": "#A0947F",
+      "back_top": "#35553D",
+      "back_bottom": "#233B2B",
+      "mid_top": "#5D7D4D",
+      "mid_bottom": "#395B3E",
+      "front_top": "#7F9D61",
+      "front_bottom": "#4C7050",
+      "highlight": "#A6BF7A",
+      "occlusion": "#22402C"
+    }
+  }
+}

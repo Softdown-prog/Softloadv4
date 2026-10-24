@@ -1,0 +1,32 @@
+{
+  "rota": "suporte",
+  "modelo": "gemini-2.5-flash",
+  "descricao": "Ficheiros de conhecimento para o chat de suporte ao utilizador. A IA lê este índice e carrega apenas o(s) ficheiro(s) relevante(s) para a pergunta recebida.",
+  "instrucao": "Lê a pergunta do utilizador. Identifica o tópico. Carrega APENAS o ficheiro correspondente — não carregues todos.",
+  "ficheiros": [
+    {
+      "arquivo": "ia-balcao-topicos-suporte-blogger.json",
+      "responsabilidade": "Mapa geral de tópicos de suporte. LÊ SEMPRE PRIMEIRO para identificar o tópico e redirecionar para o ficheiro específico.",
+      "quando_usar": "Qualquer pergunta de suporte — é o ponto de entrada do roteamento.",
+      "palavras_chave": ["ajuda", "problema", "como", "não funciona", "erro", "blogger", "suporte", "adsense", "anúncio", "anuncio", "monetiz", "analytics", "search console", "seo", "sitemap", "ranquear", "indexar", "indexação", "lento", "velocidade", "carregamento", "desempenho", "ads.txt", "formatação", "editor", "gadget", "labels"]
+    },
+    {
+      "arquivo": "ia-balcao-suporte-dominio-https.json",
+      "responsabilidade": "Guião completo para problemas de domínio personalizado (.com, .com.br) e HTTPS no Blogger.",
+      "quando_usar": "Utilizador pergunta sobre domínio próprio, certificado SSL, HTTPS não ativa, DNS, Cloudflare.",
+      "palavras_chave": ["domínio", "dominio", "https", "ssl", "dns", "cloudflare", "certificado", "personalizado"]
+    },
+    {
+      "arquivo": "ia-balcao-suporte-fantasma-mobile.json",
+      "responsabilidade": "Guião para o bug do '?m=1' — template mobile do Blogger sobrepõe o design customizado em telemóveis.",
+      "quando_usar": "Utilizador diz que o template fica diferente no celular/mobile, ou menciona '?m=1' na URL.",
+      "palavras_chave": ["mobile", "celular", "telemóvel", "?m=1", "diferente no celular", "layout quebrado mobile"]
+    },
+    {
+      "arquivo": "ia-balcao-heuristicas-nicho.json",
+      "responsabilidade": "Heurísticas para recomendar qual tipo de template usar por nicho (notícias, culinária, tech, etc.).",
+      "quando_usar": "Utilizador pergunta 'que template devo usar para...', 'qual tema é melhor para...', ou descreve o seu nicho sem saber o que escolher.",
+      "palavras_chave": ["que tema", "qual template", "para meu blog", "nicho", "tipo de blog", "recomendação"]
+    }
+  ]
+}

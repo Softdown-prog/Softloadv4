@@ -1,0 +1,18 @@
+{
+  "id": "sistema-de-creditos-e-billing",
+  "categoria": "billing",
+  "palavras_chave": [
+    "creditService.js",
+    "debitarCreditos",
+    "is_active",
+    "billing_logs",
+    "verificarSaldo",
+    "debitoManual",
+    "transacao firestore",
+    "creditos negativos"
+  ],
+  "titulo": "Sistema de créditos e billing",
+  "conteudo": "Arquivo central: `src/services/creditService.js`.\n\n## `debitarCreditos(email, inputTokens, outputTokens)` (Gemini) / `debitarCreditosGpt` (GPT)\n\nDébito roda dentro de uma transação Firestore (`db.runTransaction`) em cima de `clientes_premium/{email}`. Comportamento MUDA conforme `is_active`:\n\n- **Assinante ativo** (`is_active: true`): créditos viram só um contador de analytics — o saldo PODE ficar negativo, nunca lança erro por falta de crédito. Consequência prática: chamar `debitarCreditos` várias vezes num mesmo turno (ex: várias chamadas Gemini num loop agêntico) é seguro; não precisa ser 1 débito por chamada, pode somar tudo e debitar 1x no fim.\n- **Não-ativo** (free/expirado): SE o saldo for menor que o custo, lança `Error('Créditos insuficientes')` — quem chama precisa tratar.\n\nTodo débito também grava um log em `clientes_premium/{email}/billing_logs` (fire-and-forget, não bloqueia o débito principal se falhar).\n\n## Middleware `verificarSaldo`\n\nRoda ANTES da rota de chat (`exigirLogin, verificarSaldo`) — é o gate de primeira linha que bloqueia a requisição inteira se o usuário não tiver saldo, antes de gastar qualquer chamada de IA.\n\n## Onde isso importa na prática\n\nQualquer fluxo que intercepte a mensagem antes do chat geral e faça seu próprio débito precisa marcar isso pro handler externo não debitar de novo pelo mesmo turno (padrão `debitoManual = true`, pulando o débito automático do `finally` genérico da rota).\n\n## Atualização — onde esse padrão vive hoje\n\nO texto original citava `_tentarFluxoEdicao` dentro de `chat.js` como o caso especial — isso mudou na decoupling do chat do Workspace: hoje é `processarEdicaoDeTemplate` (`chat/chatEditFlow.js`), chamado a partir da rota dedicada `workspaceChat.js` (não mais `chat.js`), que debita os créditos do turno inteiro e marca `debitoManual = true` pra o `finally` de `workspaceChat.js` pular o débito automático.",
+  "origem": "curadoria-manual",
+  "geradoEm": "2026-07-23T00:00:00.000Z"
+}

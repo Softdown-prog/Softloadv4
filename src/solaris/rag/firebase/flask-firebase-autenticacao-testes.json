@@ -1,0 +1,25 @@
+{
+  "id": "flask-firebase-autenticacao-testes",
+  "slug": "flask-firebase-autenticacao-testes",
+  "categoria": "firebase",
+  "descricao": "Autenticação e testes num backend Flask + Firebase — decorator que valida o token JWT do Firebase Auth e injeta o usuário no contexto g, rotas estruturadas com MethodView (Pluggable Views) protegendo escrita com autenticação, e testes automatizados com Pytest integrados ao Firebase Local Emulator Suite.",
+  "componentes": [
+    "firebase-admin-auth-verify-id-token",
+    "flask-methodview",
+    "pytest-fixture-firebase-emulator"
+  ],
+  "exemplos": [
+    "def autenticacao_obrigatoria(f):\n    @wraps(f)\n    def decorada(*args, **kwargs):\n        token = request.headers.get('Authorization').split(' ')[1]\n        try:\n            g.usuario_atual = auth.verify_id_token(token)\n        except Exception:\n            return jsonify({'erro': 'token-expirado-ou-nao-autorizado'}), 401\n        return f(*args, **kwargs)\n    return decorada",
+    "def test_criar_produto_sem_token(app_cliente):\n    resposta = app_cliente.post('/api/produtos', json={'nome': 'Notebook', 'preco': 5000})\n    assert resposta.status_code == 401"
+  ],
+  "boas_praticas": [
+    "Rode o emulador em terminal separado ou via CI/CD antes de disparar o pytest",
+    "Use a variável FIRESTORE_EMULATOR_HOST pra apontar o SDK pro emulador local, sem custo real"
+  ],
+  "keywords": [
+    "flask firebase auth",
+    "flask methodview",
+    "pytest firebase emulator",
+    "flask jwt decorator"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "mercado-pago-saas-webhook",
+  "slug": "mercado-pago-saas-webhook",
+  "categoria": "pagamentos-saas",
+  "descricao": "Define o webhook como mecanismo de comunicação entre o Mercado Pago e o backend para atualização assíncrona do estado de pagamentos.",
+  "componentes": [
+    "endpoint webhook",
+    "Mercado Pago",
+    "validação do evento",
+    "identificador do pagamento",
+    "consulta da API de pagamentos",
+    "banco de dados",
+    "processamento idempotente"
+  ],
+  "exemplos": [
+    "O Mercado Pago envia uma notificação ao endpoint do SaaS.",
+    "O backend identifica o tipo de evento recebido.",
+    "O backend obtém os dados necessários para confirmar o pagamento.",
+    "O estado do pagamento é atualizado no banco.",
+    "O processamento deve tolerar notificações repetidas sem duplicar efeitos.",
+    "A liberação do plano deve ocorrer somente depois da confirmação válida do estado do pagamento."
+  ],
+  "keywords": [
+    "mercado-pago",
+    "webhook",
+    "notification",
+    "payment-status",
+    "async",
+    "idempotency",
+    "pagamento",
+    "saas"
+  ]
+}

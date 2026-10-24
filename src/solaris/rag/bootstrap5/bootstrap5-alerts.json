@@ -1,0 +1,33 @@
+{
+  "titulo": "bootstrap5 — alerts",
+  "categoria": "topico",
+  "descricao": "Mensagens de feedback contextual (sucesso, erro, aviso, informação) exibidas em bloco, com variante dispensável (fecha ao clicar no X) e suporte a fade transition.",
+  "componentes": [
+    "alert",
+    "alert-primary",
+    "alert-success",
+    "alert-danger",
+    "alert-dismissible",
+    "btn-close",
+    "alert-heading",
+    "alert-link",
+    "fade show"
+  ],
+  "exemplos": [
+    "<div class=\"alert alert-success alert-dismissible fade show\" role=\"alert\">Salvo com sucesso!<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button></div>"
+  ],
+  "boas_praticas": [
+    "Sempre incluir role=\"alert\" pra leitores de tela anunciarem a mensagem.",
+    "alert-dismissible precisa do fade + show pra transição funcionar corretamente ao fechar.",
+    "Usar a cor certa pro contexto (success/danger/warning/info) — não só primary genérico."
+  ],
+  "keywords": [
+    "mensagem de aviso",
+    "notificação",
+    "feedback",
+    "mensagem de erro",
+    "mensagem de sucesso"
+  ],
+  "id": "bootstrap5-alerts",
+  "slug": "bootstrap5-alerts"
+}

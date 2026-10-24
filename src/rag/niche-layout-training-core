@@ -1,0 +1,30 @@
+{
+  "niche-layout-training-core": {
+    "objetivos-do-treinamento": {
+      "meta-primaria": "ensinar-o-modelo-a-diferenciar-arquiteturas-visuais-por-nicho",
+      "focos-de-aprendizado": [
+        "hierarquia-visual",
+        "densidade-de-componentes",
+        "estrutura-de-grid",
+        "comportamento-de-layout",
+        "ux-por-segmento"
+      ]
+    },
+    "regras-de-treinamento": {
+      "comportamento-de-geracao": [
+        "nao-misturar-layouts-de-nichos-diferentes-sem-contexto",
+        "adaptar-grids-automaticamente-ao-nicho",
+        "respeitar-densidade-visual-do-segmento",
+        "adaptar-tipografia-e-espacamento",
+        "adaptar-ux-conforme-o-tipo-de-conteudo"
+      ],
+      "foco-de-validacao": [
+        "consistencia-visual",
+        "coerencia-de-grid",
+        "hierarquia-correta",
+        "adaptacao-mobile",
+        "performance-lighthouse"
+      ]
+    }
+  }
+}

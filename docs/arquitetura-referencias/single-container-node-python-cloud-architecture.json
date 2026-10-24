@@ -1,0 +1,262 @@
+{
+  "topic": "single-container-node-python-cloud-architecture",
+  "category": "cloud-native-application-design",
+  "description": "Arquitetura para executar aplicações Node.js e ferramentas Python dentro do mesmo container Docker em serviços gerenciados como Cloud Run.",
+
+  "core-concept": {
+    "architecture-pattern": "multi-runtime-container",
+    "principle": "Um único container pode hospedar múltiplos runtimes quando existe uma relação de dependência operacional entre eles.",
+    "example": {
+      "primary-runtime": "nodejs",
+      "secondary-runtime": "python",
+      "communication": "local-process-execution"
+    }
+  },
+
+
+  "same-container-strategy": {
+    "when-to-use": {
+      "recommended-scenarios": [
+        {
+          "scenario": "short-medium-python-tasks",
+          "examples": [
+            "file-processing",
+            "validation-tools",
+            "parsers",
+            "automation-scripts",
+            "data-generation"
+          ]
+        },
+
+        {
+          "scenario": "simple-infrastructure",
+          "benefits": [
+            "uma única URL de serviço",
+            "um único deploy",
+            "menor complexidade operacional",
+            "gerenciamento simplificado"
+          ]
+        },
+
+        {
+          "scenario": "shared-resource-environment",
+          "condition": [
+            "Python e Node utilizam os mesmos limites de CPU e memória"
+          ]
+        }
+      ]
+    }
+  },
+
+
+  "docker-container-model": {
+    "base-image": {
+      "strategy": "choose-primary-runtime-image",
+      "example": "node-based-linux-image"
+    },
+
+    "runtime-installation": {
+      "system-packages": [
+        "python3",
+        "python-pip",
+        "python-virtual-environment"
+      ],
+
+      "application-dependencies": {
+        "node": {
+          "source": "package-json",
+          "installation": "npm-install"
+        },
+
+        "python": {
+          "source": "requirements-file",
+          "installation": "pip-install"
+        }
+      }
+    },
+
+    "container-layout": {
+      "application-directory": "/app",
+      "entrypoint": "node-application",
+      "exposed-port": 8080
+    }
+  },
+
+
+  "node-to-python-communication": {
+    "pattern": "process-based-communication",
+
+    "flow": [
+      {
+        "step": 1,
+        "actor": "nodejs",
+        "action": "prepare-input"
+      },
+
+      {
+        "step": 2,
+        "actor": "nodejs",
+        "action": "spawn-python-process"
+      },
+
+      {
+        "step": 3,
+        "actor": "python",
+        "action": "execute-task"
+      },
+
+      {
+        "step": 4,
+        "actor": "python",
+        "action": "return-output"
+      },
+
+      {
+        "step": 5,
+        "actor": "nodejs",
+        "action": "process-result"
+      }
+    ],
+
+    "communication-channel": {
+      "input": "command-line-arguments-or-stdin",
+      "output": [
+        "stdout",
+        "stderr"
+      ],
+      "recommended-format": "json"
+    }
+  },
+
+
+  "subprocess-security": {
+    "purpose": "Executar ferramentas auxiliares sem transformar entrada do usuário em comandos arbitrários.",
+
+    "recommended-practices": [
+      {
+        "practice": "argument-separation",
+        "description": "Enviar argumentos separados ao processo em vez de montar strings shell."
+      },
+
+      {
+        "practice": "input-validation",
+        "description": "Validar dados antes de enviar ao processo Python."
+      },
+
+      {
+        "practice": "timeout-control",
+        "description": "Encerrar processos que ultrapassem o limite permitido."
+      },
+
+      {
+        "practice": "output-limiting",
+        "description": "Controlar tamanho de stdout e stderr."
+      }
+    ]
+  },
+
+
+  "single-container-vs-microservice": {
+    "same-container": {
+      "advantages": [
+        "menor latência de comunicação",
+        "menos infraestrutura",
+        "deploy único",
+        "menor custo operacional"
+      ],
+
+      "limitations": [
+        "compartilha CPU",
+        "compartilha memória",
+        "escala junto com aplicação principal"
+      ]
+    },
+
+    "separate-service": {
+      "architecture": "python-microservice",
+
+      "recommended-when": [
+        {
+          "condition": "heavy-ai-or-machine-learning",
+          "examples": [
+            "pytorch",
+            "tensorflow",
+            "large-model-inference"
+          ]
+        },
+
+        {
+          "condition": "long-running-computation",
+          examples": [
+            "minutes-long-processing",
+            "large-data-analysis"
+          ]
+        },
+
+        {
+          "condition": "independent-scaling-required",
+          description": "A ferramenta Python precisa escalar separadamente do backend principal."
+        }
+      ],
+
+      "advantages": [
+        "escala independente",
+        "isolamento de recursos",
+        "deploy separado"
+      ]
+    }
+  },
+
+
+  "cloud-run-resource-model": {
+    "important-rule": "Todos os processos dentro do container compartilham os recursos da instância.",
+
+    "shared-resources": [
+      "cpu",
+      "memory",
+      "filesystem",
+      "network-policy"
+    ],
+
+    "risks": [
+      {
+        "name": "resource-contention",
+        "description": "Processo auxiliar pesado pode degradar a aplicação principal."
+      },
+
+      {
+        "name": "memory-pressure",
+        "description": "Bibliotecas pesadas podem causar falta de memória."
+      }
+    ]
+  },
+
+
+  "recommended-decision-framework": {
+    "questions": [
+      {
+        "question": "A ferramenta Python é rápida e leve?",
+        "answer": {
+          "yes": "mesmo-container",
+          "no": "avaliar-servico-separado"
+        }
+      },
+
+      {
+        "question": "Precisa escalar independentemente?",
+        "answer": {
+          "yes": "microservice",
+          "no": "mesmo-container"
+        }
+      },
+
+      {
+        "question": "Usa bibliotecas pesadas de IA?",
+        "answer": {
+          "yes": "separar-runtime",
+          "no": "manter-integrado"
+        }
+      }
+    ]
+  }
+}

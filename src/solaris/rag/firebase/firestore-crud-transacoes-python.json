@@ -1,0 +1,17 @@
+{
+  "id": "firestore-crud-transacoes-python",
+  "slug": "firestore-crud-transacoes-python",
+  "categoria": "firebase",
+  "descricao": "Operações avançadas do Firestore em Python com firebase-admin — inicialização do SDK, transação atômica ACID via @firestore.transactional pra transferência de saldo, escrita em lote (batch) pra reativação em massa de usuários, e incremento numérico/manipulação de array atômicos via FieldValue.",
+  "componentes": ["firestore-transactional", "firestore-batch", "firestore-increment", "firestore-array-union"],
+  "exemplos": [
+    "import firebase_admin\nfrom firebase_admin import credentials, firestore\ncred = credentials.Certificate('chave-privada.json')\nfirebase_admin.initialize_app(cred)\ndb = firestore.client()",
+    "@firestore.transactional\ndef executar_transferencia(transaction, ref_origem, ref_destino, valor):\n    doc_origem = ref_origem.get(transaction=transaction)\n    if not doc_origem.exists or doc_origem.to_dict().get('saldo', 0) < valor:\n        raise Exception('saldo-insuficiente-ou-conta-invalida')\n    transaction.update(ref_origem, {'saldo': doc_origem.to_dict()['saldo'] - valor})",
+    "ref_artigo.update({'total-views': firestore.Increment(1), 'tags': firestore.ArrayUnion([nova_tag]), 'ultima-leitura': firestore.SERVER_TIMESTAMP})"
+  ],
+  "boas_praticas": [
+    "Instanciar o client db globalmente ou em módulo singleton para reaproveitar conexões de rede",
+    "O SDK Python converte automaticamente dicionários nativos pra documentos e datetime pra timestamps do Firestore"
+  ],
+  "keywords": ["firestore python transacao", "firestore batch python", "firestore increment", "firestore admin sdk python", "firestore acid"]
+}

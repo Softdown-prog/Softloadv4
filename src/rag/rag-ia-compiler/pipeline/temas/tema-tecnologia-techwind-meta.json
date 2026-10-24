@@ -1,0 +1,41 @@
+{
+  "id": "tema-tecnologia-techwind",
+  "titulo": "TechWind — Tema de Blog de Tecnologia com Verde Matrix, Otimização GPU de Imagens e Ripple Effect",
+  "categoria": "tema-completo",
+  "nicho": "tecnologia",
+  "descricao": "Template Blogger para blog de conteúdo técnico de longa metragem (reviews, hardware, tutoriais). Paleta Matrix: preto #212529, cinza escuro, verde elegante #198754 como único destaque. CSS de imagens que delega renderização à GPU do cliente via translateZ(0) — economiza ciclos de CPU e entrega qualidade máxima incluindo suporte 4K/Retina. Ripple effect bare-metal em botões e nav-links. Label cloud estilizada com ícone bi-hash Unicode. PulseGlow animado no scroll-to-top. Ticker de notícias na top-bar. Validado em produção real.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, dark mode, carousel, card, badge)",
+    "Bootstrap Icons 1.11.3 (bi-hash F420, bi-clock-history, bi-robot, bi-cpu, bi-arrow-up-short, bi-calendar3, bi-person, bi-tag-fill, bi-facebook, bi-twitter-x, bi-whatsapp, bi-share-fill)"
+  ],
+  "tokens_css": {
+    "prefixo": "--sd-",
+    "light_mode": {
+      "--sd-primary": "#198754",
+      "--sd-primary-hover": "#0f5132",
+      "--sd-bg": "#f8f9fa",
+      "--sd-text": "#212529",
+      "--sd-dark": "#212529"
+    },
+    "paleta_matrix": "Preto #212529 + Cinza Bootstrap dark + Verde #198754 — tríade tech austero. Zero cores quentes. O verde é o único calor visual.",
+    "theme_designer": "Group diretamente no CDATA sem /* */ — mesmo formato do Portfolio Git (sem bloco de comentário)"
+  },
+  "popular_posts_upscale": {
+    "descricao": "JS que substitui URLs de miniaturas do widget Popular Posts (que chegam em s72-c, tamanho ridículo) por s600 no DOM antes do repaint.",
+    "javascript": "document.addEventListener('DOMContentLoaded', () => {\n  document.querySelectorAll('.PopularPosts img').forEach(img => {\n    let novaSrc = img.src.replace(/\\/s[0-9]+(\\-c)?\\//, '/s600/');\n    novaSrc = novaSrc.replace(/\\=s[0-9]+(\\-c)?/, '=s600');\n    novaSrc = novaSrc.replace(/\\/w[0-9]+\\-h[0-9]+[^\\/]+\\//, '/s600/');\n    img.src = novaSrc;\n  });\n});",
+    "nota": "Três regex cobrem os três formatos diferentes de URL que o Blogger usa em miniaturas de Popular Posts: /s72-c/, =s72 e /w72-h72-c/."
+  },
+  "animate_up": {
+    "css_base": ".animate-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }\n.animate-up.visible { opacity: 1; transform: translateY(0); }",
+    "js_observer": "const elementosAnimaveis = document.querySelectorAll('.card-post-grid, aside .widget');\nelementosAnimaveis.forEach((el, index) => {\n  el.classList.add('animate-up');\n  el.style.transitionDelay = `${(index % 3) * 0.1}s`;\n  scrollObserver.observe(el);\n});",
+    "nota": "index % 3 * 0.1s — delay de 0s, 0.1s, 0.2s, 0s, 0.1s, 0.2s... para cards em grelha de 3 colunas potenciais. Em grelha de 2 colunas (row-cols-md-2), o padrão ainda funciona visualmente."
+  },
+  "notas_tecnicas": [
+    "border-top: 5px solid var(--sd-primary) no body — linha verde no topo da página toda, sinal imediato de identidade visual do tema sem afetar o layout",
+    "border-bottom: 4px solid var(--sd-primary) no card-post-grid — a borda inferior colorida é o elemento diferenciador do card em modo light; em dark mode o border-color é substituído pelo sistema Bootstrap",
+    "navbar usa border-bottom border-success border-2 (classes Bootstrap) em vez de CSS customizado — funciona automaticamente em dark mode sem override adicional",
+    "aside sticky-top com top: 80px — valor manual para compensar a altura do navbar sticky. Se o navbar tiver outra altura, este valor precisa ser ajustado.",
+    "resizeImage no isMultipleItems usa 600px/16:9; no single usa 1200px/16:9 — proporcional ao espaço disponível em cada contexto",
+    "b:if cond='data:post.featuredImage' com b:elseif cond='data:post.thumbnailUrl' como fallback — três níveis de imagem: featuredImage > thumbnailUrl > ícone placeholder"
+  ]
+}

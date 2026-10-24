@@ -1,0 +1,110 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_flowering_open_v1",
+  "pipelineRevision": 6,
+  "sceneryType": "flowering_tree",
+  "canvas": [256, 320],
+  "anchor": [128, 311],
+  "seed": 73191,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 108,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": ["south", "west", "north", "east"],
+    "yawDeg": {"south": 45, "west": 135, "north": 225, "east": 315}
+  },
+  "referenceBasis": {
+    "approvedAsset": "park_tree_ipe_amarelo_01",
+    "sourceFolder": "Ipê_amarelo",
+    "referenceRole": "geometry_palette_structure_only",
+    "runtimeSourceUntouched": true
+  },
+  "lightingIntent": {
+    "top": "lemon-yellow blossom clusters with small bright highlights",
+    "front": "warm golden flower masses separated into small readable groups",
+    "base": "medium warm brown trunk and visible internal forks",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "floweringStyle": {
+    "profile": "broad_open_rounded",
+    "center": [128, 126],
+    "crownRadius": [96, 94],
+    "visibleWood": 0.34,
+    "negativeSpace": "medium",
+    "macroMasses": 12,
+    "branchFlowerSteps": [0.48, 0.63, 0.78, 0.92, 1.06],
+    "preserveBranchGaps": true,
+    "interiorGroups": [
+      [88, 105, 16, 12], [111, 89, 17, 12], [137, 86, 17, 12], [164, 100, 17, 12],
+      [70, 132, 18, 13], [101, 126, 19, 14], [132, 121, 20, 14], [164, 126, 19, 14], [191, 139, 17, 13],
+      [91, 155, 17, 12], [129, 153, 18, 13], [166, 158, 17, 12]
+    ]
+  },
+  "broadleafStructure": {
+    "layout": "open_flowering_canopy",
+    "species": "flowering_broadleaf",
+    "profile": "broad_open_rounded",
+    "visibleWood": 0.34,
+    "primaryForks": 4,
+    "secondaryForks": 10,
+    "macroMasses": 12,
+    "negativeSpace": "medium"
+  },
+  "palette": {
+    "ground_shadow": "#2B2B25",
+    "trunk_top": "#8C633B",
+    "trunk_bottom": "#4A321F",
+    "trunk_light": "#C69A63",
+    "back_top": "#D59B08",
+    "back_bottom": "#8A5B00",
+    "mid_top": "#F2B705",
+    "mid_bottom": "#B97900",
+    "front_top": "#FFD21A",
+    "front_bottom": "#D99700",
+    "highlight": "#FFE96A",
+    "occlusion": "#62431B"
+  },
+  "raster": {
+    "shadowDabs": 6,
+    "highlightDabs": 10,
+    "needleStrokes": 0,
+    "finalGrain": 4,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {"p0": [128, 311], "p1": [128, 248], "p2": [127, 187], "w0": 16.0, "w1": 7.2},
+    {"p0": [126, 223], "p1": [108, 194], "p2": [84, 169], "w0": 8.0, "w1": 3.0},
+    {"p0": [130, 221], "p1": [149, 194], "p2": [174, 169], "w0": 8.0, "w1": 3.0},
+    {"p0": [119, 202], "p1": [98, 172], "p2": [63, 148], "w0": 6.1, "w1": 2.2},
+    {"p0": [137, 200], "p1": [159, 171], "p2": [195, 149], "w0": 6.1, "w1": 2.2},
+    {"p0": [116, 188], "p1": [94, 157], "p2": [56, 128], "w0": 4.8, "w1": 1.7},
+    {"p0": [140, 188], "p1": [163, 157], "p2": [201, 129], "w0": 4.8, "w1": 1.7},
+    {"p0": [122, 181], "p1": [105, 148], "p2": [92, 111], "w0": 5.0, "w1": 1.8},
+    {"p0": [134, 181], "p1": [152, 148], "p2": [166, 111], "w0": 5.0, "w1": 1.8},
+    {"p0": [124, 165], "p1": [113, 132], "p2": [108, 91], "w0": 4.1, "w1": 1.4},
+    {"p0": [132, 165], "p1": [144, 132], "p2": [150, 90], "w0": 4.1, "w1": 1.4},
+    {"p0": [104, 170], "p1": [81, 146], "p2": [49, 139], "w0": 3.0, "w1": 1.0},
+    {"p0": [152, 170], "p1": [175, 147], "p2": [207, 139], "w0": 3.0, "w1": 1.0},
+    {"p0": [110, 148], "p1": [89, 123], "p2": [67, 101], "w0": 2.8, "w1": 1.0},
+    {"p0": [146, 148], "p1": [168, 123], "p2": [190, 100], "w0": 2.8, "w1": 1.0},
+    {"p0": [116, 126], "p1": [101, 103], "p2": [88, 80], "w0": 2.5, "w1": 0.9},
+    {"p0": [140, 126], "p1": [155, 103], "p2": [169, 79], "w0": 2.5, "w1": 0.9},
+    {"p0": [126, 119], "p1": [123, 96], "p2": [123, 66], "w0": 2.4, "w1": 0.85},
+    {"p0": [132, 118], "p1": [137, 94], "p2": [139, 64], "w0": 2.4, "w1": 0.85}
+  ],
+  "validation": {
+    "minimumOpaqueHeightPx": 220,
+    "maximumOpaqueHeightPx": 310,
+    "footprint": [1, 1]
+  }
+}

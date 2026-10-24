@@ -1,0 +1,37 @@
+{
+  "contract": "CH_2D_FENCE_SCENERY_V1",
+  "id": "park_iron_fence_01",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30
+  },
+  "canvas": [192, 128],
+  "anchor": [96, 64],
+  "geometry": {
+    "heightPx": 28,
+    "stoneBaseWidthPx": 7,
+    "barSpacingPx": 9,
+    "postWidthPx": 4,
+    "railWidthPx": 2.5
+  },
+  "palette": {
+    "metal": "#23282A",
+    "metalHighlight": "#4F5757",
+    "metalShadow": "#101415",
+    "stone": "#676158",
+    "stoneHighlight": "#968C7B",
+    "stoneShadow": "#3F3D3A",
+    "groundShadow": "#000000"
+  },
+  "referenceIntent": [
+    "low stone curb under regular fence segments",
+    "dark painted metal top and lower rails",
+    "dense vertical bars with restrained highlights",
+    "heavier capped posts on grid vertices",
+    "two-leaf gate with clear ground opening"
+  ],
+  "artApproved": false,
+  "runtimePromotion": false
+}

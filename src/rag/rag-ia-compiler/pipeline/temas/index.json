@@ -1,0 +1,211 @@
+{
+  "rota": "pipeline/temas",
+  "modelo": "gemini-3.1-flash-lite",
+  "descricao": "Biblioteca de 14 templates validados em produção. Cada ficheiro contém padrões CSS, HTML, JS e tokens extraídos de templates reais. A IA usa estes ficheiros como REFERÊNCIA — nunca copia, extrai padrões relevantes para o nicho solicitado.",
+  "instrucao": "Lê a descrição do nicho e estética desejados. Identifica 1-2 temas da lista abaixo com maior sobreposição. Carrega APENAS esses ficheiros. Nunca carregues mais de 2 ao mesmo tempo.",
+  "ficheiros": [
+    {
+      "nicho": "notícias, social, pessoal, magazine",
+      "estetica": "editorial, jornalístico, magazine grid",
+      "destaques": [
+        "hero grid col-lg-8+col-lg-4 via JSON Feed",
+        "sistema mag-card com overlay e zoom",
+        "underline animado nos títulos",
+        "cyber slider com Ken Burns",
+        "posts relacionados automáticos",
+        "tempo de leitura injetado",
+        "dark mode com override no body"
+      ],
+      "paleta_padrao": "vermelho #e74c3c + cinza escuro #2c3e50",
+      "tokens_prefixo": "--vm-",
+      "arquivo_meta": "tema-viral-magazine-meta.json",
+      "arquivo_impl": "tema-viral-magazine-impl.json"
+    },
+    {
+      "nicho": "tecnologia, hardware, gadgets, reviews, portal tech",
+      "estetica": "magazine tech, profissional, azul corporativo",
+      "destaques": [
+        "split header (logo centrado + nav sticky)",
+        "dropdown dinâmico por prefixo underscore",
+        "Popular Posts com CSS counter + hotness bar",
+        "Featured Post por DOM injection",
+        "JSON-LD BlogPosting no CDATA",
+        "color-mix() para variações tonais",
+        "preloader window.load"
+      ],
+      "paleta_padrao": "azul #2563eb + cinza claro",
+      "tokens_prefixo": "--primary / --bg-color / --surface",
+      "arquivo_meta": "tema-tecnologia-mag-tech-meta.json",
+      "arquivo_impl": "tema-tecnologia-mag-tech-impl.json"
+    },
+    {
+      "nicho": "tecnologia, dev, tutoriais, programação",
+      "estetica": "verde matrix, minimal, terminal",
+      "destaques": [
+        "verde matrix como cor principal",
+        "tipografia mono",
+        "minimal sem sidebar"
+      ],
+      "paleta_padrao": "verde #00ff41 + preto",
+      "tokens_prefixo": "--tw-",
+      "arquivo_meta": "tema-tecnologia-techwind-meta.json",
+      "arquivo_impl": "tema-tecnologia-techwind-impl.json"
+    },
+    {
+      "nicho": "notícias, editorial, jornalismo",
+      "estetica": "editorial premium, limpo, legível",
+      "destaques": [
+        "layout editorial clássico",
+        "tipografia serif nos títulos",
+        "grids de notícias"
+      ],
+      "paleta_padrao": "vermelho + branco + preto",
+      "tokens_prefixo": "varies",
+      "arquivo_meta": "tema-noticias-mag-news-meta.json",
+      "arquivo_impl": "tema-noticias-mag-news-impl.json"
+    },
+    {
+      "nicho": "educação, cursos, e-learning, LMS",
+      "estetica": "profissional, clean, azul/verde",
+      "destaques": [
+        "motor de progresso com localStorage",
+        "accordion details/summary nativo",
+        "header glassmorphism fixed-top",
+        "inline SVG Material Design",
+        "offcanvas menu CSS puro sem JS"
+      ],
+      "paleta_padrao": "azul #2563eb + verde #059669",
+      "tokens_prefixo": "--el-",
+      "arquivo_meta": "tema-elearning-academy-meta.json",
+      "arquivo_impl": "tema-elearning-academy-impl.json"
+    },
+    {
+      "nicho": "culinária, gastronomia, receitas, restaurante",
+      "estetica": "luxo, feminino, roxo/rosa, premium",
+      "destaques": [
+        "gradiente roxo #7c3aed → rosa #ec4899",
+        "glassmorphism nos cards",
+        "slider manual CSS puro sem JS",
+        "grid de receitas com hover overlay"
+      ],
+      "paleta_padrao": "roxo #7c3aed + rosa #ec4899",
+      "tokens_prefixo": "--bg-",
+      "arquivo_meta": "tema-culinaria-boutique-gourmet-meta.json",
+      "arquivo_impl": "tema-culinaria-boutique-gourmet-impl.json"
+    },
+    {
+      "nicho": "SaaS, produto, startup, landing page",
+      "estetica": "dark moderno, neon, conversão",
+      "destaques": [
+        "landing page de produto",
+        "CTA destacado",
+        "pricing cards",
+        "features grid"
+      ],
+      "paleta_padrao": "azul neon + dark #0f0f1a",
+      "tokens_prefixo": "--nx-",
+      "arquivo_meta": "tema-saas-nexus-meta.json",
+      "arquivo_impl": "tema-saas-nexus-impl.json"
+    },
+    {
+      "nicho": "link na bio, social, perfil pessoal, influencer",
+      "estetica": "glassmorphism, gradiente, single-page",
+      "destaques": [
+        "FOUC prevention com prefers-color-scheme",
+        "blobs animados position:fixed",
+        "gradient ring no avatar",
+        "animation-fill-mode:backwards nos links",
+        "icon auto-detection 15 redes",
+        "Web Share API com clipboard fallback",
+        "WhatsApp floating SVG inline"
+      ],
+      "paleta_padrao": "ciano #00f2fe + azul #4facfe",
+      "tokens_prefixo": "--bio-",
+      "arquivo_meta": "tema-biolink-social-meta.json",
+      "arquivo_impl": "tema-biolink-social-impl.json"
+    },
+    {
+      "nicho": "portfolio, dev, designer, freelancer",
+      "estetica": "minimalista, preto/branco/ciano, GitHub-like",
+      "destaques": [
+        "design minimal monocromático",
+        "secções de projetos",
+        "bio e contacto"
+      ],
+      "paleta_padrao": "preto + branco + ciano #00e5ff",
+      "tokens_prefixo": "--portfolio-",
+      "arquivo_meta": "tema-portfolio-minimalista-meta.json",
+      "arquivo_impl": "tema-portfolio-minimalista-impl.json"
+    },
+    {
+      "nicho": "gaming, retro, pixel art, cultura pop, 8-bit",
+      "estetica": "pixel art, 8-bit, NES/SNES, steps() timing",
+      "destaques": [
+        "b:defaultwidgetversion=2 na html tag",
+        "steps() em TODAS as animações",
+        "CRT scanlines dual gradient",
+        "glitch effect JS String.fromCharCode",
+        "typewriter IntersectionObserver",
+        "dot grid background",
+        "Press Start 2P font",
+        "border: 4px double #000"
+      ],
+      "paleta_padrao": "laranja #FF4500 + preto",
+      "tokens_prefixo": "--primary via Theme Designer",
+      "arquivo_meta": "tema-pop-retro-pixel-meta.json",
+      "arquivo_impl": "tema-pop-retro-pixel-impl.json"
+    },
+    {
+      "nicho": "gaming, esports, reviews de jogos",
+      "estetica": "cyberpunk, neon, dark intenso",
+      "destaques": [
+        "neon verde/roxo",
+        "card de review com score",
+        "grid de jogos"
+      ],
+      "paleta_padrao": "verde neon #39ff14 + roxo #6f42c1",
+      "tokens_prefixo": "--gamer-",
+      "arquivo_meta": "tema-gamer-playerone-meta.json",
+      "arquivo_impl": "tema-gamer-playerone-impl.json"
+    },
+    {
+      "nicho": "app, produto digital, ferramenta, brutalismo",
+      "estetica": "brutalista, borders grossas, sem sombras",
+      "destaques": [
+        "design brutalista com pontilhado de caju",
+        "sem border-radius",
+        "tipografia pesada"
+      ],
+      "paleta_padrao": "preto + laranja/amarelo",
+      "tokens_prefixo": "--brutal-",
+      "arquivo_meta": "tema-brutalista-appcraft-meta.json",
+      "arquivo_impl": "tema-brutalista-appcraft-impl.json"
+    },
+    {
+      "nicho": "apps móveis, loja de apps, mobile first",
+      "estetica": "cards de app store, screenshots, ratings",
+      "destaques": [
+        "Bulma CSS framework",
+        "cards de app com rating stars",
+        "screenshots carousel"
+      ],
+      "paleta_padrao": "azul app store + branco",
+      "tokens_prefixo": "bulma native",
+      "arquivo_meta": "tema-appstore-bulma-mobile-meta.json",
+      "arquivo_impl": "tema-appstore-bulma-mobile-impl.json"
+    },
+    {
+      "nicho": "natureza, sustentabilidade, vegan, eco",
+      "estetica": "verde natural, orgânico, respira",
+      "destaques": [
+        "verde natureza",
+        "tipografia orgânica",
+        "cards de posts com imagem"
+      ],
+      "paleta_padrao": "verde #2d8a4e + bege #f5f0e8",
+      "tokens_prefixo": "bulma native",
+      "arquivo_meta": "tema-natureza-bulma-vegan-meta.json",
+      "arquivo_impl": "tema-natureza-bulma-vegan-impl.json"
+    }
+  ]
+}

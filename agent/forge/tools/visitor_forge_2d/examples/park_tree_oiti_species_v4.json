@@ -1,0 +1,219 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_oiti_species_v4",
+  "pipelineRevision": 6,
+  "sceneryType": "structured_broadleaf",
+  "canvas": [
+    256,
+    320
+  ],
+  "anchor": [
+    128,
+    311
+  ],
+  "seed": 29184,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 118,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "soft warm daylight over yellow-green upper leaf groups",
+    "front": "dense simple elliptic foliage organized by branch families",
+    "base": "deep cool green interior with visible fork structure",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "branch_guided_groups",
+    "profile": "domed",
+    "center": [
+      128,
+      154
+    ],
+    "radius": [
+      91,
+      77
+    ],
+    "density": 1.1,
+    "species": "oiti",
+    "negativeSpace": "controlled",
+    "leafDetail": "defined"
+  },
+  "palette": {
+    "ground_shadow": "#26302B",
+    "trunk_top": "#6E6658",
+    "trunk_bottom": "#38392F",
+    "trunk_light": "#9A8B73",
+    "back_top": "#31563B",
+    "back_bottom": "#1D3929",
+    "mid_top": "#66874E",
+    "mid_bottom": "#365A3D",
+    "front_top": "#91AB6A",
+    "front_bottom": "#55774B",
+    "highlight": "#BDCD84",
+    "occlusion": "#1A362A"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 0,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {
+      "p0": [
+        124,
+        311
+      ],
+      "p1": [
+        119,
+        244
+      ],
+      "p2": [
+        112,
+        183
+      ],
+      "w0": 15,
+      "w1": 7
+    },
+    {
+      "p0": [
+        128,
+        311
+      ],
+      "p1": [
+        128,
+        240
+      ],
+      "p2": [
+        129,
+        178
+      ],
+      "w0": 16,
+      "w1": 7
+    },
+    {
+      "p0": [
+        132,
+        311
+      ],
+      "p1": [
+        138,
+        243
+      ],
+      "p2": [
+        146,
+        184
+      ],
+      "w0": 15,
+      "w1": 7
+    },
+    {
+      "p0": [
+        118,
+        206
+      ],
+      "p1": [
+        96,
+        175
+      ],
+      "p2": [
+        70,
+        151
+      ],
+      "w0": 8,
+      "w1": 3.2
+    },
+    {
+      "p0": [
+        123,
+        192
+      ],
+      "p1": [
+        100,
+        154
+      ],
+      "p2": [
+        88,
+        118
+      ],
+      "w0": 7,
+      "w1": 2.8
+    },
+    {
+      "p0": [
+        133,
+        197
+      ],
+      "p1": [
+        157,
+        163
+      ],
+      "p2": [
+        184,
+        142
+      ],
+      "w0": 8,
+      "w1": 3.2
+    },
+    {
+      "p0": [
+        138,
+        184
+      ],
+      "p1": [
+        161,
+        145
+      ],
+      "p2": [
+        176,
+        111
+      ],
+      "w0": 7,
+      "w1": 2.8
+    },
+    {
+      "p0": [
+        127,
+        177
+      ],
+      "p1": [
+        125,
+        143
+      ],
+      "p2": [
+        121,
+        101
+      ],
+      "w0": 6,
+      "w1": 2.4
+    }
+  ],
+  "paletteId": "oiti_evergreen"
+}

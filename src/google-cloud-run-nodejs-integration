@@ -1,0 +1,216 @@
+[
+  {
+    "id": "google-cloud-run-nodejs-integration",
+    "title": "Integração Node.js com Google Cloud Run",
+    "technology": "google-cloud-run",
+    "category": "cloud-platform",
+    "feature-type": "infrastructure-management",
+    "content": "Projetos Node.js podem interagir com o Google Cloud Run através de duas estratégias principais: SDK programático utilizando bibliotecas oficiais Google Cloud ou automação via comandos CLI executados pelo ambiente Node.js.",
+    "tags": [
+      "nodejs",
+      "cloud-run",
+      "google-cloud",
+      "automation",
+      "deployment"
+    ],
+    "year": 2026,
+    "release-status": "available",
+    "confidence-score": 0.95,
+    "related-concepts": [
+      "serverless-containers",
+      "devops",
+      "ci-cd",
+      "cloud-automation"
+    ]
+  },
+
+  {
+    "id": "cloud-run-node-sdk-management",
+    "title": "Gerenciamento do Cloud Run usando SDK Node.js",
+    "technology": "nodejs",
+    "category": "cloud-sdk",
+    "feature-type": "programmatic-management",
+    "content": "O SDK oficial do Google Cloud para Node.js permite controlar recursos do Cloud Run através de código, incluindo listagem de serviços, leitura de configurações, gerenciamento de revisões e integração com sistemas internos de automação.",
+    "package": "@google-cloud/run",
+    "tags": [
+      "sdk",
+      "services-client",
+      "cloud-api",
+      "automation"
+    ],
+    "example-use-cases": [
+      "listar-servicos",
+      "monitorar-deploys",
+      "criar-paineis-cloud",
+      "integrar-agentes-ia"
+    ],
+    "confidence-score": 0.95
+  },
+
+  {
+    "id": "cloud-run-service-discovery",
+    "title": "Consulta de Serviços Cloud Run via API",
+    "technology": "google-cloud-run",
+    "category": "cloud-management",
+    "feature-type": "service-discovery",
+    "content": "A API administrativa do Cloud Run permite consultar serviços ativos utilizando identificadores de projeto, região e recursos no formato projects/{project}/locations/{region}.",
+    "data-returned": [
+      "service-name",
+      "service-url",
+      "latest-ready-revision",
+      "configuration"
+    ],
+    "tags": [
+      "cloud-api",
+      "service-management",
+      "monitoring"
+    ]
+  },
+
+  {
+    "id": "nodejs-cloud-run-cli-automation",
+    "title": "Automação do Cloud Run via gcloud CLI usando Node.js",
+    "technology": "nodejs",
+    "category": "devops",
+    "feature-type": "cli-orchestration",
+    "content": "Aplicações Node.js podem executar comandos da CLI gcloud para automatizar processos de deploy, configuração e manutenção de serviços Cloud Run.",
+    "recommended-tools": [
+      "child_process",
+      "spawn",
+      "execFile"
+    ],
+    "security-recommendations": [
+      "avoid-shell-injection",
+      "validate-arguments",
+      "prefer-execFile-over-shell-strings",
+      "limit-permissions"
+    ],
+    "tags": [
+      "gcloud",
+      "deployment",
+      "automation",
+      "ci-cd"
+    ]
+  },
+
+  {
+    "id": "cloud-run-deployment-automation",
+    "title": "Pipeline de Deploy Automatizado para Cloud Run",
+    "technology": "cloud-run",
+    "category": "deployment",
+    "feature-type": "container-deployment",
+    "content": "O deploy pode ser automatizado através da criação de imagens Docker, publicação em Artifact Registry e atualização do serviço Cloud Run.",
+    "deployment-flow": [
+      {
+        "step": 1,
+        "action": "build-container-image"
+      },
+      {
+        "step": 2,
+        "action": "push-image-to-artifact-registry"
+      },
+      {
+        "step": 3,
+        "action": "execute-cloud-run-deploy"
+      },
+      {
+        "step": 4,
+        "action": "validate-service-health"
+      }
+    ],
+    "tags": [
+      "docker",
+      "artifact-registry",
+      "continuous-deployment"
+    ]
+  },
+
+  {
+    "id": "cloud-run-source-deployment",
+    "title": "Deploy Cloud Run Direto do Código Fonte",
+    "technology": "google-cloud-run",
+    "category": "deployment",
+    "feature-type": "source-deployment",
+    "content": "O Cloud Run permite realizar deploy diretamente de um projeto fonte usando buildpacks, identificando automaticamente aplicações Node.js e criando o container necessário.",
+    "command-pattern": "gcloud run deploy SERVICE --source .",
+    "benefits": [
+      "menos-configuração",
+      "build-automatizado",
+      "deploy-simplificado"
+    ],
+    "tags": [
+      "buildpacks",
+      "nodejs",
+      "serverless"
+    ]
+  },
+
+  {
+    "id": "cloud-run-security-service-account",
+    "title": "Autenticação Cloud Run com Service Account",
+    "technology": "google-cloud",
+    "category": "security",
+    "feature-type": "identity-management",
+    "content": "Serviços executando no Cloud Run devem utilizar contas de serviço com permissões mínimas necessárias para acessar APIs Google Cloud, evitando armazenamento de chaves privadas dentro do container.",
+    "security-patterns": [
+      "least-privilege",
+      "iam-roles",
+      "application-default-credentials",
+      "secret-management"
+    ],
+    "tags": [
+      "iam",
+      "security",
+      "service-account"
+    ]
+  },
+
+  {
+    "id": "cloud-run-agent-infrastructure",
+    "title": "Cloud Run como Infraestrutura para Agentes de IA",
+    "technology": "google-cloud-run",
+    "category": "artificial-intelligence",
+    "feature-type": "agent-runtime",
+    "content": "Cloud Run pode hospedar agentes de IA construídos em Node.js ou Python, fornecendo escalabilidade automática, integração com APIs Google Cloud e execução de ferramentas através de chamadas de função.",
+    "agent-capabilities": [
+      "function-calling",
+      "tool-execution",
+      "api-orchestration",
+      "background-processing"
+    ],
+    "recommended-components": [
+      "gemini-api",
+      "cloud-storage",
+      "firebase",
+      "artifact-registry"
+    ],
+    "tags": [
+      "ai-agent",
+      "llm",
+      "serverless",
+      "automation"
+    ]
+  },
+
+  {
+    "id": "cloud-run-production-best-practices",
+    "title": "Boas Práticas de Produção no Cloud Run",
+    "technology": "google-cloud-run",
+    "category": "operations",
+    "feature-type": "production-readiness",
+    "content": "Aplicações Cloud Run devem utilizar containers pequenos, configurações adequadas de memória e CPU, controle de concorrência, logs estruturados e monitoramento de saúde.",
+    "recommendations": [
+      "container-minimization",
+      "health-checks",
+      "structured-logging",
+      "resource-limits",
+      "automatic-scaling",
+      "revision-management"
+    ],
+    "tags": [
+      "production",
+      "scaling",
+      "observability"
+    ]
+  }
+]

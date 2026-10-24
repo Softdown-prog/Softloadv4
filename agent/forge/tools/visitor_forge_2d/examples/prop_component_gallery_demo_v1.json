@@ -1,0 +1,23 @@
+{
+  "contract": "CH_2D_SCENE_RECIPE_V4",
+  "id": "prop_component_gallery_demo_v1",
+  "canvas": [192, 192],
+  "anchor": [96, 174],
+  "seed": 704,
+  "camera": {"contract":"CH_CAMERA_V1","tile":[128,64],"yawDeg":45,"elevationDeg":30,"projection":"orthographic_dimetric"},
+  "lighting": {"direction":[-1,-1],"shadowOffset":[3,5]},
+  "finish": {"edgeBreakupPx":0.28,"surfaceVariation":0.025,"brushStamps":8,"brushOpacity":0.04},
+  "validation": {"minimumOpaqueHeightPx":50,"maximumOpaqueHeightPx":176},
+  "symbols": {},
+  "layers": [
+    {"type":"shape","primitive":"ellipse","box":[45,150,147,180],"material":{"type":"solid","color":"#11192332"},"role":"ground_shadow"},
+    {"type":"component","componentId":"metal_pipe_round_lg_090","material":"painted_metal","transform":{"translate":[66,126],"scale":[1.0,1.35]},"role":"left_support"},
+    {"type":"component","componentId":"metal_pipe_round_lg_090","material":"painted_metal","transform":{"translate":[126,126],"scale":[1.0,1.35]},"role":"right_support"},
+    {"type":"component","componentId":"wood_plank_clean_lg_000","material":"wood","transform":{"translate":[96,112],"scale":[1.55,1.8]},"role":"seat"},
+    {"type":"component","componentId":"wood_plank_rough_lg_000","material":"wood","transform":{"translate":[96,87],"scale":[1.45,1.55]},"role":"backrest"},
+    {"type":"component","componentId":"sign_panel_rounded_md_000","material":"painted_metal","transform":{"translate":[96,61],"scale":[1.0,1.0]},"role":"shared_panel"},
+    {"type":"component","componentId":"fastener_rivet_sm_000","material":"metal","transform":{"translate":[84,61],"scale":[1.0,1.0]},"role":"fastener"},
+    {"type":"component","componentId":"fastener_rivet_sm_000","material":"metal","transform":{"translate":[108,61],"scale":[1.0,1.0]},"role":"fastener"}
+  ],
+  "finishRegions": []
+}

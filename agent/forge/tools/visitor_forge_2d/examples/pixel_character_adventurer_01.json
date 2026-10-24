@@ -1,0 +1,17 @@
+{
+  "contract": "A7_FORGE_2D_PIXEL_CHARACTER_V1",
+  "id": "pixel_adventurer_01",
+  "canvas": [32, 48],
+  "anchor": [16, 46],
+  "walkFrameDurationMs": 140,
+  "palette": {
+    "outline": "#17202a",
+    "skin": "#e7ad82",
+    "hair": "#4c3328",
+    "shirt": "#3f78bd",
+    "shirtShadow": "#2d5b91",
+    "pants": "#33435a",
+    "pantsShadow": "#253244",
+    "shoes": "#20262e"
+  }
+}

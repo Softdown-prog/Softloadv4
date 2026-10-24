@@ -1,0 +1,422 @@
+{
+  "id": "flask-jinja2-golden-patterns",
+  "slug": "flask-jinja2-golden-patterns",
+  "categoria": "python-web-frameworks",
+  "descricao": "Padrões arquiteturais e boas práticas amplamente adotados para aplicações Flask utilizando Jinja2 como mecanismo de templates.",
+  "componentes": [
+    {
+      "nome": "framework",
+      "conteudo": {
+        "name": "flask",
+        "template-engine": "jinja2",
+        "architecture": "microframework",
+        "primary-use-cases": [
+          "web-applications",
+          "administrative-panels",
+          "saas-platforms",
+          "internal-tools",
+          "documentation-sites",
+          "dashboards"
+        ]
+      }
+    },
+    {
+      "nome": "design-principles",
+      "conteudo": {
+        "patterns": [
+          "application-factory",
+          "blueprint-modularity",
+          "configuration-by-environment",
+          "separation-of-concerns",
+          "dependency-injection",
+          "service-layer"
+        ]
+      }
+    },
+    {
+      "nome": "project-structure",
+      "conteudo": {
+        "recommended-layout": [
+          "app",
+          "blueprints",
+          "models",
+          "services",
+          "repositories",
+          "templates",
+          "static",
+          "forms",
+          "middlewares",
+          "extensions",
+          "config",
+          "tests",
+          "instance"
+        ]
+      }
+    },
+    {
+      "nome": "blueprint-pattern",
+      "conteudo": {
+        "purpose": "Organizar aplicações grandes em módulos independentes.",
+        "recommended-modules": [
+          "authentication",
+          "dashboard",
+          "users",
+          "settings",
+          "billing",
+          "admin",
+          "api"
+        ]
+      }
+    },
+    {
+      "nome": "jinja2",
+      "conteudo": {
+        "design-principles": [
+          "template-inheritance",
+          "component-reuse",
+          "minimal-business-logic",
+          "presentation-only"
+        ],
+        "recommended-features": [
+          "extends",
+          "include",
+          "macro",
+          "filters",
+          "blocks",
+          "template-globals"
+        ]
+      }
+    },
+    {
+      "nome": "template-architecture",
+      "conteudo": {
+        "base-layout": {
+          "contains": [
+            "head",
+            "navigation",
+            "sidebar",
+            "main-content",
+            "footer",
+            "scripts"
+          ]
+        },
+        "inheritance": {
+          "pattern": "base-template",
+          "children": [
+            "dashboard",
+            "login",
+            "settings",
+            "profile",
+            "admin"
+          ]
+        }
+      }
+    },
+    {
+      "nome": "component-pattern",
+      "conteudo": {
+        "recommended-components": [
+          "navbar",
+          "sidebar",
+          "breadcrumb",
+          "flash-messages",
+          "modal",
+          "pagination",
+          "data-table",
+          "form-controls",
+          "cards",
+          "alerts"
+        ],
+        "implementation": "jinja-macros-and-includes"
+      }
+    },
+    {
+      "nome": "forms",
+      "conteudo": {
+        "recommended-tools": [
+          "flask-wtf",
+          "wtforms"
+        ],
+        "best-practices": [
+          "server-side-validation",
+          "csrf-protection",
+          "custom-validators",
+          "error-highlighting"
+        ]
+      }
+    },
+    {
+      "nome": "frontend-integration",
+      "conteudo": {
+        "recommended-technologies": [
+          "bootstrap-5",
+          "alpinejs",
+          "htmx",
+          "vanilla-javascript"
+        ],
+        "interaction-patterns": [
+          "progressive-enhancement",
+          "partial-page-updates",
+          "ajax-json",
+          "server-rendered-html"
+        ]
+      }
+    },
+    {
+      "nome": "routing",
+      "conteudo": {
+        "recommendations": [
+          "small-route-functions",
+          "delegate-business-logic-to-services",
+          "consistent-url-patterns",
+          "named-endpoints"
+        ]
+      }
+    },
+    {
+      "nome": "business-layer",
+      "conteudo": {
+        "architecture": [
+          "views",
+          "services",
+          "repositories",
+          "models"
+        ],
+        "rules": [
+          "views-handle-http",
+          "services-handle-business-rules",
+          "repositories-handle-database"
+        ]
+      }
+    },
+    {
+      "nome": "authentication",
+      "conteudo": {
+        "recommended-tools": [
+          "flask-login",
+          "flask-security",
+          "oauth"
+        ],
+        "features": [
+          "login",
+          "logout",
+          "remember-me",
+          "role-based-access-control",
+          "session-management"
+        ]
+      }
+    },
+    {
+      "nome": "database",
+      "conteudo": {
+        "recommended-tools": [
+          "sqlalchemy",
+          "alembic",
+          "flask-sqlalchemy"
+        ],
+        "patterns": [
+          "repository-pattern",
+          "unit-of-work",
+          "database-migrations"
+        ]
+      }
+    },
+    {
+      "nome": "configuration",
+      "conteudo": {
+        "pattern": "environment-based-configuration",
+        "environments": [
+          "development",
+          "testing",
+          "staging",
+          "production"
+        ]
+      }
+    },
+    {
+      "nome": "error-handling",
+      "conteudo": {
+        "recommendations": [
+          "custom-error-pages",
+          "global-error-handlers",
+          "structured-logging",
+          "user-friendly-errors"
+        ]
+      }
+    },
+    {
+      "nome": "security",
+      "conteudo": {
+        "recommendations": [
+          "csrf-protection",
+          "secure-cookies",
+          "content-security-policy",
+          "input-validation",
+          "output-escaping",
+          "secure-session-storage"
+        ]
+      }
+    },
+    {
+      "nome": "performance",
+      "conteudo": {
+        "recommendations": [
+          "template-caching",
+          "static-file-caching",
+          "database-query-optimization",
+          "lazy-loading",
+          "cdn-for-static-assets"
+        ]
+      }
+    },
+    {
+      "nome": "testing",
+      "conteudo": {
+        "recommended-tools": [
+          "pytest",
+          "flask-testing"
+        ],
+        "coverage": [
+          "routes",
+          "services",
+          "forms",
+          "authentication",
+          "permissions"
+        ]
+      }
+    },
+    {
+      "nome": "golden-market-patterns",
+      "conteudo": [
+        {
+          "pattern": "dashboard-layout",
+          "features": [
+            "left-sidebar",
+            "top-navbar",
+            "content-area",
+            "responsive-design"
+          ]
+        },
+        {
+          "pattern": "admin-panel",
+          "features": [
+            "data-tables",
+            "search",
+            "filters",
+            "pagination",
+            "crud-operations"
+          ]
+        },
+        {
+          "pattern": "authentication-flow",
+          "features": [
+            "login",
+            "registration",
+            "password-reset",
+            "email-verification"
+          ]
+        },
+        {
+          "pattern": "saas-workspace",
+          "features": [
+            "organization-switcher",
+            "team-management",
+            "user-profile",
+            "subscription-management"
+          ]
+        },
+        {
+          "pattern": "settings-center",
+          "features": [
+            "profile-settings",
+            "security-settings",
+            "billing",
+            "notifications",
+            "api-keys"
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "recommended-ui-patterns",
+      "conteudo": {
+        "navigation": [
+          "sticky-navbar",
+          "collapsible-sidebar",
+          "breadcrumb-navigation"
+        ],
+        "feedback": [
+          "toast-notifications",
+          "flash-messages",
+          "loading-indicators",
+          "confirmation-dialogs"
+        ],
+        "forms": [
+          "floating-labels",
+          "inline-validation",
+          "step-forms",
+          "autosave"
+        ]
+      }
+    },
+    {
+      "nome": "deployment",
+      "conteudo": {
+        "recommended-stack": {
+          "application-server": [
+            "gunicorn",
+            "uwsgi"
+          ],
+          "reverse-proxy": [
+            "nginx",
+            "cloud-load-balancer"
+          ],
+          "database": "postgresql",
+          "cache": "redis",
+          "storage": "object-storage",
+          "container": "docker"
+        }
+      }
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "flask-jinja2-golden-patterns",
+    "flask",
+    "jinja2",
+    "golden",
+    "python-web-frameworks",
+    "python",
+    "design-principles",
+    "principles",
+    "project-structure",
+    "project",
+    "structure",
+    "blueprint-pattern",
+    "blueprint",
+    "template-architecture",
+    "template",
+    "component-pattern",
+    "component",
+    "forms",
+    "frontend-integration",
+    "integration",
+    "routing",
+    "business-layer",
+    "business",
+    "layer",
+    "authentication",
+    "database",
+    "configuration",
+    "error-handling",
+    "error",
+    "handling",
+    "security",
+    "performance",
+    "testing",
+    "golden-market-patterns",
+    "market",
+    "recommended-ui-patterns",
+    "deployment"
+  ]
+}

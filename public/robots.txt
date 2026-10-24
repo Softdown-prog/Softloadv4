@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /dashboard/compiler
+Disallow: /dashboard/upgrade
+Disallow: /login
+Disallow: /register
+Disallow: /recover
+Disallow: /logout
+Disallow: /webhook/
+
+Sitemap: https://softload.analysepro.com/sitemap.xml

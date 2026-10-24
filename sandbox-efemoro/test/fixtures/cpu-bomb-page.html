@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Página com loop infinito de CPU (fixture de teste)</title>
+</head>
+<body>
+  <h1>CPU bomb</h1>
+  <script>
+    // Loop síncrono, direto no parser -- nunca libera a thread
+    // principal. Usado pra provar que RLIMIT_CPU (ver
+    // browserUlimitWrapper.sh) realmente mata o processo do renderer
+    // antes de consumir CPU sem limite; a própria navegação
+    // (page.goto) é o ponto onde o crash aparece, já que o script
+    // roda durante o carregamento -- Playwright detecta e rejeita
+    // com "Page crashed" de forma limpa.
+    let x = 0;
+    while (true) {
+      x++;
+    }
+  </script>
+</body>
+</html>

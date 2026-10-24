@@ -1,0 +1,39 @@
+{
+  "id": "firestore-documentacao",
+  "slug": "firestore-documentacao",
+  "categoria": "firebase",
+  "descricao": "Documentação de referência sobre Cloud Firestore, banco NoSQL flexível e escalável do Firebase/Google Cloud para armazenamento, sincronização em tempo real, consultas e desenvolvimento do lado do servidor.",
+  "componentes": [
+    {
+      "nome": "cloud-firestore",
+      "conteudo": "Banco NoSQL em nuvem para documentos e coleções."
+    },
+    {
+      "nome": "capacidades",
+      "itens": [
+        "flexibilidade",
+        "consultas-expressivas",
+        "atualizacoes-em-tempo-real",
+        "suporte-offline",
+        "integracao-firebase-google-cloud"
+      ]
+    },
+    {
+      "nome": "rascunho-original",
+      "markdown": "# Cloud Firestore\n\nUtilize nosso banco de dados NoSQL em nuvem, flexível e escalável, construído para atender às suas necessidades.\nna infraestrutura do Google Cloud, para armazenar e sincronizar dados para clientes e usuários.\nDesenvolvimento do lado do servidor.\n[Vídeo](https://www.youtube.com/watch?v=OnYSjEehxH0)\n\nO Cloud Firestore é um banco de dados flexível e escalável para dispositivos móveis, web e servidores.\nDesenvolvimento a partir do Firebase e do Google Cloud. Como\nO Firebase Realtime Database mantém seus dados sincronizados entre os aplicativos cliente por meio de\nouvintes em tempo real e oferece suporte offline para dispositivos móveis e web para que você possa\nCrie aplicativos responsivos que funcionem independentemente da latência da rede ou da internet.\nConectividade. O Cloud Firestore também oferece integração perfeita com outros sistemas Firebase.\ne produtos do Google Cloud, incluindo as funções do Cloud Run.\n\nO Cloud Firestore possui duas edições: a edição Firestore Standard e a edição padrão.\nA edição Firestore Enterprise atende a diferentes necessidades. Aqui você pode [aprender mais]\nSaiba mais sobre essas edições](https://firebase.google.com/docs/firestore/editions).\n\n## Principais capacidades\n\n|---|---|\nFlexibilidade | O modelo de dados do Cloud Firestore oferece suporte a estruturas de dados hierárquicas e flexíveis. Armazene seus dados em documentos, organizados em coleções. Os documentos podem conter objetos aninhados complexos, além de subcoleções.\nConsultas expressivas | No Cloud Firestore, você pode usar consultas para recuperar documentos individuais e específicos ou todos os documentos de uma coleção que correspondam aos parâmetros da sua consulta. Suas consultas podem incluir vários filtros encadeados e combinar filtragem e classificação.\nAtualizações em tempo real | Assim como o Realtime Database, o Cloud Firestore usa a sincronização de dados para atualizar informações em qualquer dispositivo conectado. No entanto, ele também foi projetado para realizar consultas simples e pontuais de forma eficiente.\n| Suporte offline | O Cloud Firestore armazena em cache os dados que seu aplicativo está usando ativamente, permitindo que ele grave, leia, escute e consulte dados mesmo se o dispositivo estiver offline. Quando o dispositivo volta a ficar online, o Cloud Firestore sincroniza todas as alterações locais com o Cloud Firestore.\n| Projetado para escalar | O Cloud Firestore oferece o melhor da poderosa infraestrutura do Google Cloud: replicação automática de dados em várias regiões, fortes garantias de consistência, operações em lote atômicas e suporte a transações ACID. Projetamos o Cloud Firestore para lidar com as cargas de trabalho de banco de dados mais exigentes dos maiores aplicativos do mundo.\n| Compatibilidade com MongoDB | O Cloud Firestore oferece uma API compatível com MongoDB. Você pode usar o código, os drivers, as ferramentas e o ecossistema de código aberto de integrações do MongoDB existentes com o Cloud Firestore na [edição Firestore Enterprise](https://firebase.google.com/docs/firestore/enterprise/mongodb-compatibility-overview) |\n\nComo funciona?\n\n![](https://firebase.google.com/static/docs/firestore/images/structure-data.png)\n\nO Cloud Firestore é um banco de dados NoSQL hospedado na nuvem que seus dispositivos Apple, Android e\nOs aplicativos da Web podem acessar diretamente usando SDKs nativos. O Cloud Firestore também está disponível em\nSDKs nativos para Node.js, Java, Python, Unity, C++ e Go, além de REST e\nAPIs RPC.\n\nSeguindo o modelo de dados de documentos do Cloud Firestore, você armazena dados que contêm\ncampos mapeados para valores. Esses documentos são armazenados em coleções, que são\ncontêineres para seus documentos que você pode usar para organizar seus dados e construir\nconsultas. Os documentos suportam muitos [tipos de dados](https://firebase.google.com/manage-data/data-types) diferentes.\nDesde simples strings e números até objetos complexos e aninhados. Você também pode criar\nsubcoleções dentro de documentos e construir estruturas de dados hierárquicas que\nEscalabilidade conforme o crescimento do seu banco de dados. O [modelo de dados](https://firebase.google.com/docs/firestore/data-model) do Cloud Firestore\nSuporta qualquer estrutura de dados que funcione melhor para o seu aplicativo.\n\nAlém disso, as consultas no Cloud Firestore são expressivas, eficientes e flexíveis.\nCrie consultas superficiais para recuperar dados no nível do documento sem precisar de\nRecupere a coleção inteira ou quaisquer subcoleções aninhadas. Adicione opções de classificação.\nFiltrar e limitar suas consultas ou cursores para paginar seus resultados.\nMantenha os dados dos seus aplicativos atualizados, sem precisar recuperar todo o seu banco de dados a cada vez.\nQuando uma atualização ocorrer, adicione ouvintes em tempo real. Adicionando ouvintes em tempo real a\nSeu aplicativo notifica você com um instantâneo de dados sempre que os dados dos seus aplicativos cliente...\nEstão monitorando as alterações e recuperando apenas as novas alterações.\n\nProteja o acesso aos seus dados no Cloud Firestore com a autenticação do Firebase e\nRegras de segurança do Cloud Firestore para plataformas Android, Apple e JavaScript, ou\nGerenciamento de Identidade e Acesso (IAM) para linguagens do lado do servidor.\n\n## Caminho de implementação\n\n|---|---|---|\n| | Integre os SDKs do Cloud Firestore | Inclua clientes rapidamente usando Gradle, Swift Package Manager ou um script de inclusão. |\nProteja seus dados | Use as Regras de Segurança do Cloud Firestore ou o IAM para proteger seus dados para desenvolvimento mobile/web e servidor, respectivamente.\nAdicionar dados | Crie documentos e coleções em seu banco de dados.\n| | Obter Dados | Crie consultas ou use ouvintes em tempo real para recuperar dados do banco de dados. |\n\n## Próximos passos\n\n- [Comece a usar](https://firebase.google.com/docs/firestore/quickstart) o Cloud Firestore --- configure seu banco de dados, adicione dados e comece a lê-los.\n- Saiba mais sobre o [modelo de dados](https://firebase.google.com/docs/firestore/data-model) do Cloud Firestore.\n- Explore as [diferenças entre o Banco de Dados em Tempo Real e\n  Cloud Firestore](https://firebase.google.com/docs/firestore/rtdb-vs-firestore).\n"
+    }
+  ],
+  "exemplos": [],
+  "keywords": [
+    "firestore",
+    "cloud firestore",
+    "firebase",
+    "nosql",
+    "documentos",
+    "colecoes",
+    "consultas",
+    "tempo real",
+    "offline",
+    "google cloud"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "nicho": "biolink-social",
+  "versaoDossie": 1,
+  "chassis": "biolink",
+  "pageType": "biolink",
+  "tokensCss": {
+    "light_mode": {}
+  },
+  "pecas": [
+    {
+      "id": "bio-hero-banner",
+      "tipo": "hero",
+      "protegida": true,
+      "domIds": [
+        "bio-hero-banner"
+      ],
+      "html": "<div class=\"bio-hero-banner\" id=\"bio-hero-banner\">\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>",
+      "css": ".bio-hero-banner {\n  text-align: center;\n  padding: 2rem 1.5rem 1.5rem;\n  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);\n  border-radius: 20px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #ffffff;\n}\n.bio-hero-banner h1 {\n  font-size: clamp(1.3rem, 3vw, 1.75rem);\n  font-weight: 800;\n  margin-bottom: 0.5rem;\n}\n.bio-hero-banner p {\n  font-size: 0.95rem;\n  opacity: 0.92;\n  margin: 0;\n}",
+      "js": "",
+      "descricao": "Banner de saudação em gradiente acima do cartão de perfil — não usa CSS var (dossiê ainda sem tokensCss declarado), cores literais autocontidas. 5 variações estruturais autorais (htmlVariantes/cssVariantes) escolhidas por seed determinístico — gradiente cheio/glass/flat-stripe/spotlight-escuro/duotone-diagonal, mesmo texto fixo, sem CSS var em nenhuma (dossiê ainda sem tokensCss.light_mode declarado). Corrigido de brinde: seletor \".bio-hero-banner h2\" nunca batia com o <h1> real do html — bug pré-existente, agora h1 em todas as variantes.",
+      "htmlVariantes": [
+        "<div class=\"bio-hero-banner\" id=\"bio-hero-banner\">\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>",
+        "<div class=\"bio-hero-banner bio-hero-banner--glass\" id=\"bio-hero-banner\">\n  <span class=\"bio-hero-banner-wave\" aria-hidden=\"true\">👋</span>\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>",
+        "<div class=\"bio-hero-banner bio-hero-banner--flat\" id=\"bio-hero-banner\">\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>",
+        "<div class=\"bio-hero-banner bio-hero-banner--spotlight\" id=\"bio-hero-banner\">\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>",
+        "<div class=\"bio-hero-banner bio-hero-banner--duotone\" id=\"bio-hero-banner\">\n  <span class=\"bio-hero-banner-badge\">✨ Bio</span>\n  <h1>Tudo em um único lugar</h1>\n  <p>Meus links, redes e conteúdos favoritos — tudo reunido aqui embaixo.</p>\n</div>"
+      ],
+      "cssVariantes": [
+        ".bio-hero-banner {\n  text-align: center;\n  padding: 2rem 1.5rem 1.5rem;\n  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);\n  border-radius: 20px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #ffffff;\n}\n.bio-hero-banner h1 {\n  font-size: clamp(1.3rem, 3vw, 1.75rem);\n  font-weight: 800;\n  margin-bottom: 0.5rem;\n}\n.bio-hero-banner p {\n  font-size: 0.95rem;\n  opacity: 0.92;\n  margin: 0;\n}",
+        ".bio-hero-banner--glass {\n  text-align: left;\n  padding: 1.75rem 1.5rem;\n  background: rgba(99, 102, 241, 0.12);\n  backdrop-filter: blur(10px);\n  border: 1px solid rgba(99, 102, 241, 0.35);\n  border-radius: 18px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #1e1b4b;\n}\n.bio-hero-banner-wave {\n  display: inline-block;\n  font-size: 1.4rem;\n  margin-bottom: 0.35rem;\n}\n.bio-hero-banner--glass h1 {\n  font-size: clamp(1.3rem, 3vw, 1.75rem);\n  font-weight: 800;\n  margin: 0 0 0.5rem;\n}\n.bio-hero-banner--glass p {\n  font-size: 0.95rem;\n  opacity: 0.85;\n  margin: 0;\n}",
+        ".bio-hero-banner--flat {\n  text-align: left;\n  padding: 1.5rem 1.5rem 1.5rem 1.25rem;\n  background: #f8fafc;\n  border-left: 4px solid #6366f1;\n  border-radius: 6px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #1e293b;\n}\n.bio-hero-banner--flat h1 {\n  font-size: clamp(1.25rem, 2.8vw, 1.6rem);\n  font-weight: 800;\n  margin: 0 0 0.4rem;\n}\n.bio-hero-banner--flat p {\n  font-size: 0.9rem;\n  color: #475569;\n  margin: 0;\n}",
+        ".bio-hero-banner--spotlight {\n  text-align: center;\n  padding: 2.25rem 1.5rem;\n  background: radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.35), rgba(17, 24, 39, 0) 60%), #111827;\n  border-radius: 20px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #ffffff;\n}\n.bio-hero-banner--spotlight h1 {\n  font-size: clamp(1.3rem, 3vw, 1.8rem);\n  font-weight: 800;\n  margin: 0 0 0.5rem;\n  text-shadow: 0 0 18px rgba(236, 72, 153, 0.55);\n}\n.bio-hero-banner--spotlight p {\n  font-size: 0.95rem;\n  color: #cbd5e1;\n  margin: 0;\n}",
+        ".bio-hero-banner--duotone {\n  text-align: center;\n  padding: 2rem 1.5rem 1.5rem;\n  background: linear-gradient(135deg, #6366f1 0%, #6366f1 50%, #ec4899 50%, #ec4899 100%);\n  border-radius: 20px;\n  margin: 1.5rem auto 0;\n  max-width: 680px;\n  color: #ffffff;\n}\n.bio-hero-banner-badge {\n  display: inline-block;\n  padding: 0.25rem 0.75rem;\n  margin-bottom: 0.6rem;\n  border-radius: 50rem;\n  background: rgba(255, 255, 255, 0.2);\n  font-size: 0.75rem;\n  font-weight: 700;\n  letter-spacing: 0.4px;\n}\n.bio-hero-banner--duotone h1 {\n  font-size: clamp(1.3rem, 3vw, 1.75rem);\n  font-weight: 800;\n  margin: 0 0 0.5rem;\n}\n.bio-hero-banner--duotone p {\n  font-size: 0.95rem;\n  opacity: 0.92;\n  margin: 0;\n}"
+      ]
+    }
+  ]
+}

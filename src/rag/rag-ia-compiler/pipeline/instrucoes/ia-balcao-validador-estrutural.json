@@ -1,0 +1,42 @@
+{
+  "id": "ia-balcao-validador-estrutural",
+  "titulo": "Softload Engine v3 - Validador Estrutural (Pre-Compilation Hook)",
+  "categoria": "validacao",
+  "descricao": "Módulo que analisa o payload JSON recebido do Gemini ANTES de ser enviado para a injeção XML. Previne quebras visuais (UI), penalizações de CLS (SEO) e garante que as regras estritas do Blogger sejam mantidas.",
+  "classe": "StructuralValidator",
+  "metodos": [
+    {
+      "nome": "runAllInspections()",
+      "descricao": "Orquestrador principal das validações. Retorna { isValid, payload (auto-corrigido), errors, warnings }."
+    },
+    {
+      "nome": "validateLayoutHarmony()",
+      "regras": [
+        "Grid Mural (4 colunas) + Sidebar esmaga os cards: Sidebar desativada automaticamente (payload.sidebarPosition = 'none').",
+        "Grid Quadrado em 1 coluna fica gigante: Alterado para grid lista."
+      ]
+    },
+    {
+      "nome": "validateBloggerRules()",
+      "regras": [
+        "Sistema de comentários forçado para blogger-native (restrições de CSP).",
+        "Módulo related-posts ativa flag _requiresVanillaJS: true."
+      ]
+    },
+    {
+      "nome": "validateCLSRisk()",
+      "regras": [
+        "headerStyle transparent-scroll + heroSection static-banner: risco de legibilidade. Header fixado para sticky.",
+        "adSlots true: injeta _injectAdSenseMinHeight: true para evitar Layout Shift."
+      ]
+    },
+    {
+      "nome": "validateMobileReadability()",
+      "regras": [
+        "Mega-menu com fonte serifada: Mobile fallback ativado para Inter (_forceMobileMenuSansSerif: true).",
+        "Menu simple sem Sidebar: Offcanvas ativado obrigatoriamente para navegação mobile."
+      ]
+    }
+  ],
+  "codigo": "class StructuralValidator {\n    constructor(payload) {\n        this.payload = { ...payload };\n        this.warnings = [];\n        this.fatalErrors = [];\n    }\n\n    runAllInspections() {\n        this.validateLayoutHarmony();\n        this.validateBloggerRules();\n        this.validateCLSRisk();\n        this.validateMobileReadability();\n        return {\n            isValid: this.fatalErrors.length === 0,\n            payload: this.payload,\n            errors: this.fatalErrors,\n            warnings: this.warnings\n        };\n    }\n\n    validateLayoutHarmony() {\n        const { gridLayout, sidebarPosition } = this.payload;\n        if (gridLayout === 'mural' && sidebarPosition !== 'none') {\n            this.warnings.push('[UI FIX] Grid Mural exige largura total. Sidebar desativada automaticamente.');\n            this.payload.sidebarPosition = 'none';\n        }\n        if (gridLayout === 'quadrado' && this.payload.columns === 1) {\n            this.payload.gridLayout = 'lista';\n            this.warnings.push('[UI FIX] Grid quadrado não suporta formato lista. Alterado para lista clássica.');\n        }\n    }\n\n    validateBloggerRules() {\n        const { commentSystem, postModules } = this.payload;\n        if (commentSystem !== 'blogger-native') {\n            this.warnings.push('[ENGINE FIX] Sistema de comentários forçado para blogger-native devido a restrições de CSP.');\n            this.payload.commentSystem = 'blogger-native';\n        }\n        if (postModules && postModules.includes('related-posts')) {\n            this.payload._requiresVanillaJS = true;\n        }\n    }\n\n    validateCLSRisk() {\n        const { headerStyle, heroSection, adSlots } = this.payload;\n        if (headerStyle === 'transparent-scroll' && heroSection === 'static-banner') {\n            this.warnings.push('[SEO FIX] Risco de legibilidade/CLS com Header transparente sobre Banner sólido. Header fixado.');\n            this.payload.headerStyle = 'sticky';\n        }\n        if (adSlots === true) {\n            this.warnings.push('[SEO SIGNAL] Injetar min-height nos slots do AdSense para evitar Layout Shift.');\n            this.payload._injectAdSenseMinHeight = true;\n        }\n    }\n\n    validateMobileReadability() {\n        const { menuType, typography } = this.payload;\n        if (menuType === 'mega-menu' && ['playfair', 'roboto-slab'].includes(typography)) {\n            this.payload._forceMobileMenuSansSerif = true;\n            this.warnings.push('[UX FIX] Fonte serifada detetada em Mega Menu. Mobile fallback ativado para Inter.');\n        }\n        if (menuType === 'simple' && this.payload.sidebarPosition === 'none') {\n            this.payload.menuType = 'offcanvas';\n            this.warnings.push('[UX FIX] Layout sem sidebar. Offcanvas ativado obrigatoriamente para navegação mobile.');\n        }\n    }\n}\n\nmodule.exports = StructuralValidator;"
+}

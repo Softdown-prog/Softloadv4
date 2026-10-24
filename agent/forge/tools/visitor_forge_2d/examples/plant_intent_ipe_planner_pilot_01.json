@@ -1,0 +1,15 @@
+{
+  "contract": "A7_PLANT_INTENT_V1",
+  "id": "ipe_amarelo_planner_pilot_01",
+  "species": "ipe_amarelo",
+  "age": "adult",
+  "crown": "wide_irregular",
+  "style": "classic_tycoon_pre_rendered",
+  "flowering": {
+    "amount": 0.78,
+    "color": "#F2C531"
+  },
+  "seed": 2026100207,
+  "canvas": [256, 320],
+  "anchor": [128, 310]
+}

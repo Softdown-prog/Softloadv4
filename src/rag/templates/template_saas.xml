@@ -1,0 +1,1162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='[[THEME_COLOR]]' name='theme-color'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:view.title.escaped/></title>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' rel='stylesheet'/>
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <meta expr:content='data:blog.title' property='og:site_name'/>
+  <meta expr:content='data:view.url.canonical' property='og:url'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <b:if cond='data:view.isHomepage'>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:blog.title.escaped' property='og:title'/>
+    <meta expr:content='data:blog.metaDescription.escaped' property='og:description'/>
+  <b:elseif cond='data:view.isPost'/>
+    <meta content='article' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+    <meta expr:content='data:view.description.escaped' property='og:description'/>
+    <b:if cond='data:view.featuredImage'>
+      <meta expr:content='resizeImage(data:view.featuredImage, 1200, &quot;1200:630&quot;)' property='og:image'/>
+    </b:if>
+  <b:else/>
+    <meta content='website' property='og:type'/>
+    <meta expr:content='data:view.title.escaped' property='og:title'/>
+  </b:if>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://blogger.googleusercontent.com' rel='preconnect'/>
+
+  <script>
+  //<![CDATA[
+  (function(){
+    var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-bs-theme',t);
+  })();
+  //]]>
+  </script>
+
+  <b:skin><![CDATA[
+  /*
+  <Group description="Fundo e Cores Base" selector="body">
+    <Variable name="body.background" description="Fundo Geral" type="background" color="#ffffff" default="$(color) none repeat scroll top left" value="$(color) none repeat scroll top left"/>
+    <Variable name="main.color" description="Cor Principal" type="color" default="#6366f1" value="#6366f1"/>
+    <Variable name="theme.text" description="Cor do Texto" type="color" default="#0f172a" value="#0f172a"/>
+    <Variable name="header.bg" description="Fundo do Cabeçalho" type="color" default="#ffffff" value="#ffffff"/>
+    <Variable name="footer.bg" description="Fundo do Rodapé" type="color" default="#0f172a" value="#0f172a"/>
+  </Group>
+  <Group description="Tipografia" selector="body">
+    <Variable name="body.font" description="Fonte do Texto" type="font" default="normal normal 16px system-ui,-apple-system,sans-serif" value="normal normal 16px system-ui,-apple-system,sans-serif"/>
+  </Group>
+  */
+
+  :root {
+    --sl-bg-body:        $(body.background);
+    --sl-text-main:      $(theme.text);
+    --sl-primary:        $(main.color);
+    --sl-card-bg:        #ffffff;
+    --sl-footer-bg:      #0f172a;
+    --sl-radius-lg:      16px;
+    --sl-radius-sm:      8px;
+    --sl-transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+    --sl-btn-radius:     8px;
+    --sl-btn-shadow:     0 2px 8px rgba(0,0,0,0.15);
+    --sl-font-family:    system-ui,-apple-system,sans-serif;
+    --sl-heading-weight: 700;
+
+    /* Aliases para impl.json dos nichos SaaS */
+    --sd-primary:   var(--sl-primary);     /* techwind */
+    --sd-bg:        var(--sl-bg-body);     /* techwind */
+    --sd-text:      var(--sl-text-main);   /* techwind */
+    --nexus-dark:   #0f172a;               /* saas-nexus */
+    --nexus-light:  #f8fafc;               /* saas-nexus */
+    --nexus-gray:   #64748b;               /* saas-nexus */
+    --ac-bg:        #fffdf7;               /* brutalista-appcraft */
+    --ac-dark:      #1a1a1a;               /* brutalista-appcraft */
+  }
+
+  [[DYNAMIC_CSS]]
+
+  body {
+    background-color: var(--sl-bg-body,#fff);
+    color: var(--sl-text-main,#0f172a);
+    font-family: var(--sl-font-family,system-ui,sans-serif);
+    margin:0; padding:0; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  img { max-width:100%; height:auto; display:block; }
+  a { color:var(--sl-primary); text-decoration:none; transition:var(--sl-transition); }
+  a:hover { filter:brightness(0.85); }
+  h1,h2,h3,h4,h5,h6 { font-weight:var(--sl-heading-weight); }
+
+  /* ── TOP BAR ─────────────────────────────────────────── */
+  .saas-top-bar {
+    background: var(--sl-primary);
+    color: #fff;
+    text-align: center;
+    padding: 8px 1rem;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    min-height: 36px;
+  }
+  .saas-top-bar a { color: rgba(255,255,255,.9); text-decoration: underline; }
+  .saas-top-bar:empty { display: none; }
+
+  /* ── NAVBAR ─────────────────────────────────────────────*/
+  .sl-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .saas-nav-brand { font-weight:800; font-size:1.15rem; letter-spacing:-.03em; color:var(--sl-text-main); }
+  .saas-nav-brand:hover { color:var(--sl-primary); filter:none; }
+  .saas-nav-link {
+    color: var(--sl-text-main) !important;
+    font-size: .875rem;
+    font-weight: 600;
+    padding: 6px 12px !important;
+    border-radius: var(--sl-radius-sm);
+    transition: var(--sl-transition);
+  }
+  .saas-nav-link:hover { background: rgba(0,0,0,0.05); color:var(--sl-primary) !important; filter:none; }
+  .saas-cta-btn {
+    background: var(--sl-primary);
+    color: #fff !important;
+    border-radius: var(--sl-btn-radius);
+    padding: 7px 18px !important;
+    font-size: .875rem;
+    font-weight: 700;
+    border: 2px solid var(--sl-primary);
+    transition: var(--sl-transition);
+  }
+  .saas-cta-btn:hover { background: transparent; color: var(--sl-primary) !important; filter:none; }
+
+  /* ── HERO SECTION ─────────────────────────────────────── */
+  .hero-section {
+    padding: 5rem 0 4rem;
+    background: var(--sl-bg-body,#fff);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, color-mix(in srgb,var(--sl-primary) 8%,transparent) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-text-area { display:flex; flex-direction:column; justify-content:center; height:100%; }
+  .hero-text-area .widget h2.title {
+    font-size: clamp(2.2rem,4.5vw,3.5rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: color-mix(in srgb,var(--sl-primary) 10%,transparent);
+    color: var(--sl-primary);
+    border: 1px solid color-mix(in srgb,var(--sl-primary) 25%,transparent);
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    width: fit-content;
+  }
+  .hero-media-area img {
+    border-radius: var(--sl-radius-lg);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    width: 100%;
+  }
+
+  /* ── FEATURE CARDS  (CSS nexus targets #saas-cards .widget) */
+  .saas-feature-section { padding:5rem 0; background:var(--nexus-light,#f8fafc); }
+  #saas-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  #saas-cards .widget {
+    flex: 1;
+    min-width: min(290px,100%);
+    background: var(--sl-card-bg);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: var(--sl-radius-lg);
+    padding: 2rem 1.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    transition: var(--sl-transition);
+  }
+  #saas-cards .widget:hover { transform:translateY(-4px); box-shadow:0 12px 24px -6px rgba(0,0,0,0.12); }
+  #saas-cards .widget h2.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    color: var(--sl-text-main);
+  }
+
+  /* ── PRICING SECTION  (nexus targets .pricing-wrapper + #pricing-cards) */
+  .pricing-wrapper { padding:5rem 0; background:var(--sl-bg-body,#fff); }
+  .pricing-wrapper .saas-section-label { color:var(--sl-primary); }
+  #pricing-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    align-items: stretch;
+  }
+  #pricing-cards .widget {
+    flex: 1;
+    min-width: min(280px,100%);
+    background: var(--sl-card-bg);
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: var(--sl-radius-lg);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: var(--sl-transition);
+  }
+  #pricing-cards .widget:hover { border-color:var(--sl-primary); box-shadow:0 20px 40px -10px color-mix(in srgb,var(--sl-primary) 20%,transparent); }
+  /* Preço: CSS injeta R$ via ::before e aumenta tamanho (padrão nexus) */
+  #pricing-cards .widget p:first-of-type {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    color: var(--sl-primary);
+    line-height: 1.1;
+  }
+  #pricing-cards .widget p:first-of-type::before { content: 'R$'; font-size: 1.5rem; vertical-align: top; margin-top: .6rem; display: inline-block; }
+
+  /* ── TESTIMONIALS  (nexus targets #testimonials .widget) */
+  .saas-testimonials-section { padding:5rem 0; background:var(--nexus-light,#f8fafc); }
+  #testimonials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  #testimonials .widget {
+    flex: 1;
+    min-width: min(280px,100%);
+    background: var(--sl-card-bg);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--sl-radius-lg);
+    padding: 1.75rem;
+    font-style: italic;
+    color: var(--nexus-gray,#64748b);
+  }
+  #testimonials .widget h2.title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sl-text-main);
+    margin-top: 1rem;
+    font-style: normal;
+  }
+
+  /* ── BLOG/RESOURCES SECTION ─────────────────────────── */
+  .blog-section { padding:5rem 0; background:var(--sl-bg-body,#fff); border-top:1px solid rgba(0,0,0,0.06); }
+  .saas-section-label {
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--sl-primary);
+    margin-bottom: .4rem;
+  }
+  .saas-section-title {
+    font-size: clamp(1.6rem,3vw,2.2rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin-bottom: 0;
+  }
+
+  /* Post cards (nexus: .post-card / template: .news-card) */
+  .news-card,.post-card {
+    background: var(--sl-card-bg);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--sl-radius-lg);
+    overflow: hidden;
+    transition: var(--sl-transition);
+    height: 100%;
+  }
+  @media (min-width:992px) {
+    .news-card:hover,.post-card:hover { transform:translateY(-4px); box-shadow:0 16px 30px -5px rgba(0,0,0,0.1); }
+  }
+  .post-card-img,.news-card-img {
+    width:100%; aspect-ratio:16/9;
+    object-fit:cover; display:block;
+    transition: transform .4s ease;
+  }
+  .news-card:hover .post-card-img,
+  .news-card:hover .news-card-img { transform:scale(1.04); }
+  .post-card p.text-muted {
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  /* ── SINGLE POST (col-8 + col-4 sidebar) ─────────────── */
+  .saas-post-meta {
+    display:flex; flex-wrap:wrap; gap:.85rem;
+    padding:.7rem 0; margin-bottom:1.5rem;
+    border-top:1px solid rgba(0,0,0,0.07);
+    border-bottom:1px solid rgba(0,0,0,0.07);
+    font-size:.85rem; color:#64748b;
+  }
+  .saas-post-meta a { color:#64748b; }
+  .saas-post-meta a:hover { color:var(--sl-primary); filter:none; }
+  .saas-post-hero { border-radius:var(--sl-radius-lg); overflow:hidden; margin-bottom:1.75rem; }
+  .saas-post-hero img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
+  .saas-post-body { font-size:1.05rem; line-height:1.85; }
+  .saas-post-body h2 { margin-top:2.5rem; padding-bottom:.5rem; border-bottom:2px solid rgba(0,0,0,0.07); }
+  .saas-post-body h3 { margin-top:1.75rem; }
+  .saas-post-body p { margin-bottom:1.4rem; }
+  .saas-post-body a { text-decoration:underline; text-decoration-color:color-mix(in srgb,var(--sl-primary) 50%,transparent); text-underline-offset:3px; }
+  .saas-post-body iframe,.saas-post-body object,.saas-post-body embed { max-width:100%; }
+  .saas-post-body blockquote {
+    margin:2rem 0; padding:1.5rem 2rem;
+    border-left:4px solid var(--sl-primary);
+    background:color-mix(in srgb,var(--sl-primary) 5%,transparent);
+    border-radius:0 var(--sl-radius-sm) var(--sl-radius-sm) 0;
+    font-style:italic; font-size:1.05rem; line-height:1.65;
+  }
+  .saas-post-body blockquote p { margin-bottom:0; }
+  .saas-post-body code {
+    background: rgba(0,0,0,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .88em;
+  }
+  .saas-post-body pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--sl-radius-sm);
+    overflow-x: auto;
+    font-size: .88rem;
+    line-height: 1.6;
+    margin: 1.5rem 0;
+  }
+  .saas-post-body pre code { background:none; padding:0; }
+
+  /* Sidebar */
+  .saas-sidebar-widget {
+    background: var(--sl-card-bg);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: var(--sl-radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .saas-sidebar-widget-title {
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--sl-primary);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    padding-bottom: .6rem;
+    margin-bottom: 1rem;
+  }
+  .sl-label-widget ul { padding:0; margin:0; list-style:none; display:flex; flex-wrap:wrap; gap:7px; }
+  .sl-label-list a {
+    display:inline-block; padding:5px 12px;
+    background:color-mix(in srgb,var(--sl-primary) 10%,transparent);
+    color:var(--sl-primary); border-radius:50px;
+    font-size:.78rem; font-weight:700; transition:var(--sl-transition);
+  }
+  .sl-label-list a:hover { background:var(--sl-primary); color:#fff; filter:none; }
+  .sl-label-cloud a {
+    display:inline-block; padding:4px 12px;
+    border:1px solid var(--sl-primary); color:var(--sl-text-main);
+    border-radius:var(--sl-radius-lg); font-size:.85rem; transition:var(--sl-transition);
+  }
+  .sl-label-cloud a:hover { background:var(--sl-primary); color:#fff; transform:translateY(-2px); filter:none; }
+
+  /* ── SHARE / AUTHOR / RELATED ─────────────────────────── */
+  .sl-share-buttons a.btn { flex-shrink:0; }
+  .sl-author-box { border:1px solid rgba(0,0,0,0.07) !important; border-radius:var(--sl-radius-lg); box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); }
+  .sl-related-posts .news-card,.sl-related-posts .post-card { height:100%; }
+  .sl-related-posts img { width:100%; aspect-ratio:16/9; object-fit:cover; }
+
+  /* ── BUTTONS ──────────────────────────────────────────── */
+  .btn-primary,.btn-outline-primary { border-radius:var(--sl-btn-radius); box-shadow:var(--sl-btn-shadow); }
+  .btn-outline-primary { color:var(--sl-primary); border-color:var(--sl-primary); }
+  .btn-outline-primary:hover,.btn-outline-primary:focus,.btn-outline-primary:active,.btn-outline-primary.active {
+    background-color:var(--sl-primary); border-color:var(--sl-primary); color:#fff; filter:none;
+  }
+
+  /* ── FOOTER (nexus: .footer-nexus) ─────────────────────── */
+  .sl-footer,.footer-nexus { background:var(--sl-footer-bg,#0f172a); color:#94a3b8; }
+  .sl-footer h6,.footer-nexus .widget h2.title {
+    color:#f1f5f9; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; font-size:.75rem;
+    margin-bottom:1rem;
+  }
+  .sl-footer a,.footer-nexus a { color:#94a3b8; font-size:.875rem; }
+  .sl-footer a:hover,.footer-nexus a:hover { color:#f1f5f9; filter:none; }
+  .sl-footer-divider { border-color:rgba(255,255,255,0.08) !important; }
+
+  /* ── DARK MODE ────────────────────────────────────────── */
+  [data-bs-theme="dark"] body { background-color:#0d1117; color:#e2e8f0; }
+  [data-bs-theme="dark"] .sl-nav { background:rgba(15,17,24,0.95) !important; border-bottom-color:rgba(255,255,255,0.07); }
+  [data-bs-theme="dark"] .saas-nav-brand { color:#e2e8f0; }
+  [data-bs-theme="dark"] .saas-nav-link { color:#cbd5e1 !important; }
+  [data-bs-theme="dark"] .hero-section { background:#0d1117; border-bottom-color:rgba(255,255,255,0.06); }
+  [data-bs-theme="dark"] .saas-feature-section,
+  [data-bs-theme="dark"] .saas-testimonials-section { background:#0d1117; }
+  [data-bs-theme="dark"] #saas-cards .widget,
+  [data-bs-theme="dark"] #pricing-cards .widget,
+  [data-bs-theme="dark"] #testimonials .widget,
+  [data-bs-theme="dark"] .news-card,.post-card { background:#1e2535; border-color:rgba(255,255,255,0.07); }
+  [data-bs-theme="dark"] .blog-section { background:#0d1117; border-top-color:rgba(255,255,255,0.06); }
+  [data-bs-theme="dark"] .pricing-wrapper { background:#0d1117; }
+  [data-bs-theme="dark"] .saas-post-meta { border-color:rgba(255,255,255,0.07); color:#94a3b8; }
+  [data-bs-theme="dark"] .saas-post-body h2 { border-bottom-color:rgba(255,255,255,0.08); }
+  [data-bs-theme="dark"] .saas-sidebar-widget { background:#1e2535; border-color:rgba(255,255,255,0.07); }
+  [data-bs-theme="dark"] .sl-author-box { border-color:rgba(255,255,255,0.07) !important; background:#1e2535; }
+  [data-bs-theme="dark"] .saas-post-article { background:#1e2535 !important; }
+  [data-bs-theme="dark"] [data-bs-theme="dark"] .news-card { background:#1e2535; border-color:rgba(255,255,255,0.06); }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────── */
+  @media (max-width:991.98px) {
+    .hero-section { padding:3.5rem 0 3rem; }
+    .hero-text-area { margin-bottom:2.5rem; }
+    #saas-cards,#pricing-cards,#testimonials { flex-direction:column; }
+    #saas-cards .widget,#pricing-cards .widget,#testimonials .widget { min-width:100%; }
+  }
+
+  /* === CSS DO NICHO (impl.json injetado pelo compilador) === */
+  [[NICHO_CSS]]
+
+  ]]></b:skin>
+</head>
+
+
+<body class='[[BODY_LAYOUT_CLASS]]'>
+
+  <!-- TOP BAR (faixa de anúncio/promo — nexus: id='top-bar') -->
+  <div class='saas-top-bar'>
+    <b:section id='top-bar' maxwidgets='1' name='Top Bar — Anúncio / Promo' showaddelement='yes'/>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class='sl-nav py-2'>
+    <div class='container d-flex align-items-center justify-content-between gap-3'>
+
+      <!-- Logo / Brand -->
+      <div class='d-flex align-items-center gap-2 flex-shrink-0'>
+        <b:section id='header-logo' maxwidgets='1' name='Logo / Brand' showaddelement='yes'>[[HEADER_WIDGET]]</b:section>
+        <a class='saas-nav-brand d-none d-sm-block' href='/'><data:blog.title/></a>
+      </div>
+
+      <!-- Desktop nav links -->
+      <div class='d-none d-lg-flex align-items-center gap-1 flex-grow-1 justify-content-center'>
+        <b:section id='menu-links' maxwidgets='1' name='Menu Principal (PageList)' showaddelement='yes'>[[NAV_WIDGET]]</b:section>
+      </div>
+
+      <!-- CTA + mobile toggle -->
+      <div class='d-flex align-items-center gap-2 flex-shrink-0'>
+        <a class='saas-cta-btn d-none d-md-inline-block' href='#pricing-cards'>Começar Grátis</a>
+        <button aria-label='Menu' class='d-lg-none btn btn-sm' id='saas-nav-toggle' style='background:rgba(0,0,0,0.06);' type='button'>
+          <i class='bi bi-list fs-5'/>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class='container d-none' id='saas-nav-mobile'>
+      <div class='d-flex flex-column gap-1 py-2 border-top mt-2'>
+        [[MOBILE_MENU_TYPE]]
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- MARKETING SECTIONS (apenas em páginas de lista / homepage) -->
+  <b:if cond='data:view.isMultipleItems'>
+
+    <!-- HERO NICHO (injetado pelo impl.json quando o tema tem hero HTML) -->
+    <div class='sl-hero-wrapper'>
+      <b:section id='hero-area' maxwidgets='2' name='Área Hero (Full Width)' showaddelement='yes'>[[NICHO_HERO]]</b:section>
+    </div>
+    [[NICHO_EXTRA_SECTIONS]]
+
+    <!-- HERO (nexus: .hero-section | layout: split col-6+col-6) -->
+    <section class='hero-section'>
+      <div class='container position-relative'>
+        <div class='row align-items-center g-5'>
+          <!-- Text side -->
+          <div class='col-lg-6 hero-text-area'>
+            <div class='hero-badge'>
+              <i class='bi bi-lightning-charge-fill'/> Novo &amp; melhorado
+            </div>
+            <b:section id='hero-text' maxwidgets='2' name='Hero — Título e CTA (HTML widget)' showaddelement='yes'/>
+            <!-- Fallback if hero-text is empty. h2 (não h1): quando o nicho já
+                 tem heroHtml próprio, a b:section 'hero-area' acima já rendeu o
+                 h1 real da página — este fallback é um CTA secundário, não o
+                 título principal. -->
+            <b:if cond='not data:widgets.Blog'>
+              <h2 style='font-size:clamp(2.2rem,4.5vw,3.5rem);font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:1.25rem;'>
+                O produto que o seu<br/>negócio precisava
+              </h2>
+              <p class='fs-5 mb-4' style='color:#64748b;line-height:1.65;'>
+                <data:blog.metaDescription/>
+              </p>
+              <div class='d-flex flex-wrap gap-3'>
+                <a class='btn btn-primary btn-lg px-4' href='#pricing-cards'>Começar Grátis</a>
+                <a class='btn btn-outline-secondary btn-lg px-4' href='#saas-cards'>Ver funcionalidades</a>
+              </div>
+            </b:if>
+          </div>
+          <!-- Media side -->
+          <div class='col-lg-6 hero-media-area'>
+            <b:section id='hero-media' maxwidgets='1' name='Hero — Screenshot / Mockup (Image widget)' showaddelement='yes'/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES / FUNCIONALIDADES (nexus: #saas-cards .widget) -->
+    <section class='saas-feature-section'>
+      <div class='container'>
+        <div class='text-center mb-2'>
+          <p class='saas-section-label'>Funcionalidades</p>
+          <h2 class='saas-section-title'>Tudo o que você precisa</h2>
+        </div>
+        <b:section id='saas-cards' maxwidgets='12' name='Feature Cards (um widget = um card)' showaddelement='yes'/>
+      </div>
+    </section>
+
+    <!-- PRICING (nexus: .pricing-wrapper + #pricing-cards) -->
+    <section class='pricing-wrapper'>
+      <div class='container'>
+        <div class='text-center mb-2'>
+          <p class='saas-section-label'>Planos e Preços</p>
+          <h2 class='saas-section-title'>Simples e transparente</h2>
+        </div>
+        <b:section id='pricing-cards' maxwidgets='4' name='Pricing Cards (um widget = um plano)' showaddelement='yes'/>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS (nexus: #testimonials .widget) -->
+    <section class='saas-testimonials-section'>
+      <div class='container'>
+        <div class='text-center mb-2'>
+          <p class='saas-section-label'>Depoimentos</p>
+          <h2 class='saas-section-title'>O que dizem sobre nós</h2>
+        </div>
+        <b:section id='testimonials' maxwidgets='6' name='Depoimentos (um widget = uma citação)' showaddelement='yes'/>
+      </div>
+    </section>
+
+  </b:if>
+
+
+  <!-- BLOG / RESOURCES SECTION (nexus: .blog-section) -->
+  <section class='blog-section'>
+    <div class='container'>
+
+      <b:if cond='data:view.isMultipleItems'>
+        <div class='d-flex align-items-end justify-content-between mb-4'>
+          <div>
+            <p class='saas-section-label'>Blog &amp; Recursos</p>
+            <h2 class='saas-section-title mb-0'>Últimos artigos</h2>
+          </div>
+          <a class='btn btn-outline-primary d-none d-md-inline-block' href='/'>Ver todos →</a>
+        </div>
+      </b:if>
+
+      <b:section id='main' name='Feed de Posts' showaddelement='yes'>
+        <b:widget id='Blog1' locked='true' title='Posts' type='Blog' version='2'>
+
+          <!-- Desliga os defaults do Blogger (share/comment/author/etc) — evita
+               que o Blogger acione internamente bylineByName/postShareButtons,
+               cadeia que aponta para ícones nunca definidos neste tema e que
+               causa falha de renderização do Blog1 mesmo com o import aceito. -->
+          <b:widget-settings>
+            <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+            <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+            <b:widget-setting name='showCommentLink'>false</b:widget-setting>
+            <b:widget-setting name='showAuthor'>false</b:widget-setting>
+            <b:widget-setting name='showLabels'>false</b:widget-setting>
+            <b:widget-setting name='showTimestamp'>false</b:widget-setting>
+            <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+            <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+            <b:widget-setting name='showReactions'>false</b:widget-setting>
+          </b:widget-settings>
+
+          <!-- ════════ MAIN includable ════════ -->
+          <b:includable id='main' var='top'>
+            <b:if cond='data:view.isMultipleItems'>
+
+              <!-- Título de resultado de busca — só aparece em /search?q=. -->
+              <b:if cond='data:view.search.query'>
+                <h3 class='mb-4 pb-2 border-bottom'>Resultados para: &quot;<data:view.search.query/>&quot;</h3>
+              </b:if>
+
+              <!-- GRID DE POSTS (landing page: sempre 3 colunas fixas) -->
+              <div class='row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4'>
+                <b:loop values='data:posts' var='post'>
+                  <div class='col'>
+                    <article class='news-card post-card d-flex flex-column'>
+                      <a class='overflow-hidden d-block' expr:href='data:post.url.canonical' style='border-radius:var(--sl-radius-lg) var(--sl-radius-lg) 0 0;'>
+                        <b:if cond='data:post.featuredImage'>
+                          <img [[LAZY_LOAD_TOGGLE]] alt='Thumb' class='post-card-img news-card-img' expr:src='resizeImage(data:post.featuredImage, 700, "16:9")'/>
+                        <b:else/>
+                          <img [[LAZY_LOAD_TOGGLE]] alt='Thumb' class='post-card-img news-card-img' src='[[PLACEHOLDER_IMG]]'/>
+                        </b:if>
+                      </a>
+                      <div class='p-4 d-flex flex-column flex-grow-1'>
+                        <b:if cond='data:post.labels'>
+                          <span class='saas-section-label d-block mb-1'><data:post.labels.first.name/></span>
+                        </b:if>
+                        <h3 class='h6 fw-bold mb-2 lh-sm'><a class='text-body text-decoration-none' expr:href='data:post.url.canonical'><data:post.title/></a></h3>
+                        <p class='text-muted small mb-0'><data:post.snippet/></p>
+                        <div class='mt-auto pt-3 border-top mt-3 d-flex align-items-center justify-content-between small text-muted'>
+                          <span><i class='bi [[ICON_AUTHOR]] me-1'/><data:post.author.name/></span>
+                          <a class='text-primary fw-semibold' expr:href='data:post.url.canonical'>Ler →</a>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </b:loop>
+              </div>
+
+              <b:include name='nextprev'/>
+
+            <b:else/>
+              <!-- SINGLE POST -->
+              <b:loop values='data:posts' var='post'>
+                <b:include data='post' name='post'/>
+              </b:loop>
+            </b:if>
+          </b:includable>
+
+
+          <!-- ════════ POST includable ════════ -->
+          <b:includable id='post' var='post'>
+            <div class='row'>
+
+              <!-- ARTIGO col-8 -->
+              <div class='col-lg-8'>
+
+                <nav aria-label='breadcrumb' class='mb-3'>
+                  <ol class='breadcrumb small'>
+                    <li class='breadcrumb-item'><a href='/'>Início</a></li>
+                    <b:if cond='data:post.labels'>
+                      <li class='breadcrumb-item'><a expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a></li>
+                    </b:if>
+                    <li aria-current='page' class='breadcrumb-item active'><data:post.title/></li>
+                  </ol>
+                </nav>
+
+                <article class='saas-post-article rounded-3 p-4 p-lg-5 shadow-sm' itemscope='itemscope' itemtype='https://schema.org/BlogPosting' style='background:var(--sl-card-bg);'>
+
+                  <div class='mb-3'>
+                    <b:if cond='data:post.labels'>
+                      <a class='saas-section-label text-decoration-none d-inline-block mb-2' expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a>
+                    </b:if>
+                    <h1 class='display-6 fw-bold lh-sm mb-3' itemprop='headline'><data:post.title/></h1>
+                    [[READING_TIME]]
+                    [[REVIEW_ENGINE]]
+                  </div>
+
+                  <div class='saas-post-meta'>
+                    <span><i class='bi [[ICON_AUTHOR]] me-1'/><data:post.author.name/></span>
+                    <span><i class='bi bi-calendar3 me-1'/><data:post.date/></span>
+                    <b:if cond='data:post.labels'>
+                      <span>
+                        <i class='bi bi-tag me-1'/>
+                        <b:loop index='j' values='data:post.labels' var='label'>
+                          <b:if cond='data:j &gt; 0'>, </b:if>
+                          <a expr:href='data:label.url'><data:label.name/></a>
+                        </b:loop>
+                      </span>
+                    </b:if>
+                  </div>
+
+                  <b:if cond='data:post.featuredImage'>
+                    <figure class='saas-post-hero mb-4'>
+                      <img [[LAZY_LOAD_TOGGLE]] alt='Imagem de destaque' expr:src='resizeImage(data:post.featuredImage, 1200, "16:9")' itemprop='image'/>
+                    </figure>
+                  </b:if>
+
+                  <div class='sl-before-content'>[[SLOT_BEFORE_INJECTION]]</div>
+
+                  <div class='saas-post-body my-4' itemprop='articleBody'><data:post.body/></div>
+
+                  <b:if cond='data:post.labels'>
+                    <div class='d-flex flex-wrap gap-2 mt-4 pt-3 border-top'>
+                      <b:loop values='data:post.labels' var='label'>
+                        <a class='badge border text-decoration-none' expr:href='data:label.url' style='color:var(--sl-primary);border-color:var(--sl-primary)!important;font-weight:600;'><data:label.name/></a>
+                      </b:loop>
+                    </div>
+                  </b:if>
+
+                  [[SHARE_BUTTONS]]
+
+                  <b:if cond='data:post.author'>
+                    <div class='sl-author-box card mt-4'>
+                      <div class='card-body d-flex align-items-center gap-3 p-4'>
+                        <b:if cond='data:post.author.avatarUrl'>
+                          <img alt='Autor' class='rounded-circle flex-shrink-0' expr:src='data:post.author.avatarUrl' style='width:72px;height:72px;object-fit:cover;'/>
+                        </b:if>
+                        <div>
+                          <h5 class='card-title fw-bold mb-1'><data:post.author.name/></h5>
+                          <p class='card-text text-muted small mb-2'><data:post.author.aboutMe/></p>
+                          <a class='text-decoration-none small fw-bold' expr:href='data:post.author.profileUrl' style='color:var(--sl-primary);'>Ver Perfil →</a>
+                        </div>
+                      </div>
+                    </div>
+                  </b:if>
+
+                  <span class='d-none' id='sl-post-label'><b:if cond='data:post.labels'><data:post.labels.first.name/></b:if></span>
+                  <span class='d-none' id='sl-post-url'><data:post.url.canonical/></span>
+
+                  [[COMMENTS_SECTION]]
+
+                  <div class='sl-related-posts mt-5'>
+                    <p class='saas-section-label mb-1'>Continuar lendo</p>
+                    <h3 class='h5 fw-bold mb-4'>Artigos Relacionados</h3>
+                    <div class='row row-cols-1 row-cols-md-3 g-4' id='sl-related-ready'/>
+                  </div>
+
+                  <div class='sl-after-content mt-4'>[[SLOT_AFTER_INJECTION]]</div>
+
+                </article>
+              </div><!-- /col-lg-8 -->
+
+              <!-- SIDEBAR col-4 -->
+              <aside class='col-lg-4 mt-4 mt-lg-0'>
+                <!-- Popular posts (JS) -->
+                <div class='saas-sidebar-widget' id='saas-pop-widget'>
+                  <div class='saas-sidebar-widget-title'>Posts Recentes</div>
+                  <ul class='list-unstyled mb-0' id='saas-pop-list'>
+                    <li class='text-muted small'>A carregar...</li>
+                  </ul>
+                </div>
+
+                <b:section id='post-sidebar-top' maxwidgets='2' name='Post Sidebar — Anúncio' showaddelement='yes'/>
+                <b:section id='post-sidebar' name='Post Sidebar — Widgets' showaddelement='yes'>[[FEATURED_POST_WIDGET]]</b:section>
+              </aside>
+
+            </div>
+          </b:includable>
+
+
+          <!-- ════════ PAGINAÇÃO ════════ -->
+          <b:includable id='nextprev'>
+            [[PAGINATION_MODULE]]
+          </b:includable>
+
+
+          <!-- ════════════════════════════════════════════════════════════
+               INCLUDABLES PADRÃO BLOGGER
+               ════════════════════════════════════════════════════════════ -->
+          <b:includable id='aboutPostAuthor'><div/></b:includable>
+          <b:includable id='addComments'><div/></b:includable>
+          <b:includable id='blogThisShare'>
+            <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+              <b:include name='platformShare'/>
+            </b:with>
+          </b:includable>
+          <b:includable id='bylineByName' var='byline'>
+            <b:switch var='data:byline.name'>
+            <b:case value='share'/>
+              <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+            <b:case value='comments'/>
+              <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+            <b:case value='location'/>
+              <b:include cond='data:post.location' name='postLocation'/>
+            <b:case value='timestamp'/>
+              <b:include cond='not data:view.isPage' name='postTimestamp'/>
+            <b:case value='author'/>
+              <b:include name='postAuthor'/>
+            <b:case value='labels'/>
+              <b:include cond='data:post.labels' name='postLabels'/>
+            <b:case value='icons'/>
+              <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+            </b:switch>
+          </b:includable>
+          <b:includable id='bylineRegion' var='regionItems'>
+            <b:loop values='data:regionItems' var='byline'>
+              <b:include data='byline' name='bylineByName'/>
+            </b:loop>
+          </b:includable>
+          <b:includable id='commentAuthorAvatar'><div/></b:includable>
+          <b:includable id='commentDeleteIcon' var='comment'><span/></b:includable>
+          <b:includable id='commentForm' var='post'><div/></b:includable>
+          <b:includable id='commentFormIframeSrc' var='post'><a/></b:includable>
+          <b:includable id='commentItem' var='comment'><div/></b:includable>
+          <b:includable id='commentList' var='comments'><div/></b:includable>
+          <b:includable id='commentPicker' var='post'><div/></b:includable>
+          <b:includable id='comments' var='post'><div/></b:includable>
+          <b:includable id='commentsLink'>
+            <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+              <b:if cond='data:post.numberOfComments &gt; 0'>
+                <b:message name='messages.numberOfComments'>
+                  <b:param expr:value='data:post.numberOfComments' name='numComments'/>
+                </b:message>
+              <b:else/>
+                <data:messages.postAComment/>
+              </b:if>
+            </a>
+          </b:includable>
+          <b:includable id='commentsLinkIframe'></b:includable>
+          <b:includable id='commentsTitle'><div/></b:includable>
+          <b:includable id='defaultAdUnit'>
+            <ins class='adsbygoogle' data-ad-format='auto' expr:data-ad-client='data:adClientId ?: data:blog.adsenseClientId' expr:data-ad-host='data:blog.adsenseHostId' expr:style='data:style ?: &quot;display: block;&quot;'>
+              <b:attr cond='not data:blog.analytics4' expr:value='data:blog.analyticsAccountNumber' name='data-analytics-uacct'/>
+            </ins>
+            <script>
+              (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+          </b:includable>
+          <b:includable id='emailPostIcon'>
+            <span class='byline post-icons'>
+              <span class='item-action'>
+                <a expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+                  <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+                </a>
+              </span>
+            </span>
+          </b:includable>
+          <b:includable id='facebookShare'>
+            <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+              <b:include name='platformShare'/>
+            </b:with>
+          </b:includable>
+          <b:includable id='feedLinks'><div/></b:includable>
+          <b:includable id='feedLinksBody' var='links'><div/></b:includable>
+          <b:includable id='footerBylines'>
+            <b:if cond='data:widgets.Blog.first.footerBylines'>
+              <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+                <b:if cond='not data:region.items.empty'>
+                  <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+                    <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+                      <b:include data='region.items' name='bylineRegion'/>
+                    </b:with>
+                  </div>
+                </b:if>
+              </b:loop>
+            </b:if>
+          </b:includable>
+          <b:includable id='googlePlusShare'></b:includable>
+          <b:includable id='headerByline'>
+            <b:if cond='data:widgets.Blog.first.headerByline'>
+              <div class='post-header'>
+                <div class='post-header-line-1'>
+                  <b:with value='&quot;header-1&quot;' var='regionName'>
+                    <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+                  </b:with>
+                </div>
+              </div>
+            </b:if>
+          </b:includable>
+          <b:includable id='homePageLink'><div/></b:includable>
+          <b:includable id='iframeComments' var='post'><div/></b:includable>
+          <b:includable id='inlineAd' var='post'><div/></b:includable>
+          <b:includable id='linkShare'>
+            <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+              <b:include name='platformShare'/>
+            </b:with>
+          </b:includable>
+          <b:includable id='nextPageLink'><div/></b:includable>
+          <b:includable id='otherSharingButton'>
+            <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+              <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+                <b:include name='sharingPlatformIcon'/>
+              </b:with>
+              <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+            </span>
+          </b:includable>
+          <b:includable id='platformShare'>
+            <a expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' target='_blank'>
+              <span class='share-button-link-text'><data:platform.shareMessage/></span>
+            </a>
+          </b:includable>
+          <b:includable id='postAuthor'>
+            <span class='byline post-author vcard'>
+              <span class='post-author-label'><data:byline.label/></span>
+              <span class='fn'>
+                <b:if cond='data:post.author.profileUrl'>
+                  <meta expr:content='data:post.author.profileUrl'/>
+                  <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+                    <span><data:post.author.name/></span>
+                  </a>
+                <b:else/>
+                  <span><data:post.author.name/></span>
+                </b:if>
+              </span>
+            </span>
+          </b:includable>
+          <b:includable id='postBody' var='post'><div/></b:includable>
+          <b:includable id='postBodySnippet' var='post'><div/></b:includable>
+          <b:includable id='postCommentsAndAd' var='post'><div/></b:includable>
+          <b:includable id='postCommentsLink'><div/></b:includable>
+          <b:includable id='postFooter' var='post'><div/></b:includable>
+          <b:includable id='postFooterAuthorProfile' var='post'><div/></b:includable>
+          <b:includable id='postHeader' var='post'><div/></b:includable>
+          <b:includable id='postJumpLink' var='post'>
+            <div class='jump-link flat-button'>
+              <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+                <b:eval expr='data:blog.jumpLinkMessage'/>
+              </a>
+            </div>
+          </b:includable>
+          <b:includable id='postLabels'>
+            <span class='byline post-labels'>
+              <span class='byline-label'><data:byline.label/></span>
+              <b:loop index='i' values='data:post.labels' var='label'>
+                <a expr:href='data:label.url' rel='tag'><data:label.name/></a>
+              </b:loop>
+            </span>
+          </b:includable>
+          <b:includable id='postLocation'>
+            <span class='byline post-location'>
+              <data:byline.label/>
+              <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+            </span>
+          </b:includable>
+          <b:includable id='postMeta' var='post'><div/></b:includable>
+          <b:includable id='postReactions'><div/></b:includable>
+          <b:includable id='postShareButtons'>
+            <div class='byline post-share-buttons goog-inline-block'>
+              <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+                <b:include data='{ sharingId: data:sharingId, originalUrl: data:post.url, platforms: data:this.sharing.platforms, shareUrl: data:post.shareUrl, shareTitle: data:post.title }' name='sharingButtons'/>
+              </b:with>
+            </div>
+          </b:includable>
+          <b:includable id='postTimestamp'>
+            <span class='byline post-timestamp'>
+              <data:byline.label/>
+              <b:if cond='data:post.url'>
+                <meta expr:content='data:post.url.canonical'/>
+                <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+                  <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+                    <data:post.date/>
+                  </time>
+                </a>
+              </b:if>
+            </span>
+          </b:includable>
+          <b:includable id='postTitle' var='post'><div/></b:includable>
+          <b:includable id='previousPageLink'><div/></b:includable>
+          <b:includable id='sharingButton'>
+            <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+              <b:include name='sharingPlatformIcon'/>
+              <span class='platform-sharing-text'><data:platform.name/></span>
+            </span>
+          </b:includable>
+          <b:includable id='sharingButtonContent'>
+            <div class='flat-icon-button ripple'>
+              <b:include name='shareIcon'/>
+            </div>
+          </b:includable>
+          <b:includable id='sharingButtons'>
+            <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+              <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+                <b:include name='sharingButtonContent'/>
+              </button>
+              <b:include name='sharingButtonsMenu'/>
+            </div>
+          </b:includable>
+          <b:includable id='sharingButtonsMenu'>
+            <div class='share-buttons-container'>
+              <ul aria-hidden='true' class='share-buttons hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+                <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+                  <li><b:include name='sharingButton'/></li>
+                </b:loop>
+                <li aria-hidden='true' class='hidden'>
+                  <b:include name='otherSharingButton'/>
+                </li>
+              </ul>
+            </div>
+          </b:includable>
+          <b:includable id='sharingPlatformIcon'>
+            <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+          </b:includable>
+          <!-- Stubs de segurança — shareIcon/emailIcon/<plataforma>Icon são referenciados
+               pela cadeia bylineByName/postShareButtons/sharingPlatformIcon (padrão
+               Blogger nativo). showShareButtons etc já estão 'false' em b:widget-settings
+               acima; mantidos como rede de segurança. -->
+          <b:includable id='shareIcon'><span data-icon='share'/></b:includable>
+          <b:includable id='emailIcon'><span data-icon='email'/></b:includable>
+          <b:includable id='facebookIcon'><span data-icon='facebook'/></b:includable>
+          <b:includable id='twitterIcon'><span data-icon='twitter'/></b:includable>
+          <b:includable id='pinterestIcon'><span data-icon='pinterest'/></b:includable>
+          <b:includable id='linkedinIcon'><span data-icon='linkedin'/></b:includable>
+          <b:includable id='blogThisIcon'><span data-icon='blogthis'/></b:includable>
+          <b:includable id='get_linkIcon'><span data-icon='link'/></b:includable>
+          <b:includable id='threadedCommentForm' var='post'><div/></b:includable>
+          <b:includable id='threadedCommentJs' var='post'><div/></b:includable>
+          <b:includable id='threadedComments' var='post'><div/></b:includable>
+          <b:includable id='threaded_comments' var='post'><div/></b:includable>
+
+        </b:widget>
+      </b:section>
+
+    </div>
+  </section>
+
+
+  <!-- FOOTER (nexus: .footer-nexus) -->
+  <footer class='sl-footer footer-nexus mt-0 py-5' id='contato'>
+    [[FOOTER_NEWSLETTER]]
+    <div class='container'>
+      <div class='row g-4'>
+        <div class='col-lg-4'>
+          <h6 class='mb-3'><data:blog.title/></h6>
+          <p class='small mb-3' style='color:#64748b;'><data:blog.metaDescription/></p>
+          <b:section id='footer-brand' maxwidgets='2' name='Footer — Brand / Redes Sociais' showaddelement='yes'>[[SOCIAL_LINKS_WIDGET]]</b:section>
+        </div>
+        <div class='col-6 col-lg-2'>
+          <b:section id='footer-1' maxwidgets='2' name='Footer — Links Col 1' showaddelement='yes'>[[BLOG_ARCHIVE_WIDGET]]</b:section>
+        </div>
+        <div class='col-6 col-lg-2'>
+          <b:section id='footer-2' maxwidgets='2' name='Footer — Links Col 2' showaddelement='yes'>[[CONTACT_FORM]]</b:section>
+        </div>
+        <div class='col-lg-4'>
+          <b:section id='footer-cta' maxwidgets='2' name='Footer — Newsletter / CTA' showaddelement='yes'/>
+        </div>
+      </div>
+      <hr class='sl-footer-divider my-4'/>
+      <div class='d-flex flex-wrap justify-content-between gap-2'>
+        <small style='color:#475569;'>© <data:blog.title/> — Powered by Softload Engine</small>
+        <div class='d-flex gap-3'>
+          <a class='small' href='/p/privacidade.html' style='color:#475569;'>Privacidade</a>
+          <a class='small' href='/p/termos.html' style='color:#475569;'>Termos</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  [[ERROR_404_MODULE]]
+  [[DARK_MODE_MODULE]]
+  [[BACK_TO_TOP_MODULE]]
+  [[COOKIE_MODULE]]
+  [[NICHO_WIDGETS_HTML]]
+  [[READING_PROGRESS]]
+  [[MENU_DROPDOWN_PREFIXO]]
+
+  <!-- SaaS JS: mobile nav + sidebar popular -->
+  <script>
+  //<![CDATA[
+  (function(){
+
+    // Mobile nav toggle
+    var toggle = document.getElementById('saas-nav-toggle');
+    var mobileNav = document.getElementById('saas-nav-mobile');
+    if (toggle && mobileNav) {
+      toggle.addEventListener('click', function(){ mobileNav.classList.toggle('d-none'); });
+    }
+
+    // Sidebar popular posts
+    var popList = document.getElementById('saas-pop-list');
+    if (popList) {
+      fetch('/feeds/posts/default?alt=json&max-results=5&orderby=published')
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(data){
+          if (!data || !data.feed || !data.feed.entry) return;
+          popList.innerHTML = data.feed.entry.map(function(e){
+            var lnk = (e.link||[]).filter(function(l){ return l.rel==='alternate'; })[0];
+            var url = lnk ? lnk.href : '#';
+            var title = (e.title||{}).$t || '';
+            var date = (e.published||{}).$t ? new Date(e.published.$t).toLocaleDateString('pt-BR') : '';
+            return '<li class="mb-3">'
+              +'<a class="d-block fw-600 text-body text-decoration-none small lh-sm mb-1" style="font-weight:600;" href="'+url+'">'+title+'</a>'
+              +'<span class="text-muted" style="font-size:.75rem;"><i class="bi bi-clock me-1"></i>'+date+'</span>'
+              +'</li>';
+          }).join('');
+        })
+        .catch(function(){
+          var w = popList.closest('#saas-pop-widget');
+          if (w) w.style.display = 'none';
+        });
+    }
+
+  })();
+  //]]>
+  </script>
+
+  <!-- Related posts (single post) -->
+  <b:if cond='data:view.isPost'>
+  <script>
+  //<![CDATA[
+  (function(){
+    var grid = document.getElementById('sl-related-ready');
+    if (!grid) return;
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    var label      = (document.getElementById('sl-post-label')||{}).textContent.trim();
+    var currentUrl = (document.getElementById('sl-post-url')  ||{}).textContent.trim();
+    if (!label) { var rp=grid.closest('.sl-related-posts'); if(rp) rp.style.display='none'; return; }
+    fetch('/feeds/posts/default/-/'+encodeURIComponent(label)+'?alt=json&max-results=4')
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(data){
+        var entries=(data.feed.entry||[]).filter(function(e){
+          var l=(e.link||[]).filter(function(l){ return l.rel==='alternate'; })[0];
+          return l && l.href!==currentUrl;
+        }).slice(0,3);
+        if(!entries.length){ var rp2=grid.closest('.sl-related-posts'); if(rp2) rp2.style.display='none'; return; }
+        grid.innerHTML=entries.map(function(e){
+          var l=(e.link||[]).filter(function(l){ return l.rel==='alternate'; })[0];
+          var url=esc(l?l.href:'#');
+          var title=esc((e.title||{}).$t||'');
+          var cat=esc(((e.category||[])[0]||{}).term||'');
+          var raw=(e.media$thumbnail||{}).url||'';
+          var thumb=esc(raw?raw.replace(/\/s[\d]+-c(\/|$)/,'/w400-h225-c/'):'[[PLACEHOLDER_IMG]]');
+          var date=(e.published||{}).$t?new Date(e.published.$t).toLocaleDateString('pt-BR'):'';
+          return '<div class="col"><article class="news-card post-card d-flex flex-column">'
+            +'<a href="'+url+'" class="overflow-hidden d-block"><img src="'+thumb+'" alt="'+title+'" loading="lazy" class="post-card-img w-100"/></a>'
+            +'<div class="p-3 d-flex flex-column flex-grow-1">'
+            +(cat?'<span class="saas-section-label d-block mb-1">'+cat+'</span>':'')
+            +'<h4 class="h6 fw-bold mb-2"><a class="text-body text-decoration-none" href="'+url+'">'+title+'</a></h4>'
+            +'<div class="mt-auto small text-muted"><i class="bi bi-clock me-1"></i>'+esc(date)+'</div>'
+            +'</div></article></div>';
+        }).join('');
+      })
+      .catch(function(){ var rp3=grid.closest('.sl-related-posts'); if(rp3) rp3.style.display='none'; });
+  })();
+  //]]>
+  </script>
+  </b:if>
+
+  <!-- JS do nicho (nexus, brutalista, techwind, appstore) -->
+  [[NICHO_JS]]
+
+  <script crossorigin='anonymous' src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+
+</body>
+</html>

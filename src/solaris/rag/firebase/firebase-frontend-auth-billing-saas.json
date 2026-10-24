@@ -1,0 +1,16 @@
+{
+  "id": "firebase-frontend-auth-billing-saas",
+  "slug": "firebase-frontend-auth-billing-saas",
+  "categoria": "firebase",
+  "descricao": "Componentes front-end (HTML5 + Tailwind CSS + JavaScript vanilla) pra consumir um backend Flask + Firebase — wrapper que captura o JWT do Firebase Auth e injeta em toda requisição, tabela dinâmica consumindo endpoint MethodView, e botão de checkout que inicia uma sessão do Stripe.",
+  "componentes": ["firebase-auth-gettoken", "fetch-api-com-jwt", "stripe-checkout-redirect"],
+  "exemplos": [
+    "async function requisicaoSeguraFlask(url, opcoes = {}) {\n    const tokenJWT = await firebase.auth().currentUser.getIdToken(true);\n    opcoes.headers = { Authorization: `Bearer ${tokenJWT}`, 'Content-Type': 'application/json', ...opcoes.headers };\n    const resposta = await fetch(url, opcoes);\n    if (resposta.status === 401) window.location.href = '/login';\n    return resposta.json();\n}",
+    "async function iniciarCheckoutSaaS(idPlanoPreco) {\n    const respostaSessao = await requisicaoSeguraFlask('/api/faturamento/criar-checkout', { method: 'POST', body: JSON.stringify({ precoId: idPlanoPreco }) });\n    window.location.href = respostaSessao.url_redirecionamento;\n}"
+  ],
+  "boas_praticas": [
+    "Nunca use innerHTML diretamente com dados digitados pelo usuário sem higienizar — prevenção de XSS",
+    "Evite armazenar o idToken no localStorage permanentemente — deixe o SDK do Firebase gerenciar a sessão em memória segura"
+  ],
+  "keywords": ["firebase auth frontend", "firebase jwt fetch", "stripe checkout flask", "tailwind saas dashboard"]
+}

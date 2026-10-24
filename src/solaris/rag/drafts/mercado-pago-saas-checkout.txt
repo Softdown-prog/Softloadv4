@@ -1,0 +1,32 @@
+{
+  "id": "mercado-pago-saas-checkout",
+  "slug": "mercado-pago-saas-checkout",
+  "categoria": "pagamentos-saas",
+  "descricao": "Ensina a separar a criação do checkout da confirmação do pagamento em aplicações SaaS.",
+  "componentes": [
+    "frontend",
+    "API backend",
+    "Mercado Pago Checkout",
+    "identificador da cobrança",
+    "banco de dados",
+    "status do pagamento"
+  ],
+  "exemplos": [
+    "O usuário seleciona um plano SaaS.",
+    "O frontend envia apenas a identificação do plano ao backend.",
+    "O backend consulta os dados do plano e cria o checkout.",
+    "O backend retorna ao frontend os dados necessários para iniciar o pagamento.",
+    "A confirmação da compra não deve depender exclusivamente do retorno visual do navegador.",
+    "O estado definitivo deve ser confirmado pelo backend através das informações fornecidas pelo Mercado Pago."
+  ],
+  "keywords": [
+    "mercado-pago",
+    "checkout",
+    "checkout-pro",
+    "payment",
+    "saas",
+    "plano",
+    "billing",
+    "backend"
+  ]
+}

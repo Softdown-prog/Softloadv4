@@ -1,0 +1,63 @@
+{
+  "contract": "CH_2D_SCENE_RECIPE_V3",
+  "id": "prop_rowboat_scene_v3",
+  "canvas": [256, 192],
+  "anchor": [128, 170],
+  "seed": 113,
+  "camera": {"contract": "CH_CAMERA_V1", "tile": [128, 64], "yawDeg": 45, "elevationDeg": 30, "projection": "orthographic_dimetric"},
+  "lighting": {"direction": [-1, -1], "shadowOffset": [4, 6]},
+  "validation": {"minimumOpaqueHeightPx": 52, "maximumOpaqueHeightPx": 172},
+  "symbols": {
+    "seat": [{
+      "type": "shape", "primitive": "rounded_rect", "box": [-29, -4, 29, 4], "radius": 2,
+      "material": {"type": "wood", "light": "#DAB178", "dark": "#82502E", "grainAngleDeg": -5, "grainSpacing": 4.2, "grainColor": "#4C2B1C44"},
+      "effects": {"ambientOcclusion": {"width": 2, "strength": 0.18}, "bevel": {"width": 1.2, "strength": 0.34}, "outline": {"width": 0.6, "color": "#4B2E20CC"}}
+    }],
+    "rivet": [{
+      "type": "shape", "primitive": "ellipse", "box": [-1.4, -1.4, 1.4, 1.4],
+      "material": {"type": "painted_metal", "base": "#696D6A", "highlight": "#C5C2B5"},
+      "effects": {"bevel": {"width": 0.7, "strength": 0.28}}
+    }]
+  },
+  "layers": [
+    {"type": "shape", "primitive": "ellipse", "box": [48, 136, 208, 178], "material": {"type": "solid", "color": "#11192350"}},
+    {
+      "type": "shape", "primitive": "polygon", "points": [[38,111],[68,78],[175,68],[220,103],[188,148],[83,153]],
+      "material": {"type": "wood", "light": "#C17A46", "dark": "#67361F", "grainAngleDeg": -6, "grainSpacing": 5.0, "grainColor": "#32170F50"},
+      "effects": {"shadow": {"offset": [4,7], "blur": 3, "color": "#10151B88"}, "ambientOcclusion": {"width": 3, "strength": 0.22}, "bevel": {"width": 1.4, "strength": 0.34}, "outline": {"width": 0.9, "color": "#3A241AE8"}}
+    },
+    {
+      "type": "clip_group",
+      "clip": {"primitive": "polygon", "points": [[44,109],[70,82],[173,73],[212,103],[184,143],[86,148]]},
+      "children": [
+        {"type": "shape", "primitive": "line", "points": [[58,88],[198,118]], "width": 1.2, "material": {"type": "solid", "color": "#E4A96A55"}},
+        {"type": "shape", "primitive": "line", "points": [[51,98],[193,130]], "width": 1.0, "material": {"type": "solid", "color": "#4A261733"}},
+        {"type": "shape", "primitive": "line", "points": [[52,118],[182,145]], "width": 1.1, "material": {"type": "solid", "color": "#E7A76A3A"}}
+      ]
+    },
+    {
+      "type": "shape", "primitive": "polygon", "points": [[54,108],[81,88],[166,80],[202,104],[179,132],[91,138]],
+      "material": {"type": "wood", "light": "#5B3A2E", "dark": "#231613", "grainAngleDeg": -4, "grainSpacing": 5.5, "grainColor": "#110B0844"},
+      "effects": {"ambientOcclusion": {"width": 4, "strength": 0.38}, "innerShadow": {"offset": [2,2], "blur": 2, "strength": 0.32}, "outline": {"width": 0.7, "color": "#1C120FE8"}}
+    },
+    {
+      "type": "clip_group",
+      "clip": {"primitive": "polygon", "points": [[61,107],[84,93],[164,85],[193,104],[174,126],[95,132]]},
+      "children": [
+        {"type": "shape", "primitive": "line", "points": [[70,103],[185,101]], "width": 0.8, "material": {"type": "solid", "color": "#9C6B4930"}},
+        {"type": "shape", "primitive": "line", "points": [[72,111],[180,111]], "width": 0.7, "material": {"type": "solid", "color": "#D0A17120"}},
+        {"type": "shape", "primitive": "line", "points": [[78,121],[170,121]], "width": 0.8, "material": {"type": "solid", "color": "#120A082A"}}
+      ]
+    },
+    {"type": "shape", "primitive": "cubic", "points": [[58,109],[92,143],[165,146],[203,104]], "width": 4.2,
+      "material": {"type": "wood", "light": "#E2AA68", "dark": "#8A4F2E", "grainAngleDeg": 8, "grainSpacing": 3.8, "grainColor": "#502B1B42"},
+      "effects": {"bevel": {"width": 1.0, "strength": 0.40}, "outline": {"width": 0.6, "color": "#4A2C1FDD"}}},
+    {"type": "symbol", "symbol": "seat", "transform": {"translate": [106,106], "rotateDeg": -5}},
+    {"type": "symbol", "symbol": "seat", "transform": {"translate": [148,100], "rotateDeg": -5}},
+    {"type": "scatter", "symbol": "rivet", "count": 6, "spread": [38,9], "rotationRange": [0,0], "scaleRange": [0.8,1.0], "transform": {"translate": [128,121]}},
+    {"type": "shape", "primitive": "line", "points": [[75,86],[190,143]], "width": 4,
+      "material": {"type": "wood", "light": "#D8B273", "dark": "#74502D", "grainAngleDeg": 26, "grainSpacing": 3.4, "grainColor": "#4E341F40"},
+      "effects": {"bevel": {"width": 1, "strength": 0.36}, "outline": {"width": 0.6, "color": "#4E361FDD"}}},
+    {"type": "shape", "primitive": "ellipse", "box": [184,138,197,145], "material": {"type": "wood", "light": "#C4945B", "dark": "#684527", "grainAngleDeg": 25, "grainSpacing": 3.0}, "effects": {"bevel": {"width": 0.8, "strength": 0.3}}}
+  ]
+}

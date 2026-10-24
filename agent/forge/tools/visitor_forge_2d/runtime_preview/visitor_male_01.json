@@ -1,0 +1,90 @@
+{
+  "id": "visitor_male_01_forge_preview",
+  "status": "visual_preview_not_approved",
+  "clips": [
+    {
+      "id": "idle_south",
+      "state": "idle",
+      "direction": "south",
+      "fps": 1,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/south_idle.png"
+      ]
+    },
+    {
+      "id": "walking_south",
+      "state": "walking",
+      "direction": "south",
+      "fps": 4.545454545454546,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/south_walk_a.png",
+        "tools/visitor_forge_2d/art/concepts/frames_preview/south_walk_b.png"
+      ]
+    },
+    {
+      "id": "idle_east",
+      "state": "idle",
+      "direction": "east",
+      "fps": 1,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/east_idle.png"
+      ]
+    },
+    {
+      "id": "walking_east",
+      "state": "walking",
+      "direction": "east",
+      "fps": 4.545454545454546,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/east_walk_a.png",
+        "tools/visitor_forge_2d/art/concepts/frames_preview/east_walk_b.png"
+      ]
+    },
+    {
+      "id": "idle_north",
+      "state": "idle",
+      "direction": "north",
+      "fps": 1,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/north_idle.png"
+      ]
+    },
+    {
+      "id": "walking_north",
+      "state": "walking",
+      "direction": "north",
+      "fps": 4.545454545454546,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/north_walk_a.png",
+        "tools/visitor_forge_2d/art/concepts/frames_preview/north_walk_b.png"
+      ]
+    },
+    {
+      "id": "idle_west",
+      "state": "idle",
+      "direction": "west",
+      "fps": 1,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/west_idle.png"
+      ]
+    },
+    {
+      "id": "walking_west",
+      "state": "walking",
+      "direction": "west",
+      "fps": 4.545454545454546,
+      "loop": true,
+      "frames": [
+        "tools/visitor_forge_2d/art/concepts/frames_preview/west_walk_a.png",
+        "tools/visitor_forge_2d/art/concepts/frames_preview/west_walk_b.png"
+      ]
+    }
+  ]
+}

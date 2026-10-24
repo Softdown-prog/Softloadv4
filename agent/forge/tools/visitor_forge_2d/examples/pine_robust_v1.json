@@ -1,0 +1,126 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "palette": {
+    "ground_shadow": "#1B2B22",
+    "trunk_top": "#76573A",
+    "trunk_bottom": "#423324",
+    "trunk_light": "#9A7852",
+    "back_top": "#1A3D27",
+    "back_bottom": "#0D291C",
+    "mid_top": "#355F39",
+    "mid_bottom": "#1A3E2A",
+    "front_top": "#476E41",
+    "front_bottom": "#284E32",
+    "highlight": "#74945F",
+    "occlusion": "#102D1D"
+  },
+  "raster": {
+    "shadowDabs": 340,
+    "highlightDabs": 280,
+    "needleStrokes": 620,
+    "finalGrain": 330,
+    "finalNeedles": 330
+  },
+  "id": "pine_robust_v1",
+  "canvas": [
+    220,
+    231
+  ],
+  "anchor": [
+    110,
+    217
+  ],
+  "seed": 73061,
+  "trunk": {
+    "topY": 95,
+    "topWidth": 27,
+    "baseWidth": 21
+  },
+  "shadow": {
+    "width": 112,
+    "height": 15
+  },
+  "validation": {
+    "minimumOpaqueHeightPx": 200,
+    "maximumOpaqueHeightPx": 220
+  },
+  "tiers": [
+    {
+      "y": 20,
+      "span": 12,
+      "thickness": 17,
+      "skew": 0
+    },
+    {
+      "y": 34,
+      "span": 21,
+      "thickness": 20,
+      "skew": -1
+    },
+    {
+      "y": 50,
+      "span": 32,
+      "thickness": 23,
+      "skew": 1
+    },
+    {
+      "y": 68,
+      "span": 40,
+      "thickness": 25,
+      "skew": -2
+    },
+    {
+      "y": 87,
+      "span": 51,
+      "thickness": 28,
+      "skew": 1
+    },
+    {
+      "y": 107,
+      "span": 61,
+      "thickness": 29,
+      "skew": -2
+    },
+    {
+      "y": 128,
+      "span": 69,
+      "thickness": 30,
+      "skew": 2
+    },
+    {
+      "y": 150,
+      "span": 77,
+      "thickness": 31,
+      "skew": -1
+    },
+    {
+      "y": 169,
+      "span": 83,
+      "thickness": 32,
+      "skew": 2
+    },
+    {
+      "y": 187,
+      "span": 88,
+      "thickness": 29,
+      "skew": -1
+    },
+    {
+      "y": 198,
+      "span": 92,
+      "thickness": 27,
+      "skew": 0
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "tema-brutalista-appcraft",
+  "titulo": "AppCraft — Tema Brutalista Minimalista com Pontilhado de Caderno e Tipografia Mono",
+  "categoria": "tema-completo",
+  "nicho": "tecnologia",
+  "descricao": "Template Blogger leve (797 linhas) no estilo brutalismo digital. Sem decoracao excessiva — bordas grossas, sombras deslocadas, amarelo como unica cor de destaque, tipografia pesada uppercase. Usa Space Grotesk + Fira Code. Conceito principal: amarelo como marcador de texto e unica cor de destaque em um universo preto-e-branco. Estrutura semi-amputada: Blog1 widget preserva apenas o b:includable main com HTML limpo — todos os outros inclusables retornam div vazio. Validado em producao real.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, sticky-top, collapse)",
+    "Google Fonts: Space Grotesk (400/600/700) + Fira Code (400/500/700)"
+  ],
+  "tokens_css": {
+    "prefixo": "--ac-",
+    "light_mode": {
+      "--ac-bg": "#f8f9fa",
+      "--ac-dark": "#111111",
+      "--ac-yellow": "#facc15",
+      "--font-display": "'Space Grotesk', sans-serif",
+      "--font-mono": "'Fira Code', monospace"
+    },
+    "fontes": {
+      "--font-display": "'Space Grotesk', sans-serif — titulos e corpo",
+      "--font-mono": "'Fira Code', monospace — metadados, datas, tags"
+    }
+  },
+  "theme_designer_bridge": {
+    "formato": "Group e Variable dentro de bloco de comentario CSS /* */",
+    "codigo": "/*\n<Group description=\"🎨 Cores do Tema (AppCraft)\" selector=\":root\">\n  <Variable name=\"cor.fundo\" description=\"Cor de Fundo (Branco Gelo)\" type=\"color\" default=\"#f8f9fa\" value=\"#f8f9fa\"/>\n  <Variable name=\"cor.escura\" description=\"Cor Escura (Preto Nanquim)\" type=\"color\" default=\"#111111\" value=\"#111111\"/>\n  <Variable name=\"cor.destaque\" description=\"Cor de Destaque (Amarelo Tech)\" type=\"color\" default=\"#facc15\" value=\"#facc15\"/>\n</Group>\n*/",
+    "nota": "Identico ao formato PlayerOne e Bulma Mobile — Group dentro de /* */ no inicio do b:skin CDATA"
+  },
+  "javascript": "Nenhum JS customizado — apenas Bootstrap bundle para o collapse do navbar. Zero dark mode, zero animacoes, zero IntersectionObserver. Brutalismo = funcionalidade pura.",
+  "placeholder_form_hacker": {
+    "nome": "> sys.name_",
+    "email": "> sys.email_",
+    "mensagem": "> input_message...",
+    "nota": "Placeholders simulam linha de comando CLI — identidade tecnica/hacker coerente com o tema"
+  },
+  "notas_tecnicas": [
+    "background-color: var(--ac-bg) no texto do hero limpa os pontos do radial-gradient atras das letras — unico truque para texto legivel sobre fundo pontilhado sem overlay",
+    "text-decoration-thickness: 3px + text-underline-offset: 3px — propriedades CSS modernas para sublinhado grosso. Suporte: Chrome 87+, Firefox 70+, Safari 12.1+",
+    "box-shadow: 6px 6px 0 var(--ac-dark) — sombra deslocada sem blur (quarto parametro 0) e padrao definidor do brutalismo digital",
+    "transform: translate(4px, 4px) no :active do botao afunda o elemento na propria sombra — simula fisicamente a tecla descendo",
+    "SVG hamburger inline elimina dependencia de Bootstrap Icons e garante renderizacao identica em todos os ambientes",
+    "Fira Code para metadados e datas cria contraste visual imediato entre dados do sistema (mono) e conteudo editorial (sans-serif)",
+    "letter-spacing: -1px a -3px em titulos grandes — tecnica para texto display compacto sem font-size excessivo",
+    "b:defaultmessages='true' em vez de b:defaultmarkups='true' — mantém mensagens padrao do Blogger (404, loading) sem os markups de layout padrao",
+    "facc15 — amarelo Tailwind yellow-400, escolha intencional para amarelo tech que nao parece infantil em contexto escuro"
+  ]
+}

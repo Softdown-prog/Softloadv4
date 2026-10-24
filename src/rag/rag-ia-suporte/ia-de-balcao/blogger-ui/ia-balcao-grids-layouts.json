@@ -1,0 +1,45 @@
+{
+  "id": "ia-balcao-grids-layouts",
+  "categoria": "grid-layout",
+  "conceito": "Padrões de grid e layout para templates Blogger com Bootstrap 5.3: masonry simulado via CSS columns, grid de cards responsivo, layout editorial 2/3-1/3 com sidebar, grid de features com ícones, e layout full-width para landing pages. Sem JS extra — só CSS e classes Bootstrap.",
+
+  "grid_cards_responsivo": {
+    "descricao": "Grid de cards responsivo com auto-fill. Ideal para grade de posts. Usa row-cols-* para controlar colunas por breakpoint.",
+    "html": "<div class=\"row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4\">\n  <div class=\"col\">\n    <article class=\"card h-100 border-0 shadow-sm\">\n      <div class=\"card-body\">\n        <span class=\"badge mb-2\" style=\"background:var(--sl-primary)\">Categoria</span>\n        <h3 class=\"card-title h5\">Título do Post</h3>\n        <p class=\"card-text text-muted small\">Trecho do post aparece aqui com até duas linhas de resumo...</p>\n      </div>\n      <div class=\"card-footer bg-transparent border-0 pt-0\">\n        <a href=\"#\" class=\"btn btn-sm btn-outline-primary rounded-pill\">Leia mais</a>\n      </div>\n    </article>\n  </div>\n</div>",
+    "css": ".card{transition:transform .2s,box-shadow .2s}.card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.12)!important}"
+  },
+
+  "grid_masonry_css": {
+    "descricao": "Masonry simulado com CSS columns. Sem JS. Posts de alturas diferentes ficam organizados naturalmente em colunas.",
+    "html": "<div class=\"sl-masonry\">\n  <article class=\"sl-masonry-item card border-0 shadow-sm mb-4\">\n    <div class=\"card-body\">\n      <span class=\"badge mb-2\" style=\"background:var(--sl-primary)\">Label</span>\n      <h3 class=\"h5\">Título do Post</h3>\n      <p class=\"text-muted small\">Descrição do post com tamanho variável...</p>\n      <a class=\"btn btn-sm btn-outline-secondary rounded-pill\" href=\"#\">Ver mais</a>\n    </div>\n  </article>\n  <article class=\"sl-masonry-item card border-0 shadow-sm mb-4\">\n    <div class=\"card-body\">\n      <span class=\"badge mb-2\" style=\"background:var(--sl-accent,#6c757d)\">Label 2</span>\n      <h3 class=\"h5\">Outro Post Mais Longo</h3>\n      <p class=\"text-muted small\">Este post tem um trecho bem mais longo que serve de exemplo para o masonry alinhar alturas diferentes entre os itens da grade.</p>\n      <a class=\"btn btn-sm btn-outline-secondary rounded-pill\" href=\"#\">Ver mais</a>\n    </div>\n  </article>\n</div>",
+    "css": ".sl-masonry{columns:1;gap:1.5rem}\n@media(min-width:576px){.sl-masonry{columns:2}}\n@media(min-width:992px){.sl-masonry{columns:3}}\n.sl-masonry-item{break-inside:avoid;display:block}"
+  },
+
+  "layout_editorial_2_3": {
+    "descricao": "Layout editorial clássico: coluna principal 2/3 + sidebar 1/3. Sidebar fica abaixo no mobile (order). Padrão para blogs com conteúdo rico.",
+    "html": "<div class=\"row g-4 g-lg-5\">\n  <main class=\"col-lg-8 order-1\">\n    <div class=\"row g-4\">\n      <div class=\"col-12\">\n        <article class=\"card h-100 border-0 shadow-sm\">\n          <div class=\"card-body\">\n            <span class=\"badge mb-2\" style=\"background:var(--sl-primary)\">Principal</span>\n            <h2 class=\"h4\">Post em Destaque</h2>\n            <p class=\"text-muted\">Conteúdo principal do feed aparece aqui...</p>\n          </div>\n        </article>\n      </div>\n    </div>\n  </main>\n  <aside class=\"col-lg-4 order-2\">\n    <div class=\"sticky-top\" style=\"top:80px\">\n      <div class=\"card border-0 shadow-sm mb-4\">\n        <div class=\"card-body\">\n          <h5 class=\"card-title\" style=\"color:var(--sl-primary)\">Sobre o Blog</h5>\n          <p class=\"small text-muted\">Descrição breve do blog e do autor.</p>\n        </div>\n      </div>\n      <div id=\"related-posts-container\"></div>\n    </div>\n  </aside>\n</div>",
+    "css": "@media(max-width:991px){aside.col-lg-4{order:3!important}}"
+  },
+
+  "grid_features_icones": {
+    "descricao": "Grid de features/benefícios com ícone Bootstrap, título e texto. 3 colunas no desktop, 1 no mobile. Ideal para seções Sobre ou Landing.",
+    "html": "<div class=\"row row-cols-1 row-cols-md-3 g-4 py-4\">\n  <div class=\"col text-center\">\n    <div class=\"d-inline-flex align-items-center justify-content-center rounded-circle mb-3\" style=\"width:64px;height:64px;background:rgba(var(--sl-primary-rgb,0,123,255),.1)\">\n      <i class=\"bi bi-lightning-charge-fill fs-3\" style=\"color:var(--sl-primary)\"></i>\n    </div>\n    <h4 class=\"h5\">Velocidade</h4>\n    <p class=\"text-muted small\">Carregamento otimizado para qualquer dispositivo.</p>\n  </div>\n  <div class=\"col text-center\">\n    <div class=\"d-inline-flex align-items-center justify-content-center rounded-circle mb-3\" style=\"width:64px;height:64px;background:rgba(var(--sl-primary-rgb,0,123,255),.1)\">\n      <i class=\"bi bi-shield-check-fill fs-3\" style=\"color:var(--sl-primary)\"></i>\n    </div>\n    <h4 class=\"h5\">Segurança</h4>\n    <p class=\"text-muted small\">Template validado e seguro para uso no Blogger.</p>\n  </div>\n  <div class=\"col text-center\">\n    <div class=\"d-inline-flex align-items-center justify-content-center rounded-circle mb-3\" style=\"width:64px;height:64px;background:rgba(var(--sl-primary-rgb,0,123,255),.1)\">\n      <i class=\"bi bi-palette-fill fs-3\" style=\"color:var(--sl-primary)\"></i>\n    </div>\n    <h4 class=\"h5\">Design</h4>\n    <p class=\"text-muted small\">Visual responsivo e moderno com Bootstrap 5.</p>\n  </div>\n</div>",
+    "css": ""
+  },
+
+  "layout_fullwidth_hero": {
+    "descricao": "Seção full-width que quebra o container pai. Usa margin negativa e padding para ocupar 100vw mesmo dentro de container.",
+    "html": "<section class=\"sl-fullwidth py-5\" style=\"background:var(--sl-primary);color:#fff\">\n  <div class=\"container\">\n    <div class=\"row align-items-center\">\n      <div class=\"col-lg-7\">\n        <h2 class=\"display-5 fw-bold mb-3\">Seção Destaque Full-Width</h2>\n        <p class=\"lead mb-4 opacity-75\">Este bloco ocupa toda a largura da tela, quebrando o container com margin negativa.</p>\n        <a href=\"#\" class=\"btn btn-light btn-lg fw-semibold rounded-pill px-4\">Saiba Mais</a>\n      </div>\n      <div class=\"col-lg-5 text-center mt-4 mt-lg-0\">\n        <i class=\"bi bi-stars\" style=\"font-size:8rem;opacity:.3\"></i>\n      </div>\n    </div>\n  </div>\n</section>",
+    "css": ".sl-fullwidth{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);width:100vw;position:relative}"
+  },
+
+  "notas_tecnicas": [
+    "row-cols-* é mais semântico que col-md-4 repetido — garante mesmo número de colunas para todos os filhos",
+    "Masonry CSS: break-inside:avoid no item é obrigatório, senão cards podem partir na metade ao trocar de coluna",
+    "sticky-top na sidebar precisa de top equivalente à altura do header (80px se header mede ~64px + padding)",
+    "id='related-posts-container' é a ancora padrão para injeção de posts relacionados via JSON Feed",
+    "sl-fullwidth usa margin negativa para quebrar container — funciona mesmo quando container tem max-width definido",
+    "grid_features: rgba(var(--sl-primary-rgb)) requer que o tema declare --sl-primary-rgb separado; fallback via cor fixa"
+  ]
+}
+

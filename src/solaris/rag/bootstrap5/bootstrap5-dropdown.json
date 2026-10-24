@@ -1,0 +1,32 @@
+{
+  "titulo": "bootstrap5 — dropdown",
+  "categoria": "topico",
+  "descricao": "Menu suspenso acionado por clique, usado dentro de navbar, botões ou itens de lista. Controlado via data-bs-toggle=\"dropdown\", sem necessidade de JavaScript customizado.",
+  "componentes": [
+    "dropdown",
+    "dropdown-toggle",
+    "dropdown-menu",
+    "dropdown-item",
+    "dropdown-divider",
+    "dropdown-header",
+    "dropend",
+    "dropstart",
+    "dropup",
+    "data-bs-toggle"
+  ],
+  "exemplos": [
+    "<div class=\"dropdown\"><button class=\"btn btn-secondary dropdown-toggle\" data-bs-toggle=\"dropdown\">Ações</button><ul class=\"dropdown-menu\"><li><a class=\"dropdown-item\" href=\"#\">Editar</a></li><li><hr class=\"dropdown-divider\"></li><li><a class=\"dropdown-item\" href=\"#\">Excluir</a></li></ul></div>"
+  ],
+  "boas_praticas": [
+    "O elemento acionador precisa de aria-expanded (o JS do Bootstrap já cuida disso automaticamente).",
+    "dropdown-item-text pra conteúdo não-clicável dentro do menu.",
+    "dropup/dropend/dropstart mudam a direção de abertura — útil perto das bordas da tela."
+  ],
+  "keywords": [
+    "menu suspenso",
+    "select customizado",
+    "menu de opções"
+  ],
+  "id": "bootstrap5-dropdown",
+  "slug": "bootstrap5-dropdown"
+}

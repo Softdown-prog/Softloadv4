@@ -1,0 +1,35 @@
+{
+  "contract": "CH_2D_FENCE_SCENERY_V1",
+  "variant": "wood",
+  "id": "park_wood_fence_01",
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "tile": [128, 64],
+    "yawDeg": 45,
+    "elevationDeg": 30
+  },
+  "canvas": [192, 128],
+  "anchor": [96, 64],
+  "geometry": {
+    "heightPx": 26,
+    "picketSpacingPx": 9,
+    "picketWidthPx": 4,
+    "postWidthPx": 6,
+    "railWidthPx": 4
+  },
+  "palette": {
+    "wood": "#8A6138",
+    "woodHighlight": "#C18A50",
+    "woodShadow": "#513820",
+    "groundShadow": "#000000"
+  },
+  "referenceIntent": [
+    "warm painted timber park fence",
+    "two horizontal rails with evenly spaced vertical pickets",
+    "heavier capped posts on grid vertices",
+    "matching gate module",
+    "modular one-tile edge segments for tycoon-style automatic turns"
+  ],
+  "artApproved": false,
+  "runtimePromotion": false
+}

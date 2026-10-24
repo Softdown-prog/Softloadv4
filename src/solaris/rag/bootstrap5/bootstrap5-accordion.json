@@ -1,0 +1,33 @@
+{
+  "titulo": "bootstrap5 — accordion",
+  "categoria": "topico",
+  "descricao": "Conjunto de painéis expansíveis empilhados verticalmente, onde cada cabeçalho controla a visibilidade do próprio corpo. Por padrão só um painel fica aberto por vez (via data-bs-parent).",
+  "componentes": [
+    "accordion",
+    "accordion-item",
+    "accordion-header",
+    "accordion-button",
+    "accordion-collapse",
+    "accordion-body",
+    "accordion-flush",
+    "data-bs-toggle",
+    "data-bs-parent"
+  ],
+  "exemplos": [
+    "<div class=\"accordion\" id=\"faq\"><div class=\"accordion-item\"><h2 class=\"accordion-header\"><button class=\"accordion-button\" data-bs-toggle=\"collapse\" data-bs-target=\"#item1\">Pergunta 1</button></h2><div id=\"item1\" class=\"accordion-collapse collapse show\" data-bs-parent=\"#faq\"><div class=\"accordion-body\">Resposta 1.</div></div></div></div>"
+  ],
+  "boas_praticas": [
+    "Omitir data-bs-parent se quiser permitir múltiplos painéis abertos ao mesmo tempo.",
+    "accordion-flush remove bordas/arredondamento — bom pra encaixar dentro de um card.",
+    "Ideal pra FAQ, especificações de produto ou qualquer conteúdo longo e opcional."
+  ],
+  "keywords": [
+    "sanfona",
+    "faq",
+    "collapse",
+    "perguntas frequentes",
+    "painel expansível"
+  ],
+  "id": "bootstrap5-accordion",
+  "slug": "bootstrap5-accordion"
+}

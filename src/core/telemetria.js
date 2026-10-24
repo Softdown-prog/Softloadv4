@@ -1,0 +1,88 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.registrarCompilacao = registrarCompilacao;
+exports._agregarEventos = _agregarEventos;
+exports.consultarTelemetria = consultarTelemetria;
+// ============================================================
+// TELEMETRIA — Cano 4 (Learning Engine), fase 1: instrumentação
+// interna.
+//
+// Zero IA, zero API externa — só registra, por compilação, o que o
+// próprio compilador já produz (nicho, peças usadas, se cada
+// validador passou). É o alicerce sem o qual uma fase futura de
+// "aprendizado" (correlacionar peça escolhida com resultado real do
+// site publicado) nunca teria dado real pra consumir — essa fase
+// futura (Search Console/PSI, consentimento do usuário) fica fora
+// de escopo aqui, só a coleta interna.
+//
+// Persistido no Firestore (coleção telemetria_compilacoes), não em
+// arquivo local — Cloud Run tem filesystem efêmero, um arquivo local
+// se perde a cada deploy/restart/instância nova (achado real: essa
+// era a versão anterior desta função, e o dado nunca sobrevivia mais
+// que um deploy). Escrita é fire-and-forget (sem await no chamador):
+// registrarCompilacao roda dentro de executarCompilacao(), função
+// síncrona chamada em todo o caminho quente de compilação — falha de
+// rede no log nunca pode derrubar uma compilação real.
+// ============================================================
+const { db, admin } = require('../services/firebase');
+const COLLECTION = 'telemetria_compilacoes';
+// Teto de leitura pra consultar_telemetria (Sol) — evita um custo de
+// leitura ilimitado conforme o volume real de compilações cresce.
+// Cobre uma janela generosa de uso normal; se um histórico mais longo
+// for necessário no futuro, isso vira agregação pré-computada, não
+// uma leitura maior aqui.
+const LIMITE_CONSULTA = 5000;
+function registrarCompilacao(evento) {
+    db.collection(COLLECTION).add({
+        ...evento,
+        criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+    }).catch(e => {
+        console.warn('[TELEMETRIA] falha ao registrar compilação (ignorado):', e.message);
+    });
+}
+// ──────────────────────────────────────────────────────────────
+// _agregarEventos — pura, sem I/O. Recebe uma lista de eventos (já
+// carregados do Firestore) e devolve o resumo que consultarTelemetria()
+// expõe ao Sol. Separada da leitura pra ser testável sem rede.
+// ──────────────────────────────────────────────────────────────
+function _agregarEventos(eventos) {
+    const porNicho = {};
+    let pecaGeradaPorIA = 0;
+    const falhasPorValidador = {};
+    for (const evento of eventos) {
+        const nicho = evento.nichoTema || 'desconhecido';
+        porNicho[nicho] = (porNicho[nicho] || 0) + 1;
+        if (evento.pecaGeradaPorIA)
+            pecaGeradaPorIA++;
+        const validadores = evento.validadoresPassaram || {};
+        for (const [nomeValidador, passou] of Object.entries(validadores)) {
+            if (!passou)
+                falhasPorValidador[nomeValidador] = (falhasPorValidador[nomeValidador] || 0) + 1;
+        }
+    }
+    return {
+        totalCompilacoes: eventos.length,
+        porNicho,
+        compilacoesComPecaGeradaPorIA: pecaGeradaPorIA,
+        falhasPorValidador,
+    };
+}
+// ──────────────────────────────────────────────────────────────
+// consultarTelemetria — lê os eventos mais recentes do Firestore e
+// agrega. Async (diferente de registrarCompilacao, fire-and-forget) —
+// só é chamada sob demanda pelo Sol, fora do caminho quente de
+// compilação.
+// ──────────────────────────────────────────────────────────────
+async function consultarTelemetria() {
+    let snap;
+    try {
+        snap = await db.collection(COLLECTION).orderBy('criadoEm', 'desc').limit(LIMITE_CONSULTA).get();
+    }
+    catch (e) {
+        return { erro: `Falha ao ler telemetria: ${e.message}` };
+    }
+    if (snap.empty) {
+        return { aviso: 'Nenhuma compilação registrada em telemetria ainda — a coleção existe mas ainda não recebeu eventos reais.', totalCompilacoes: 0 };
+    }
+    return _agregarEventos(snap.docs.map(d => d.data()));
+}

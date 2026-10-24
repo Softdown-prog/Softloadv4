@@ -1,0 +1,1995 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<!-- Esqueleto próprio do nicho natureza-bulma-vegan — ver plano "esqueleto
+     por nicho". Extraído de exemplos/natureza-bulma-vegan.xml (2606
+     linhas, 13 b:section reais). Chassis 'blog' compartilhado segue
+     ativo só com pop-retro-pixel/tecnologia-mag-tech (2 nichos
+     restantes da Fase 2).
+
+     Achados desta migração:
+     1. Dossiê (19 peças) já era CSS-fiel à realidade (zero seletor
+        remapeado pro chassis 'blog' — confirmado via grep: nenhuma
+        ocorrência de .sl-header/.sl-footer/.sl-nav/.blog-post-body/
+        .news-card/rgba(var(--sl-primary)) em nenhuma peça). O trabalho
+        aqui foi 100% estrutural — extração física real + achados novos
+        abaixo, não reversão de seletor.
+     2. 'header-logo': Header1 real usa useImage=true com foto real do
+        dono (blogger.googleusercontent.com/...) — redigido via
+        HEADER_WIDGET (token) genérico (.sl-header-brand, compatível com
+        troca de logo do Design Package). O fallback de texto real
+        (.text-nature-primary) não fica órfão: a classe é reutilizada
+        em mais 2 lugares do CSS (heading de busca, badge do card).
+     3. 'header-menu': LinkList1 real tinha domínio real do dono
+        (bulma-webly.blogspot.com) + 1 link pessoal do Google Drive —
+        redigidos pra '#' (mantendo a ESTRUTURA real: os itens com
+        prefixo '_' no texto — ex: '_receita1' — alimentam um mecanismo
+        JS real de submenu dropdown, script próprio do arquivo,
+        equivalente ao MENU_DROPDOWN_PREFIXO (token) genérico já ligado via
+        menuDropdownPrefixo=true — usado o token genérico em vez do
+        script inline, mesmo resultado). Typo "Doccumentação" corrigido
+        pra "Documentação".
+     4. 'hero-section': Image1 real (foto de banner real do dono) —
+        displayUrl redigido pra vazio, estrutura preservada
+        (useImage/caption/link condicionais reais, dono troca a foto
+        pelo próprio painel do Blogger). No arquivo real a seção
+        renderizava em TODA página (sem gate de view) — como o h1 do
+        hero (data:title, sempre preenchido, mesmo com foto vazia) e o
+        h1 do post único (postFull) acabavam coexistindo na mesma
+        página de post (achado do gerarDiagnostico: 2 h1 no mesmo
+        escopo), a seção ganhou gate isHomepage nesta migração — trade-
+        off aceito (mesmo padrão já usado noutros nichos com hero sem
+        gate no arquivo original).
+     5. 'before-post-content': HTML1 real (badge de tempo de leitura,
+        JS próprio contando palavras de '.post-content' + reposicionando
+        via insertAdjacentElement) substituído por READING_TIME (token)
+        genérico — mesma função, seletor mais robusto
+        ([itemprop='articleBody'], não amarrado a uma classe só), sem
+        duplicar feature. readingTime=true adicionado a
+        nichoModuleDefaults.js (nunca esteve ligado antes).
+     6. 'main' (Blog1, id renomeado do real 'main-blog' — classe CSS
+        '.main-blog' preservada, só o id mudou — pra satisfazer o
+        marcador canônico do Design Package, mesmo trade-off já aceito
+        em culinaria-boutique-gourmet/gamer-playerone; sem isso,
+        injetarDesignPackage() não acha onde injetar heroHtml/
+        staticSections do chat de edição do Workspace): widget-settings
+        trimmados pra lista válida
+        (commentLabel/style.*(6)/postLocationLabel/timestampLabel vazio/
+        reactionsLabel vazio/showAuthorProfile/showLocation/
+        postLabelsLabel vazio/postsPerAd rejeitados pelo Blogger hoje).
+        View isError (404 temático "Ops! Parece que você se perdeu na
+        trilha") substituída por ERROR_404_MODULE (token) — já existe a
+        variante ERROR_404_NATUREZA em modules.js, extraída deste mesmo
+        arquivo em auditoria anterior, ligada via error404Theme='natureza'
+        (já estava configurado, só não tinha esqueleto próprio pra usar).
+        postCard (grid)/postFull (single)/nextprev — todos reais,
+        mantidos verbatim. TODOS os demais includables do Blog1
+        (aboutPostAuthor…tooltipCss, ~680 linhas) mantidos verbatim SEM
+        usar BLOGGER_INCLUDABLES_PADRAO (token): o sistema de comentários
+        real (comment-block/avatar-image-container/comment-author/
+        comment-body/comment-footer/comment-thread, com CSS própria já
+        no dossiê) e o author-profile no rodapé do post são
+        substancialmente mais ricos que os stubs vazios do partial
+        genérico — usar o token aqui apagaria silenciosamente essas
+        seções (CSS ficaria órfã, funcionalidade sumiria).
+     7. 'after-post-content': HTML8 ("Como Instalar o Template", iframe
+        apontando pra Google Drive pessoal do dono) REMOVIDO — não é
+        conteúdo do site, é artefato de quando o arquivo circulou como
+        tema pronto pra venda/distribuição, com leak de link pessoal
+        junto. HTML7 (anúncio "Anuncie Aqui") e FeaturedPost1 mantidos
+        verbatim (reais, autocontidos, sem dado de terceiro).
+     8. 'sidebar-right': HTML3 é um banner de cookies REAL completo (CSS+
+        HTML+JS próprios, consentimento via localStorage
+        'nat_cookie_consent_v1', nunca antes capturado como peça de
+        dossiê — cookieBanner não estava nem ligado em
+        nichoModuleDefaults.js, então o site não tinha NENHUM banner de
+        cookies) — autorada como peça nova 'widget-cookie-banner'
+        (tipo:'widget', protegida:true), renderizada via
+        NICHO_WIDGETS_HTML (token) no fim do body — mesmo padrão de
+        widget position:fixed já usado em culinaria (posição no DOM não
+        importa, é fixed; diferente de gamer-playerone/dark-mode-toggle,
+        que precisava de posição exata e por isso foi embutido à mão).
+        Sidebar-right no esqueleto fica só com Translate1 nativo
+        preservado — colocar o HTML do banner ALI TAMBÉM, além do token,
+        duplicaria o banner (achado real: 1ª tentativa desta migração
+        fez exatamente isso, pego pelo validarSemanticaBlogger — widget
+        órfão fora de b:section, resultado do reparo automático de id
+        duplicado).
+     9. 'widget-html-1'/'widget-html-2'/'outros-widgets-html': peças
+        'secao' já existentes no dossiê (secao-widget-html-1/2,
+        secao-outros-widgets-html) escritas diretamente nas suas
+        b:section reais — inclui o HERO SLIDER real (#nat-hero-slider,
+        carrossel Bootstrap alimentado por JSON feed dos últimos posts,
+        script próprio) + botão voltar-ao-topo (#nat-back-to-top) +
+        PopularPosts1/Label1 nativos. Sem dado de terceiro.
+    10. 'footer-left'/'footer-center'/'footer-right': Stats1 real
+        preservado verbatim (CSS #Stats1 "força máxima" do dossiê já
+        mira esse id exato). Image2 (footer-center, foto real do dono
+        sem título/link/caption — provável selo decorativo) redigido pra
+        displayUrl vazio, estrutura preservada. ContactForm1 real →
+        token CONTACT_FORM (token) genérico (mesmo padrão de sempre; CSS do
+        dossiê revertida de '.contact-form-button-submit' pra
+        '.contact-form-button', 6ª ocorrência desse bug recorrente nesta
+        sessão — a versão que de fato renderiza no includable 'main' do
+        token não tem o sufixo). contactForm=true adicionado a
+        nichoModuleDefaults.js. BlogArchive1 + HTML5 (3º anúncio
+        "Anuncie Aqui") mantidos verbatim.
+    11. Copyright do rodapé já era genérico (ano dinâmico via
+        document.write + data:blog.title + "Desenvolvido com foco em
+        Performance.") — nenhuma correção necessária, único nicho desta
+        rodada sem hardcode real no copyright.
+    12. Script de rodapé real tinha 4 blocos: (1) mover before/after-
+        post-content pra dentro do post via slot-before-post/slot-after-
+        post no single-post — mantido verbatim (sem token genérico
+        equivalente); (2) mecanismo de submenu por prefixo '_' —
+        substituído por MENU_DROPDOWN_PREFIXO (token) (mesmo seletor
+        '#main-nav ul', estrutura real bate 1:1); (3) highlight de busca
+        em '.card-title'/'.card-text' — mantido verbatim; (4) posts
+        relacionados via JSON feed, populando #related-posts-container/
+        #related-posts-grid (ids reais usados dentro de postFull) —
+        mantido verbatim, NÃO é o mesmo mecanismo do
+        RELATED_POSTS_JSON (token) genérico (ids/classes diferentes,
+        incompatíveis) — apesar de relatedPosts=true já estar ligado em
+        nichoModuleDefaults.js (herdado de quando rodava no chassis
+        compartilhado), o token não é referenciado neste esqueleto —
+        flag documentada como não-usada aqui, mesmo trade-off aceito em
+        gamer-playerone/reviewEngine. sliderJson=true também não-usado
+        pelo mesmo motivo (o hero slider real de #9 é estruturalmente
+        diferente do slider genérico SLIDER_JSON (token)).
+    13. H1: postFull já tem um h1 com o título do post (view de post
+        único); hero-section (Image1) real já tem um h1 condicional com
+        data:title (sempre preenchido por padrão — home cobre, agora
+        gated por isHomepage, ver achado 4). Nenhum H1_FALLBACK_OCULTO
+        necessário.
+    14. Includables referenciados mas nunca definidos no arquivo
+        original (gap real da fonte, achado do gerarDiagnostico):
+        postMetadataJSON (chamado por postMeta, sem definição — JSON-LD
+        mínimo real autorado, reaproveitando os campos de imagem/
+        publisher que já existiam nas sub-includables originais —
+        achado à parte: o checarSeo() do Diagnóstico não tolera
+        b:if/b:include dentro de bloco JSON-LD, só data:/b:eval
+        simples, então o campo "image" condicional virou um único
+        b:eval com ternário em vez de b:if/b:else),
+        shareIcon/emailIcon/facebookIcon/twitterIcon/pinterestIcon/
+        linkedinIcon/blogThisIcon/get_linkIcon/manageComments
+        (referenciados por sharingButtonContent/emailPostIcon/
+        sharingPlatformIcon/threadedComments — stubs de segurança,
+        mesmo padrão do partial genérico de includables).
+    15. Acessibilidade (achado do gerarDiagnostico): 5 <img> sem alt
+        (avatares de comentário, ícone de excluir comentário, foto do
+        autor no rodapé do post, imagem do FeaturedPost1) corrigidos;
+        botão de busca do header (só ícone bi-search) ganhou
+        aria-label='Buscar'.
+     Ver nichoDossie.natureza-bulma-vegan.test.js pro achado completo. -->
+
+
+<head>
+  <meta charset='utf-8'/>
+  <meta content='width=device-width, initial-scale=1, shrink-to-fit=no' name='viewport'/>
+  <b:include data='blog' name='all-head-content'/>
+  <title><data:blog.pageTitle/></title>
+
+  [[SEO_MODULE]]
+  [[FONT_MODULE]]
+
+  <link href='https://cdn.jsdelivr.net' rel='preconnect'/>
+  <link href='https://cdnjs.cloudflare.com' rel='preconnect'/>
+
+  <link crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'/>
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' rel='stylesheet'/>
+
+  <b:skin><![CDATA[
+ /*---------------------------------------------------------
+      VARIÁVEIS DO BLOGGER THEME DESIGNER (Painel Desbloqueado)
+    -----------------------------------------------------------*/
+    /*
+    <Variable name="body.background" description="Plano de Fundo (Imagem)" type="background" color="#F5F7F8" default="$(color) none repeat scroll top left" value="#F5F7F8 none no-repeat fixed top center"/>
+
+    <Group description="Cores Principais" selector="body">
+      <Variable name="theme.color.primary" description="Verde Claro (Destaque)" type="color" default="#8FBC8F" value="#8fbc8f"/>
+      <Variable name="theme.color.bg" description="Gelo (Fundo Secundário/Cards)" type="color" default="#F5F7F8" value="#f5f7f8"/>
+      <Variable name="theme.color.gadgetTitle" description="Cor: Títulos dos Gadgets" type="color" default="#333333" value="#333333"/>
+      <Variable name="theme.color.footer" description="Cor: Fundo do Rodapé" type="color" default="#121212" value="#121212"/>
+      <Variable name="theme.color.text" description="Cor: Texto Padrão" type="color" default="#333333" value="#333333"/>
+    </Group>
+
+    <Group description="Tipografia (Fontes)" selector="body">
+      <Variable name="body.font" description="Fonte: Texto Geral" type="font" default="normal normal 16px 'Segoe UI', Arial, sans-serif" value="normal normal 16px PT Sans"/>
+      <Variable name="heading.font" description="Fonte: Títulos de Artigos" type="font" default="normal bold 28px 'Segoe UI', Arial, sans-serif" value="normal bold 28px Allerta Stencil"/>
+      <Variable name="gadget.font" description="Fonte: Títulos dos Gadgets" type="font" default="normal bold 18px 'Segoe UI', Arial, sans-serif" value="normal bold 18px Philosopher"/>
+    </Group>
+    */
+
+    /*---------------------------------------------------------
+      VARIÁVEIS CSS (Ponte entre o Blogger e o Design)
+    -----------------------------------------------------------*/
+    :root {
+      --nat-primary: $(theme.color.primary);
+      --nat-bg: $(theme.color.bg);
+      --nat-footer: $(theme.color.footer);
+      --nat-text: $(theme.color.text);
+      --nat-gadget-title: $(theme.color.gadgetTitle);
+      --nat-surface: #ffffff;
+      --nat-border: rgba(0,0,0,0.08);
+      --nat-text-muted: #6c757d;
+    }
+
+    [[DYNAMIC_CSS]]
+
+    /* === CSS DO NICHO (peças do dossiê: 16 módulos de estilo real +
+         hero slider + botão voltar-ao-topo + popular posts protegidos) === */
+    [[NICHO_CSS]]
+  ]]></b:skin>
+</head>
+
+<body>
+  <header class='site-header shadow-sm sticky-top'>
+    <nav class='navbar navbar-expand-lg py-2' data-bs-theme='light'>
+      <div class='container'>
+        <b:section class='navbar-brand p-0 m-0' id='header-logo' maxwidgets='1' showaddelement='no'>[[HEADER_WIDGET]]</b:section>
+
+        <button aria-controls='main-nav' aria-expanded='false' aria-label='Toggle navigation' class='navbar-toggler border-0 shadow-none' data-bs-target='#main-nav' data-bs-toggle='collapse' type='button'>
+          <span class='navbar-toggler-icon'/>
+        </button>
+
+        <div class='collapse navbar-collapse justify-content-end' id='main-nav'>
+          <b:section class='menu-section' id='header-menu' maxwidgets='1' showaddelement='yes'>
+            <b:widget id='LinkList1' locked='false' title='Menu Principal' type='LinkList' version='2' visible='true'>
+              <b:widget-settings>
+                <b:widget-setting name='link-5'>https://</b:widget-setting>
+                <b:widget-setting name='link-6'>#</b:widget-setting>
+                <b:widget-setting name='link-3'>https://</b:widget-setting>
+                <b:widget-setting name='link-4'>https://</b:widget-setting>
+                <b:widget-setting name='text-1'>Documentação</b:widget-setting>
+                <b:widget-setting name='text-0'>Página inicial </b:widget-setting>
+                <b:widget-setting name='text-3'>_receita1</b:widget-setting>
+                <b:widget-setting name='text-2'>Receitas veganas </b:widget-setting>
+                <b:widget-setting name='text-5'>_receita3</b:widget-setting>
+                <b:widget-setting name='text-4'>_receita2</b:widget-setting>
+                <b:widget-setting name='text-6'>404 Personalizado</b:widget-setting>
+                <b:widget-setting name='shownum'>10</b:widget-setting>
+                <b:widget-setting name='sorting'>NONE</b:widget-setting>
+                <b:widget-setting name='link-1'>#</b:widget-setting>
+                <b:widget-setting name='link-2'>#</b:widget-setting>
+                <b:widget-setting name='link-0'>#</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <ul class='navbar-nav fw-medium' id='dynamic-menu'>
+                  <b:if cond='not data:links'>
+                    <li class='nav-item'>
+                      <span class='nav-link text-muted small fst-italic'>Adicione links no painel &gt; Layout</span>
+                    </li>
+                  </b:if>
+                  <b:loop values='data:links' var='link'>
+                    <li class='nav-item'>
+                      <a class='nav-link' expr:href='data:link.target'><data:link.name/></a>
+                    </li>
+                  </b:loop>
+                </ul>
+              </b:includable>
+              <b:includable id='content'>
+ <div class='widget-content'>
+   <ul>
+     <b:loop values='data:links' var='link'>
+       <li><a expr:href='data:link.target'><data:link.name/></a></li>
+     </b:loop>
+   </ul>
+ </div>
+</b:includable>
+            </b:widget>
+          </b:section>
+          <form action='/search' class='d-flex ms-lg-4 mt-3 mt-lg-0' method='get' role='search'>
+            <input aria-label='Pesquisar postagens' class='form-control form-control-sm me-2 rounded-pill bg-light border-0' name='q' placeholder='Pesquisar...' type='search'/>
+            <button aria-label='Buscar' class='btn btn-sm btn-outline-nature rounded-pill px-3' type='submit'>
+              <i class='bi bi-search'/>
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <b:if cond='data:view.isHomepage'>
+  <b:section class='hero p-0' id='hero-section' maxwidgets='1' showaddelement='yes'>
+    <b:widget id='Image1' locked='false' title='Configurar Banner (Hero)' type='Image' version='2' visible='true'>
+      <b:widget-settings>
+        <b:widget-setting name='displayUrl'/>
+        <b:widget-setting name='displayHeight'>441</b:widget-setting>
+        <b:widget-setting name='sectionWidth'>791</b:widget-setting>
+        <b:widget-setting name='shrinkToFit'>true</b:widget-setting>
+        <b:widget-setting name='displayWidth'>791</b:widget-setting>
+        <b:widget-setting name='link'/>
+        <b:widget-setting name='caption'/>
+      </b:widget-settings>
+      <b:includable id='main'>
+        <div class='hero-content position-relative d-flex align-items-center justify-content-center text-center' expr:style='data:sourceUrl ? &quot;background: url(&quot; + data:sourceUrl + &quot;) center/cover no-repeat; min-height: 400px;&quot; : &quot;background-color: var(--nat-primary); min-height: 300px;&quot;'>
+          <b:if cond='data:sourceUrl'>
+            <div class='position-absolute top-0 start-0 w-100 h-100' style='background: rgba(0,0,0,0.4); z-index: 1;'/>
+          </b:if>
+          <div class='container position-relative px-4 py-5' style='z-index: 2;'>
+            <b:if cond='data:title'>
+              <h1 class='display-4 fw-bold mb-3' expr:class='data:sourceUrl ? &quot;text-white&quot; : &quot;text-dark&quot;'><data:title/></h1>
+            </b:if>
+            <b:if cond='data:caption'>
+              <p class='lead mb-4' expr:class='data:sourceUrl ? &quot;text-light&quot; : &quot;text-dark&quot;'><data:caption/></p>
+            </b:if>
+            <b:if cond='data:link'>
+              <a class='btn btn-lg px-4 rounded-pill shadow-sm fw-semibold' expr:class='data:sourceUrl ? &quot;btn-light text-dark&quot; : &quot;btn-dark text-white&quot;' expr:href='data:link'>
+                Acessar Conteúdo <i class='bi bi-arrow-right ms-2'/>
+              </a>
+            </b:if>
+          </div>
+        </div>
+      </b:includable>
+      <b:includable id='content'>
+  <div class='widget-content'>
+    <b:tag cond='data:link' expr:href='data:link' name='a'>
+      <img expr:alt='data:title' expr:height='data:height' expr:id='data:widget.instanceId + &quot;_img&quot;' expr:src='data:sourceUrl' expr:width='data:width'>
+        <b:attr cond='data:sourceSet' expr:value='data:sourceSet' name='srcset'/>
+      </img>
+    </b:tag>
+    <br/>
+    <b:if cond='data:caption'>
+      <span class='caption'><data:caption/></span>
+    </b:if>
+  </div>
+</b:includable>
+    </b:widget>
+  </b:section>
+  </b:if>
+
+  <div class='container my-5'>
+    <div class='row'>
+
+      <main class='col-lg-8'>
+        <b:section class='before-post mb-4' id='before-post-content' showaddelement='yes'>
+          <b:widget id='HTML97' locked='false' title='' type='HTML' version='2'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>[[READING_TIME]]</b:widget-setting>
+            </b:widget-settings>
+          </b:widget>
+        </b:section>
+
+        <b:section id='main' class='main-blog' showaddelement='no'>
+          <b:widget id='Blog1' locked='true' title='Postagens no blog' type='Blog' version='2' visible='true'>
+
+            <!-- Achado 6 — settings limitados à lista válida pro tipo Blog. -->
+            <b:widget-settings>
+              <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+              <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+              <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+              <b:widget-setting name='showAuthor'>true</b:widget-setting>
+              <b:widget-setting name='showLabels'>true</b:widget-setting>
+              <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+              <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+              <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+              <b:widget-setting name='showReactions'>false</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main' var='top'>
+              [[ERROR_404_MODULE]]
+              <b:if cond='not data:view.isError'>
+                <b:if cond='data:view.search.query'>
+                  <h3 class='mb-4 pb-2 border-bottom'>Resultados para: <span class='text-nature-primary'>&quot;<data:view.search.query/>&quot;</span></h3>
+                </b:if>
+
+                <b:if cond='data:view.isMultipleItems'>
+                  <div class='row g-4'>
+                    <b:loop values='data:posts' var='post'>
+                      <div class='col-md-6'><b:include data='post' name='postCard'/></div>
+                    </b:loop>
+                  </div>
+                  <b:include name='nextprev'/>
+                </b:if>
+
+                <b:if cond='data:view.isSingleItem'>
+                  <b:loop values='data:posts' var='post'>
+                    <b:include data='post' name='postFull'/>
+                  </b:loop>
+                </b:if>
+              </b:if>
+            </b:includable>
+            <b:includable id='aboutPostAuthor'>
+  <div class='author-name'>
+    <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <span>
+        <data:post.author.name/>
+      </span>
+    </a>
+  </div>
+  <div>
+    <span class='author-desc'>
+      <data:post.author.aboutMe/>
+    </span>
+  </div>
+</b:includable>
+            <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+            <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+            <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+            <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container'>
+    <img alt='' class='author-avatar' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+            <b:includable id='commentDeleteIcon' var='comment'>
+  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+        <img alt='Excluir comentário' src='https://resources.blogblog.com/img/icon_delete13.gif'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+            <b:includable id='commentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+            <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+            <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+            <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+            <b:includable id='commentPicker' var='post'>
+  <b:if cond='data:post.showThreadedComments'>
+    <b:include data='post' name='threadedComments'/>
+  <b:else/>
+    <b:include data='post' name='comments'/>
+  </b:if>
+</b:includable>
+            <b:includable id='comments' var='post'>
+              <section class='comments' id='comments'>
+                <h4><data:messages.comments/></h4>
+                <div id='comments-block'>
+                  <b:loop values='data:post.comments' var='comment'>
+                    <div class='comment-block'>
+                      <div class='avatar-image-container'>
+                         <img alt='' expr:src='data:comment.authorAvatarSrc' height='40' width='40'/>
+                      </div>
+                      <div class='comment-author'>
+                        <a expr:href='data:comment.authorUrl'><data:comment.author/></a>
+                      </div>
+                      <div class='comment-body'><data:comment.body/></div>
+                      <div class='comment-footer'>
+                        <data:comment.timestamp/>
+                      </div>
+                    </div>
+                  </b:loop>
+                </div>
+                <b:if cond='data:post.allowNewComments'>
+                  <div class='comment-form'>
+                    <a name='comment-form'/>
+                    <h5 class='mb-3'>Deixe seu comentário</h5>
+                    <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+                    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+                    <data:post.cmtfpIframe/>
+                    <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
+                  </div>
+                </b:if>
+              </section>
+            </b:includable>
+            <b:includable id='commentsLink'>
+  <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:if cond='data:post.numberOfComments &gt; 0'>
+      <b:message name='messages.numberOfComments'>
+        <b:param expr:value='data:post.numberOfComments' name='numComments'/>
+      </b:message>
+    <b:else/>
+      <data:messages.postAComment/>
+    </b:if>
+  </a>
+</b:includable>
+            <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+            <b:includable id='defaultAdUnit'>
+  <ins class='adsbygoogle' data-ad-format='auto' expr:data-ad-client='data:adClientId ?: data:blog.adsenseClientId' expr:data-ad-host='data:blog.adsenseHostId' expr:style='data:style ?: &quot;display: block;&quot;'>
+    <b:attr cond='not data:blog.analytics4' expr:value='data:blog.analyticsAccountNumber' name='data-analytics-uacct'/>
+  </ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</b:includable>
+            <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+            <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='feedLinks'>
+  <b:if cond='!data:view.isPost'> <!-- Blog feed links -->
+    <b:if cond='data:feedLinks'>
+      <div class='blog-feeds'>
+        <b:include data='feedLinks' name='feedLinksBody'/>
+      </div>
+    </b:if>
+  <b:else/> <!--Post feed links -->
+    <div class='post-feeds'>
+      <b:loop values='data:posts' var='post'>
+        <b:if cond='data:post.allowComments and data:post.feedLinks'>
+          <b:include data='post.feedLinks' name='feedLinksBody'/>
+        </b:if>
+      </b:loop>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='feedLinksBody' var='links'>
+  <div class='feed-links'>
+  <data:messages.subscribeTo/>
+  <b:loop values='data:links' var='f'>
+     <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+  </b:loop>
+  </div>
+</b:includable>
+            <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+            <b:includable id='googlePlusShare'>
+</b:includable>
+            <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='homePageLink'>
+  <a class='home-link' expr:href='data:blog.homepageUrl'>
+    <data:messages.home/>
+  </a>
+</b:includable>
+            <b:includable id='iframeComments' var='post'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='inlineAd' var='post'>
+  <b:if cond='!data:view.isPreview'>
+    <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+      <!-- Ad -->
+      <div class='inline-ad'>
+        <b:if cond='data:this.adCode != &quot;&quot;'>
+          <data:this.adCode/>
+        <b:else/>
+          <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+        </b:if>
+      </div>
+    </b:if>
+  <b:else/>
+    <div class='inline-ad'>
+      <div class='inline-ad-placeholder'>
+        <span><b:message name='messages.adsGoHere'/></span>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='nextPageLink'>
+  <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+    <data:messages.olderPosts/>
+  </a>
+</b:includable>
+            <b:includable id='nextprev'>
+              <div class='d-flex justify-content-between mt-5'>
+                <b:if cond='data:newerPageUrl'>
+                  <a class='btn btn-outline-dark rounded-pill' expr:href='data:newerPageUrl'><i class='bi bi-arrow-left me-1'/> Recentes</a>
+                <b:else/><span/></b:if>
+                <b:if cond='data:olderPageUrl'>
+                  <a class='btn btn-outline-dark rounded-pill' expr:href='data:olderPageUrl'>Antigas <i class='bi bi-arrow-right ms-1'/></a>
+                </b:if>
+              </div>
+            </b:includable>
+            <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+            <b:includable id='platformShare'>
+  <a expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+            <b:includable id='post' var='post'>
+  <div class='post'>
+    <b:include data='post' name='postMeta'/>
+    <b:include data='post' name='postTitle'/>
+    <b:include name='headerByline'/>
+    <b:if cond='data:view.isSingleItem'>
+      <b:include data='post' name='postBody'/>
+    <b:else/>
+      <b:include data='post' name='postBodySnippet'/>
+      <b:include data='post' name='postJumpLink'/>
+    </b:if>
+    <b:include data='post' name='postFooter'/>
+  </div>
+</b:includable>
+            <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author.profileUrl'>
+        <meta expr:content='data:post.author.profileUrl'/>
+        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+            <b:includable id='postBody' var='post'>
+  <!-- If metaDescription is empty, use the post body as the schema.org description too, for G+/FB snippeting. -->
+  <div class='post-body entry-content float-container' expr:id='&quot;post-body-&quot; + data:post.id'>
+    <data:post.body/>
+  </div>
+</b:includable>
+            <b:includable id='postBodySnippet' var='post'>
+  <b:include data='post' name='postBody'/>
+</b:includable>
+            <b:includable id='postCard' var='post'>
+              <article class='card h-100 shadow-sm border-0'>
+                <b:if cond='data:post.featuredImage'>
+                  <a expr:href='data:post.url'>
+                    <img class='card-img-top' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 600, &quot;16:9&quot;)' style='object-fit: cover; height: 200px;'/>
+                  </a>
+                </b:if>
+                <div class='card-body d-flex flex-column'>
+                  <h2 class='card-title h5 fw-bold'><a class='text-dark text-decoration-none' expr:href='data:post.url'><data:post.title/></a></h2>
+                  <p class='card-text text-muted small mb-3'><data:post.snippet/></p>
+                  <div class='mt-auto d-flex justify-content-between align-items-center'>
+                    <span class='badge bg-nature-primary text-dark'><data:post.author.name/></span>
+                    <a class='btn btn-sm btn-outline-secondary rounded-pill' expr:href='data:post.url'>Ler mais</a>
+                  </div>
+                </div>
+              </article>
+            </b:includable>
+            <b:includable id='postCommentsAndAd' var='post'>
+  <article class='post-outer-container'>
+    <!-- Post title and body -->
+    <div class='post-outer'>
+      <b:include data='post' name='post'/>
+    </div>
+
+    <!-- Comments -->
+    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+    <!-- Show ad inside post container, after comments, if single item. -->
+    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+  </article>
+
+  <!-- Show ad outside post container (between posts) for feed pages. -->
+  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+</b:includable>
+            <b:includable id='postCommentsLink'>
+  <b:if cond='data:view.isMultipleItems'>
+    <span class='byline post-comment-link container'>
+      <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+    </span>
+  </b:if>
+</b:includable>
+            <b:includable id='postFooter' var='post'>
+  <div class='post-footer'>
+    <b:include name='footerBylines'/>
+    <b:include data='post' name='postFooterAuthorProfile'/>
+  </div>
+</b:includable>
+            <b:includable id='postFooterAuthorProfile' var='post'>
+  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+    <div class='author-profile'>
+      <b:if cond='data:post.author.authorPhoto.url'>
+        <img class='author-image' expr:alt='data:post.author.name' expr:src='data:post.author.authorPhoto.url' width='50px'/>
+        <div class='author-about'>
+          <b:include data='post' name='aboutPostAuthor'/>
+        </div>
+      <b:else/>
+        <b:include data='post' name='aboutPostAuthor'/>
+      </b:if>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='postFull' var='post'>
+              <article class='blog-post bg-white p-4 rounded shadow-sm border-0'>
+                <h1 class='fw-bold mb-3'><data:post.title/></h1>
+                <div class='post-meta text-muted small mb-4 pb-3 border-bottom'>
+                  <i class='bi bi-person-circle me-1'/> <data:post.author.name/> | 
+                  <i class='bi bi-calendar3 ms-2 me-1'/> <data:post.date/>
+                </div>
+                <div class='mb-4 w-100' id='slot-before-post'/>
+                <div class='post-content'><data:post.body/></div>
+                <div class='mt-5 pt-3 border-top w-100' id='slot-after-post'/>
+                
+                <b:if cond='data:view.isPost'>
+                  <b:if cond='data:post.labels and data:post.labels.first'>
+                    <div class='related-posts mt-5 pt-4 border-top' expr:data-label='data:post.labels.first.name' expr:data-url='data:post.url.canonical' id='related-posts-container'>
+                      <h4 class='fw-bold mb-4'>Você também pode gostar:</h4>
+                      <div class='row g-4' id='related-posts-grid'>
+                        <div class='col-12 text-center text-muted'>
+                          <div class='spinner-border spinner-border-sm text-nature-primary' role='status'/> Carregando artigos...
+                        </div>
+                      </div>
+                    </div>
+                  </b:if>
+                </b:if>
+
+                <b:if cond='data:post.allowComments'>
+                  <b:include data='post' name='comments'/>
+                </b:if>
+              </article>
+            </b:includable>
+            <b:includable id='postHeader' var='post'>
+  <b:include name='headerByline'/>
+</b:includable>
+            <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+            <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+            <b:includable id='postLocation'>
+  <span class='byline post-location'>
+    <data:byline.label/>
+    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+  </span>
+</b:includable>
+            <b:includable id='postMeta' var='post'>
+  <b:include data='post' name='postMetadataJSON'/>
+</b:includable>
+            <b:includable id='postMetadataJSONImage'>
+  &quot;image&quot;: {
+    &quot;@type&quot;: &quot;ImageObject&quot;,
+    <b:if cond='data:post.featuredImage.isResizable'>
+    &quot;url&quot;: &quot;<b:eval expr='resizeImage(data:post.featuredImage, 1200, &quot;1200:630&quot;)'/>&quot;,
+    &quot;height&quot;: 630,
+    &quot;width&quot;: 1200
+    <b:else/>
+    &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/w1200/&quot;,
+    &quot;height&quot;: 348,
+    &quot;width&quot;: 1200
+    </b:if>
+  },
+</b:includable>
+            <b:includable id='postMetadataJSONPublisher'>
+ &quot;publisher&quot;: {
+    &quot;@type&quot;: &quot;Organization&quot;,
+    &quot;name&quot;: &quot;Blogger&quot;,
+    &quot;logo&quot;: {
+      &quot;@type&quot;: &quot;ImageObject&quot;,
+      &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/h60/&quot;,
+      &quot;width&quot;: 206,
+      &quot;height&quot;: 60
+    }
+  },
+</b:includable>
+            <b:includable id='postPagination'>
+  <div class='blog-pager container' id='blog-pager'>
+    <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+    <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+    <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+  </div>
+</b:includable>
+            <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+            <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>
+      <meta expr:content='data:post.url.canonical'/>
+      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+            <b:includable id='postTitle' var='post'>
+  <a expr:name='data:post.id'/>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title entry-title'>
+      <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+        <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+      <b:else/>
+        <data:post.title/>
+      </b:if>
+    </h3>
+  </b:if>
+</b:includable>
+            <b:includable id='previousPageLink'>
+  <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+    <data:messages.newerPosts/>
+  </a>
+</b:includable>
+            <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+            <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+            <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+            <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' class='hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+            <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+            <b:includable id='threadedCommentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+            <b:includable id='threadedCommentJs' var='post'>
+  <script async='async' expr:src='data:post.commentSrc' type='text/javascript'/>
+  <b:template-script inline='true' name='threaded_comments'/>
+  <script type='text/javascript'>
+    blogger.widgets.blog.initThreadedComments(
+        <data:post.commentJso/>,
+        <data:post.commentMsgs/>,
+        <data:post.commentConfig/>);
+  </script>
+</b:includable>
+            <b:includable id='threadedComments' var='post'>
+  <section class='comments threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+
+    <b:include name='commentsTitle'/>
+
+    <div class='comments-content'>
+      <b:if cond='data:post.embedCommentForm'>
+        <b:include data='post' name='threadedCommentJs'/>
+      </b:if>
+      <div id='comment-holder'>
+         <data:post.commentHtml/>
+      </div>
+    </div>
+
+    <p class='comment-footer'>
+      <b:if cond='data:post.allowNewComments'>
+        <b:include data='post' name='threadedCommentForm'/>
+      <b:else/>
+        <data:post.noNewCommentsText/>
+      </b:if>
+      <b:if cond='data:post.showManageComments'>
+        <b:include data='post' name='manageComments'/>
+      </b:if>
+    </p>
+
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+            <b:includable id='tooltipCss'>
+  <!-- LINT.IfChange -->
+  <style>
+    .post-body a.b-tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip {
+      display: block !important;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-20%, 1px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip iframe {
+      width: 200px;
+      height: 198px;
+      max-width: none;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (hover: hover) {
+      .post-body a.b-tooltip-container:hover .b-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
+</b:includable>
+<!-- Achado: postMetadataJSON/shareIcon/emailIcon/manageComments referenciados
+     por outros includables reais acima (postMeta/sharingButtonContent/
+     emailPostIcon/threadedComments) mas nunca definidos no arquivo original —
+     gap real da fonte. shareIcon/emailIcon/manageComments como stubs de
+     segurança (mesmo padrão do partial genérico blogger-includables-padrao.xml).
+     postMetadataJSON com JSON-LD mínimo real, usando as sub-includables
+     postMetadataJSONImage/postMetadataJSONPublisher que já existem acima. -->
+<b:includable id='postMetadataJSON' var='post'>
+  <script type='application/ld+json'>
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "<data:post.url.canonical/>"
+    },
+    "headline": "<data:post.title.escaped/>",
+    "image": {
+      "@type": "ImageObject",
+      "url": "<b:eval expr='data:post.featuredImage.isResizable ? resizeImage(data:post.featuredImage, 1200, "1200:630") : "https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/w1200/"'/>",
+      "height": 630,
+      "width": 1200
+    },
+    "datePublished": "<data:post.date.iso8601/>",
+    "author": {
+      "@type": "Person",
+      "name": "<data:post.author.name.escaped/>"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Blogger",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/h60/",
+        "width": 206,
+        "height": 60
+      }
+    },
+    "description": "<data:post.snippet.escaped/>"
+  }
+  </script>
+</b:includable>
+<b:includable id='shareIcon'><span data-icon='share'/></b:includable>
+<b:includable id='emailIcon'><span data-icon='email'/></b:includable>
+<b:includable id='facebookIcon'><span data-icon='facebook'/></b:includable>
+<b:includable id='twitterIcon'><span data-icon='twitter'/></b:includable>
+<b:includable id='pinterestIcon'><span data-icon='pinterest'/></b:includable>
+<b:includable id='linkedinIcon'><span data-icon='linkedin'/></b:includable>
+<b:includable id='blogThisIcon'><span data-icon='blogthis'/></b:includable>
+<b:includable id='get_linkIcon'><span data-icon='link'/></b:includable>
+<b:includable id='manageComments'><div/></b:includable>
+
+          </b:widget>
+        </b:section>
+
+        <b:section class='after-post mt-4' id='after-post-content' showaddelement='yes'>
+          <b:widget id='HTML7' locked='false' title='{Seu Ads Aqui}' type='HTML'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<style>
+  .ad-placeholder-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    height: 250px; /* Padrão Ouro da Indústria */
+    margin: 0 auto;
+    background-color: var(--nat-bg, #f8f9fa);
+    border: 2px dashed #ced4da;
+    border-radius: 0.5rem;
+    color: #adb5bd;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .ad-placeholder-wrapper:hover {
+    border-color: var(--nat-primary, #8FBC8F);
+    color: var(--nat-primary, #8FBC8F);
+    background-color: #ffffff;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+  }
+
+  .ad-placeholder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ad-placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .ad-placeholder-subtext {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    opacity: 0.8;
+  }
+</style>
+
+<div class="ad-placeholder-wrapper">
+  <i class="bi bi-megaphone ad-placeholder-icon"></i>
+  <span class="ad-placeholder-text">Anuncie Aqui</span>
+  <span class="ad-placeholder-subtext">300 x 250 px</span>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <!-- only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+
+  <b:include name='quickedit'/>
+</b:includable>
+          </b:widget>          <b:widget id='FeaturedPost1' locked='false' title='Postagem em destaque' type='FeaturedPost'>
+            <b:widget-settings>
+              <b:widget-setting name='showSnippet'>true</b:widget-setting>
+              <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+              <b:widget-setting name='postId'>0</b:widget-setting>
+              <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+              <b:widget-setting name='useMostRecentPost'>true</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <!-- Only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <b:include name='content'/>
+
+  <b:include name='quickedit'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='post-summary'>
+    <b:if cond='data:showPostTitle and data:postTitle != &quot;&quot;'>
+      <h3><a expr:href='data:postUrl'><data:postTitle/></a></h3>
+    </b:if>
+    <b:if cond='data:showSnippet and data:postSummary != &quot;&quot;'>
+      <p>
+        <data:postSummary/>
+      </p>
+    </b:if>
+    <b:if cond='data:showFirstImage and data:postFirstImage != &quot;&quot;'>
+      <img class='image' expr:alt='data:postTitle' expr:src='data:postFirstImage'/>
+    </b:if>
+  </div>
+
+  <style type='text/css'>
+    .image {
+      width: 100%;
+    }
+  </style>
+</b:includable>
+          </b:widget>
+        </b:section>
+      </main>
+
+      <aside class='col-lg-4 mt-5 mt-lg-0'>
+        <b:section class='sidebar' id='sidebar-right' showaddelement='yes'>
+          <b:widget id='Translate1' locked='false' title='Translate' type='Translate'>
+            <b:widget-settings>
+              <b:widget-setting name='displayMode'>SIMPLE</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div id='google_translate_element'/>
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: &#39;<data:pageLanguage/>&#39;,
+        autoDisplay: &#39;true&#39;,
+        layout: google.translate.TranslateElement.InlineLayout.<data:layout/>
+      }, &#39;google_translate_element&#39;);
+    }
+  </script>
+  <script src='//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'/>
+  <b:include name='quickedit'/>
+</b:includable>
+          </b:widget>
+        </b:section>
+      </aside>
+
+    </div>
+  </div>
+
+  <div class='container mb-5'>
+    <div class='row'>
+      <div class='col-md-6'><b:section class='extra-widget' id='widget-html-1' showaddelement='yes'>
+  <b:widget id='HTML6' locked='false' title='{Seu Ads Aqui}' type='HTML'>
+    <b:widget-settings>
+      <b:widget-setting name='content'><![CDATA[<style>
+  .ad-placeholder-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    height: 250px; /* Padrão Ouro da Indústria */
+    margin: 0 auto;
+    background-color: var(--nat-bg, #f8f9fa);
+    border: 2px dashed #ced4da;
+    border-radius: 0.5rem;
+    color: #adb5bd;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .ad-placeholder-wrapper:hover {
+    border-color: var(--nat-primary, #8FBC8F);
+    color: var(--nat-primary, #8FBC8F);
+    background-color: #ffffff;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+  }
+
+  .ad-placeholder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ad-placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .ad-placeholder-subtext {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    opacity: 0.8;
+  }
+</style>
+
+<div class="ad-placeholder-wrapper">
+  <i class="bi bi-megaphone ad-placeholder-icon"></i>
+  <span class="ad-placeholder-text">Anuncie Aqui</span>
+  <span class="ad-placeholder-subtext">300 x 250 px</span>
+</div>]]></b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <!-- only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+
+  <b:include name='quickedit'/>
+</b:includable>
+  </b:widget>
+  <b:widget id='HTML4' locked='false' title='' type='HTML'>
+    <b:widget-settings>
+      <b:widget-setting name='content'><![CDATA[<style>
+  /* Estilização Premium do Slider */
+  #nat-hero-slider {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .nat-slide-img {
+    height: 450px; /* Altura do banner no Desktop */
+    width: 100%;
+    object-fit: cover; /* Garante que a foto não fique esticada */
+  }
+
+  /* Overlay degradê escuro para garantir que o texto branco seja lido em fotos claras */
+  .nat-slide-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.8) 100%);
+  }
+
+  .nat-carousel-caption {
+    position: absolute;
+    bottom: 2rem;
+    left: 5%;
+    right: 5%;
+    text-align: center;
+    z-index: 10;
+  }
+
+  .nat-carousel-caption h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    margin-bottom: 1rem;
+    color: #ffffff;
+  }
+
+  /* Responsividade para celular */
+  @media (max-width: 768px) {
+    .nat-slide-img { height: 300px; }
+    .nat-carousel-caption h3 { font-size: 1.35rem; }
+    .nat-carousel-caption { bottom: 1rem; }
+  }
+</style>
+
+<div id="nat-hero-slider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+  <div class="carousel-indicators" id="slider-indicators"></div>
+  
+  <div class="carousel-inner" id="slider-inner">
+    <div class="text-center py-5 bg-light">
+      <div class="spinner-border text-success" role="status"></div>
+      <p class="mt-2 text-muted">Carregando destaques...</p>
+    </div>
+  </div>
+
+  <button class="carousel-control-prev" type="button" data-bs-target="#nat-hero-slider" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Anterior</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#nat-hero-slider" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Próximo</span>
+  </button>
+</div>
+
+<script>
+  (function() {
+    document.addEventListener("DOMContentLoaded", function() {
+      // Endpoint para pegar os últimos 3 posts
+      const feedUrl = '/feeds/posts/default?alt=json&max-results=3';
+      
+      fetch(feedUrl)
+        .then(response => response.json())
+        .then(data => {
+          const entries = data.feed.entry || [];
+          let innerHtml = '';
+          let indicatorsHtml = '';
+
+          if (entries.length > 0) {
+            entries.forEach((entry, index) => {
+              // Pega o Título
+              const title = entry.title.$t;
+              
+              // Pega o Link
+              let link = '';
+              entry.link.forEach(l => { if(l.rel === 'alternate') link = l.href; });
+
+              // Pega a Imagem e Força Alta Resolução Panorâmica (1200x500 crop)
+              let imgUrl = entry.media$thumbnail ? entry.media$thumbnail.url : 'https://via.placeholder.com/1200x500.png?text=Sem+Imagem';
+              imgUrl = imgUrl.replace(/\/s[0-9]+(\-c)?\//, '/w1200-h500-c/');
+
+              const activeClass = index === 0 ? 'active' : '';
+
+              // Monta as bolinhas indicadoras
+              indicatorsHtml += `<button type="button" data-bs-target="#nat-hero-slider" data-bs-slide-to="${index}" class="${activeClass}" aria-current="${index === 0 ? 'true' : 'false'}"></button>`;
+
+              // Monta o Card do Slide
+              innerHtml += `
+                <div class="carousel-item ${activeClass}">
+                  <img src="${imgUrl}" class="d-block nat-slide-img" alt="${title}">
+                  <div class="nat-slide-overlay"></div>
+                  <div class="nat-carousel-caption">
+                    <h3>${title}</h3>
+                    <a href="${link}" class="btn btn-primary rounded-pill px-4 fw-bold" style="background-color: var(--nat-primary); border: none; color: #121212;">Ler Artigo</a>
+                  </div>
+                </div>
+              `;
+            });
+
+            // Injeta no HTML
+            document.getElementById('slider-indicators').innerHTML = indicatorsHtml;
+            document.getElementById('slider-inner').innerHTML = innerHtml;
+          }
+        })
+        .catch(err => {
+          console.error('Erro ao carregar o Slider:', err);
+          document.getElementById('nat-hero-slider').style.display = 'none';
+        });
+    });
+  })();
+</script>]]></b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <!-- only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+
+  <b:include name='quickedit'/>
+</b:includable>
+  </b:widget>
+</b:section></div>
+      <div class='col-md-6'><b:section class='extra-widget' id='widget-html-2' showaddelement='yes'>
+  <b:widget id='HTML2' locked='false' title='' type='HTML'>
+    <b:widget-settings>
+      <b:widget-setting name='content'><![CDATA[<style>
+  #nat-back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--nat-primary, #8FBC8F);
+    color: #121212;
+    border: none;
+    border-radius: 50%; /* Deixa perfeitamente redondo */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 1040;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    
+    /* Animação de entrada e saída */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px); /* Fica levemente abaixado quando escondido */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Classe que o JS vai injetar para mostrar o botão */
+  #nat-back-to-top.show-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  #nat-back-to-top:hover {
+    background-color: #222222; /* Fica escuro ao passar o mouse */
+    color: #ffffff;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    transform: translateY(-3px) scale(1.05); /* Efeito de elevação magnética */
+  }
+
+  /* Ajuste para não atrapalhar o banner de cookies no mobile */
+  @media (max-width: 767px) {
+    #nat-back-to-top {
+      bottom: 20px;
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      font-size: 1.2rem;
+    }
+  }
+</style>
+
+<button id="nat-back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">
+  <i class="bi bi-arrow-up-short"></i>
+</button>
+
+<script>
+  (function() {
+    document.addEventListener("DOMContentLoaded", function() {
+      var backToTopBtn = document.getElementById("nat-back-to-top");
+
+      if (backToTopBtn) {
+        // Função para monitorar o scroll da página
+        window.addEventListener("scroll", function() {
+          // Se descer mais de 300px, mostra o botão
+          if (window.scrollY > 300) {
+            backToTopBtn.classList.add("show-btn");
+          } else {
+            // Se voltar pro topo, esconde o botão
+            backToTopBtn.classList.remove("show-btn");
+          }
+        });
+
+        // Ação ao clicar no botão
+        backToTopBtn.addEventListener("click", function() {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth" // Deslizamento suave
+          });
+        });
+      }
+    });
+  })();
+</script>]]></b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <!-- only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+
+  <b:include name='quickedit'/>
+</b:includable>
+  </b:widget>
+</b:section></div>
+      <div class='col-12'><b:section class='extra-widget' id='outros-widgets-html' showaddelement='yes'>
+  <b:widget id='PopularPosts1' locked='false' title='Postagens mais visitadas' type='PopularPosts'>
+    <b:widget-settings>
+      <b:widget-setting name='numItemsToShow'>10</b:widget-setting>
+      <b:widget-setting name='showThumbnails'>true</b:widget-setting>
+      <b:widget-setting name='showSnippets'>true</b:widget-setting>
+      <b:widget-setting name='timeRange'>LAST_YEAR</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'><h2 id='secao-outros-widgets-html'><data:title/></h2></b:if>
+  <div class='widget-content popular-posts'>
+    <ul>
+      <b:loop values='data:posts' var='post'>
+      <li>
+        <b:if cond='!data:showThumbnails'>
+          <b:if cond='!data:showSnippets'>
+            <!-- (1) No snippet/thumbnail -->
+            <a expr:href='data:post.href'><data:post.title/></a>
+          <b:else/>
+            <!-- (2) Show only snippets -->
+            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+            <div class='item-snippet'><data:post.snippet/></div>
+          </b:if>
+        <b:else/>
+          <!-- (3) Show only thumbnails or (4) Snippets and thumbnails. -->
+          <div expr:class='data:showSnippets ? &quot;item-content&quot; : &quot;item-thumbnail-only&quot;'>
+            <b:if cond='data:post.featuredImage.isResizable or data:post.thumbnail'>
+              <div class='item-thumbnail'>
+                <a expr:href='data:post.href' target='_blank'>
+                  <b:with value='data:post.featuredImage.isResizable                                  ? resizeImage(data:post.featuredImage, 72, &quot;1:1&quot;)                                  : data:post.thumbnail' var='image'>
+                    <img alt='' border='0' expr:src='data:image'/>
+                  </b:with>
+                </a>
+              </div>
+            </b:if>
+            <div class='item-title'><a expr:href='data:post.href'><data:post.title/></a></div>
+            <b:if cond='data:showSnippets'>
+              <div class='item-snippet'><data:post.snippet/></div>
+            </b:if>
+          </div>
+          <div style='clear: both;'/>
+        </b:if>
+      </li>
+      </b:loop>
+    </ul>
+    <b:include name='quickedit'/>
+  </div>
+</b:includable>
+  </b:widget>
+  <b:widget id='Label1' locked='false' title='Marcadores' type='Label'>
+    <b:widget-settings>
+      <b:widget-setting name='sorting'>ALPHA</b:widget-setting>
+      <b:widget-setting name='display'>CLOUD</b:widget-setting>
+      <b:widget-setting name='showFreqNumbers'>true</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2><data:title/></h2>
+  </b:if>
+  <div expr:class='&quot;widget-content &quot; + data:display + &quot;-label-widget-content&quot;'>
+    <b:if cond='data:display == &quot;list&quot;'>
+      <ul>
+        <b:loop values='data:labels' var='label'>
+          <li>
+            <b:if cond='data:blog.url == data:label.url'>
+              <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+            <b:else/>
+              <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+            </b:if>
+            <b:if cond='data:showFreqNumbers'>
+              <span dir='ltr'>(<data:label.count/>)</span>
+            </b:if>
+          </li>
+        </b:loop>
+      </ul>
+    <b:else/>
+      <b:loop values='data:labels' var='label'>
+        <span expr:class='&quot;label-size label-size-&quot; + data:label.cssSize'>
+          <b:if cond='data:blog.url == data:label.url'>
+            <span expr:dir='data:blog.languageDirection'><data:label.name/></span>
+          <b:else/>
+            <a expr:dir='data:blog.languageDirection' expr:href='data:label.url'><data:label.name/></a>
+          </b:if>
+          <b:if cond='data:showFreqNumbers'>
+            <span class='label-count' dir='ltr'>(<data:label.count/>)</span>
+          </b:if>
+        </span>
+      </b:loop>
+    </b:if>
+    <b:include name='quickedit'/>
+  </div>
+</b:includable>
+  </b:widget>
+</b:section></div>
+    </div>
+  </div>
+
+  <footer class='site-footer pt-5 pb-3 mt-auto'>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-md-4 mb-4'><b:section class='footer-col' id='footer-left' showaddelement='yes'>
+  <b:widget id='Stats1' locked='false' title='Total de visualizações de página' type='Stats' version='1'>
+    <b:widget-settings>
+      <b:widget-setting name='showGraphicalCounter'>true</b:widget-setting>
+      <b:widget-setting name='showAnimatedCounter'>true</b:widget-setting>
+      <b:widget-setting name='showSparkline'>true</b:widget-setting>
+      <b:widget-setting name='sparklineStyle'>BLACK_TRANSPARENT</b:widget-setting>
+      <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'><h2><data:title/></h2></b:if>
+  <div class='widget-content'>
+    <div expr:id='data:widget.instanceId + &quot;_content&quot;' style='display: none;'>
+      <b:if cond='data:showSparkline'>
+        <script src='https://www.gstatic.com/charts/loader.js' type='text/javascript'/>
+        <span expr:id='data:widget.instanceId + &quot;_sparklinespan&quot;' style='display:inline-block; width:75px; height:30px'/>
+      </b:if>
+      <span expr:class='&quot;counter-wrapper &quot; + (data:showGraphicalCounter ? &quot;graph-counter-wrapper&quot; : &quot;text-counter-wrapper&quot;)' expr:id='data:widget.instanceId + &quot;_totalCount&quot;'>
+      </span>
+      <b:include name='quickedit'/>
+    </div>
+  </div>
+</b:includable>
+  </b:widget>
+</b:section></div>
+        <div class='col-md-4 mb-4'>
+          <b:section class='footer-col' id='footer-center' showaddelement='yes'>
+            <b:widget id='Image2' locked='false' title='' type='Image'>
+              <b:widget-settings>
+                <b:widget-setting name='displayUrl'/>
+                <b:widget-setting name='displayHeight'>100</b:widget-setting>
+                <b:widget-setting name='sectionWidth'>791</b:widget-setting>
+                <b:widget-setting name='shrinkToFit'>true</b:widget-setting>
+                <b:widget-setting name='displayWidth'>300</b:widget-setting>
+                <b:widget-setting name='link'/>
+                <b:widget-setting name='caption'/>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <b:if cond='data:title != &quot;&quot;'>
+                  <h2><data:title/></h2>
+                </b:if>
+                <div class='widget-content'>
+                  <b:tag cond='data:link' expr:href='data:link' name='a'>
+                    <img expr:alt='data:title' expr:height='data:height' expr:id='data:widget.instanceId + &quot;_img&quot;' expr:src='data:sourceUrl' expr:width='data:width'/>
+                  </b:tag>
+                  <br/>
+                  <b:if cond='data:caption'>
+                    <span class='caption'><data:caption/></span>
+                  </b:if>
+                </div>
+                <b:include name='quickedit'/>
+              </b:includable>
+            </b:widget>
+            [[CONTACT_FORM]]
+          </b:section>
+        </div>
+        <div class='col-md-4 mb-4'><b:section class='footer-col' id='footer-right' showaddelement='yes'>
+  <b:widget id='BlogArchive1' locked='false' title='Arquivo do blog' type='BlogArchive'>
+    <b:widget-settings>
+      <b:widget-setting name='showStyle'>MENU</b:widget-setting>
+      <b:widget-setting name='yearPattern'>yyyy</b:widget-setting>
+      <b:widget-setting name='showWeekEnd'>true</b:widget-setting>
+      <b:widget-setting name='monthPattern'>MMMM</b:widget-setting>
+      <b:widget-setting name='dayPattern'>MMM dd</b:widget-setting>
+      <b:widget-setting name='weekPattern'>MM/dd</b:widget-setting>
+      <b:widget-setting name='chronological'>true</b:widget-setting>
+      <b:widget-setting name='showPosts'>false</b:widget-setting>
+      <b:widget-setting name='frequency'>DAILY</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+  <div id='ArchiveList'>
+  <div expr:id='data:widget.instanceId + &quot;_ArchiveList&quot;'>
+    <b:include cond='data:style == &quot;HIERARCHY&quot;' data='data' name='interval'/>
+    <b:include cond='data:style == &quot;FLAT&quot;' data='data' name='flat'/>
+    <b:include cond='data:style == &quot;MENU&quot;' data='data' name='menu'/>
+  </div>
+  </div>
+  <b:include name='quickedit'/>
+  </div>
+</b:includable>
+    <b:includable id='flat' var='data'>
+  <ul class='flat'>
+    <b:loop values='data:data' var='i'>
+      <li class='archivedate'>
+        <a expr:href='data:i.url'><data:i.name/></a> (<data:i.post-count/>)
+      </li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='interval' var='intervalData'>
+  <b:loop values='data:intervalData' var='interval'>
+    <ul class='hierarchy'>
+      <li expr:class='&quot;archivedate &quot; + data:interval.expclass'>
+        <b:include cond='data:interval.toggleId' data='interval' name='toggle'/>
+        <a class='post-count-link' expr:href='data:interval.url'>
+          <data:interval.name/>
+        </a>
+        <span class='post-count' dir='ltr'>(<data:interval.post-count/>)</span>
+        <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+        <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+      </li>
+    </ul>
+  </b:loop>
+</b:includable>
+    <b:includable id='menu' var='data'>
+  <select expr:id='data:widget.instanceId + &quot;_ArchiveMenu&quot;'>
+    <option value=''><data:title/></option>
+    <b:loop values='data:data' var='i'>
+      <option expr:value='data:i.url'><data:i.name/> (<data:i.post-count/>)</option>
+    </b:loop>
+  </select>
+</b:includable>
+    <b:includable id='posts' var='posts'>
+  <ul class='posts'>
+    <b:loop values='data:posts' var='post'>
+      <li><a expr:href='data:post.url'><data:post.title/></a></li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='toggle' var='interval'>
+  <a class='toggle' href='javascript:void(0)'>
+    <span expr:class='&quot;zippy&quot; + (data:interval.expclass == &quot;expanded&quot; ? &quot; toggle-open&quot; : &quot;&quot;)'>
+      <b:if cond='data:interval.expclass == &quot;expanded&quot;'>
+        &#9660;&#160;
+      <b:elseif cond='data:blog.languageDirection == &quot;rtl&quot;'/>
+        &#9668;&#160;
+      <b:else/>
+        &#9658;&#160;
+      </b:if>
+    </span>
+  </a>
+</b:includable>
+  </b:widget>
+  <b:widget id='HTML5' locked='false' title='{Seu Ads Aqui}' type='HTML'>
+    <b:widget-settings>
+      <b:widget-setting name='content'><![CDATA[<style>
+  .ad-placeholder-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    height: 250px; /* Padrão Ouro da Indústria */
+    margin: 0 auto;
+    background-color: var(--nat-bg, #f8f9fa);
+    border: 2px dashed #ced4da;
+    border-radius: 0.5rem;
+    color: #adb5bd;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .ad-placeholder-wrapper:hover {
+    border-color: var(--nat-primary, #8FBC8F);
+    color: var(--nat-primary, #8FBC8F);
+    background-color: #ffffff;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+  }
+
+  .ad-placeholder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ad-placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .ad-placeholder-subtext {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    opacity: 0.8;
+  }
+</style>
+
+<div class="ad-placeholder-wrapper">
+  <i class="bi bi-megaphone ad-placeholder-icon"></i>
+  <span class="ad-placeholder-text">Anuncie Aqui</span>
+  <span class="ad-placeholder-subtext">300 x 250 px</span>
+</div>]]></b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <!-- only display title if it's non-empty -->
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><data:title/></h2>
+  </b:if>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+
+  <b:include name='quickedit'/>
+</b:includable>
+  </b:widget>
+</b:section></div>
+      </div>
+      <hr class='border-secondary'/>
+      <div class='text-center text-secondary small'>
+        <p class='mb-0'>&#169; <script>//<![CDATA[ document.write(new Date().getFullYear()) //]]></script> <data:blog.title/>. Desenvolvido com foco em Performance.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'/>
+
+  [[MENU_DROPDOWN_PREFIXO]]
+
+ <script>
+    //<![CDATA[
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // ==========================================
+      // 1. MOVER WIDGETS (Before / After Post)
+      // ==========================================
+      try {
+        const isPostPage = document.querySelector('.blog-post');
+        if(isPostPage) {
+          const slotBefore = document.getElementById('slot-before-post');
+          const slotAfter = document.getElementById('slot-after-post');
+          const contentBefore = document.getElementById('before-post-content');
+          const contentAfter = document.getElementById('after-post-content');
+
+          if(slotBefore && contentBefore) slotBefore.appendChild(contentBefore);
+          if(slotAfter && contentAfter) slotAfter.appendChild(contentAfter);
+        }
+      } catch(e) { console.error('Erro ao mover widgets:', e); }
+
+      // ==========================================
+      // 3. HIGHLIGHT DINÂMICO (Pesquisa)
+      // ==========================================
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const termo = params.get('q');
+        if (termo) {
+          const termoLimpo = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(${termoLimpo})`, 'gi');
+          const elementos = document.querySelectorAll('.card-title a, .card-text');
+          
+          elementos.forEach(el => {
+            el.innerHTML = el.innerHTML.replace(regex, '<mark>$1</mark>');
+          });
+        }
+      } catch(e) { console.error('Erro no highlight da pesquisa:', e); }
+
+      // ==========================================
+      // 4. POSTAGENS RELACIONADAS (JSON Fetch)
+      // ==========================================
+      try {
+        const relatedContainer = document.getElementById('related-posts-container');
+        const relatedGrid = document.getElementById('related-posts-grid');
+
+        if (relatedContainer && relatedGrid) {
+          const label = relatedContainer.getAttribute('data-label');
+          const currentUrl = relatedContainer.getAttribute('data-url');
+
+          if (label) {
+            const feedUrl = '/feeds/posts/default/-/' + encodeURIComponent(label) + '?alt=json&max-results=4';
+
+            fetch(feedUrl)
+              .then(response => response.json())
+              .then(data => {
+                const entries = data.feed.entry || [];
+                let html = '';
+                let count = 0;
+
+                entries.forEach(entry => {
+                  let postUrl = '';
+                  entry.link.forEach(link => { if (link.rel === 'alternate') postUrl = link.href; });
+                  if (postUrl === currentUrl || count >= 3) return;
+                  
+                  const postTitle = entry.title.$t;
+                  let postImg = entry.media$thumbnail ? entry.media$thumbnail.url : 'https://via.placeholder.com/600x400.png?text=Artigo';
+                  postImg = postImg.replace(/\/s[0-9]+(\-c)?\//, '/w600/');
+                  
+                  // AQUI: Estilos inlines removidos e classe 'img-relacionada' inserida!
+                  html += `
+                    <div class="col-md-4 col-sm-6">
+                      <article class="card h-100 shadow-sm border-0 transition-hover">
+                        <a href="${postUrl}">
+                          <img src="${postImg}" class="card-img-top img-relacionada" alt="${postTitle}">
+                        </a>
+                        <div class="card-body p-3">
+                          <h3 class="card-title h6 fw-bold mb-0">
+                            <a href="${postUrl}" class="text-dark text-decoration-none hover-primary">${postTitle}</a>
+                          </h3>
+                        </div>
+                      </article>
+                    </div>
+                  `;
+                  count++;
+                });
+
+                if (html !== '') {
+                  relatedGrid.innerHTML = html;
+                } else {
+                  relatedContainer.style.display = 'none';
+                }
+              })
+              .catch(err => {
+                console.error('Erro nas Relacionadas:', err);
+                relatedContainer.style.display = 'none';
+              });
+          }
+        }
+      } catch(e) { console.error('Erro no script das relacionadas:', e); }
+
+    });
+    //]]>
+  </script>
+  [[NICHO_JS]]
+  [[NICHO_WIDGETS_HTML]]
+</body>
+</html>

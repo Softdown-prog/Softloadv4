@@ -1,0 +1,18 @@
+{
+  "id": "firebase-emuladores-configuracao",
+  "slug": "firebase-emuladores-configuracao",
+  "categoria": "firebase",
+  "descricao": "Configuração do firebase.json para rodar o Firebase Local Emulator Suite (Firestore, Authentication e UI) localmente, com os comandos de gerenciamento — iniciar todos os emuladores, iniciar isoladamente o Firestore, exportar/importar dados de teste entre reinicializações.",
+  "componentes": ["firebase.json", "firestore.rules", "firestore.indexes.json", "firebase-emulators-ui"],
+  "exemplos": [
+    "firebase emulators:start — inicializa todos os emuladores configurados com a UI de controle.",
+    "firebase emulators:start --only firestore — inicializa isoladamente o emulador do Firestore.",
+    "firebase emulators:export ./dados-teste — exporta o estado atual dos dados criados no emulador.",
+    "firebase emulators:start --import ./dados-teste — inicializa os emuladores já populados com dados exportados."
+  ],
+  "boas_praticas": [
+    "Alterar a porta do Firestore (padrão 8080) se houver conflito com Tomcat/Docker na porta comum",
+    "Mudar o host de 127.0.0.1 para 0.0.0.0 quando rodando dentro de um container Docker, para permitir conexões externas"
+  ],
+  "keywords": ["firebase emuladores", "firebase.json", "firestore emulator", "firebase local emulator suite", "firebase auth emulator"]
+}

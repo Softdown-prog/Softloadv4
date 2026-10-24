@@ -1,0 +1,61 @@
+{
+  "contract": "CH_2D_RENDER_FINISH_V1",
+  "id": "park_tree_broadleaf_organic_02_finish",
+  "minimumInputDimensionPx": 128,
+  "finish": {
+    "color": 1.01,
+    "contrast": 1.10,
+    "unsharpRadius": 0.44,
+    "unsharpPercent": 22,
+    "unsharpThreshold": 3,
+    "sharpness": 1.03,
+    "edgeGuardLowAlpha": 18,
+    "edgeGuardHighAlpha": 150,
+    "microArtifactCleanup": {
+      "enabled": true,
+      "radiusPx": 1,
+      "threshold": 16,
+      "gain": 9.5,
+      "strength": 0.92,
+      "maxYFraction": 0.86
+    },
+    "verticalLighting": {
+      "topWarmColor": "#E1BD68",
+      "topWarmStrength": 0.045,
+      "topWarmEndFraction": 0.48,
+      "baseShadeColor": "#34402A",
+      "baseShadeStrength": 0.28,
+      "baseShadeStartFraction": 0.50,
+      "canopyMaxYFraction": 0.86
+    },
+    "internalSeparation": {
+      "enabled": true,
+      "radiusPx": 1,
+      "threshold": 3,
+      "gain": 6.2,
+      "strength": 0.58,
+      "colorMix": 0.38,
+      "color": "#3B4228",
+      "maxYFraction": 0.86
+    },
+    "directionalRelief": {
+      "enabled": true,
+      "offsetX": 1,
+      "offsetY": 1,
+      "threshold": 2,
+      "gain": 7.2,
+      "interiorRadiusPx": 1,
+      "highlightStrength": 0.18,
+      "shadowStrength": 0.38,
+      "highlightMix": 0.20,
+      "shadowMix": 0.40,
+      "highlightColor": "#E7C574",
+      "shadowColor": "#394027",
+      "maxYFraction": 0.86
+    }
+  },
+  "review": {
+    "cellWidth": 420,
+    "cellHeight": 420
+  }
+}

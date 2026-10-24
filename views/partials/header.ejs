@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Softload Engine v3.2.1 | Engenharia de Alta Performance</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <%# Bootstrap 5.3.3 — vendorizado localmente (não vem mais de CDN externo:
+        cdn.jsdelivr.net bloqueado ou indisponível derrubava TODO o layout
+        responsivo — grid, utilitários e o próprio menu mobile dependiam
+        dele; ver scripts/vendorBootstrap.js, roda em todo `npm run build`). %>
+    <link href="/vendor/bootstrap/css/bootstrap.min.css?v=<%= gitSha %>" rel="stylesheet">
+
+    <%# Custom — tokens, sidebar, terminal, cards. Query string ?v=<sha> força
+        o navegador (e qualquer cache de CDN/operadora no meio do caminho) a
+        buscar o arquivo de novo a cada deploy — a URL nunca muda entre
+        deploys, então sem isso o Cache-Control padrão do express.static
+        (max-age=0, só revalida por ETag) não é suficiente em caches mais
+        agressivos, e o CSS atualizado nunca chega em quem já visitou antes. %>
+    <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+
+    <%# Aplica o tema antes do render para evitar flash %>
+    <script>
+        (function() {
+            var dark = localStorage.getItem('sl-dark-mode') !== '0';
+            var html = document.documentElement;
+            var theme = dark ? 'dark' : 'light';
+            html.setAttribute('data-bs-theme', theme);
+            html.setAttribute('data-theme', theme);
+            if (dark) { html.classList.add('dark'); } else { html.classList.remove('dark'); }
+        })();
+    </script>
+</head>
+<body>
+
+<%
+    var onDashboard = typeof activePage !== 'undefined' && activePage !== null;
+    var loggedIn    = typeof user !== 'undefined' && user;
+%>
+
+<%# ── NAVBAR ── Bootstrap Navbar — sem Alpine.js, sem unsafe-eval %>
+<nav class="navbar sl-navbar fixed-top">
+    <div class="container-xl">
+
+        <a href="/" class="navbar-brand sl-brand fw-black text-white text-decoration-none me-4">
+            SOFTLOAD<span class="sl-accent">ENGINE</span>
+        </a>
+
+        <%# Links centrais — apenas em páginas públicas, desktop %>
+        <% if (!onDashboard) { %>
+        <div class="collapse navbar-collapse" id="sl-nav-collapse">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item"><a href="/" class="nav-link">Radar</a></li>
+                <li class="nav-item"><a href="/#features" class="nav-link">A Arquitetura</a></li>
+                <li class="nav-item"><a href="/contato" class="nav-link">Contato</a></li>
+            </ul>
+
+            <%# Botões de auth — mobile expanded %>
+            <div class="d-flex flex-column gap-2 d-md-none mt-3">
+                <% if (loggedIn) { %>
+                    <a href="/dashboard" class="btn btn-sl-primary fw-bold">Painel de Controle</a>
+                    <a href="/logout" class="btn btn-outline-secondary fw-bold">Sair</a>
+                <% } else { %>
+                    <a href="/login" class="btn btn-outline-secondary fw-bold">Acessar Conta</a>
+                    <a href="/register" class="btn btn-sl-primary fw-bold">Criar Conta</a>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <%# Botões de auth %>
+            <% if (loggedIn) { %>
+                <% if (!onDashboard) { %>
+                <a href="/dashboard" class="btn btn-sl-outline btn-sm d-none d-md-inline-flex">Painel de Controle</a>
+                <% } %>
+            <% } else { %>
+                <a href="/login" class="text-decoration-none fw-bold d-none d-md-inline"
+                   style="color:var(--sl-text-300);font-size:0.875rem;">Acessar</a>
+                <a href="/register" class="btn btn-sl-primary btn-sm d-none d-md-inline-flex">Criar Conta</a>
+            <% } %>
+
+            <%# Hambúrguer — apenas em páginas públicas, mobile %>
+            <% if (!onDashboard) { %>
+            <button class="navbar-toggler border-0 p-1 d-md-none"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#sl-nav-collapse"
+                    aria-controls="sl-nav-collapse"
+                    aria-expanded="false"
+                    aria-label="Menu">
+                <%- include('./icon', { name: 'menu', cls: 'fs-3 text-white' }) %>
+            </button>
+            <% } %>
+        </div>
+    </div>
+</nav>

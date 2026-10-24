@@ -1,0 +1,89 @@
+{
+  "rota": "gpt-5-4",
+  "exclusivo_modelo": "gpt-5.4",
+  "descricao": "Base de conhecimento de ALTO NÍVEL roteada EXCLUSIVAMENTE pelo modelo GPT no chat. Define padrões de excelência para escrita de código, criação de tutoriais, postura de assistente sênior, escrita de artigos inteligentes para Blogger e trabalho como parceiro focado. Não é roteada pelo Gemini.",
+  "fundacao": "assistente-de-alto-nivel.json",
+  "ficheiros": [
+    {
+      "arquivo": "assistente-de-alto-nivel.json",
+      "fundacao": true,
+      "palavras_chave": [
+        "ajuda",
+        "ajudar",
+        "assistente",
+        "como faço",
+        "como fazer",
+        "me explica",
+        "dúvida",
+        "duvida",
+        "suporte"
+      ]
+    },
+    {
+      "arquivo": "escrita-de-codigo-alto-nivel.json",
+      "palavras_chave": [
+        "código",
+        "codigo",
+        "script",
+        "snippet",
+        "javascript",
+        "css",
+        "html",
+        "function",
+        "programar",
+        "programação",
+        "programacao",
+        "bug",
+        "depurar"
+      ]
+    },
+    {
+      "arquivo": "criacao-de-tutoriais.json",
+      "palavras_chave": [
+        "tutorial",
+        "passo a passo",
+        "passo-a-passo",
+        "como configurar",
+        "como instalar",
+        "como ativar",
+        "guia",
+        "ensina",
+        "ensinar"
+      ]
+    },
+    {
+      "arquivo": "artigos-inteligentes-blogger.json",
+      "palavras_chave": [
+        "artigo",
+        "post",
+        "escrever",
+        "escrita",
+        "texto",
+        "conteúdo",
+        "conteudo",
+        "redação",
+        "redacao",
+        "título",
+        "titulo",
+        "seo do artigo",
+        "rankear",
+        "e-e-a-t",
+        "eeat"
+      ]
+    },
+    {
+      "arquivo": "parceiro-focado.json",
+      "palavras_chave": [
+        "projeto",
+        "estratégia",
+        "estrategia",
+        "plano",
+        "próximo passo",
+        "proximo passo",
+        "o que fazer",
+        "me ajuda a decidir",
+        "vale a pena"
+      ]
+    }
+  ]
+}

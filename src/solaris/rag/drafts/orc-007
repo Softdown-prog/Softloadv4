@@ -1,0 +1,19 @@
+{
+  "id": "orc-007",
+  "slug": "orquestracao-consulta-rag",
+  "categoria": "orquestracao",
+  "descricao": "Como o orquestrador consulta o RAG para obter conhecimento antes de planejar ações. O RAG fornece contexto sobre componentes, templates, padrões e regras. O orquestrador usa esse contexto para montar o plano de execução",
+  "componentes": [
+    "consulta-semantica-rag",
+    "filtro-categoria",
+    "resolvedor-contexto",
+    "enriquecedor-prompt",
+    "cache-consultas"
+  ],
+  "exemplos": [
+    "Usuário pede 'card de post' → orquestrador consulta RAG → encontra 3 variantes de card → Gemini escolhe a melhor → plano inclui peça específica",
+    "Solicitação ambígua → RAG retorna múltiplos contextos → orquestrador enriquece prompt do Gemini → Gemini gera plano mais preciso",
+    "Contexto já em cache → orquestrador pula consulta RAG → usa contexto cacheado → reduz latência"
+  ],
+  "keywords": ["rag", "consulta", "contexto", "conhecimento", "cache", "semantica", "enriquecimento"]
+}

@@ -1,0 +1,36 @@
+{
+  "id":"restaurante",
+
+  "slug":"restaurante",
+
+  "categoria":"empresa",
+
+  "descricao":"Template institucional para restaurante — cardápio, galeria de fotos, apresentação do chef, depoimentos, reservas e localização, com integração a Google Maps, WhatsApp e Instagram.",
+
+  "frameworks":[
+    "html5",
+    "bootstrap5",
+    "php",
+    "flask",
+    "django"
+  ],
+
+  "componentes":[
+    "hero",
+    "menu",
+    "cardapio",
+    "galeria",
+    "chef",
+    "depoimentos",
+    "reservas",
+    "mapa",
+    "contato",
+    "footer"
+  ],
+
+  "integracoes":[
+    "google-maps",
+    "whatsapp",
+    "instagram"
+  ]
+}

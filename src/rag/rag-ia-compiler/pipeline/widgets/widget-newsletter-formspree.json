@@ -1,0 +1,33 @@
+{
+  "id": "widget-newsletter-formspree",
+  "titulo": "Newsletter Widget — Formspree com Fetch e Feedback Visual",
+  "categoria": "widget-ui",
+  "nicho": "noticias",
+  "descricao": "Formulario de captura de email via Formspree (servico gratuito de backend de formularios). Submissao assicrona com fetch() + FormData. Estado de carregamento no botao durante envio. Feedback visual verde (sucesso) ou vermelho (erro) no elemento #nl-status. Botao restaurado via .finally() independente do resultado. Nenhum backend proprio necessario. Extraido do template MAG News.",
+  "dependencias": ["Formspree (https://formspree.io) — criar conta gratuita e substituir MUDAR_ID_AQUI pelo ID do endpoint"],
+  "personalizacao": {
+    "endpoint_formspree": "https://formspree.io/f/MUDAR_ID_AQUI",
+    "nota_setup": "1. Criar conta em formspree.io 2. Criar novo Form 3. Copiar o ID (formato: xabc1234) 4. Substituir MUDAR_ID_AQUI pelo ID",
+    "campo_input_name": "email",
+    "textos_personalizaveis": {
+      "titulo": "#nl-title — 'A Edicao Dominical'",
+      "descricao": "#nl-desc — 'Receba as melhores historias...'",
+      "placeholder_input": "Seu melhor e-mail...",
+      "texto_botao": "Assinar Agora",
+      "rodape": "#nl-footer — 'Sem spam. Cancele quando quiser.'"
+    }
+  },
+  "css": ".mag-newsletter-widget {\n  background-color: var(--bs-tertiary-bg, #1a1a1a);\n  border: 1px solid var(--border-color, #333);\n  padding: 2rem;\n  border-radius: var(--radius, 12px);\n  text-align: left;\n  transition: transform 0.3s ease;\n  margin-bottom: 2rem;\n}\n.mag-newsletter-widget h4 {\n  color: var(--mag-title, #fff);\n  font-family: var(--font-title, 'Playfair Display', serif);\n  font-size: 1.5rem;\n  margin-bottom: 1rem;\n  font-weight: 700;\n}\n.mag-newsletter-widget p {\n  color: rgba(255,255,255,0.6);\n  font-size: 0.9rem;\n  line-height: 1.5;\n  margin-bottom: 1.5rem;\n}\n.mag-newsletter-widget .form-group { margin-bottom: 1rem; }\n.mag-newsletter-widget input {\n  width: 100%;\n  padding: 12px 15px;\n  border: none;\n  border-radius: 6px;\n  background: #fff;\n  color: #333;\n  font-size: 0.95rem;\n  outline: none;\n}\n.mag-newsletter-widget input:focus {\n  box-shadow: 0 0 0 2px var(--mag-primary, #0d6efd);\n}\n.mag-newsletter-widget button {\n  width: 100%;\n  padding: 12px;\n  background-color: var(--mag-primary, #0d6efd);\n  color: white;\n  border: none;\n  border-radius: 6px;\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  cursor: pointer;\n  transition: opacity 0.2s;\n}\n.mag-newsletter-widget button:hover { opacity: 0.9; }\n.nl-footer {\n  margin-top: 1rem;\n  font-size: 0.75rem;\n  color: rgba(255,255,255,0.4);\n}\n#nl-status {\n  margin-top: 10px;\n  font-size: 0.85rem;\n  font-weight: bold;\n  display: none;\n  padding: 10px;\n  border-radius: 6px;\n}",
+  "html": "<div class=\"mag-newsletter-widget\" id=\"newsletter-box\">\n  <h4 id=\"nl-title\">A Edicao Dominical</h4>\n  <p id=\"nl-desc\">Receba as melhores historias, analises e entrevistas diretamente no seu e-mail.</p>\n  <form id=\"nl-form\" action=\"https://formspree.io/f/MUDAR_ID_AQUI\" method=\"POST\">\n    <div class=\"form-group\">\n      <input type=\"email\" name=\"email\" id=\"nl-email\" placeholder=\"Seu melhor e-mail...\" required />\n    </div>\n    <button type=\"submit\" id=\"nl-btn\">Assinar Agora</button>\n  </form>\n  <div class=\"nl-footer\">Sem spam. Cancele quando quiser.</div>\n  <div id=\"nl-status\"></div>\n</div>",
+  "javascript": "document.getElementById('nl-form').addEventListener('submit', function(ev) {\n  ev.preventDefault();\n  const form = ev.target;\n  const btn = document.getElementById('nl-btn');\n  const status = document.getElementById('nl-status');\n  const data = new FormData(form);\n\n  const btnOriginalText = btn.innerHTML;\n  btn.innerHTML = 'A enviar...';\n  btn.style.opacity = '0.7';\n\n  fetch(form.action, {\n    method: form.method,\n    body: data,\n    headers: { 'Accept': 'application/json' }\n  }).then(response => {\n    if (response.ok) {\n      status.innerHTML = '&#10003; Obrigado por assinar!';\n      status.style.display = 'block';\n      status.style.backgroundColor = 'rgba(40,167,69,0.1)';\n      status.style.color = '#28a745';\n      form.reset();\n    } else {\n      status.innerHTML = '&#9888; Erro ao enviar. Tente novamente.';\n      status.style.display = 'block';\n      status.style.backgroundColor = 'rgba(220,53,69,0.1)';\n      status.style.color = '#dc3545';\n    }\n  }).catch(error => {\n    status.innerHTML = '&#9888; Erro de conexao.';\n    status.style.display = 'block';\n    status.style.color = '#dc3545';\n  }).finally(() => {\n    btn.innerHTML = btnOriginalText;\n    btn.style.opacity = '1';\n  });\n});",
+  "notas_tecnicas": [
+    "headers: { 'Accept': 'application/json' } — necessario para o Formspree retornar JSON em vez de redirecionar a pagina",
+    "FormData captura todos os campos do form automaticamente — nenhum campo precisa ser listado manualmente",
+    ".finally() restaura o botao independente de sucesso ou erro — evita botao travado em 'A enviar...'",
+    "#nl-status display: none por padrao + display: block via JS — nao ocupa espaco antes do envio",
+    "form.reset() apos sucesso limpa o campo de email — UX correto para evitar re-submissao acidental",
+    "var(--bs-tertiary-bg) adapta automaticamente ao modo escuro do Bootstrap 5 via data-bs-theme",
+    "MUDAR_ID_AQUI deve ser substituido pelo ID real do Formspree — o ID tem formato xabc1234 ou similar",
+    "Formspree plano gratuito: 50 submissoes/mes. Para volume maior, upgrade necessario no Formspree"
+  ]
+}

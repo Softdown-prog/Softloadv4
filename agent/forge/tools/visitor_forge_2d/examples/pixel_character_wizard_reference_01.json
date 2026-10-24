@@ -1,0 +1,24 @@
+{
+  "contract": "A7_FORGE_2D_PIXEL_CHARACTER_V1",
+  "id": "wizard_reference_01",
+  "archetype": "wizard",
+  "canvas": [32, 48],
+  "anchor": [16, 46],
+  "walkFrameDurationMs": 140,
+  "palette": {
+    "outline": "#111018",
+    "skin": "#E6AE86",
+    "hair": "#E5E7EB",
+    "shirt": "#5B4AA7",
+    "shirtShadow": "#3D327A",
+    "pants": "#34364C",
+    "pantsShadow": "#26283C",
+    "shoes": "#25252F",
+    "robe": "#5B4AA7",
+    "robeShadow": "#3E327B",
+    "hat": "#343273",
+    "hatBand": "#43498E",
+    "staff": "#6D4B2F",
+    "crystal": "#62C6F2"
+  }
+}

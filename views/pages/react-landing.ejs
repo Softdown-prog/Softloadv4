@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Softload Engine v3.2.1 | Engenharia de Alta Performance</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <%# Bootstrap 5.3.3 — vendorizado localmente, ver scripts/vendorAssets.js.
+        Só CSS: a navbar/rodapé públicos (PublicNavbar.jsx/PublicFooter.jsx,
+        montados por PublicLayout) são componentes React de verdade agora —
+        não usam mais data-bs-toggle, então o bundle JS do Bootstrap não é
+        necessário aqui. %>
+    <link href="/vendor/bootstrap/css/bootstrap.min.css?v=<%= gitSha %>" rel="stylesheet">
+    <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+
+    <%# Aplica o tema antes do render para evitar flash %>
+    <script>
+        (function() {
+            var dark = localStorage.getItem('sl-dark-mode') !== '0';
+            var html = document.documentElement;
+            var theme = dark ? 'dark' : 'light';
+            html.setAttribute('data-bs-theme', theme);
+            html.setAttribute('data-theme', theme);
+            if (dark) { html.classList.add('dark'); } else { html.classList.remove('dark'); }
+        })();
+    </script>
+</head>
+<body>
+
+<script>
+/* Anti-FOUC do hero: arma a classe .js-anim (ver softload.css seção 19)
+   ANTES do React montar, pra que os elementos [data-hero=...] já nasçam
+   invisíveis via CSS assim que o React os criar — sem isso, eles apareceriam
+   visíveis por um instante antes do useHeroEntrance (frontend/hooks/) assumir
+   via GSAP, carregado de forma assíncrona (import() dinâmico). A remoção da
+   classe e todo o resto da animação ficam por conta do hook, não deste
+   script — ele só arma o estado inicial, o mesmo padrão já usado acima
+   para aplicar o tema (dark/light) antes do paint. */
+(function () {
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq && mq.matches) return;
+    document.documentElement.classList.add('js-anim');
+})();
+</script>
+
+<div id="react-root"></div>
+<script type="module" src="/dist/assets/main.js?v=<%= gitSha %>"></script>
+</body>
+</html>

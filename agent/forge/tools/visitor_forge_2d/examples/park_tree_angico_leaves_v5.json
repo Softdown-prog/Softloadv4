@@ -1,0 +1,249 @@
+{
+  "contract": "CH_2D_ORGANIC_SCENERY_V1",
+  "id": "park_tree_angico_leaves_v5",
+  "pipelineRevision": 4,
+  "canvas": [
+    256,
+    320
+  ],
+  "anchor": [
+    128,
+    311
+  ],
+  "seed": 17631,
+  "crownStyle": "broadleaf",
+  "crownCx": 128,
+  "shadowWidth": 112,
+  "camera": {
+    "contract": "CH_CAMERA_V1",
+    "projection": "orthographic_dimetric",
+    "tile": [
+      128,
+      64
+    ],
+    "yawDeg": 45,
+    "elevationDeg": 30,
+    "worldHeightScreenVertical": true
+  },
+  "rotation": {
+    "mode": "procedural_quarter_turns",
+    "lightingSpace": "screen_camera_relative",
+    "views": [
+      "south",
+      "west",
+      "north",
+      "east"
+    ],
+    "yawDeg": {
+      "south": 45,
+      "west": 135,
+      "north": 225,
+      "east": 315
+    }
+  },
+  "lightingIntent": {
+    "top": "soft warm daylight on fine leaf groups",
+    "front": "finely divided bipinnate leaves on irregular branched umbrella crown; defined leaf shapes at gameplay scale",
+    "base": "deep cool green branch interior",
+    "rotationSpace": "screen_camera_relative"
+  },
+  "broadleafStructure": {
+    "layout": "leaf_canopy",
+    "profile": "branching",
+    "center": [
+      128,
+      146
+    ],
+    "radius": [
+      100,
+      81
+    ],
+    "density": 1.05,
+    "species": "angico",
+    "leafDetail": "defined"
+  },
+  "palette": {
+    "ground_shadow": "#29302B",
+    "trunk_top": "#756959",
+    "trunk_bottom": "#3F3A32",
+    "trunk_light": "#A0947F",
+    "back_top": "#35553D",
+    "back_bottom": "#233B2B",
+    "mid_top": "#5D7D4D",
+    "mid_bottom": "#395B3E",
+    "front_top": "#7F9D61",
+    "front_bottom": "#4C7050",
+    "highlight": "#A6BF7A",
+    "occlusion": "#22402C"
+  },
+  "raster": {
+    "shadowDabs": 0,
+    "highlightDabs": 0,
+    "needleStrokes": 0,
+    "finalGrain": 52,
+    "finalNeedles": 0
+  },
+  "trunkBranches": [
+    {
+      "p0": [
+        128,
+        311
+      ],
+      "p1": [
+        127,
+        230
+      ],
+      "p2": [
+        127,
+        183
+      ],
+      "w0": 18,
+      "w1": 8
+    },
+    {
+      "p0": [
+        126,
+        231
+      ],
+      "p1": [
+        106,
+        209
+      ],
+      "p2": [
+        74,
+        195
+      ],
+      "w0": 10,
+      "w1": 3.5
+    },
+    {
+      "p0": [
+        130,
+        229
+      ],
+      "p1": [
+        151,
+        205
+      ],
+      "p2": [
+        181,
+        195
+      ],
+      "w0": 10,
+      "w1": 3.5
+    },
+    {
+      "p0": [
+        125,
+        209
+      ],
+      "p1": [
+        97,
+        180
+      ],
+      "p2": [
+        76,
+        143
+      ],
+      "w0": 7,
+      "w1": 2.5
+    },
+    {
+      "p0": [
+        131,
+        208
+      ],
+      "p1": [
+        157,
+        176
+      ],
+      "p2": [
+        183,
+        140
+      ],
+      "w0": 7,
+      "w1": 2.5
+    },
+    {
+      "p0": [
+        122,
+        190
+      ],
+      "p1": [
+        87,
+        174
+      ],
+      "p2": [
+        49,
+        166
+      ],
+      "w0": 5.5,
+      "w1": 2.0
+    },
+    {
+      "p0": [
+        136,
+        187
+      ],
+      "p1": [
+        172,
+        158
+      ],
+      "p2": [
+        204,
+        158
+      ],
+      "w0": 5.5,
+      "w1": 2.0
+    },
+    {
+      "p0": [
+        128,
+        177
+      ],
+      "p1": [
+        126,
+        150
+      ],
+      "p2": [
+        133,
+        118
+      ],
+      "w0": 6,
+      "w1": 2.0
+    },
+    {
+      "p0": [
+        126,
+        240
+      ],
+      "p1": [
+        106,
+        220
+      ],
+      "p2": [
+        93,
+        214
+      ],
+      "w0": 7,
+      "w1": 2.5
+    },
+    {
+      "p0": [
+        130,
+        238
+      ],
+      "p1": [
+        151,
+        217
+      ],
+      "p2": [
+        161,
+        210
+      ],
+      "w0": 7,
+      "w1": 2.5
+    }
+  ],
+  "paletteId": "angico_feather"
+}

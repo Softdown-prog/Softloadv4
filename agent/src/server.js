@@ -1,0 +1,198 @@
+import express from "express";
+import { parseTaskRequest, getSupportedOperations, ProtocolError } from "./protocol/protocol.js";
+import { requestToTasks } from "./protocol/protocol-adapter.js";
+import { createLogger } from "./utils/logger.js";
+
+const logger = createLogger("worker-agent-server");
+
+// Mapa de `.code` de erro (ver escalation.js/permissions.js) -> status
+// HTTP, usado só pela rota POST /escalations/:id/respond (única rota
+// deste servidor com status HTTP convencional por erro -- /run sempre
+// devolve 200 com {ok:false} por action, ver comentário na rota).
+const ESCALATION_ERROR_STATUS = {
+  PERMISSION_DENIED: 403,
+  ESCALATION_NOT_FOUND: 404,
+  ESCALATION_ALREADY_RESPONDED: 409,
+  VALIDATION_ERROR: 400,
+};
+
+/**
+ * Monta o app Express do Worker Agent, já ligado a um `Agent`
+ * específico (já iniciado -- `agent.start()` já deve ter sido
+ * chamado). Não chama `listen()` -- quem chama decide a porta
+ * (`index.js` em produção; testes montam o app numa porta efêmera,
+ * mesmo padrão de sandbox-efemoro/src/server.js).
+ *
+ * Pipeline de `POST /run`: `parseTaskRequest()` (Zod, protocol.js) →
+ * `requestToTasks()` (protocol-adapter.js, snake_case→camelCase) →
+ * `agent.execute()` por task, SEQUENCIAL (não paralelo -- actions do
+ * mesmo request podem depender de ordem, ex: `file.write` seguido de
+ * `file.read` do mesmo arquivo; rodar em paralelo tornaria isso
+ * não-determinístico).
+ *
+ * @param {import('./agent.js').Agent} agent
+ */
+export function createApp(agent) {
+  const app = express();
+
+  // Limite de corpo -- uma request com até 50 actions (teto do
+  // protocolo) ainda cabe folgado nisso; um corpo maior não tem
+  // motivo legítimo e só serviria pra esgotar memória.
+  app.use(express.json({ limit: "1mb" }));
+
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
+  // Introspecção: lista capability/operação suportada -- útil pra
+  // quem monta o payload de /run saber o que está disponível sem
+  // precisar ler o código-fonte do protocolo.
+  app.get("/capabilities", (req, res) => {
+    res.status(200).json(getSupportedOperations());
+  });
+
+  // Segredo compartilhado simples entre quem despacha tasks e este
+  // Worker -- mesmo padrão já usado em sandbox-efemoro/src/server.js
+  // (SANDBOX_SHARED_SECRET/x-sandbox-secret) e nos endpoints internos
+  // do app principal (SOLARIS_RAG_SEARCH_SECRET etc.): defesa em
+  // profundidade mínima, não a única camada (o ideal em produção é
+  // também restringir por IAM/rede do Cloud Run).
+  const sharedSecret = process.env.WORKER_SHARED_SECRET;
+  if (!sharedSecret) {
+    logger.warn(
+      "WORKER_SHARED_SECRET não configurado -- endpoint /run aceita qualquer chamador. " +
+        "Configure a variável de ambiente antes de expor este serviço fora de um ambiente totalmente confiável.",
+    );
+  }
+
+  function requireSharedSecret(req, res, next) {
+    if (!sharedSecret) return next(); // aviso já emitido na subida
+    const provided = req.get("x-worker-secret");
+    if (provided !== sharedSecret) {
+      return res.status(401).json({ error: "unauthorized" });
+    }
+    return next();
+  }
+
+  app.post("/run", requireSharedSecret, async (req, res) => {
+    let request;
+    try {
+      request = parseTaskRequest(req.body);
+    } catch (err) {
+      if (err instanceof ProtocolError) {
+        return res.status(400).json({
+          error: err.code,
+          message: err.message,
+          details: err.details,
+        });
+      }
+      throw err;
+    }
+
+    const tasks = requestToTasks(request);
+    const results = [];
+
+    for (const { actionId, task } of tasks) {
+      try {
+        const result = await agent.execute(task);
+        results.push({ actionId, ...result });
+      } catch (err) {
+        // agent.execute() lança (não devolve {ok:false}) pra erro de
+        // ROTEAMENTO (task.type desconhecido, capability não
+        // carregada -- ver TaskRouter.resolve()/TaskRunner). Uma
+        // action malformada no meio de um lote de até 50 nunca deve
+        // derrubar as demais -- normaliza pro mesmo formato de falha
+        // que TaskRunner já usa pras falhas de execução.
+        results.push({
+          actionId,
+          ok: false,
+          taskType: task.type,
+          error: {
+            message: err.message,
+            code: err.code || "TASK_ROUTING_FAILED",
+          },
+        });
+      }
+    }
+
+    res.status(200).json({ requestId: request.request_id, results });
+  });
+
+  // Rota HTTP dedicada (fora do protocolo genérico de /run) pra
+  // receber a resposta de um escalonamento humano de volta --
+  // `escalation.request` (via /run) dispara um webhook avisando que
+  // uma decisão é necessária; quem recebe esse webhook chama ESTA
+  // rota quando o humano decidir. Gated pelo mesmo segredo
+  // compartilhado de /run (mesmo perímetro de confiança: quem pode
+  // despachar tasks pra este Worker também pode responder um
+  // escalonamento dele).
+  //
+  // Reusa `agent.execute({type:"escalation.respond",...})` --
+  // MESMA lógica de validação/estado de `capabilities/escalation.js`,
+  // sem duplicar nada aqui. `.code` de cada erro (ver escalation.js e
+  // Permissions.require()) mapeado pro status HTTP correspondente,
+  // diferente de /run (que sempre devolve 200 com {ok:false} por
+  // action) -- esta é uma rota dedicada de propósito único, então
+  // status HTTP convencional é mais natural pra quem a consome de
+  // fora (verificar `resp.ok`/status direto, sem precisar parsear um
+  // envelope de batch).
+  app.post("/escalations/:escalationId/respond", requireSharedSecret, async (req, res) => {
+    const { escalationId } = req.params;
+    const { decision, note } = req.body || {};
+
+    try {
+      // agent.execute() (via TaskRunner) NÃO lança pra falha de
+      // EXECUÇÃO (validação, não encontrado, já respondido,
+      // permissão negada) -- sempre devolve {ok:false, error:{message,
+      // code}} normalmente (mesmo formato usado por /run). Só lança
+      // pra falha de ROTEAMENTO (task.type desconhecido -- não
+      // deveria acontecer aqui, "escalation.respond" é fixo).
+      const outcome = await agent.execute({
+        type: "escalation.respond",
+        escalationId,
+        decision,
+        note,
+      });
+
+      if (outcome.ok) {
+        return res.status(200).json(outcome.result);
+      }
+
+      const status = ESCALATION_ERROR_STATUS[outcome.error.code] || 500;
+
+      if (status === 500) {
+        logger.error("Erro não tratado em POST /escalations/:id/respond", {
+          error: outcome.error.message,
+        });
+      }
+
+      return res.status(status).json({
+        error: outcome.error.code || "INTERNAL_ERROR",
+        message: outcome.error.message,
+      });
+    } catch (err) {
+      logger.error("Erro de roteamento em POST /escalations/:id/respond", {
+        error: err.message,
+        stack: err.stack,
+      });
+
+      return res.status(500).json({
+        error: err.code || "INTERNAL_ERROR",
+        message: err.message,
+      });
+    }
+  });
+
+  // Handler de erro do body parser (JSON malformado/corpo grande demais)
+  // -- sem isto, o express deixaria a stack trace vazar pra resposta em
+  // alguns setups. Mesmo padrão de sandbox-efemoro/src/server.js.
+  app.use((err, req, res, next) => {
+    if (err.type === "entity.parse.failed" || err.type === "entity.too.large") {
+      return res.status(400).json({ error: "invalid_request", message: err.message });
+    }
+    logger.error("Erro não tratado em /run", { error: err.message, stack: err.stack });
+    return res.status(500).json({ error: "internal_error", message: err.message });
+  });
+
+  return app;
+}

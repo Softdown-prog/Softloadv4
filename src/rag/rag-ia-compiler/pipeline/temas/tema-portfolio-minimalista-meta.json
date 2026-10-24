@@ -1,0 +1,51 @@
+{
+  "id": "tema-portfolio-minimalista",
+  "titulo": "Portfolio Git — Tema Minimalista Preto/Branco/Ciano com Dark Mode e Animacoes de Scroll",
+  "categoria": "tema-completo",
+  "nicho": "portfolio",
+  "descricao": "Template Blogger semi-amputado (736 linhas) para portfolio de desenvolvedor ou agencia criativa. Design extremamente limpo — preto, branco e ciano neon como unica cor de destaque. Glassmorphism no navbar. Hero com clamp() fluido. Grid de portfolio borderless com zoom no hover. Dark mode completo via Bootstrap data-bs-theme. IntersectionObserver para animacoes de entrada. Footer CTA gigante. Layout centralizado col-lg-10 sem sidebar. Validado em producao real.",
+  "dependencias": [
+    "Bootstrap 5.3.3 (grid, navbar, dark mode nativo)",
+    "Bootstrap Icons 1.11.3 (bi-list, bi-moon-stars-fill, bi-sun-fill, bi-arrow-down, bi-github, bi-arrow-left, bi-arrow-right, bi-arrow-up-short, bi-code-slash, bi-vector-pen, bi-phone, bi-twitter-x, bi-linkedin)",
+    "Google Fonts: Inter (300/400/600/800/900)"
+  ],
+  "tokens_css": {
+    "prefixo": "--sd-",
+    "light_mode": {
+      "--sd-primary": "#00e5ff",
+      "--sd-primary-hover": "#00b8cc",
+      "--sd-bg": "#ffffff",
+      "--sd-text": "#111111",
+      "--sd-dark": "#000000"
+    }
+  },
+  "theme_designer_bridge": {
+    "formato": "Group e Variable diretamente no CDATA do b:skin — SEM bloco de comentario CSS",
+    "codigo": "/* === VARIÁVEIS DO PAINEL DO BLOGGER === */\n<Group description=\"Cores Principais\" selector=\"body\">\n  <Variable name=\"cor.primaria\" description=\"Cor Principal (Ciano Néon)\" type=\"color\" default=\"#00e5ff\" value=\"#00e5ff\"/>\n  <Variable name=\"cor.primaria.hover\" description=\"Cor Principal - Hover\" type=\"color\" default=\"#00b8cc\" value=\"00b8cc\"/>\n  <Variable name=\"cor.fundo\" description=\"Fundo do Site (Branco Puro)\" type=\"color\" default=\"#ffffff\" value=\"#ffffff\"/>\n  <Variable name=\"cor.texto\" description=\"Texto Principal\" type=\"color\" default=\"#111111\" value=\"#111111\"/>\n  <Variable name=\"cor.escura\" description=\"Preto Absoluto\" type=\"color\" default=\"#000000\" value=\"#000000\"/>\n</Group>",
+    "nota_critica": "DIFERENTE dos outros temas — Group e Variable estao DIRETAMENTE no CDATA sem /* */. O Blogger processa ambos os formatos. O compilador da Softload Engine deve suportar ambas as variacoes."
+  },
+  "dark_mode": {
+    "mecanismo": "Bootstrap 5.3.3 data-bs-theme='dark' no elemento html",
+    "overrides_css": "[data-bs-theme=\"dark\"] body { background-color: var(--sd-dark); color: #f3f4f6; }\n[data-bs-theme=\"dark\"] .card-portfolio-title { color: #ffffff; }\n[data-bs-theme=\"dark\"] .text-muted { color: #9ca3af !important; }\n[data-bs-theme=\"dark\"] header .navbar { background-color: rgba(0, 0, 0, 0.8) !important; }",
+    "nota": "Tokens --sd-bg e --sd-dark nao sao redeclarados no dark mode — os backgrounds mudam via seletor diretamente no body. Abordagem diferente do MAG News que redeclara todos os tokens."
+  },
+  "semi_amputado": {
+    "descricao": "Blog1 com b:includable main customizado. Todos os outros retornam div vazio ou style vazio. Identico ao AppCraft mas layout diferente — grid 2 colunas na lista, single post centralizado col-lg-10.",
+    "lista_grid": "row.row-cols-1.row-cols-md-2.g-5 > col > article.card.card-portfolio.animate-up — 2 colunas em desktop, 1 em mobile",
+    "fallback_sem_imagem": "b:else quando post nao tem featuredImage → div.img-wrapper com bi-code-slash centralizado como placeholder",
+    "single_centralizado": "article.animate-up > div.text-center (titulo + labels) > img.w-100 (feature image 1400px 16:9) > div.post-body-content.mx-auto.col-lg-10"
+  },
+  "fw_black": ".fw-black { font-weight: 900 !important; } — classe utilitaria customizada para peso 900 (Bootstrap usa fw-bold para 700 como maximo)",
+  "notas_tecnicas": [
+    "Group e Variable diretamente no CDATA sem /* */ — formato alternativo valido do Blogger Theme Designer. Parser do compilador deve aceitar ambos os formatos.",
+    "backdrop-filter: blur(10px) no navbar — requer que o elemento pai nao tenha overflow: hidden. Cuidado ao aplicar em containers Bootstrap que usam overflow.",
+    "cubic-bezier(0.165, 0.84, 0.44, 1) — curva ease-out-quart. Entrada rapida, saida suave. Padrao em transicoes premium de UI.",
+    "observer.unobserve(entry.target) apos adicionar .visible — cada elemento anima apenas uma vez. Economiza memoria em paginas longas.",
+    "transitionDelay so aplicado em .card-portfolio (index % 2 * 0.15s) — delay alternado entre 0s e 0.15s cria efeito cascade sutil sem exagero em 2 colunas.",
+    "window.alternarTema exposto globalmente — necessario para o onclick='alternarTema()' em HTML que possa estar fora do closure DOMContentLoaded.",
+    "resizeImage(data:post.featuredImage, 800, '4:3') na lista vs resizeImage(data:post.featuredImage, 1400, '16:9') no single — proporcoes diferentes por contexto.",
+    "ratio ratio-4x3 Bootstrap no card de lista — garante proporcao uniforme independente do tamanho da imagem original.",
+    "footer usa id='contato' — o menu linka href='#contato' para scroll direto ao formulario de contato na mesma pagina.",
+    "clamp(2rem, 5vw, 4rem) no footer-title — titulo de CTA que escala entre tablets e monitores 4K sem media queries"
+  ]
+}

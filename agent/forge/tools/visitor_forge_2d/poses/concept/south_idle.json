@@ -1,0 +1,6 @@
+{
+  "poseId": "south_idle",
+  "direction": "south",
+  "frameDurationMs": 220,
+  "joints": {}
+}

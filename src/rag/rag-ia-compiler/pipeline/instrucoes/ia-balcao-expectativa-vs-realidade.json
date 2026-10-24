@@ -1,0 +1,146 @@
+{
+  "id": "ia-balcao-expectativa-vs-realidade",
+  "titulo": "Gestão de Expectativa vs Realidade do Compilador",
+  "categoria": "gestao-de-expectativas",
+  "versao": "1.0",
+  "descricao": "Âncoras de realidade para calibrar o que o usuário espera versus o que o compilador Softload Engine v3 realmente entrega. Carregado sempre na fase de conversa.",
+  "regra_ouro": "Nunca prometa o que o compilador não pode entregar. Seja honesto sobre limitações ANTES de o usuário criar expectativas incorretas. Ofereça sempre a alternativa disponível mais próxima.",
+
+  "limitacoes_de_customizacao": {
+    "cores": {
+      "expectativa_comum": "Usuário quer cor exata (ex: #B91C1C, azul petróleo, verde musgo específico, cor da marca)",
+      "realidade": "O compilador aceita APENAS 9 presets fixos. Cores personalizadas fora desta lista são impossíveis sem edição manual pós-download.",
+      "presets_disponiveis": [
+        { "id": "tech-blue",       "descricao": "Azul tecnológico moderno — primária #0ea5e9, fundo claro" },
+        { "id": "neon-orange",     "descricao": "Laranja vibrante — primária #ff5722, fundo levemente quente" },
+        { "id": "midnight-purple", "descricao": "Roxo escuro premium — primária #8b5cf6, fundo quase preto" },
+        { "id": "rose-gold",       "descricao": "Rosé sofisticado — primária #f43f5e, fundo rosado claro" },
+        { "id": "gamer-dark",      "descricao": "Roxo neon sobre fundo dark — primária #8b5cf6, card #1e293b" },
+        { "id": "warm-amber",      "descricao": "Âmbar quente dourado — primária #d97706, fundo creme" },
+        { "id": "carbon-dark",     "descricao": "Cinza carbono futurista — primária #38bdf8, fundo quase preto" },
+        { "id": "luxury-purple",   "descricao": "Roxo luxo claro — primária #6f42c1, fundo branco soft" },
+        { "id": "forest-green",    "descricao": "Verde floresta natural — primária #22c55e, fundo verde muito claro" }
+      ],
+      "resposta_padrao": "O compilador trabalha com 9 paletas fixas otimizadas. Para o tom que você quer, a mais próxima seria [preset]. Se precisar da cor exata, você pode editar o CSS no XML gerado após o download — vou deixar comentado onde alterar.",
+      "proibido": "NUNCA prometa cores customizadas. NUNCA mencione hex customizado no JSON de saída."
+    },
+
+    "tipografia": {
+      "expectativa_comum": "Usuário pede fonte específica não listada (Poppins, Nunito, Montserrat, Raleway, Lato, Open Sans, Bebas Neue, etc.)",
+      "realidade": "O compilador aceita APENAS 6 tipografias via preset. Fontes fora da lista não são suportadas diretamente.",
+      "fontes_disponiveis": [
+        { "id": "inter",         "descricao": "Moderna, clean, excelente para tech e negócios — a mais versátil" },
+        { "id": "roboto-slab",   "descricao": "Serifada editorial, jornalística — ideal para notícias e culinária" },
+        { "id": "playfair",      "descricao": "Serifada elegante, luxo e moda — alto padrão visual" },
+        { "id": "space-grotesk", "descricao": "Geométrica futurista, tech e portfólio — personalidade forte" },
+        { "id": "oswald",        "descricao": "Condensada impactante, games e esportes — presença visual" },
+        { "id": "pt-sans",       "descricao": "Humanista neutra, versátil para qualquer nicho — segura e legível" }
+      ],
+      "resposta_padrao": "A fonte [nome] não está disponível nos presets. A mais próxima visualmente é [alternativa] — [justificativa]. Após o download você pode trocar a URL do Google Fonts no XML se precisar da fonte exata.",
+      "mapeamento_alternativas": [
+        { "pedida": "Poppins",      "alternativa": "inter",         "motivo": "mesma sensação geométrica e moderna" },
+        { "pedida": "Montserrat",   "alternativa": "space-grotesk", "motivo": "geométrica com personalidade similar" },
+        { "pedida": "Nunito",       "alternativa": "inter",         "motivo": "clean e arredondada — inter é mais versátil" },
+        { "pedida": "Raleway",      "alternativa": "playfair",      "motivo": "elegância similar, peso visual parecido" },
+        { "pedida": "Lato",         "alternativa": "pt-sans",       "motivo": "humanista neutra — equivalente funcional" },
+        { "pedida": "Open Sans",    "alternativa": "inter",         "motivo": "legibilidade e neutralidade equivalentes" },
+        { "pedida": "Bebas Neue",   "alternativa": "oswald",        "motivo": "condensada de impacto — oswald é a opção disponível" },
+        { "pedida": "Georgia",      "alternativa": "roboto-slab",   "motivo": "serifada editorial — equivalente moderna" }
+      ]
+    },
+
+    "layouts": {
+      "expectativa_comum": "Usuário descreve layout muito específico não mapeável a um preset (ex: 3 colunas + sidebar flutuante, layout masonry com cards desalinhados, homepage tipo landing page pura)",
+      "realidade": "5 layouts de grade disponíveis. Layouts completamente customizados requerem edição pós-compilação.",
+      "layouts_disponiveis": [
+        { "id": "lista",    "descricao": "Posts um abaixo do outro, estilo feed clássico — máxima legibilidade" },
+        { "id": "dupla",    "descricao": "2 cards por linha — equilíbrio entre densidade e clareza" },
+        { "id": "revista",  "descricao": "Post destaque grande + grid — estilo editorial/portal" },
+        { "id": "quadrado", "descricao": "Cards quadrados iguais em grid — visual limpo e moderno" },
+        { "id": "mural",    "descricao": "Masonry com cards de alturas variadas — visual dinâmico tipo Pinterest" }
+      ]
+    }
+  },
+
+  "referencias_visuais_populares": [
+    {
+      "referencia": "G1 / UOL / portais de notícias grandes",
+      "o_que_o_compilador_consegue": "Layout de revista com hero carousel, mega-menu com categorias, sidebar com posts relacionados, rodapé avançado 3 colunas — visual de portal funcional",
+      "o_que_nao_consegue": "Feed em tempo real, ticker de últimas notícias dinâmico automático, busca nativa de conteúdo, seções de vídeo ao vivo integradas",
+      "preset_recomendado": {
+        "colorPreset": "tech-blue",
+        "gridLayout": "revista",
+        "heroSection": "carousel",
+        "menuType": "mega-menu",
+        "sidebarPosition": "right"
+      },
+      "resposta_padrao": "Consigo criar um visual de portal de notícias com o layout revista + carousel hero + mega-menu — visual muito próximo ao G1. O que não é possível natively é o ticker automático em tempo real e a busca integrada (precisa de Google Custom Search externo)."
+    },
+    {
+      "referencia": "Instagram / Pinterest / redes de imagens",
+      "o_que_o_compilador_consegue": "Grid visual denso de cards quadrados ou mural (estilo Pinterest), sem sidebar, hero com grid-mosaic de imagens",
+      "o_que_nao_consegue": "Feed ao vivo de Instagram embutido, stories, reels, galeria interativa com lightbox nativo",
+      "preset_recomendado": {
+        "colorPreset": "rose-gold",
+        "gridLayout": "mural",
+        "heroSection": "grid-mosaic",
+        "menuType": "offcanvas",
+        "sidebarPosition": "none"
+      },
+      "resposta_padrao": "Posso criar um layout visual denso tipo Pinterest com grid mural e hero mosaic. O Blogger não tem integração nativa com Instagram feed — mas posso adicionar um widget de embed do Instagram na sidebar se quiser."
+    },
+    {
+      "referencia": "Themeforest / templates premium pagos",
+      "o_que_o_compilador_consegue": "Template XML válido, responsivo, com tipografia profissional, paleta consistente, hero animado, paginação moderna — completamente funcional no Blogger",
+      "o_que_nao_consegue": "Animações JavaScript avançadas frame-a-frame (type GSAP), efeitos 3D CSS complexos, micro-interações ultra-refinadas que templates pagos têm anos de polimento",
+      "resposta_padrao": "O template gerado é profissional e funcional — design limpo, responsivo, tipografia cuidada. Não vai ter o nível de polimento milimétrico de um template de $60 do Themeforest, mas vai ser sólido, rápido e 100% seu para personalizar."
+    },
+    {
+      "referencia": "Apple.com / sites institucionais premium com animações",
+      "o_que_o_compilador_consegue": "Layout limpo, espaço em branco generoso, tipografia premium (Playfair ou Space Grotesk), hero estático ou carousel suave",
+      "o_que_nao_consegue": "Animações scroll-triggered complexas, parallax 3D, transições de página cinematográficas, vídeo de background nativo",
+      "resposta_padrao": "O estilo minimalista e elegante da Apple dá para recriar com o preset carbon-dark ou luxury-purple + tipografia space-grotesk + layout mural. As animações de scroll cinematográficas do Apple.com não são possíveis no Blogger sem muito JS customizado pós-compilação."
+    },
+    {
+      "referencia": "Blogs de receita / culinária (tipo TudoGostoso, Panelinha)",
+      "o_que_o_compilador_consegue": "Layout mural ou dupla, hero carousel com fotos grandes, warm-amber ou forest-green, roboto-slab editorial, sidebar com posts relacionados",
+      "o_que_nao_consegue": "Calculadora de porções dinâmica, sistema de avaliação com estrelas nativo, print de receita formatado",
+      "preset_recomendado": {
+        "colorPreset": "warm-amber",
+        "gridLayout": "mural",
+        "heroSection": "carousel",
+        "typography": "roboto-slab",
+        "sidebarPosition": "right"
+      }
+    }
+  ],
+
+  "qualidade_entregavel": {
+    "garantido": [
+      "XML válido e importável diretamente no Blogger sem edição manual",
+      "Layout 100% responsivo (mobile, tablet e desktop)",
+      "Tipografia do Google Fonts carregada com performance otimizada",
+      "Paleta de cores consistente aplicada em todos os elementos",
+      "Hero section e grid de posts configurados conforme escolha",
+      "SEO básico estruturado (meta tags, Open Graph, schema.org)",
+      "Lazy load de imagens ativável",
+      "Dark mode opcional com toggle ou automático por sistema"
+    ],
+    "nao_garantido": [
+      "Design pixel-perfect de uma referência visual específica",
+      "Cores exatas fora dos 9 presets",
+      "Fontes fora das 6 disponíveis",
+      "Funcionalidades dinâmicas que requerem backend",
+      "Animações JavaScript avançadas beyond o que o template base inclui"
+    ],
+    "pos_download": "Após o download, o usuário pode editar o XML livremente. O compilador gera um ponto de partida sólido — customizações avançadas de CSS e JS são possíveis manualmente."
+  },
+
+  "frases_de_ancoragem": {
+    "cor_personalizada": "O compilador trabalha com 9 paletas fixas. Para o que você quer, a mais próxima é [preset] ([descrição]). Se precisar da cor exata da sua marca, posso indicar onde editar no XML após o download.",
+    "fonte_nao_disponivel": "A fonte [nome] não está no compilador, mas [alternativa] tem personalidade muito similar — [motivo]. Quer seguir com ela?",
+    "funcionalidade_imposivel": "Isso não é possível nativamente no Blogger — [razão]. O que posso oferecer é [alternativa próxima]. Quer ir por esse caminho?",
+    "referencia_visual": "Consigo criar um visual próximo ao [referência] com [presets]. O que não vai estar disponível é [limitação específica]. Isso atende ao que você precisa?",
+    "qualidade_geral": "O template gerado vai ser funcional, responsivo e visualmente coerente — um ponto de partida sólido que você pode refinar após o download. Não vai ter o polimento final de um produto com anos de iteração, mas vai ser completamente seu."
+  }
+}

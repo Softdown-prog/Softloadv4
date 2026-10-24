@@ -1,0 +1,18 @@
+{
+  "id": "ia-balcao-dark-mode-toggle-js",
+  "categoria": "funcionalidade-js",
+  "conceito": "Sistema completo de dark mode para Blogger com Bootstrap 5: persistência via localStorage, detecção de preferência do SO (prefers-color-scheme), e botão com troca de ícone (lua → sol) e cor (outline-secondary → outline-warning). Executa antes do body render para evitar flash of wrong theme.",
+  "script_head_anti_flash": "<script>\n  //<![CDATA[\n  if (localStorage.getItem('theme') === 'dark' ||\n     (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {\n    document.documentElement.setAttribute('data-bs-theme', 'dark');\n  }\n  //]]>\n</script>",
+  "html_botao": "<button class=\"btn btn-outline-secondary rounded-circle\" id=\"darkModeToggle\"\n  type=\"button\" style=\"width:40px; height:40px;\">\n  <i class=\"bi bi-moon-stars-fill\"></i>\n</button>",
+  "javascript_toggle": "document.addEventListener('DOMContentLoaded', () => {\n  const btn = document.getElementById('darkModeToggle');\n  if (!btn) return;\n  const icon = btn.querySelector('i');\n\n  const updateIcon = (theme) => {\n    if (theme === 'dark') {\n      icon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');\n      btn.classList.replace('btn-outline-secondary', 'btn-outline-warning');\n    } else {\n      icon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');\n      btn.classList.replace('btn-outline-warning', 'btn-outline-secondary');\n    }\n  };\n\n  const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';\n  updateIcon(currentTheme);\n\n  btn.addEventListener('click', () => {\n    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';\n    const newTheme = isDark ? 'light' : 'dark';\n    document.documentElement.setAttribute('data-bs-theme', newTheme);\n    localStorage.setItem('theme', newTheme);\n    updateIcon(newTheme);\n  });\n});",
+  "css_dark_mode_post": "[data-bs-theme=\"dark\"] .post-body-content * { color: #e9ecef !important; }\n[data-bs-theme=\"dark\"] #comment-editor { filter: invert(0.9) hue-rotate(180deg); border-radius: 8px; }",
+  "variaveis_blogger_skin": ":root {\n  /* Usar as variáveis do Bootstrap 5 — não hardcode cores no dark mode */\n  /* --bs-body-bg, --bs-body-color, --bs-border-color são ajustadas pelo data-bs-theme */\n}",
+  "notas_tecnicas": [
+    "O script anti-flash DEVE estar no <head> ANTES do body — se colocado no final do body o usuário vê flash branco em modo escuro",
+    "data-bs-theme='dark' no documentElement ativa o dark mode do Bootstrap 5 — NÃO usar classe .dark ou .night no body",
+    "localStorage.getItem('theme') retorna null na primeira visita — o fallback é prefers-color-scheme do SO",
+    "classList.replace() é seguro mesmo quando a classe origem não existe — não lança erro",
+    "O filtro invert no comment-editor do Blogger inverte o iframe de comentários (que é branco hardcoded) para modo escuro",
+    "Para o Blogger funcionar, o script anti-flash deve estar dentro de //<![CDATA[ //]]> para o XML não quebrar"
+  ]
+}

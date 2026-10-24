@@ -1,0 +1,99 @@
+{
+  "id": "git-create-gitignore",
+  "slug": "git-create-gitignore",
+  "categoria": "git",
+  "descricao": "Ensina o agente a criar e manter um arquivo .gitignore adequado antes de publicar arquivos de um projeto Node.js.",
+  "quando_usar": [
+    "ao preparar um projeto Node.js para o Git",
+    "antes do primeiro commit",
+    "quando novos arquivos gerados localmente precisam ser excluídos do versionamento"
+  ],
+  "instrucao": [
+    "Verifique se o projeto já possui um .gitignore antes de criar outro.",
+    "Inclua dependências instaladas localmente, arquivos de ambiente, logs, caches e artefatos temporários que não devem ser versionados.",
+    "Não ignore arquivos necessários para executar, testar ou construir o projeto.",
+    "Não copie cegamente um .gitignore genérico: adapte as regras ao projeto real.",
+    "Antes do commit, verifique quais arquivos serão incluídos no Git."
+  ],
+  "padrao": [
+    "inspecionar_projeto",
+    "verificar_gitignore_existente",
+    "identificar_arquivos_nao_versionaveis",
+    "criar_ou_atualizar_gitignore",
+    "verificar_git_status",
+    "validar_arquivos_versionados"
+  ],
+  "exemplo": {
+    "contexto": "Um projeto Node.js possui node_modules, arquivos .env, logs e diretórios temporários.",
+    "resposta": "Criar ou atualizar o .gitignore para excluir artefatos locais e dados sensíveis, mantendo o código-fonte, package.json, package-lock.json e arquivos necessários ao projeto."
+  },
+  "anti_padroes": [
+    "Versionar node_modules.",
+    "Versionar arquivos .env contendo credenciais.",
+    "Ignorar todo o projeto com regras excessivamente amplas.",
+    "Criar múltiplos .gitignore sem necessidade.",
+    "Assumir que .gitignore remove automaticamente arquivos que já estão sendo rastreados pelo Git."
+  ],
+  "keywords": [
+    "gitignore",
+    "nodejs",
+    "git",
+    "dependencies",
+    "node-modules",
+    "node",
+    "modules",
+    "env",
+    "secrets",
+    "git-status",
+    "status",
+    "git-create-gitignore",
+    "create"
+  ],
+  "componentes": [
+    {
+      "nome": "quando_usar",
+      "itens": [
+        "ao preparar um projeto Node.js para o Git",
+        "antes do primeiro commit",
+        "quando novos arquivos gerados localmente precisam ser excluídos do versionamento"
+      ]
+    },
+    {
+      "nome": "instrucao",
+      "itens": [
+        "Verifique se o projeto já possui um .gitignore antes de criar outro.",
+        "Inclua dependências instaladas localmente, arquivos de ambiente, logs, caches e artefatos temporários que não devem ser versionados.",
+        "Não ignore arquivos necessários para executar, testar ou construir o projeto.",
+        "Não copie cegamente um .gitignore genérico: adapte as regras ao projeto real.",
+        "Antes do commit, verifique quais arquivos serão incluídos no Git."
+      ]
+    },
+    {
+      "nome": "padrao",
+      "itens": [
+        "inspecionar_projeto",
+        "verificar_gitignore_existente",
+        "identificar_arquivos_nao_versionaveis",
+        "criar_ou_atualizar_gitignore",
+        "verificar_git_status",
+        "validar_arquivos_versionados"
+      ]
+    },
+    {
+      "nome": "anti_padroes",
+      "itens": [
+        "Versionar node_modules.",
+        "Versionar arquivos .env contendo credenciais.",
+        "Ignorar todo o projeto com regras excessivamente amplas.",
+        "Criar múltiplos .gitignore sem necessidade.",
+        "Assumir que .gitignore remove automaticamente arquivos que já estão sendo rastreados pelo Git."
+      ]
+    }
+  ],
+  "exemplos": [
+    {
+      "contexto": "Um projeto Node.js possui node_modules, arquivos .env, logs e diretórios temporários.",
+      "resposta": "Criar ou atualizar o .gitignore para excluir artefatos locais e dados sensíveis, mantendo o código-fonte, package.json, package-lock.json e arquivos necessários ao projeto."
+    }
+  ]
+}
