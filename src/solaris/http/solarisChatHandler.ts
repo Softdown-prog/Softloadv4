@@ -184,7 +184,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
                 }
             } catch (e) {
                 // Se o projeto está ocupado, não fingir que a edição caiu no chat comum.
-                if (['SOLARIS_PROJECT_BUSY', 'SOLARIS_PROJECT_STALE'].includes((e as Error & {code?: string}).code || '')) throw e;
+                if ((e as Error & {code?: string}).code === 'SOLARIS_PROJECT_BUSY' || (e as Error & {code?: string}).code === 'SOLARIS_PROJECT_STALE') throw e;
                 console.warn(`[SOLARIS-CHAT] falha carregando projeto anexado: ${(e as Error).message}`);
             } finally {
                 fs.rmSync(baseDirProjeto, { recursive: true, force: true });
