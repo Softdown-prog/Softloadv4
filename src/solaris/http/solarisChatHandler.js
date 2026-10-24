@@ -227,9 +227,9 @@ function criarHandlerChatSolaris(deps) {
                 type: 'error',
                 message: isProjetoOcupado ? 'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.'
                     : isCota ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
-                    : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
-                        : isChave ? 'Chave de API inválida ou expirada. Verifique GEMINI_API_KEY no servidor.'
-                            : `Solaris temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
+                        : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
+                            : isChave ? 'Chave de API inválida ou expirada. Verifique GEMINI_API_KEY no servidor.'
+                                : `Solaris temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
             });
         }
         finally {
