@@ -220,7 +220,6 @@ function _identificadoresValidos(uid, sessionId) {
         && value.length > 0 && value !== '.' && value !== '..'
         && !value.includes('/') && !value.includes('\\') && !value.includes('\0'));
 }
-
 /**
  * Apaga um projeto persistido — usado quando um novo upload substitui o
  * anterior na mesma sessão (pra nunca acumular mais de um projeto por
