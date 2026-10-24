@@ -57,14 +57,19 @@ jobs:
       - name: Validar modos de serviço
         working-directory: sandbox-efemoro
         run: node --test src/serviceMode.test.js
-      - name: Construir imagem sem Chromium
-        run: docker build --build-arg INSTALL_CHROMIUM=0 -t softload-sandbox:archive-only -f sandbox-efemoro/Dockerfile sandbox-efemoro
-      - name: Medir imagem archive-only
+      - name: Construir imagem dedicada slim, sem Chromium
+        run: docker build --progress plain -t softload-sandbox:archive-slim -f sandbox-efemoro/Dockerfile.archive sandbox-efemoro
+      - name: Smoke real de HTTP, segredo, ZIP e browser bloqueado
+        run: bash sandbox-efemoro/scripts/smoke-archive-slim.sh
+      - name: Validar Compose independente sem acesso a VPS
+        env:
+          SOFTLOAD_DOCKER_NETWORK: ci-internal
+          SANDBOX_ARCHIVE_SHARED_SECRET: ci-secret-not-for-production
+        run: docker compose -f sandbox-efemoro/compose.archive.yml config --quiet
+      - name: Medir imagem archive-slim
         run: |
           set -euo pipefail
-          docker run --rm --entrypoint node softload-sandbox:archive-only \
-            -e "import('./src/serviceMode.js').then(m => { if (m.resolveSandboxMode() !== 'archive') process.exit(1); })"
-          bytes="$(docker image inspect --format='{{.Size}}' softload-sandbox:archive-only)"
+          bytes="$(docker image inspect --format='{{.Size}}' softload-sandbox:archive-slim)"
           mib="$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')"
-          echo "[IMAGE] archive-only: $bytes bytes ($mib MiB)"
-          echo "Sandbox archive-only: **$mib MiB** ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"
+          echo "[IMAGE] archive-slim: $bytes bytes ($mib MiB)"
+          echo "Sandbox archive-slim: **$mib MiB** ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"

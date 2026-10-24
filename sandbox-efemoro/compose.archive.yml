@@ -1,0 +1,40 @@
+# Perfil OPCIONAL, nunca substitui o sandbox completo na producao.
+# A rede Docker informada deve ja existir e conter o container do Agent.
+# Sem "ports": o endpoint so e acessivel pelos servicos na mesma rede.
+name: softload-archive
+
+services:
+  archive:
+    image: softload-sandbox:archive-slim
+    restart: unless-stopped
+    init: true
+    environment:
+      PORT: "8080"
+      SANDBOX_MODE: archive
+      SANDBOX_CHROMIUM_INSTALLED: "0"
+      SANDBOX_SHARED_SECRET: ${SANDBOX_ARCHIVE_SHARED_SECRET:?Defina o segredo do sandbox archive}
+    networks:
+      - internal
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  internal:
+    external: true
+    name: ${SOFTLOAD_DOCKER_NETWORK:?Defina a rede Docker compartilhada com o Agent}

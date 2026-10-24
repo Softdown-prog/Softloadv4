@@ -113,3 +113,68 @@ Uma imagem sem Chromium recusa configuração `browser` ou `full`.
 O container leve reduz **disco/imagem** em comparação ao completo.
 Uma segunda instância rodando simultaneamente pode consumir RAM extra;
 não afirmar economia de RAM sem medir `docker stats`.
+
+## Etapa 2: imagem archive-slim independente
+
+O arquivo `sandbox-efemoro/Dockerfile.archive` cria um perfil separado com
+`node:22-bookworm-slim`, `libarchive-tools` e o código existente de extração.
+O arquivo `Dockerfile` (com Chromium) **não foi alterado**. Os dois mantêm o
+mesmo `package-lock.json`; o perfil leve não instala browsers no build.
+
+```bash
+docker build -t softload-sandbox:archive-slim \
+  -f sandbox-efemoro/Dockerfile.archive sandbox-efemoro
+```
+
+O CI `Solaris Sandbox - fronteiras e perfil leve` compila esta imagem,
+executa um container com rede externa desabilitada para verificar
+`/health`, autenticação por segredo, rejeição de auditoria de navegador
+(HTTP 503) e a resposta da extração ZIP, valida o Compose e registra
+o tamanho real da imagem. Os números da versão slim devem ser retirados
+dos logs de Actions; nunca assumir tamanho ou economia antes desse build.
+
+### Compose opcional para VPS (não ativado automaticamente)
+
+O arquivo `sandbox-efemoro/compose.archive.yml` cria um serviço separado
+no mesmo Docker network do Agent, sem publicar porta no host, sem
+privilégios adicionais e com filesystem raiz somente leitura. Exige
+que a rede Docker já exista.
+
+Na VPS, com acesso administrativo legítimo e o repositório já disponível:
+
+```bash
+# Exemplo: use o nome da rede Docker onde o Worker Agent esta conectado.
+export SOFTLOAD_DOCKER_NETWORK='NOME_REAL_DA_REDE_DO_AGENT'
+export SANDBOX_ARCHIVE_SHARED_SECRET='SEGREDO_GERADO_COM_SEGURANCA'
+
+# O mesmo nome/tag precisa existir no daemon Docker da VPS.
+docker build -t softload-sandbox:archive-slim \
+  -f sandbox-efemoro/Dockerfile.archive sandbox-efemoro
+docker compose -f sandbox-efemoro/compose.archive.yml up -d
+docker compose -f sandbox-efemoro/compose.archive.yml ps
+```
+
+A URL no Agent depois de validar conectividade na rede do Docker é,
+tipicamente, `http://archive:8080` **apenas se o nome da rede/serviço
+resolver assim naquele ambiente**; confirme na rede real antes de
+configurar `SANDBOX_ARCHIVE_SERVICE_URL`. Configure o segredo
+`SANDBOX_ARCHIVE_SHARED_SECRET` do Agent igual ao do novo container.
+Sem essa variável de URL, o Agent continua usando o sandbox antigo.
+
+Para rollback, desfaça apenas a variável `SANDBOX_ARCHIVE_SERVICE_URL`
+do Agent e reinicie o Agent conforme seu procedimento normal; depois
+remova a instância archive-slim se desejar.
+
+O protocolo SSH de deploy da VPS atualmente suporta apenas os quatro
+serviços originais, e o novo Compose **não pode ser ativado por esse
+workflow existente**. Não dar a entender que um commit no GitHub já
+provisionou a instância archive-slim na VPS.
+
+### Por que o deploy completo não deve baixar Chromium toda vez
+
+O planejamento em `deploy.yml` agora considera como entradas da
+imagem **completa** somente `Dockerfile`, `.dockerignore`,
+`package.json`, `package-lock.json` e `src/` do sandbox.
+Mudanças em `Dockerfile.archive`, `compose.archive.yml` e scripts
+exclusivos da imagem slim não provocam desnecessariamente um rebuild
+e a transferência da imagem completa do Chromium.
