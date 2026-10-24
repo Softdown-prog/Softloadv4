@@ -11,9 +11,8 @@ const { carregarCatalogo } = require('../src/solaris/rag/ragCatalogLoader');
 function organizarRascunhos({ dirDrafts, dirDestino, catalogoExistente: catalogoInicial = null } = {}) {
     const ragDir = dirDestino || path.join(__dirname, '../src/solaris/rag');
     const draftsDir = dirDrafts || path.join(ragDir, PASTA_RASCUNHOS);
-    const relatorio = triabDiretorio({ dir: draftsDir });
-    const catalogoExistente = [..(catalogoInicial || carregarCatalogo({ forcarRecarga: true }))];
-
+    const relatorio = triarDiretorio({ dir: draftsDir });
+    const catalogoExistente = [...(catalogoInicial || carregarCatalogo({ forcarRecarga: true }))];
     const movidos = [];
     const rejeitados = [];
     const precisamDeCuradoria = [];
