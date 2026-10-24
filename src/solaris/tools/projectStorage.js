@@ -214,6 +214,13 @@ async function carregarProjeto(uid, sessionId, destDir) {
     }));
     return { framework: manifesto.framework || null, arquivos: manifesto.arquivos };
 }
+/** Runtime check: Firestore data and caller arguments can bypass TS types. */
+function _identificadoresValidos(uid, sessionId): boolean {
+    return [uid, sessionId].every(value => typeof value === 'string'
+        && value.length > 0 && value !== '.' && value !== '..'
+        && !value.includes('/') && !value.includes('\\') && !value.includes('\0'));
+}
+
 /**
  * Apaga um projeto persistido — usado quando um novo upload substitui o
  * anterior na mesma sessão (pra nunca acumular mais de um projeto por
@@ -222,6 +229,9 @@ async function carregarProjeto(uid, sessionId, destDir) {
  * (não só expiração) vazava cota pro usuário indefinidamente.
  */
 async function apagarProjeto(uid, sessionId) {
+    if (!_identificadoresValidos(uid, sessionId)) {
+        throw new TypeError('Identificadores de projeto Solaris inválidos.');
+    }
     const trackingRef = db.collection(exports.COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     const trackingSnap = await trackingRef.get();
     // Do not release quota or remove tracking unless storage deletion succeeds.
@@ -257,6 +267,10 @@ function _estaExpirado(criadoEmIso, diasParaExpirar, agora = new Date()) {
  * @returns {Promise<{ apagados: string[], erros: Array<{id:string, erro:string}> }>}
  */
 async function apagarProjetosExpirados({ diasParaExpirar = exports.DIAS_RETENCAO_PADRAO } = {}) {
+    // A negative/zero TTL could wipe every tracked project. Reject before any I/O.
+    if (!Number.isSafeInteger(diasParaExpirar) || diasParaExpirar < 1) {
+        throw new RangeError('Retenção Solaris deve ser um número inteiro positivo de dias.');
+    }
     const snap = await db.collection(exports.COLECAO_RASTREAMENTO).get();
     const apagados = [];
     const erros = [];
@@ -265,6 +279,10 @@ async function apagarProjetosExpirados({ diasParaExpirar = exports.DIAS_RETENCAO
         if (!_estaExpirado(criadoEm, diasParaExpirar))
             continue;
         try {
+            // Avoid deleting an unrelated user's GCS prefix if tracking data was corrupted.
+            if (!_identificadoresValidos(uid, sessionId) || doc.id !== _idRastreamento(uid, sessionId)) {
+                throw new Error('Rastreamento Solaris inválido: identidade divergente.');
+            }
             await apagarProjeto(uid, sessionId);
             apagados.push(doc.id);
         }

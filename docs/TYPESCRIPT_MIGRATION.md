@@ -1156,3 +1156,18 @@ O teste de regressão existente
 As duas fontes entram em `tsconfig.json` e
 `scripts/typescript-mirror-sources.json`, com gatilhos específicos no
 Gate TypeScript. Nenhuma mudança de dependências ou rotas HTTP.
+
+## Etapa 67 — proteção da retenção de projetos Solaris
+
+A rotina TypeScript `projectStorage.ts` agora recusa prazos TTL inválidos
+(zero, negativos, fracionários e não finitos) **antes** de consultar Firestore.
+O padrão de 30 dias permanece. Identificadores de projetos são validados
+antes de excluir objetos do GCS. Durante a varredura, um documento vencido
+cujo ID difere de `uid_sessionId` não pode apagar arquivos de outra sessão;
+a inconsistência é anotada em `erros` e a limpeza continua.
+
+`projectStorage.transaction.test.js` testa a rotina com bucket, rastreamento
+e contabilização falsos: retenção válida, TTL inválido, metadados adulterados,
+exclusão direta insegura e falha individual de GCS. Nenhum teste acessa
+credenciais, Firestore ou GCS de produção. Os espelhos JS CommonJS
+continuam derivados da fonte TS e verificados pelo gate.

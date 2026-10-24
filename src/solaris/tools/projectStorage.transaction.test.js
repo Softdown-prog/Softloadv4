@@ -41,7 +41,9 @@ const db = {
       async set(data) { tracking.set(id, {...data}); },
       async delete() { tracking.delete(id); },
     }; },
-    async get() { return { docs: [] }; },
+    async get() { return { docs: [...tracking.entries()].map(([id, value]) => ({
+      id, data: () => ({...value}),
+    })) }; },
   }; },
 };
 const deps = [
@@ -62,7 +64,7 @@ for(const [rel,exports] of deps) {
   const id=require.resolve(rel);
   require.cache[id]={id,filename:id,loaded:true,exports};
 }
-const {salvarProjeto,carregarProjeto,apagarProjeto} = require('./projectStorage');
+const {salvarProjeto,carregarProjeto,apagarProjeto,apagarProjetosExpirados} = require('./projectStorage');
 const uid='user-test',sessionId='session-test',email='test@example.test';
 const manifestKey='users/user-test/solaris-projects/session-test/manifesto.json';
 const trackedId='user-test_session-test';
@@ -178,4 +180,63 @@ test('legado sem versão continua legível após mudança do formato GCS',async(
   })));
   objects.set(prefix+'files/legacy.txt',Buffer.from('formato original'));
   assert.deepEqual((await readProject()).files,[['legacy.txt','formato original']]);
+});
+
+test('TTL padrão mantém projeto novo e remove somente rastreamento vencido', async () => {
+  reset(); await initial();
+  const recent = await apagarProjetosExpirados();
+  assert.deepEqual(recent, {apagados: [], erros: []});
+  assert.ok(objects.has(manifestKey));
+  tracking.get(trackedId).criadoEm = '2020-01-01T00:00:00.000Z';
+  const result = await apagarProjetosExpirados();
+  assert.deepEqual(result, {apagados: [trackedId], erros: []});
+  assert.equal(objects.size, 0);
+  assert.equal(tracking.size, 0);
+  assert.equal(quota.used, 0);
+});
+
+test('TTL inválido nunca consulta Firestore nem apaga projeto', async () => {
+  reset(); await initial();
+  const bytes = quota.used;
+  for (const dias of [0, -1, -30, 0.5, Infinity, NaN, '0', '30']) {
+    await assert.rejects(apagarProjetosExpirados({diasParaExpirar: dias}), RangeError);
+    assert.ok(objects.has(manifestKey));
+    assert.equal(quota.used, bytes);
+    assert.equal(deleteHistory.length, 0);
+  }
+});
+
+test('rastreamento expirado com identidade divergente não exclui outra sessão', async () => {
+  reset(); await initial();
+  const prev = {...tracking.get(trackedId)};
+  tracking.set('forged_other', {...prev, criadoEm: '2020-01-01T00:00:00.000Z'});
+  tracking.set(trackedId, {...prev, criadoEm: '2020-01-01T00:00:00.000Z', uid: '../user-test'});
+  const result = await apagarProjetosExpirados();
+  assert.deepEqual(result.apagados, []);
+  assert.deepEqual(result.erros.map(item => item.id).sort(), ['forged_other', trackedId].sort());
+  assert.ok(objects.has(manifestKey));
+  assert.equal(deleteHistory.length, 0);
+});
+
+test('exclusão direta recusa identificadores inseguros antes de tocar GCS', async () => {
+  reset(); await initial();
+  for (const [user, sessao] of [['..', sessionId], [uid, '../other'], ['', sessionId], [uid, ''], [null, sessionId], [uid, 'x\\y']]) {
+    await assert.rejects(apagarProjeto(user, sessao), TypeError);
+  }
+  assert.ok(objects.has(manifestKey));
+  assert.equal(deleteHistory.length, 0);
+});
+
+test('falha na exclusão TTL é registrada e varredura prossegue sem perder crédito', async () => {
+  reset(); await initial();
+  const prev = tracking.get(trackedId);
+  prev.criadoEm = '2020-01-01T00:00:00.000Z';
+  const used = quota.used;
+  failDelete = prefix => prefix.includes(sessionId);
+  const result = await apagarProjetosExpirados({diasParaExpirar: 30});
+  assert.deepEqual(result.apagados, []);
+  assert.equal(result.erros.length, 1);
+  assert.equal(result.erros[0].id, trackedId);
+  assert.ok(objects.has(manifestKey));
+  assert.equal(quota.used, used);
 });
