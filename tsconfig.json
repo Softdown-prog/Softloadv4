@@ -162,7 +162,9 @@
     "scripts/vendorCachePolicy.ts",
     "scripts/check-frontend-branding.ts",
     "scripts/compile-batch.ts",
-    "scripts/extractTemplate.ts"
+    "scripts/extractTemplate.ts",
+    "scripts/runTests.ts",
+    "scripts/audit-typescript-migration.ts"
   ],
   "exclude": [
     "node_modules",

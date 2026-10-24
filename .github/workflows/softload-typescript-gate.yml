@@ -26,6 +26,9 @@ on:
       - 'scripts/compile-batch.js'
       - 'scripts/extractTemplate.ts'
       - 'scripts/extractTemplate.js'
+      - 'scripts/runTests.ts'
+      - 'scripts/runTests.js'
+      - 'scripts/audit-typescript-migration.ts'
       - 'server.js'
       - 'views/**/*.ejs'
       - 'package.json'
@@ -66,6 +69,7 @@ jobs:
           node src/ai/pecaRequestSchemaContract.test.js
           node src/ai/templateEditAgentContract.test.js
           node src/core/typescriptMigrationAudit.test.js
+          node src/core/testRunnerDiscovery.test.js
           node src/core/vendorAssets.test.js
           node src/core/vendorTemplateRefs.test.js
           node src/core/vendorStaticPolicy.test.js

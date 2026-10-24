@@ -1135,3 +1135,24 @@ o Gate TypeScript passa a executar os testes reais já existentes em
 `scripts/compile-batch.test.js` e `scripts/extractTemplate.test.js`,
 que utilizam diretórios temporários. O TypeScript estrito e smoke isolado
 de ambos os CLIs passaram antes do commit; CI completa depende do Actions.
+
+## Etapa 67 — executor de testes e auditoria da migração em TypeScript
+
+`scripts/runTests.ts` e `scripts/audit-typescript-migration.ts` são
+as novas fontes tipadas. Os espelhos `.js` permanecem CommonJS e são
+verificados pelo `npm run typecheck` (TypeScript 5.9.3). O `npm test`
+mantém um processo Node por teste e exit status agregado, enquanto
+`npm run audit:typescript` continua verificando os arquivos TS, espelhos,
+registro e opções de compilação.
+
+O executor não executa toda a suíte ao ser importado: agora só inicia
+quando invocado diretamente, permitindo o teste isolado de
+`encontrarTestes` em `src/core/testRunnerDiscovery.test.js`.
+A auditoria preserva seu contrato `auditarMigracao(root)`, incluindo
+erros por ausência de fontes, registros duplicados e espelhos faltantes.
+O teste de regressão existente
+`src/core/typescriptMigrationAudit.test.js` permanece ativo.
+
+As duas fontes entram em `tsconfig.json` e
+`scripts/typescript-mirror-sources.json`, com gatilhos específicos no
+Gate TypeScript. Nenhuma mudança de dependências ou rotas HTTP.
