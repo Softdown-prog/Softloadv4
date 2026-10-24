@@ -106,7 +106,6 @@ async function _comExclusividadeProjeto(uid, sessionId, tarefa) {
         }
     }
 }
-
 /**
  * Persiste um projeto no GCS sob `sessionId`. `arquivos` é o mesmo
  * formato já usado por frameworkDetector/projectInspector —
