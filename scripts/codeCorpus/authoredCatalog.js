@@ -2,10 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CATALOG = exports.ROOT = void 0;
 exports.loadAuthoredCorpus = loadAuthoredCorpus;
-/**
- * Carrega receitas originais do Solaris a partir de um catálogo versionado.
- * Não executa exemplos e não lê caminhos fora dos prefixos permitidos.
- */
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
