@@ -3,9 +3,11 @@ export interface PersistProjectFile { caminho: string; conteudo: Buffer | string
 export interface PersistProjectOptions {
     uid: string; email: string; plano: string; sessionId: string;
     framework: string | null; arquivos: PersistProjectFile[];
+    /** The version read by the editor. Undefined retains the upload/forge replacement behavior. */
+    expectedVersion?: string | null;
 }
 export interface PersistProjectResult { ok: true; totalArquivos: number; tamanhoBytes: number }
-export interface LoadedProject { framework: string | null; arquivos: string[] }
+export interface LoadedProject { framework: string | null; arquivos: string[]; versao: string | null }
 export interface ExpiredProjectsResult { apagados: string[]; erros: { id: string; erro: string }[] }
 export interface CleanupOptions { diasParaExpirar?: number }
 interface ProjectManifest { sessionId: string; framework: string | null; arquivos: string[]; criadoEm: string; versao?: string }
@@ -155,7 +157,7 @@ async function _comExclusividadeProjeto<T>(uid: string, sessionId: string, taref
 export async function salvarProjeto(options: PersistProjectOptions): Promise<PersistProjectResult> {
     return _comExclusividadeProjeto(options.uid, options.sessionId, () => _salvarProjetoComBloqueio(options));
 }
-async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos }: PersistProjectOptions): Promise<PersistProjectResult> {
+async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos, expectedVersion }: PersistProjectOptions): Promise<PersistProjectResult> {
     const trackingRef = db.collection(COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     // Fail closed if metadata cannot be read: never replace an unknown old project.
     const oldTrackingSnap = await trackingRef.get();
@@ -168,6 +170,20 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
     } catch (error) {
         const err = error as { code?: number; message?: string };
         if (err.code !== 404 && !err.message?.includes('No such object')) throw error;
+    }
+
+    // A slow editor must not overwrite a newer upload or edit published after its read.
+    // Check under the per-session Firestore lock, before touching files or quota.
+    if (expectedVersion !== undefined) {
+        if (expectedVersion !== null && typeof expectedVersion !== 'string') {
+            throw new TypeError('Versão de projeto Solaris inválida.');
+        }
+        if (expectedVersion !== (oldManifest?.versao ?? null)) {
+            const conflito = new Error('Projeto Solaris alterado desde a leitura. Recarregue a versão atual.') as Error & { code: string; status: number };
+            conflito.code = 'SOLARIS_PROJECT_STALE';
+            conflito.status = 409;
+            throw conflito;
+        }
     }
 
     const versao = randomUUID();
@@ -291,7 +307,7 @@ export async function carregarProjeto(uid: string, sessionId: string, destDir: s
         criarArquivo(destDir, caminho, conteudoBuf);
     }));
 
-    return { framework: manifesto.framework || null, arquivos: manifesto.arquivos };
+    return { framework: manifesto.framework || null, arquivos: manifesto.arquivos, versao: manifesto.versao ?? null };
 }
 
 /** Runtime check: Firestore data and caller arguments can bypass TS types. */

@@ -77,11 +77,11 @@ function criarHandlerChatSolaris(deps) {
                             }
                             const arquivosAtualizados = lerProjetoParaPersistir(baseDirProjeto);
                             // Mesmo padrão de substituição da rota de upload
-                            // (apagarProjeto + salvarProjeto) — reusa a cota já
+                            // (salvarProjeto versionado) — reusa a cota já
                             // testada em vez de inventar escrita cirúrgica por
                             // arquivo no GCS (projeto Solaris é pequeno, poucas
                             // dezenas de arquivo de texto, ver README).
-                            await salvarProjeto({ uid, email, plano: req.session.user?.plano || 'free', sessionId, framework: projeto.framework, arquivos: arquivosAtualizados });
+                            await salvarProjeto({ uid, email, plano: req.session.user?.plano || 'free', sessionId, framework: projeto.framework, arquivos: arquivosAtualizados, expectedVersion: projeto.versao });
                         };
                         sendEvent({ type: 'status', label: 'Consultando o projeto anexado...' });
                         const resposta = await responderOuEditarProjeto({
@@ -131,7 +131,7 @@ function criarHandlerChatSolaris(deps) {
                 }
                 catch (e) {
                     // Se o projeto está ocupado, não fingir que a edição caiu no chat comum.
-                    if (e.code === 'SOLARIS_PROJECT_BUSY')
+                    if (e.code === 'SOLARIS_PROJECT_BUSY' || e.code === 'SOLARIS_PROJECT_STALE')
                         throw e;
                     console.warn(`[SOLARIS-CHAT] falha carregando projeto anexado: ${e.message}`);
                 }
@@ -212,6 +212,7 @@ function criarHandlerChatSolaris(deps) {
             console.error(`[SOLARIS-CHAT] status=${httpStatus} msg=${err.message}`);
             const allErrMsg = erroHttp.message || '';
             const isProjetoOcupado = erroHttp.code === 'SOLARIS_PROJECT_BUSY';
+            const isProjetoDesatualizado = erroHttp.code === 'SOLARIS_PROJECT_STALE';
             const isCota = httpStatus === 429 || allErrMsg.includes('429') || allErrMsg.includes('RESOURCE_EXHAUSTED') || allErrMsg.includes('quota');
             const isSeguranca = allErrMsg.includes('SAFETY') || allErrMsg.includes('content_filter');
             const isChave = httpStatus === 401 || allErrMsg.includes('API_KEY') || allErrMsg.includes('UNAUTHENTICATED') || allErrMsg.includes('não configurada');
@@ -225,7 +226,8 @@ function criarHandlerChatSolaris(deps) {
             }
             sendEvent({
                 type: 'error',
-                message: isProjetoOcupado ? 'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.'
+                message: isProjetoDesatualizado ? 'O projeto mudou enquanto eu preparava a edição. Nenhuma alteração foi salva. Reenvie o pedido para usar a versão mais recente.'
+                    : isProjetoOcupado ? 'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.'
                     : isCota ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
                         : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
                             : isChave ? 'Chave de API inválida ou expirada. Verifique GEMINI_API_KEY no servidor.'

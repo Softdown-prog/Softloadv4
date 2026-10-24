@@ -342,3 +342,61 @@ test('TTL não exclui sessão vencida que ainda tem gravação ativa', async () 
   await saving;
   assert.equal(locks.size,0);
 });
+
+test('edição com snapshot antigo rejeita conflito sem alterar arquivos nem cota',async()=>{
+  reset();
+  await initial();
+  const firstSnapshot=JSON.parse(objects.get(manifestKey)).versao;
+  const upload=await salvarProjeto(config([{caminho:'new.txt',conteudo:'uploaded after editor read'}]));
+  const currentManifest=Buffer.from(objects.get(manifestKey));
+  const quotaBefore=quota.used, confirmBefore=quota.confirmed, deletions=deleteHistory.length;
+  await assert.rejects(
+    salvarProjeto({...config([{caminho:'old-editor.txt',conteudo:'would overwrite upload'}]),expectedVersion:firstSnapshot}),
+    err=>err.code==='SOLARIS_PROJECT_STALE'&&err.status===409
+  );
+  assert.deepEqual(objects.get(manifestKey),currentManifest);
+  assert.equal(quota.used,quotaBefore);
+  assert.equal(quota.confirmed,confirmBefore);
+  assert.equal(deleteHistory.length,deletions);
+  assert.equal(quota.used,upload.tamanhoBytes);
+  assert.deepEqual((await readProject()).files,[['new.txt','uploaded after editor read']]);
+  assert.equal(locks.size,0);
+});
+
+test('edição baseada na versão atual publica normalmente e expõe nova versão',async()=>{
+  reset(); await initial();
+  const loaded=JSON.parse(objects.get(manifestKey));
+  const updated=await salvarProjeto({...config([{caminho:'edited.txt',conteudo:'edited latest'}]),expectedVersion:loaded.versao});
+  assert.equal(updated.ok,true);
+  const root=JSON.parse(objects.get(manifestKey));
+  assert.notEqual(root.versao,loaded.versao);
+  assert.equal(quota.used,updated.tamanhoBytes);
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-storage-version-'));
+  try {
+    const project=await carregarProjeto(uid,sessionId,dir);
+    assert.equal(project.versao,root.versao);
+    assert.deepEqual(project.arquivos,['edited.txt']);
+  } finally {fs.rmSync(dir,{force:true,recursive:true});}
+});
+
+test('snapshot legado sem versao permite uma única edição com expectedVersion null',async()=>{
+  reset();
+  const prefix='users/user-test/solaris-projects/session-test/';
+  objects.set(prefix+'manifesto.json',Buffer.from(JSON.stringify({sessionId,framework:'html5',arquivos:['legacy.txt'],criadoEm:new Date().toISOString()})));
+  objects.set(prefix+'files/legacy.txt',Buffer.from('legacy'));
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-legacy-version-'));
+  try {assert.equal((await carregarProjeto(uid,sessionId,dir)).versao,null);}
+  finally {fs.rmSync(dir,{recursive:true,force:true});}
+  const result=await salvarProjeto({...config([{caminho:'new.txt',conteudo:'converted'}]),expectedVersion:null});
+  assert.equal(result.ok,true);
+  await assert.rejects(salvarProjeto({...config([{caminho:'oops.txt',conteudo:'stale legacy'}]),expectedVersion:null}),err=>err.code==='SOLARIS_PROJECT_STALE');
+  assert.deepEqual((await readProject()).files,[['new.txt','converted']]);
+});
+
+test('versao esperada invalida falha antes de reservar armazenamento',async()=>{
+  reset(); await initial();
+  const before=quota.used;
+  await assert.rejects(salvarProjeto({...config([{caminho:'bad.txt',conteudo:'bad'}]),expectedVersion:42}),TypeError);
+  assert.equal(quota.used,before);
+  assert.equal(locks.size,0);
+});

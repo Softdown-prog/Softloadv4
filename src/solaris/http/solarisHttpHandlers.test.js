@@ -307,3 +307,27 @@ test('chat não mascara conflito na edição com resposta genérica',async()=>{
   assert.ok(response.events.every(x=>x.type!=='done'));
   assert.equal(response.ended,true);
 });
+
+test('chat recusa edição desatualizada sem resposta genérica nem confirmação de sucesso',async()=>{
+  const {dependencies}=fakeChatDeps();
+  dependencies.carregarProjeto=async()=>({framework:'html5',arquivos:['index.html'],versao:'snapshot-antigo'});
+  let normalCalled=false;
+  let received;
+  dependencies.solarisChat.perguntarStream=async function*(){normalCalled=true;yield 'inadequado'};
+  dependencies.responderOuEditarProjeto=async({aplicarMudancasReal})=>{
+    await aplicarMudancasReal([{caminho:'index.html',operacao:'editar',conteudoNovo:'edicao antiga'}]);
+    return {ok:true,resposta:'alterado',propostasFinais:[],mudancasAplicadas:[],tokens:{total:0,input:0,output:0}};
+  };
+  dependencies.salvarProjeto=async options=>{
+    received=options;
+    throw Object.assign(Error('version mismatch'),{code:'SOLARIS_PROJECT_STALE',status:409});
+  };
+  const response=fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'edite meu projeto'}),response);
+  assert.equal(received.expectedVersion,'snapshot-antigo');
+  assert.equal(normalCalled,false);
+  assert.equal(response.events.at(-1).type,'error');
+  assert.match(response.events.at(-1).message,/projeto mudou/);
+  assert.ok(response.events.every(e=>e.type!=='done'));
+  assert.equal(response.ended,true);
+});

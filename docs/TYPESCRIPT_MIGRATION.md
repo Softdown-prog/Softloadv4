@@ -1261,3 +1261,21 @@ instâncias com acompanhamento. Acesso operacional e indisponibilização real
 são responsabilidades do administrador; parâmetros CLI não comprovam que
 instâncias estejam desligadas. Testes usam Firestore simulado e verificam
 precondições, concorrência com alterações externas, idade e identidade.
+
+## Etapa 70 — revisão otimista de projeto editado (sem perda de upload mais recente)
+
+O manifesto GCS devolve `versao` na leitura (`null` para projetos legados).
+O editor de arquivos do chat encaminha a versão carregada como
+`expectedVersion` ao `salvarProjeto`. **Dentro** do bloqueio distribuído
+por sessão e antes de reservar cota/escrever arquivos, a persistência
+compara a versão esperada com a versão publicada no manifesto atual.
+Se houver divergência, retorna `SOLARIS_PROJECT_STALE` (`status=409`).
+Nenhum arquivo, manifesto, débito ou rastreamento é modificado; o chat
+responde um erro SSE específico e orienta reenviar o pedido para reler
+os dados. Projetos sem `versao` seguem compatíveis com `expectedVersion:null`.
+Upload manual e geração sem `expectedVersion` continuam com substituição
+explícita de projeto (protegida pelo bloqueio de sessão).
+
+Regressões simulam upload entre a leitura e a edição, edição da versão
+atual, atualização de projeto legado e erro de versão inválida, mais o
+protocolo SSE do chat. Nenhum teste acessa GCS/Firestore reais.

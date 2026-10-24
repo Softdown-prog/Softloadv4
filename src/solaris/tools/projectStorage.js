@@ -120,7 +120,7 @@ async function _comExclusividadeProjeto(uid, sessionId, tarefa) {
 async function salvarProjeto(options) {
     return _comExclusividadeProjeto(options.uid, options.sessionId, () => _salvarProjetoComBloqueio(options));
 }
-async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos }) {
+async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos, expectedVersion }) {
     const trackingRef = db.collection(exports.COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     // Fail closed if metadata cannot be read: never replace an unknown old project.
     const oldTrackingSnap = await trackingRef.get();
@@ -134,6 +134,19 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
         const err = error;
         if (err.code !== 404 && !err.message?.includes('No such object'))
             throw error;
+    }
+    // A slow editor must not overwrite a newer upload or edit published after its read.
+    // Check under the per-session Firestore lock, before touching files or quota.
+    if (expectedVersion !== undefined) {
+        if (expectedVersion !== null && typeof expectedVersion !== 'string') {
+            throw new TypeError('Versão de projeto Solaris inválida.');
+        }
+        if (expectedVersion !== (oldManifest?.versao ?? null)) {
+            const conflito = new Error('Projeto Solaris alterado desde a leitura. Recarregue a versão atual.');
+            conflito.code = 'SOLARIS_PROJECT_STALE';
+            conflito.status = 409;
+            throw conflito;
+        }
     }
     const versao = randomUUID();
     const manifesto = {
@@ -258,7 +271,7 @@ async function carregarProjeto(uid, sessionId, destDir) {
         const [conteudoBuf] = await bucket.file(_arquivoPath(uid, sessionId, caminho, manifesto.versao)).download();
         criarArquivo(destDir, caminho, conteudoBuf);
     }));
-    return { framework: manifesto.framework || null, arquivos: manifesto.arquivos };
+    return { framework: manifesto.framework || null, arquivos: manifesto.arquivos, versao: manifesto.versao ?? null };
 }
 /** Runtime check: Firestore data and caller arguments can bypass TS types. */
 function _identificadoresValidos(uid, sessionId) {
