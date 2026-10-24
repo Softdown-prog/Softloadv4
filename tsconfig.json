@@ -167,7 +167,9 @@
     "scripts/audit-typescript-migration.ts",
     "scripts/diagnostico-sweep.ts",
     "scripts/limparProjetosSolarisExpirados.ts",
-    "scripts/codeCorpus/codeChunker.ts"
+    "scripts/codeCorpus/codeChunker.ts",
+    "scripts/codeCorpus/codeSearchService.ts",
+    "scripts/ragCodeCollect.ts"
   ],
   "exclude": [
     "node_modules",

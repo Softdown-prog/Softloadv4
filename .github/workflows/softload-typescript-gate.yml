@@ -10,6 +10,8 @@ on:
       - 'examples/solaris-code/**'
       - 'scripts/codeCorpus/**'
       - 'scripts/ragCodeIndex.js'
+      - 'scripts/ragCodeCollect.ts'
+      - 'scripts/ragCodeCollect.js'
       - 'tsconfig.json'
       - 'scripts/typescript-mirror-sources.json'
       - 'scripts/check-typescript-mirrors.js'
@@ -96,6 +98,7 @@ jobs:
           node src/core/modules.test.js
           node src/ai/solAgent.test.js
           node src/solaris/rag/codeCorpus.test.js
+          node src/solaris/rag/codeSearchIsolation.test.js
           node src/solaris/rag/ragChunker.test.js
           node src/solaris/rag/ragEntryText.test.js
           node src/solaris/rag/ragTopicMatrix.test.js

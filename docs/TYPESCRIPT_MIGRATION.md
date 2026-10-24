@@ -1191,3 +1191,21 @@ Firestore automático para essa coleção sem implementar fencing para escritore
 
 Os testes de integração injetam Firestore/GCS falsos e verificam corrida
 entre uploads, exclusão, TTL, exceções e indisponibilidade do Firestore.
+
+## Migração seguinte — busca de receitas e CLI de coleta Solaris
+
+`scripts/codeCorpus/codeSearchService.ts` substitui o JavaScript como
+fonte autoritativa da busca RAG de receitas de código. São tipados os contratos
+de embeddings, busca vetorial e catálogo, a deduplicação por `entryId` e a
+degradação graciosa quando uma das duas fontes Solaris falha. O RAG Blogger
+continua fora desse caminho; o espelho CommonJS mantém as APIs atuais.
+
+`scripts/ragCodeCollect.ts` tipa o ponto de entrada da coleta. A execução
+continua **dry-run por padrão** e requer `--apply` explícito para salvar
+arquivos. A validação de limites e licenças permanece no coletor existente.
+
+`src/solaris/rag/codeSearchIsolation.test.js` verifica resultados inválidos,
+deduplicação, flag para ativar o corpus de código, isolamento de consultas
+genéricas e falhas independentes das duas fontes. Ambos os novos arquivos TS
+foram registrados no `tsconfig.json` e no manifesto de espelhos; o Gate
+TypeScript executa o novo teste. Nenhuma credencial ou endpoint foi alterado.
