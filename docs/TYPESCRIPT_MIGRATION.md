@@ -1279,3 +1279,26 @@ explícita de projeto (protegida pelo bloqueio de sessão).
 Regressões simulam upload entre a leitura e a edição, edição da versão
 atual, atualização de projeto legado e erro de versão inválida, mais o
 protocolo SSE do chat. Nenhum teste acessa GCS/Firestore reais.
+
+## Etapa 71 — coletor seguro do corpus de codigo Solaris em TypeScript
+
+`scripts/codeCorpus/codeCollector.ts` passa a ser a fonte autoritativa do
+coletor externo, mantendo `codeCollector.js` como espelho CommonJS gerado.
+Os contratos tipados definem manifesto, repositorios, HTTP injetavel,
+limites e relatorio de coleta. A API externa continua sendo validada antes
+de aceitar licencas, fonte publica, SHA, subarvore permitida, tamanho,
+extensao, hash e ausencia de possiveis segredos.
+
+O coletor nao executa codigo baixado. Continua em **dry-run por padrao**:
+so grava em `.scratch/solaris-code-corpus` quando `apply=true`, via
+arquivo temporario exclusivo (`wx`, permissao `0600`) e renomeacao.
+O mesmo hash e tratado como inalterado, evitando duplicacao. Nao foi
+alterado o manifesto dos repositorios aprovados nem os limites numericos.
+
+O teste `src/solaris/rag/codeCollectorSafety.test.js` verifica manifestos
+malformados, travessia de caminho, limites, erros de HTTP, repositorios
+privados, licencas nao permitidas e ausencia de gravacao quando a fonte
+e rejeitada. O teste com GitHub simulado existente em
+`src/solaris/rag/codeCorpus.test.js` continua cobrindo dry-run, gravacao,
+reimportacao sem duplicacao e detecao de segredos. Os testes nao acessam
+rede real nem sistemas de producao.

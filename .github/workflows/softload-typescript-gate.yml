@@ -98,6 +98,7 @@ jobs:
           node src/core/modules.test.js
           node src/ai/solAgent.test.js
           node src/solaris/rag/codeCorpus.test.js
+          node src/solaris/rag/codeCollectorSafety.test.js
           node src/solaris/rag/codeVectorStoreContract.test.js
           node src/solaris/rag/codeSearchIsolation.test.js
           node src/solaris/rag/ragChunker.test.js
