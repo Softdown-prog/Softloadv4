@@ -31,7 +31,17 @@ RUN npm ci --omit=dev && npm cache clean --force
 # pelo código (browser.js), mas dobra tempo/tamanho de build -- só
 # instale se for realmente necessário testar em WebKit:
 # RUN npx playwright install --with-deps webkit
-RUN npx playwright install --with-deps chromium
+# Perfil completo permanece o padrão para NÃO perder auditorias web em produção.
+# 0 = imagem menor para serviço dedicado somente à extração de arquivos.
+# A imagem archive-only NÃO deve substituir a instância de auditoria web.
+ARG INSTALL_CHROMIUM=1
+ENV SANDBOX_CHROMIUM_INSTALLED=${INSTALL_CHROMIUM}
+RUN set -eu; \
+    case "$INSTALL_CHROMIUM" in \
+      1) npx playwright install --with-deps chromium ;; \
+      0) echo "[SANDBOX] Perfil archive-only: Chromium não será instalado" ;; \
+      *) echo "INSTALL_CHROMIUM deve ser 0 ou 1" >&2; exit 1 ;; \
+    esac
 
 COPY src ./src
 

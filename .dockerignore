@@ -11,3 +11,8 @@ npm-debug.log*
 # src/services/buildInfo.js). Só existe no stage descartado; nunca vai
 # parar na imagem final (stage final não faz COPY do .git, só dos 2
 # arquivos de texto gerados a partir dele).
+
+# A imagem de produção recompila o React no stage frontend-build.
+# Não reenviar ao contexto Docker o bundle versionado (public/dist):
+# COPY --from=frontend-build fornece o bundle novo ao stage final.
+/public/dist/

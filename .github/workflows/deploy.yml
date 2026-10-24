@@ -132,6 +132,20 @@ jobs:
       - name: Build versioned image
         if: steps.changes.outputs.changed == 'true'
         run: docker build -t softload-${{ matrix.service }}:${{ github.sha }} -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
+      # Medição real da imagem Docker (não confundir com bytes versionados no Git).
+      - name: Report Docker image size
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="softload-${{ matrix.service }}:${{ github.sha }}"
+          bytes="$(docker image inspect --format='{{.Size}}' "$image")"
+          mib="$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')"
+          echo "[IMAGE] ${{ matrix.service }}: $bytes bytes ($mib MiB)"
+          {
+            echo "### Imagem Docker: ${{ matrix.service }}"
+            echo "Tamanho local: **$mib MiB** ($bytes bytes)"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Configure restricted SSH key
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
@@ -150,6 +164,9 @@ jobs:
           archive="$RUNNER_TEMP/softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"
           docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -1 > "$archive"
           digest="$(sha256sum "$archive" | cut -d' ' -f1)"
+          packed_bytes="$(stat -c '%s' "$archive")"
+          echo "[IMAGE] Comprimida para transferência (${{ matrix.service }}): $packed_bytes bytes"
+          echo "Transferência comprimida: **$packed_bytes bytes**" >> "$GITHUB_STEP_SUMMARY"
           for attempt in $(seq 1 24); do
             echo "[DEPLOY] Enviando ${{ matrix.service }} com retomada (tentativa $attempt/24)"
             if timeout --signal=TERM --kill-after=10s 180s rsync --append-verify --partial --timeout=90 --no-compress --progress \
