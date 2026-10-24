@@ -1209,3 +1209,22 @@ deduplicação, flag para ativar o corpus de código, isolamento de consultas
 genéricas e falhas independentes das duas fontes. Ambos os novos arquivos TS
 foram registrados no `tsconfig.json` e no manifesto de espelhos; o Gate
 TypeScript executa o novo teste. Nenhuma credencial ou endpoint foi alterado.
+
+## Etapa 70 — armazenamento vetorial do corpus Solaris Code tipado
+
+`scripts/codeCorpus/codeVectorStore.ts` torna-se a fonte TypeScript do
+armazenamento e da busca vetorial de receitas de codigo. O espelho CommonJS
+`codeVectorStore.js` continua a API carregada pelo Node de producao; nenhum
+schema ou caminho Firestore foi alterado. As interfaces explicitam os contratos
+de entrada, batches e consulta `findNearest` com cosseno.
+
+A colecao continua sendo somente `RAG_NAMESPACES.solarisCode.collection`,
+sem consultar nem escrever no RAG tecnico ou Blogger. Mantidos os limites de
+768 dimensoes finitas, 100 chunks por entrada, 20 resultados por consulta
+e teto de 400 operacoes por batch. A escrita remove chunks anteriores e
+insere os novos no mesmo batch atomico. Sem acesso a Firestore real nos testes.
+
+O teste `src/solaris/rag/codeVectorStoreContract.test.js` cobre rejeicao de
+vetores invalidos, NaN/Infinity, entrada invalida, excesso de chunks,
+consulta fora de limites, metadados no retorno e falha antes de gerar batch
+quando o limite do Firestore seria excedido. O Gate TypeScript o executa.

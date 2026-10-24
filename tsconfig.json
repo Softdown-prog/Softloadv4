@@ -170,7 +170,8 @@
     "scripts/codeCorpus/codeChunker.ts",
     "scripts/codeCorpus/codeSearchService.ts",
     "scripts/ragCodeCollect.ts",
-    "scripts/codeCorpus/authoredCatalog.ts"
+    "scripts/codeCorpus/authoredCatalog.ts",
+    "scripts/codeCorpus/codeVectorStore.ts"
   ],
   "exclude": [
     "node_modules",
