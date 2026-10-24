@@ -26,7 +26,8 @@
     "audit:typescript": "node scripts/audit-typescript-migration.js",
     "rag:code-index": "node scripts/ragCodeIndex.js",
     "rag:code-test": "node --test src/solaris/code-examples/javascript/examples.test.js src/solaris/rag/authoredCatalog.test.js examples/solaris-code/examples.test.js && node node_modules/typescript/bin/tsc --project examples/solaris-code/tsconfig.json --noEmit && python3 -B -m unittest discover -s src/solaris/code-examples/python -p test_examples.py -v",
-    "rag:boundaries-test": "node --test src/knowledge/ragNamespaces.test.js src/solaris/rag/codeCorpus.test.js && node src/rag/ragLoader.test.js && node scripts/ragEmbedIndex.test.js"
+    "rag:boundaries-test": "node --test src/knowledge/ragNamespaces.test.js src/solaris/rag/codeCorpus.test.js && node src/rag/ragLoader.test.js && node scripts/ragEmbedIndex.test.js",
+    "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",

@@ -117,5 +117,7 @@
   "scripts/compile-batch.ts",
   "scripts/extractTemplate.ts",
   "scripts/runTests.ts",
-  "scripts/audit-typescript-migration.ts"
+  "scripts/audit-typescript-migration.ts",
+  "scripts/diagnostico-sweep.ts",
+  "scripts/limparProjetosSolarisExpirados.ts"
 ]

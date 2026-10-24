@@ -59,6 +59,8 @@ jobs:
         run: npm run rag:code-test
       - name: Verificar isolamento dos três RAGs
         run: npm run rag:boundaries-test
+      - name: Testar scripts CLI migrados sem Firestore real
+        run: npm run test:typescript-clis
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
