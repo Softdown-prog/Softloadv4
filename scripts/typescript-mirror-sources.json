@@ -119,5 +119,6 @@
   "scripts/runTests.ts",
   "scripts/audit-typescript-migration.ts",
   "scripts/diagnostico-sweep.ts",
-  "scripts/limparProjetosSolarisExpirados.ts"
+  "scripts/limparProjetosSolarisExpirados.ts",
+  "scripts/codeCorpus/codeChunker.ts"
 ]
