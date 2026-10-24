@@ -26,6 +26,7 @@ test('GCS save/reload and quota preserve image/audio bytes exactly', async () =>
             },
             db: { collection() { return { doc() { return {
                 async get() { return { exists: false, data() { return null; } }; },
+                async create() { },
                 async set(value) { tracked = value; },
                 async delete() { tracked = null; },
             }; } }; } },

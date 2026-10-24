@@ -95,6 +95,53 @@ function _arquivoPath(uid: string, sessionId: string, caminhoRelativo: string, v
 }
 
 /**
+ * Exclusão mútua distribuída por sessão: create() é atômico no Firestore.
+ * Não reutilize um lock órfão automaticamente: uma operação que ainda
+ * esteja ativa poderia publicar/limpar os mesmos objetos do GCS.
+ * Um lock órfão exige revisão administrativa antes de ser removido.
+ */
+const COLECAO_BLOQUEIOS = 'solaris_projetos_bloqueios';
+interface ProjectLockData { owner: string; uid: string; sessionId: string; iniciadoEm: string }
+interface ProjectLockRef {
+    create(value: ProjectLockData): Promise<unknown>;
+    get(): Promise<{ exists: boolean; data(): ProjectLockData; updateTime?: unknown }>;
+    delete(precondition?: { lastUpdateTime: unknown }): Promise<unknown>;
+}
+async function _comExclusividadeProjeto<T>(uid: string, sessionId: string, tarefa: () => Promise<T>): Promise<T> {
+    if (!_identificadoresValidos(uid, sessionId)) {
+        throw new TypeError('Identificadores de projeto Solaris inválidos.');
+    }
+    const ref = db.collection(COLECAO_BLOQUEIOS).doc(_idRastreamento(uid, sessionId)) as unknown as ProjectLockRef;
+    const owner = randomUUID();
+    try {
+        await ref.create({ owner, uid, sessionId, iniciadoEm: new Date().toISOString() });
+    } catch (error) {
+        const codigo = (error as { code?: number | string; status?: number }).code;
+        if (codigo === 6 || codigo === 409 || codigo === 'ALREADY_EXISTS') {
+            const conflito = new Error('Projeto Solaris ocupado por outra operação. Tente novamente.') as Error & { code: string; status: number };
+            conflito.code = 'SOLARIS_PROJECT_BUSY';
+            conflito.status = 409;
+            throw conflito;
+        }
+        throw error;
+    }
+    try {
+        return await tarefa();
+    } finally {
+        try {
+            const atual = await ref.get();
+            if (atual.exists && atual.data()?.owner === owner) {
+                // No GCS object is touched by a request that failed to acquire this lock.
+                // updateTime protects against removing a lock replaced by an operator.
+                await ref.delete(atual.updateTime ? { lastUpdateTime: atual.updateTime } : undefined);
+            }
+        } catch (error) {
+            console.error('[SOLARIS-STORAGE] não foi possível liberar bloqueio da sessão:', error);
+        }
+    }
+}
+
+/**
  * Persiste um projeto no GCS sob `sessionId`. `arquivos` é o mesmo
  * formato já usado por frameworkDetector/projectInspector —
  * `{caminho, conteudo}[]` — o chamador (rota de upload) já tem isso em
@@ -105,7 +152,10 @@ function _arquivoPath(uid: string, sessionId: string, caminhoRelativo: string, v
  *
  * @returns {Promise<{ok:true, totalArquivos:number, tamanhoBytes:number}>}
  */
-export async function salvarProjeto({ uid, email, plano, sessionId, framework, arquivos }: PersistProjectOptions): Promise<PersistProjectResult> {
+export async function salvarProjeto(options: PersistProjectOptions): Promise<PersistProjectResult> {
+    return _comExclusividadeProjeto(options.uid, options.sessionId, () => _salvarProjetoComBloqueio(options));
+}
+async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos }: PersistProjectOptions): Promise<PersistProjectResult> {
     const trackingRef = db.collection(COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     // Fail closed if metadata cannot be read: never replace an unknown old project.
     const oldTrackingSnap = await trackingRef.get();
@@ -259,9 +309,9 @@ function _identificadoresValidos(uid: unknown, sessionId: unknown): boolean {
  * (não só expiração) vazava cota pro usuário indefinidamente.
  */
 export async function apagarProjeto(uid: string, sessionId: string): Promise<void> {
-    if (!_identificadoresValidos(uid, sessionId)) {
-        throw new TypeError('Identificadores de projeto Solaris inválidos.');
-    }
+    return _comExclusividadeProjeto(uid, sessionId, () => _apagarProjetoComBloqueio(uid, sessionId));
+}
+async function _apagarProjetoComBloqueio(uid: string, sessionId: string): Promise<void> {
     const trackingRef = db.collection(COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     const trackingSnap = await trackingRef.get();
 

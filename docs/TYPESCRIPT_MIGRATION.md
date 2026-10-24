@@ -1171,3 +1171,23 @@ e contabilização falsos: retenção válida, TTL inválido, metadados adultera
 exclusão direta insegura e falha individual de GCS. Nenhum teste acessa
 credenciais, Firestore ou GCS de produção. Os espelhos JS CommonJS
 continuam derivados da fonte TS e verificados pelo gate.
+
+## Etapa 68 — exclusão mútua distribuída para gravação e exclusão Solaris
+
+`salvarProjeto` e `apagarProjeto` compartilham um bloqueio exclusivo por
+`uid + sessionId` na coleção Firestore `solaris_projetos_bloqueios`.
+`DocumentReference.create()` é atômico, inclusive entre processos e
+contêineres: uma segunda requisição recebe conflito `SOLARIS_PROJECT_BUSY`
+(`status=409`) **antes** de consultar GCS ou debitar cota. O bloqueio é
+liberado em `finally`, inclusive após erros. A liberação verifica o
+identificador de dono e usa a precondição `lastUpdateTime` quando disponível.
+O TTL reutiliza `apagarProjeto` e registra o conflito sem apagar dados.
+
+**Fail closed:** não recuperamos bloqueios órfãos automaticamente. Uma
+interrupção abrupta de processo entre `create()` e `finally` pode deixar
+a sessão ocupada. A remoção desses documentos exige verificação operacional
+prévia de que nenhuma gravação antiga continua ativa. Não configurar TTL
+Firestore automático para essa coleção sem implementar fencing para escritores.
+
+Os testes de integração injetam Firestore/GCS falsos e verificam corrida
+entre uploads, exclusão, TTL, exceções e indisponibilidade do Firestore.

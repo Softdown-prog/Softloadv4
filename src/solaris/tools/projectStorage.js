@@ -64,6 +64,50 @@ function _arquivoPath(uid, sessionId, caminhoRelativo, versao) {
         : `${_prefixo(uid, sessionId)}/files/${caminhoRelativo}`;
 }
 /**
+ * Exclusão mútua distribuída por sessão: create() é atômico no Firestore.
+ * Não reutilize um lock órfão automaticamente: uma operação que ainda
+ * esteja ativa poderia publicar/limpar os mesmos objetos do GCS.
+ * Um lock órfão exige revisão administrativa antes de ser removido.
+ */
+const COLECAO_BLOQUEIOS = 'solaris_projetos_bloqueios';
+async function _comExclusividadeProjeto(uid, sessionId, tarefa) {
+    if (!_identificadoresValidos(uid, sessionId)) {
+        throw new TypeError('Identificadores de projeto Solaris inválidos.');
+    }
+    const ref = db.collection(COLECAO_BLOQUEIOS).doc(_idRastreamento(uid, sessionId));
+    const owner = randomUUID();
+    try {
+        await ref.create({ owner, uid, sessionId, iniciadoEm: new Date().toISOString() });
+    }
+    catch (error) {
+        const codigo = error.code;
+        if (codigo === 6 || codigo === 409 || codigo === 'ALREADY_EXISTS') {
+            const conflito = new Error('Projeto Solaris ocupado por outra operação. Tente novamente.');
+            conflito.code = 'SOLARIS_PROJECT_BUSY';
+            conflito.status = 409;
+            throw conflito;
+        }
+        throw error;
+    }
+    try {
+        return await tarefa();
+    }
+    finally {
+        try {
+            const atual = await ref.get();
+            if (atual.exists && atual.data()?.owner === owner) {
+                // No GCS object is touched by a request that failed to acquire this lock.
+                // updateTime protects against removing a lock replaced by an operator.
+                await ref.delete(atual.updateTime ? { lastUpdateTime: atual.updateTime } : undefined);
+            }
+        }
+        catch (error) {
+            console.error('[SOLARIS-STORAGE] não foi possível liberar bloqueio da sessão:', error);
+        }
+    }
+}
+
+/**
  * Persiste um projeto no GCS sob `sessionId`. `arquivos` é o mesmo
  * formato já usado por frameworkDetector/projectInspector —
  * `{caminho, conteudo}[]` — o chamador (rota de upload) já tem isso em
@@ -74,7 +118,10 @@ function _arquivoPath(uid, sessionId, caminhoRelativo, versao) {
  *
  * @returns {Promise<{ok:true, totalArquivos:number, tamanhoBytes:number}>}
  */
-async function salvarProjeto({ uid, email, plano, sessionId, framework, arquivos }) {
+async function salvarProjeto(options) {
+    return _comExclusividadeProjeto(options.uid, options.sessionId, () => _salvarProjetoComBloqueio(options));
+}
+async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framework, arquivos }) {
     const trackingRef = db.collection(exports.COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     // Fail closed if metadata cannot be read: never replace an unknown old project.
     const oldTrackingSnap = await trackingRef.get();
@@ -228,9 +275,9 @@ function _identificadoresValidos(uid, sessionId) {
  * (não só expiração) vazava cota pro usuário indefinidamente.
  */
 async function apagarProjeto(uid, sessionId) {
-    if (!_identificadoresValidos(uid, sessionId)) {
-        throw new TypeError('Identificadores de projeto Solaris inválidos.');
-    }
+    return _comExclusividadeProjeto(uid, sessionId, () => _apagarProjetoComBloqueio(uid, sessionId));
+}
+async function _apagarProjetoComBloqueio(uid, sessionId) {
     const trackingRef = db.collection(exports.COLECAO_RASTREAMENTO).doc(_idRastreamento(uid, sessionId));
     const trackingSnap = await trackingRef.get();
     // Do not release quota or remove tracking unless storage deletion succeeds.

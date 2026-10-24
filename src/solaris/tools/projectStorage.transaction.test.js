@@ -8,6 +8,9 @@ const os = require('node:os');
 const path = require('node:path');
 const objects = new Map();
 const tracking = new Map();
+const locks = new Map();
+let failLockCreate = null;
+let beforeSave = null;
 const quota = { used: 0, released: 0, confirmed: 0, failReserve: false };
 let failSave = null;
 let failDelete = null;
@@ -16,6 +19,7 @@ const bucket = {
   file(key) {
     return {
       async save(data) {
+        if (beforeSave) await beforeSave(key);
         if (failSave && failSave(key)) throw Error('GCS write denied');
         objects.set(key, Buffer.from(data));
       },
@@ -32,8 +36,21 @@ const bucket = {
   },
 };
 const db = {
-  collection() { return {
-    doc(id) { return {
+  collection(name) { return {
+    doc(id) {
+      if (name === 'solaris_projetos_bloqueios') return {
+        async create(value) {
+          if (failLockCreate) throw failLockCreate;
+          if (locks.has(id)) throw Object.assign(Error('lock already exists'), {code:6});
+          locks.set(id, {...value});
+        },
+        async get() {
+          const value = locks.get(id);
+          return {exists: Boolean(value), data: () => value ? {...value} : null, updateTime: value ? 'fake-update-time' : undefined};
+        },
+        async delete() { locks.delete(id); },
+      };
+      return {
       async get() {
         const data = tracking.get(id);
         return { exists: Boolean(data), data() { return {...data}; } };
@@ -70,9 +87,9 @@ const manifestKey='users/user-test/solaris-projects/session-test/manifesto.json'
 const trackedId='user-test_session-test';
 const config=arquivos=>({uid,sessionId,email,plano:'free',framework:'html5',arquivos});
 function reset() {
-  objects.clear();tracking.clear();deleteHistory.length=0;
+  objects.clear();tracking.clear();locks.clear();deleteHistory.length=0;
   quota.used=0;quota.released=0;quota.confirmed=0;quota.failReserve=false;
-  failSave=null;failDelete=null;
+  failSave=null;failDelete=null;failLockCreate=null;beforeSave=null;
 }
 async function readProject() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-storage-test-'));
@@ -239,4 +256,89 @@ test('falha na exclusão TTL é registrada e varredura prossegue sem perder cré
   assert.equal(result.erros[0].id, trackedId);
   assert.ok(objects.has(manifestKey));
   assert.equal(quota.used, used);
+});
+
+test('duas gravações da mesma sessão não competem e a segunda não debita cota', async () => {
+  reset();
+  await initial();
+  const original=JSON.parse(objects.get(manifestKey)).versao;
+  let resume, entered;
+  const ready=new Promise(resolve=>{entered=resolve;});
+  const suspended=new Promise(resolve=>{resume=resolve;});
+  beforeSave=async key=>{if(key.endsWith('/files/slow.txt')){entered(); await suspended;}};
+  const first=salvarProjeto(config([{caminho:'slow.txt',conteudo:'first'}]));
+  await ready;
+  const charged=quota.used;
+  await assert.rejects(salvarProjeto(config([{caminho:'second.txt',conteudo:'second'}])),
+    err=>err.code==='SOLARIS_PROJECT_BUSY'&&err.status===409);
+  assert.equal(quota.used,charged);
+  assert.equal(JSON.parse(objects.get(manifestKey)).versao,original);
+  assert.equal(locks.size,1);
+  resume();
+  await first;
+  assert.equal(locks.size,0);
+  assert.deepEqual((await readProject()).files,[['slow.txt','first']]);
+});
+
+test('limpeza e exclusão não apagam arquivos durante uma gravação ativa', async () => {
+  reset();
+  await initial();
+  let resume, entered;
+  const ready=new Promise(resolve=>{entered=resolve;});
+  const suspended=new Promise(resolve=>{resume=resolve;});
+  beforeSave=async key=>{if(key.endsWith('/files/slow.txt')){entered(); await suspended;}};
+  const saving=salvarProjeto(config([{caminho:'slow.txt',conteudo:'new'}]));
+  await ready;
+  const charged=quota.used;
+  await assert.rejects(apagarProjeto(uid,sessionId),err=>err.code==='SOLARIS_PROJECT_BUSY');
+  assert.ok(objects.has(manifestKey));
+  assert.equal(quota.used,charged);
+  resume();
+  await saving;
+  assert.equal(locks.size,0);
+  await apagarProjeto(uid,sessionId);
+  assert.equal(objects.size,0);
+  assert.equal(quota.used,0);
+});
+
+test('erro da escrita libera lock; a próxima gravação consegue prosseguir', async () => {
+  reset(); await initial();
+  failSave=key=>key.endsWith('/files/reject.txt');
+  await assert.rejects(salvarProjeto(config([{caminho:'reject.txt',conteudo:'bad'}])),/GCS write denied/);
+  assert.equal(locks.size,0);
+  failSave=null;
+  const next=await salvarProjeto(config([{caminho:'success.txt',conteudo:'ok'}]));
+  assert.equal(next.ok,true);
+  assert.equal(locks.size,0);
+  assert.deepEqual((await readProject()).files,[['success.txt','ok']]);
+});
+
+test('Firestore indisponível durante create falha sem modificar GCS ou cota', async () => {
+  reset(); await initial();
+  const original=Buffer.from(objects.get(manifestKey));
+  const used=quota.used;
+  failLockCreate=Error('Firestore unavailable');
+  await assert.rejects(salvarProjeto(config([{caminho:'new.txt',conteudo:'no'}])),/Firestore unavailable/);
+  assert.deepEqual(objects.get(manifestKey),original);
+  assert.equal(quota.used,used);
+  assert.equal(locks.size,0);
+});
+
+test('TTL não exclui sessão vencida que ainda tem gravação ativa', async () => {
+  reset(); await initial();
+  tracking.get(trackedId).criadoEm='2020-01-01T00:00:00.000Z';
+  let resume, entered;
+  const ready=new Promise(resolve=>{entered=resolve;});
+  const suspended=new Promise(resolve=>{resume=resolve;});
+  beforeSave=async key=>{if(key.endsWith('/files/slow.txt')){entered(); await suspended;}};
+  const saving=salvarProjeto(config([{caminho:'slow.txt',conteudo:'live'}]));
+  await ready;
+  const result=await apagarProjetosExpirados();
+  assert.deepEqual(result.apagados,[]);
+  assert.equal(result.erros.length,1);
+  assert.equal(result.erros[0].id,trackedId);
+  assert.ok(objects.has(manifestKey));
+  resume();
+  await saving;
+  assert.equal(locks.size,0);
 });
