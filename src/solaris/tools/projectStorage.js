@@ -215,7 +215,7 @@ async function carregarProjeto(uid, sessionId, destDir) {
     return { framework: manifesto.framework || null, arquivos: manifesto.arquivos };
 }
 /** Runtime check: Firestore data and caller arguments can bypass TS types. */
-function _identificadoresValidos(uid, sessionId): boolean {
+function _identificadoresValidos(uid, sessionId) {
     return [uid, sessionId].every(value => typeof value === 'string'
         && value.length > 0 && value !== '.' && value !== '..'
         && !value.includes('/') && !value.includes('\\') && !value.includes('\0'));
