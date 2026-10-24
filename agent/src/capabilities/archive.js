@@ -1,3 +1,5 @@
+import { resolveSandboxEndpoint } from "../config/sandbox-endpoints.js";
+
 /**
  * ArchiveCapability: extração seguindo de arquivos compactados
  * (ZIP nesta primeira etapa; RAR/7z/TAR ficam pra depois). Assim como
@@ -67,7 +69,7 @@ export class ArchiveCapability {
       );
     }
 
-    const serviceUrl = process.env.SANDBOX_SERVICE_URL;
+    const { serviceUrl, secret } = resolveSandboxEndpoint("archive");
 
     if (!serviceUrl) {
       throw new Error(
@@ -80,8 +82,6 @@ export class ArchiveCapability {
     const zipBuffer = await this.workspace.read(task.zipPath, null);
 
     const headers = { "Content-Type": "application/octet-stream" };
-    const secret = process.env.SANDBOX_SHARED_SECRET;
-
     if (secret) {
       headers["x-sandbox-secret"] = secret;
     }
@@ -107,7 +107,7 @@ export class ArchiveCapability {
     }
 
     const query = params.toString();
-    const url = `${serviceUrl.replace(/\/+$/, "")}/extract-zip${query ? `?${query}` : ""}`;
+    const url = `${serviceUrl}/extract-zip${query ? `?${query}` : ""}`;
 
     const response = await this.fetchImpl(url, {
       method: "POST",

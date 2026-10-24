@@ -1,3 +1,5 @@
+import { resolveSandboxEndpoint } from "../config/sandbox-endpoints.js";
+
 /**
  * WebSandboxCapability: fala com o serviço isolado sandbox-efemoro/
  * (Playwright rodando num container/credenciais separados do resto
@@ -47,7 +49,7 @@ export class WebSandboxCapability {
       throw new Error("websandbox.run exige url (string)");
     }
 
-    const serviceUrl = process.env.SANDBOX_SERVICE_URL;
+    const { serviceUrl, secret } = resolveSandboxEndpoint("browser");
 
     if (!serviceUrl) {
       throw new Error(
@@ -56,8 +58,6 @@ export class WebSandboxCapability {
     }
 
     const headers = { "Content-Type": "application/json" };
-    const secret = process.env.SANDBOX_SHARED_SECRET;
-
     if (secret) {
       headers["x-sandbox-secret"] = secret;
     }
@@ -85,7 +85,7 @@ export class WebSandboxCapability {
     }
 
     const response = await this.fetchImpl(
-      `${serviceUrl.replace(/\/+$/, "")}/run`,
+      `${serviceUrl}/run`,
       {
         method: "POST",
         headers,

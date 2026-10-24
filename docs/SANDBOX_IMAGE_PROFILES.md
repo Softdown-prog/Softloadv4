@@ -37,9 +37,10 @@ docker build --build-arg INSTALL_CHROMIUM=0 \
 
 Continua instalando o pacote JS `playwright`, mas **não baixa o binário
 Chromium nem suas dependências nativas extras**. Mantém os endpoints de
-extração. O endpoint `/run` continua exposto pelo servidor, porém NÃO
-funciona sem o navegador instalado; seu uso retorna uma falha de auditoria.
-Portanto, **não aponte tráfego de `websandbox.run` para este perfil**.
+extração. O endpoint `/run` responde HTTP 503 com
+`{"error":"capability_unavailable","capability":"browser"}`,
+sem tentar iniciar um navegador. Portanto, **não encaminhe auditorias web
+para a imagem archive-only**.
 
 > Não substituir o sandbox de produção pelo archive-only sem separar as
 > rotas de auditoria e de extração no Agent e sem validar essas rotas.
@@ -74,3 +75,41 @@ todos os testes de renderização em ambas as imagens.
 Também não foram removidos Python, ffmpeg, php-cli, ferramentas de build
 ou outras dependências do Agent: essas operações pertencem às capacidades
 efetivamente oferecidas pelo Solaris Code.
+
+## Separação opcional de serviços — Agent e sandbox
+
+O Agent mantém compatibilidade total com a VPS atual:
+
+| Função | URL dedicada opcional | Segredo dedicado opcional |
+|---|---|---|
+| Auditoria web | `SANDBOX_BROWSER_SERVICE_URL` | `SANDBOX_BROWSER_SHARED_SECRET` |
+| Extração ZIP | `SANDBOX_ARCHIVE_SERVICE_URL` | `SANDBOX_ARCHIVE_SHARED_SECRET` |
+
+As capacidades que não têm URL dedicada continuam usando
+`SANDBOX_SERVICE_URL`. Sem segredo dedicado, usam
+`SANDBOX_SHARED_SECRET`. **Nenhuma nova variável é obrigatória
+no deploy atual.**
+
+O servidor de sandbox admite `SANDBOX_MODE=full|browser|archive`.
+A imagem com Chromium começa em `full` (todas as rotas);
+`browser` restringe ao endpoint de auditoria;
+a imagem `INSTALL_CHROMIUM=0` inicia automaticamente em `archive`.
+Rotas desabilitadas respondem 503 **após autenticação**.
+Uma imagem sem Chromium recusa configuração `browser` ou `full`.
+
+### Como ativar na VPS futuramente
+
+1. Manter o container atual completo, incluindo o navegador.
+2. Implantar um **segundo** container isolado com
+   `--build-arg INSTALL_CHROMIUM=0` e segredo compartilhado.
+   O workflow de deploy existente **não cria este segundo container**.
+3. Validar `/health`, `/extract-zip`, `/extract-archive` e que
+   `/run` retorna 503 no container leve.
+4. Configurar `SANDBOX_ARCHIVE_SERVICE_URL` no Agent para o novo serviço.
+   Auditorias continuam apontando para o container completo via fallback.
+5. Em caso de problema, remover `SANDBOX_ARCHIVE_SERVICE_URL`:
+   extrações retornam automaticamente à instância legada.
+
+O container leve reduz **disco/imagem** em comparação ao completo.
+Uma segunda instância rodando simultaneamente pode consumir RAM extra;
+não afirmar economia de RAM sem medir `docker stats`.

@@ -3,10 +3,12 @@ import { runWebSandbox } from "./webSandbox/index.js";
 import { runArchiveExtract, runZipExtract } from "./archive/index.js";
 import { MAX_MAX_COMPRESSED_BYTES } from "./archive/security.js";
 import { createLogger } from "./utils/logger.js";
+import { resolveSandboxMode, sandboxSupports } from "./serviceMode.js";
 
 const logger = createLogger("sandbox-efemero");
 
 const PORT = process.env.PORT || 8080;
+const SANDBOX_MODE = resolveSandboxMode();
 
 // Segredo compartilhado simples entre o agent principal e este
 // serviço. Este container não guarda credenciais de git/GCP/workspace
@@ -34,6 +36,15 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+function requireCapability(capability) {
+  return (_req, res, next) => {
+    if (!sandboxSupports(SANDBOX_MODE, capability)) {
+      return res.status(503).json({ error: "capability_unavailable", capability });
+    }
+    return next();
+  };
+}
+
 function requireSharedSecret(req, res, next) {
   if (!SHARED_SECRET) return next(); // aviso já emitido na subida
   const provided = req.get("x-sandbox-secret");
@@ -43,7 +54,7 @@ function requireSharedSecret(req, res, next) {
   return next();
 }
 
-app.post("/run", requireSharedSecret, async (req, res) => {
+app.post("/run", requireSharedSecret, requireCapability("browser"), async (req, res) => {
   const startedAt = Date.now();
   try {
     const result = await runWebSandbox(req.body);
@@ -87,6 +98,7 @@ function queryInt(value) {
 app.post(
   "/extract-zip",
   requireSharedSecret,
+  requireCapability("archive"),
   express.raw({ type: () => true, limit: MAX_MAX_COMPRESSED_BYTES }),
   async (req, res) => {
     const startedAt = Date.now();
@@ -116,6 +128,7 @@ app.post(
 app.post(
   "/extract-archive",
   requireSharedSecret,
+  requireCapability("archive"),
   express.raw({ type: () => true, limit: MAX_MAX_COMPRESSED_BYTES }),
   async (req, res) => {
     const startedAt = Date.now();
@@ -151,7 +164,7 @@ app.use((err, req, res, next) => {
 });
 
 const server = app.listen(PORT, () => {
-  logger.info(`sandbox-efemero ouvindo na porta ${PORT}`);
+  logger.info(`sandbox-efemero ouvindo na porta ${PORT}; modo: ${SANDBOX_MODE}`);
 });
 
 // Cloud Run envia SIGTERM antes de reciclar/encerrar uma instância.

@@ -1,0 +1,70 @@
+name: Solaris Sandbox - fronteiras e perfil leve
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'agent/src/config/sandbox-endpoints*'
+      - 'agent/src/capabilities/archive*'
+      - 'agent/src/capabilities/web-sandbox*'
+      - 'sandbox-efemoro/**'
+      - '.github/workflows/sandbox-boundary.yml'
+  pull_request:
+    paths:
+      - 'agent/src/config/sandbox-endpoints*'
+      - 'agent/src/capabilities/archive*'
+      - 'agent/src/capabilities/web-sandbox*'
+      - 'sandbox-efemoro/**'
+      - '.github/workflows/sandbox-boundary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agent-routing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: agent/package-lock.json
+      - run: npm ci
+      - name: Verificar roteamento e compatibilidade
+        run: node --test src/config/sandbox-endpoints.test.js src/capabilities/archive.test.js src/capabilities/web-sandbox.test.js
+
+  archive-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: sandbox-efemoro/package-lock.json
+      - name: Instalar JS sem browsers
+        working-directory: sandbox-efemoro
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci
+      - name: Validar modos de serviço
+        working-directory: sandbox-efemoro
+        run: node --test src/serviceMode.test.js
+      - name: Construir imagem sem Chromium
+        run: docker build --build-arg INSTALL_CHROMIUM=0 -t softload-sandbox:archive-only -f sandbox-efemoro/Dockerfile sandbox-efemoro
+      - name: Medir imagem archive-only
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint node softload-sandbox:archive-only \
+            -e "import('./src/serviceMode.js').then(m => { if (m.resolveSandboxMode() !== 'archive') process.exit(1); })"
+          bytes="$(docker image inspect --format='{{.Size}}' softload-sandbox:archive-only)"
+          mib="$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')"
+          echo "[IMAGE] archive-only: $bytes bytes ($mib MiB)"
+          echo "Sandbox archive-only: **$mib MiB** ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"

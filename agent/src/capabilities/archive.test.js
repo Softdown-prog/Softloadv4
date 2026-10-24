@@ -207,3 +207,28 @@ test("archive.extract_zip: zipPath fora do workspace (path traversal) é recusad
   );
   assert.equal(chamouRede, false, "não deveria ter chamado o serviço isolado com um caminho fora do workspace");
 });
+
+test("archive.extract_zip usa URL e segredo exclusivos da extração", async () => {
+  process.env.SANDBOX_ARCHIVE_SERVICE_URL = "https://archive.internal/";
+  process.env.SANDBOX_ARCHIVE_SHARED_SECRET = "segredo-arquivo";
+  await workspace.write("upload.zip", "z");
+  let chamada;
+  const capability = makeCapability(async (url, options) => {
+    chamada = { url, options };
+    return respostaJson(200, { success: true, totalArquivos: 0, arquivos: [] });
+  });
+  await capability.execute({ type: "archive.extract_zip", zipPath: "upload.zip", destPath: "extraido" });
+  assert.equal(chamada.url, "https://archive.internal/extract-zip");
+  assert.equal(chamada.options.headers["x-sandbox-secret"], "segredo-arquivo");
+});
+
+test("archive.extract_zip aceita URL dedicada sem URL legada", async () => {
+  delete process.env.SANDBOX_SERVICE_URL;
+  process.env.SANDBOX_ARCHIVE_SERVICE_URL = "https://archive.internal";
+  await workspace.write("upload.zip", "z");
+  const capability = makeCapability(async url => {
+    assert.equal(url, "https://archive.internal/extract-zip");
+    return respostaJson(200, { success: true, totalArquivos: 0, arquivos: [] });
+  });
+  await capability.execute({ type: "archive.extract_zip", zipPath: "upload.zip", destPath: "extraido" });
+});

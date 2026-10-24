@@ -131,3 +131,26 @@ test("websandbox.run respeita Permissions -- negado por padrão (preset restrict
     /Permissão negada/,
   );
 });
+
+test("websandbox.run usa URL e segredo exclusivos do navegador", async () => {
+  process.env.SANDBOX_BROWSER_SERVICE_URL = "https://browser.internal/";
+  process.env.SANDBOX_BROWSER_SHARED_SECRET = "segredo-browser";
+  let chamada;
+  const capability = makeCapability(async (url, options) => {
+    chamada = { url, options };
+    return respostaJson(200, { success: true });
+  });
+  await capability.execute({ type: "websandbox.run", url: "https://example.org" });
+  assert.equal(chamada.url, "https://browser.internal/run");
+  assert.equal(chamada.options.headers["x-sandbox-secret"], "segredo-browser");
+});
+
+test("websandbox.run aceita URL dedicada sem URL legada", async () => {
+  delete process.env.SANDBOX_SERVICE_URL;
+  process.env.SANDBOX_BROWSER_SERVICE_URL = "https://browser.internal";
+  const capability = makeCapability(async url => {
+    assert.equal(url, "https://browser.internal/run");
+    return respostaJson(200, { success: true });
+  });
+  await capability.execute({ type: "websandbox.run", url: "https://example.org" });
+});
