@@ -1228,3 +1228,36 @@ O teste `src/solaris/rag/codeVectorStoreContract.test.js` cobre rejeicao de
 vetores invalidos, NaN/Infinity, entrada invalida, excesso de chunks,
 consulta fora de limites, metadados no retorno e falha antes de gerar batch
 quando o limite do Firestore seria excedido. O Gate TypeScript o executa.
+
+## Etapa 69 — recuperação operacional e conflitos visíveis
+
+No Solaris HTTP, conflitos `SOLARIS_PROJECT_BUSY` não passam silenciosamente como
+um upload persistido nem caem no chat genérico: upload devolve HTTP 409 com
+mensagem clara; o chat transmite evento SSE `error` sem afirmar que o projeto
+foi editado. Regressões dos dois handlers estão no Gate TypeScript.
+
+O utilitário administrativo `scripts/solarisProjectLockRecovery.js` permite
+**inspecionar**, sem modificações, bloqueios em `solaris_projetos_bloqueios`:
+```sh
+node scripts/solarisProjectLockRecovery.js inspect UID SESSION_ID
+```
+
+A recuperação é **manual e exige indisponibilizar todas as instâncias e jobs
+que possam editar a sessão**, aguardando a interrupção das operações em
+andamento. NÃO basta o bloqueio ter 60 minutos; tempo transcorrido não é
+prova de abandono. Só então um administrador, a partir da VPS e com as
+credenciais legítimas do Firestore, usa os campos `owner` e `updatedAt`
+retornados pela inspeção para chamar:
+```sh
+node scripts/solarisProjectLockRecovery.js recover UID SESSION_ID OWNER UPDATED_AT --instances-stopped --confirm
+```
+
+O comando recusa bloqueios recentes, donos ou timestamps divergentes,
+metadados inválidos e recuperações sem confirmação. A exclusão Firestore
+usa `lastUpdateTime`, garantindo que um bloqueio substituído após a
+inspeção não seja removido. O mecanismo não altera nem apaga arquivos do
+GCS e **não agenda remoção automática**. Depois de recuperar, retomar as
+instâncias com acompanhamento. Acesso operacional e indisponibilização real
+são responsabilidades do administrador; parâmetros CLI não comprovam que
+instâncias estejam desligadas. Testes usam Firestore simulado e verificam
+precondições, concorrência com alterações externas, idade e identidade.
