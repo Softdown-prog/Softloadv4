@@ -125,5 +125,6 @@
   "scripts/ragCodeCollect.ts",
   "scripts/codeCorpus/authoredCatalog.ts",
   "scripts/codeCorpus/codeVectorStore.ts",
-  "scripts/codeCorpus/codeCollector.ts"
+  "scripts/codeCorpus/codeCollector.ts",
+  "scripts/ragOrganizarRascunhos.ts"
 ]

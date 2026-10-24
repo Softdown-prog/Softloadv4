@@ -63,6 +63,8 @@ jobs:
         run: npm run rag:boundaries-test
       - name: Testar scripts CLI migrados sem Firestore real
         run: npm run test:typescript-clis
+      - name: Verificar organização de rascunhos RAG (dados temporários)
+        run: node scripts/ragOrganizarRascunhos.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

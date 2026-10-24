@@ -43,3 +43,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - A origem histórica `Softdown-prog/softload-engine-v3` é mantida nos metadados para evitar que uma refatoração de linguagem altere URLs e hashes sem uma migração de conteúdo separada.
 - O corpus Blogger (`src/rag/`) não é consultado; as receitas autorais continuam em `src/solaris/code-examples/` e `examples/solaris-code/`.
 - Regressões: `npm run rag:code-test`, `npm run rag:boundaries-test` e `npm run typecheck` (auditoria e espelho).
+
+## Novo lote — organizador de rascunhos Solaris RAG
+
+- `scripts/ragOrganizarRascunhos.ts` passa a ser a fonte TypeScript do organizador; o arquivo `.js` é apenas espelho CommonJS executável pelo Node.
+- Interfaces cobrem triagem de rascunhos, entradas de catálogo, decisão de validação/deduplicação e relatório de arquivos movidos ou rejeitados.
+- Preservadas as regras originais: arquivos inválidos ficam em drafts, candidatos repetidos ficam bloqueados e somente entradas aprovadas entram nas pastas do catálogo Solaris.
+- O comando `npm run rag:organizar` continua tendo efeitos de escrita/movimentação **quando executado manualmente**. No CI executa-se apenas `node scripts/ragOrganizarRascunhos.test.js`, com diretórios temporários isolados.
+- Não há acesso ao RAG Blogger, à coleção vetorial de código, ao Firestore ou a credenciais no teste do organizador.
