@@ -48,6 +48,7 @@ const sources = [
   "agent/src/protocol/protocol-adapter.ts",
   "agent/src/utils/errors.ts",
   "agent/src/server.ts",
+  "agent/src/protocol/protocol.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

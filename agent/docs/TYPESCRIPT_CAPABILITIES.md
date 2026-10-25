@@ -119,6 +119,15 @@ esses imports nem exige um loader TypeScript em produção.
   execucao sequencial das actions e tratamento de erros sao preservados
   pela verificacao de equivalencia AST e pelos testes de HTTP.
 
+## Validacao Zod tipada
+
+- `agent/src/protocol/protocol.ts` tipa as operacoes suportadas, os
+  resultados de `safeParse` e o contrato das requisicoes validas.
+- Os schemas Zod e os limites de tamanho/quantidade continuam
+  inalterados, e o gate exige AST identica ao `.js` existente.
+- O teste HTTP existente garante que erros de input sejam rejeitados
+  antes de executar qualquer action.
+
 ## Como validar
 
 ```bash
