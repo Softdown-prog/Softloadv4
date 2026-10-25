@@ -144,6 +144,17 @@ esses imports nem exige um loader TypeScript em produção.
 - Os arquivos `.js` continuam sendo o runtime Node 22; nenhuma
   instalação ou execução de TypeScript acontece na VPS.
 
+## Política de segurança tipada
+
+- `agent/src/security/permissions.ts` tipa permissões por ação,
+  os presets sobrepostos, `grant/revoke` e o snapshot de auditoria.
+  A tabela de ações e o comportamento fail-closed permanecem iguais.
+- `agent/src/security/command-policy.ts` tipa allowlist de comandos,
+  prefixos autorizados e regexes de bloqueio. O parse e a execução
+  de processos permanecem sem `shell: true`.
+- Ambos participam da checagem estrita de tipos, da comparação AST
+  com `.js` e dos testes do Agent antes de gerar imagens Docker.
+
 ## Como validar
 
 ```bash
