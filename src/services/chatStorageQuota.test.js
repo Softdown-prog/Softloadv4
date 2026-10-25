@@ -309,3 +309,33 @@ test('chamadores antigos sem cota continuam podendo excluir sessão',async()=>{
     assert.equal(await chat.loadSession(UID,'sol','legacy'),null);
     assert.equal(quotaBytes(),0);
 });
+
+test('IDs de sessão reservados ou com separadores nunca excluem arquivos internos',async()=>{
+    reset();
+    await chat.saveSession(UID,'solaris-chat','valid',session('mantida'),cota);
+    const before=physicalBytes(), quotaBefore=quotaBytes();
+    const currentLatest=file('users/'+UID+'/sessions/solaris-chat/latest.json');
+    const currentIndex=file('users/'+UID+'/sessions/solaris-chat/_index.json');
+    for(const id of ['latest','_index','../latest','a/b','a\\b','.','..','']) {
+        await assert.rejects(chat.deleteSession(UID,'solaris-chat',id,cota),TypeError);
+        await assert.rejects(chat.loadSession(UID,'solaris-chat',id),TypeError);
+        await assert.rejects(chat.saveSession(UID,'solaris-chat',id,session('não salvar'),cota),TypeError);
+    }
+    assert.equal(file('users/'+UID+'/sessions/solaris-chat/latest.json'),currentLatest);
+    assert.equal(file('users/'+UID+'/sessions/solaris-chat/_index.json'),currentIndex);
+    assert.equal(quotaBytes(),quotaBefore);
+    assert.equal(physicalBytes(),before);
+    assert.ok(await chat.loadSession(UID,'solaris-chat','valid'));
+});
+
+test('tipo ou uid inválidos não acessam outro prefixo do GCS',async()=>{
+    reset();
+    const badTypes=['../sol','a/b','a\\b'];
+    for(const type of badTypes) {
+        await assert.rejects(chat.deleteSession(UID,type,'s1',cota),TypeError);
+        await assert.rejects(chat.saveSession(UID,type,'s1',session('x'),cota),TypeError);
+    }
+    await assert.rejects(chat.saveMemory('../uid',{x:1},cota),TypeError);
+    assert.equal(physicalBytes(),0);
+    assert.equal(quotaBytes(),0);
+});

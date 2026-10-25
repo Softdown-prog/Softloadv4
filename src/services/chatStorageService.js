@@ -43,19 +43,41 @@ function _tamanhoJson(obj) {
 
 // ── Paths ─────────────────────────────────────────────────────────────────
 
+function assertGcsSegment(value, label) {
+    // GCS keys are strings, not filesystem paths. Never let user-controlled
+    // session IDs impersonate the metadata objects in this same prefix.
+    if (typeof value !== 'string' || value.length === 0 ||
+        value === '.' || value === '..' ||
+        value.includes('/') || value.includes('\\') ||
+        /[\x00-\x1f\x7f]/.test(value)) {
+        throw new TypeError(`Identificador de armazenamento inválido: ${label}`);
+    }
+}
+
 function sessionPath(uid, type, sessionId) {
+    assertGcsSegment(uid, 'uid');
+    assertGcsSegment(type, 'type');
+    assertGcsSegment(sessionId, 'sessionId');
+    if (sessionId === 'latest' || sessionId === '_index') {
+        throw new TypeError('Identificador de sessão reservado pelo armazenamento.');
+    }
     return `users/${uid}/sessions/${type}/${sessionId}.json`;
 }
 
 function latestRefPath(uid, type) {
+    assertGcsSegment(uid, 'uid');
+    assertGcsSegment(type, 'type');
     return `users/${uid}/sessions/${type}/latest.json`;
 }
 
 function memoryPath(uid) {
+    assertGcsSegment(uid, 'uid');
     return `users/${uid}/memory/context.json`;
 }
 
 function indexPath(uid, type) {
+    assertGcsSegment(uid, 'uid');
+    assertGcsSegment(type, 'type');
     return `users/${uid}/sessions/${type}/_index.json`;
 }
 
