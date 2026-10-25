@@ -188,6 +188,8 @@ jobs:
           node src/rag/ragMatcher.test.js
           node src/rag/design-rules/padroesVisuais.test.js
           node --test src/middlewares/securityHeaders.contract.test.js
+      - name: Validar contextos do template, Workspace e RAG exclusivo GPT (mocks)
+        run: node --test src/routes/dashboard_routes/chat/chatContextMigration.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

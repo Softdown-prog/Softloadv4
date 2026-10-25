@@ -171,5 +171,8 @@
   "src/routes/dashboard_routes/chat/chatHistory.ts",
   "src/rag/ragMatcher.ts",
   "src/rag/design-rules/padroesVisuais.ts",
-  "src/middlewares/security.ts"
+  "src/middlewares/security.ts",
+  "src/routes/dashboard_routes/chat/chatTemplateContext.ts",
+  "src/routes/dashboard_routes/chat/chatWorkspaceContext.ts",
+  "src/routes/dashboard_routes/chat/chatRagGpt.ts"
 ]

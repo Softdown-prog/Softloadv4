@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const { COLOR_PRESETS } = require('../../../core/presets');
-
 // Constrói contexto rico do template para injeção permanente no system prompt.
 // Chamado quando o chat é aberto a partir de uma sessão de workspace.
 function montarContextoWorkspace(snapshot) {
@@ -27,7 +27,6 @@ function montarContextoWorkspace(snapshot) {
     ].filter(l => l !== null);
     return linhas.join('\n');
 }
-
 module.exports = {
     montarContextoWorkspace,
 };
