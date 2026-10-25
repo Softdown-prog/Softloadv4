@@ -176,7 +176,7 @@ export async function buildAgentEcosystem({
           },
         });
 
-        return { success: true, ...result };
+        return { success: true, ...(result as Omit<typeof result, "success">) };
       } catch (error) {
         if (error instanceof MaxAttemptsExceededError) {
           return {
@@ -250,7 +250,7 @@ export async function buildAgentEcosystem({
 
       return {
         workspaceRoot: context.workspaceRoot,
-        editedFiles: (payload.edits || []).map((edit) => edit.path),
+        editedFiles: (payload.edits || []).map((edit: ExampleCodeEdit) => edit.path),
       };
     },
   };
