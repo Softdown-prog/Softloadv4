@@ -20,7 +20,7 @@ test('interpreta dados aprovados e não mistura com créditos legados',()=>{
   assert.equal(Object.prototype.hasOwnProperty.call(result,'creditos'),false);
 });
 test('recusa payload incorreto, saldo inválido e prévia não identificada',()=>{
-  for(const input of [null,{},[],{...valid,versao:1},{...valid,modo:'ativo'},
+  for(const input of [null,{},[],{...valid,versao:1},{...valid,modo:'desconhecido'},
     {...valid,cicloExpiraEm:'not a date'}, {...valid,saldo:{...valid.saldo,creditosDisponiveis:800}},
     {...valid,saldo:{...valid.saldo,creditosConsumidos:NaN}}, {...valid,saldo:{...valid.saldo,creditosReservados:-1}},
     {...valid,saldo:{...valid.saldo,preliminar:false}}]) assert.equal(normalizarResumoCreditosV2(input),null);
