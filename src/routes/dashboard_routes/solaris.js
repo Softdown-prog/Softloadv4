@@ -161,7 +161,8 @@ async function capturarParaVisual({ url, device }) {
         headers: { 'Content-Type': 'application/json', 'x-sandbox-secret': secret },
         body: JSON.stringify({
             url, device, browser: 'chromium', screenshot: true,
-            screenshotDelivery: 'inline', accessibility: false, timeout: 20000,
+            screenshotDelivery: 'inline', screenshotMode: 'viewport',
+            accessibility: false, timeout: 20000,
         }),
         signal: AbortSignal.timeout(35000),
     });
