@@ -98,8 +98,7 @@ async function _validarECorrigir(fullText, msg, isGpt, tokensRef, sendEvent) {
     // ── Reparo determinístico não resolveu — 1 retry focado por IA ─────────
     // Sinaliza ao frontend que está corrigindo
     sendEvent({ type: 'status', label: 'Corrigindo código...' });
-    const retryPrompt =
-        `Corrija o erro de sintaxe abaixo e retorne APENAS o bloco corrigido entre \`\`\` fences.\n\n` +
+    const retryPrompt = `Corrija o erro de sintaxe abaixo e retorne APENAS o bloco corrigido entre \`\`\` fences.\n\n` +
         `ERRO: ${errorDesc}\n\n` +
         `${failBlock.raw}`;
     try {

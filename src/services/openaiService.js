@@ -26,7 +26,7 @@ async function* gerarChatGptStream(history, userMessage, systemPrompt, options =
     const client = getClient();
     const messages = [
         { role: 'system', content: systemPrompt },
-        ...history.map(m => ({
+        ...history.map((m) => ({
             role: m.role === 'assistant' ? 'assistant' : 'user',
             content: m.content,
         })),
