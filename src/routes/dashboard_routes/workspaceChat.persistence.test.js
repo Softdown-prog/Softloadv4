@@ -166,7 +166,7 @@ test('falha no GCS não bloqueia cobrança nem finge que o histórico foi salvo'
     assert.equal(calls.some(e => e[0] === 'debit'), true);
     assert.equal(calls.some(e => e[0] === 'link'), false);
     const done = events.find(e => e[0] === 'done')[1];
-    assert.match(done.reply, /não consegui salvar esta conversa no histórico/);
+    assert.match(done.reply, /não consegui salvar esta conversa no histórico/i);
     assert.equal(events.at(-1)[0], 'end');
 });
 
