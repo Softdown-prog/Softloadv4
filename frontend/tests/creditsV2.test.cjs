@@ -77,3 +77,51 @@ test('extrato V2 recusa registros adulterados, tipos incorretos e URLs desabilit
   assert.equal(response.itens[0].creditos,5);
   assert.equal(await mod.exports.buscarExtratoCreditosV2(async()=>({ok:false,status:404})),null);
 });
+
+test('cursor V2 habilita consulta das paginas seguintes e rejeita valores suspeitos',async()=>{
+  const id='a'.repeat(64),next='b'.repeat(64),received=[];
+  const fetchImpl=async(url,config)=>{
+    received.push(url);assert.equal(config.cache,'no-store');
+    return {ok:true,json:async()=>({versao:2,modo:'previsualizacao',itens:[{
+      id,ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',
+      criadoEm:'2026-10-25T15:00:00Z',creditos:2,estimado:false
+    }],proximoCursor:next})};
+  };
+  const first=await mod.exports.buscarExtratoCreditosV2(fetchImpl);
+  assert.equal(first.proximoCursor,next);
+  const second=await mod.exports.buscarExtratoCreditosV2(fetchImpl,next);
+  assert.equal(second.itens[0].creditos,2);
+  assert.deepEqual(received,['/api/ai-credits/v2/history','/api/ai-credits/v2/history?cursor='+next]);
+  assert.equal(await mod.exports.buscarExtratoCreditosV2(fetchImpl,'../../api'),null);
+  assert.equal(received.length,2);
+  assert.equal(mod.exports.normalizarExtratoCreditosV2({
+    versao:2,modo:'previsualizacao',itens:[],proximoCursor:'INVALID'
+  }),null);
+});
+test('agrupamento soma somente registros carregados de cada sessao e marca estimativas',()=>{
+  const id='a'.repeat(64);
+  const base={id,ferramenta:'solaris-chat',modelo:'gemini-2.5-flash',
+    criadoEm:'2026-10-25T15:00:00Z',creditos:2,estimado:false};
+  const results=mod.exports.resumirSessoesCarregadasV2([
+    {...base,projeto:'sessao_abc123'},
+    {...base,id:'b'.repeat(64),creditos:5,estimado:true,projeto:'sessao_abc123'},
+    {...base,id:'c'.repeat(64),creditos:3,projeto:'sessao_others'},
+    {...base,id:'d'.repeat(64),creditos:1},
+  ]);
+  assert.equal(results.length,3);
+  assert.equal(results[0].projeto,'sessao_abc123');
+  assert.equal(results[0].creditosDasChamadas,7);
+  assert.equal(results[0].chamadas,2);
+  assert.equal(results[0].chamadasEstimadas,1);
+  assert.equal(results[2].projeto,null);
+});
+test('paginas repetidas nao duplicam chamadas nem credito exibido',()=>{
+  const base={id:'a'.repeat(64),ferramenta:'solaris-chat',modelo:'gemini-2.5-flash',
+    criadoEm:'2026-10-25T15:00:00Z',creditos:2,estimado:false};
+  const page1={versao:2,modo:'previsualizacao',itens:[base],proximoCursor:'c'.repeat(64)};
+  const page2={versao:2,modo:'previsualizacao',itens:[base,{...base,id:'b'.repeat(64)}],proximoCursor:null};
+  const merged=mod.exports.juntarPaginasExtratoV2(page1,page2);
+  assert.equal(merged.itens.length,2);
+  assert.equal(merged.proximoCursor,null);
+  assert.equal(mod.exports.resumirSessoesCarregadasV2(merged.itens)[0].creditosDasChamadas,4);
+});
