@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HERO_VARIANTS = exports.CSS_VARIANTS = exports.TODOS_OS_NICHOS = void 0;
+exports.buildPrompt = buildPrompt;
+exports.extrairJSON = extrairJSON;
+exports.validarCSS = validarCSS;
+exports.validarHero = validarHero;
+exports.gerarBlocosParaNicho = gerarBlocosParaNicho;
+exports.salvarBlocos = salvarBlocos;
+exports.main = main;
 
 // ============================================================
 // BLOCK WORKER — Gera variantes CSS e Hero HTML para cada nicho
@@ -24,7 +33,7 @@ const { gerarTexto } = require('../src/services/geminiService');
 
 const TEMAS_DIR = path.join(__dirname, '../src/rag/rag-ia-compiler/pipeline/temas');
 
-const TODOS_OS_NICHOS = [
+exports.TODOS_OS_NICHOS = [
     'gamer-playerone',
     'pop-retro-pixel',
     'natureza-bulma-vegan',
@@ -42,8 +51,8 @@ const TODOS_OS_NICHOS = [
 ];
 
 // Quantas variantes gerar por slot
-const CSS_VARIANTS  = 5;
-const HERO_VARIANTS = 3;
+exports.CSS_VARIANTS = 5;
+exports.HERO_VARIANTS = 3;
 
 // ──────────────────────────────────────────────────────────────
 // buildPrompt — monta o prompt Gemini para um nicho específico
@@ -58,7 +67,7 @@ CONTEXTO DO NICHO:
 ${descricao}
 
 TAREFA:
-Gere exatamente ${CSS_VARIANTS} variantes de CSS e ${HERO_VARIANTS} variantes de hero HTML para este nicho.
+Gere exatamente ${exports.CSS_VARIANTS} variantes de CSS e ${exports.HERO_VARIANTS} variantes de hero HTML para este nicho.
 
 REGRAS OBRIGATÓRIAS:
 1. Use APENAS var(--sl-primary) para cor de destaque principal
@@ -88,7 +97,7 @@ Retorne SOMENTE JSON válido, sem markdown, sem comentários fora do JSON:
   ]
 }
 
-IMPORTANTE: card_css deve ter EXATAMENTE ${CSS_VARIANTS} strings. hero_html deve ter EXATAMENTE ${HERO_VARIANTS} strings.`;
+IMPORTANTE: card_css deve ter EXATAMENTE ${exports.CSS_VARIANTS} strings. hero_html deve ter EXATAMENTE ${exports.HERO_VARIANTS} strings.`;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -172,7 +181,7 @@ async function gerarBlocosParaNicho(nicho) {
     const cssValidos  = (Array.isArray(json.card_css)  ? json.card_css  : []).filter(validarCSS);
     const heroValidos = (Array.isArray(json.hero_html) ? json.hero_html : []).filter(validarHero);
 
-    console.log(`  css: ${cssValidos.length}/${CSS_VARIANTS} válidas | hero: ${heroValidos.length}/${HERO_VARIANTS} válidas`);
+    console.log(`  css: ${cssValidos.length}/${exports.CSS_VARIANTS} válidas | hero: ${heroValidos.length}/${exports.HERO_VARIANTS} válidas`);
 
     if (cssValidos.length === 0 && heroValidos.length === 0) {
         console.error(`  [erro] Nenhum bloco válido gerado para ${nicho}`);
@@ -203,10 +212,10 @@ function salvarBlocos(nicho, blocos) {
 // ──────────────────────────────────────────────────────────────
 async function main() {
     const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
-    const nichos = args.length > 0 ? args : TODOS_OS_NICHOS;
+    const nichos = args.length > 0 ? args : exports.TODOS_OS_NICHOS;
     const pauseMs = 2000; // pausa entre chamadas para evitar rate limit
 
-    console.log(`\n🔧 Block Worker — ${nichos.length} nicho(s) × ${CSS_VARIANTS} css + ${HERO_VARIANTS} hero\n`);
+    console.log(`\n🔧 Block Worker — ${nichos.length} nicho(s) × ${exports.CSS_VARIANTS} css + ${exports.HERO_VARIANTS} hero\n`);
 
     const resultados = { ok: [], erro: [] };
 
@@ -238,7 +247,7 @@ async function main() {
     }
 }
 
-main().catch(err => {
+if (require.main === module) main().catch(err => {
     console.error('Erro fatal:', err);
     process.exit(1);
 });

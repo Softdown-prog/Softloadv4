@@ -115,3 +115,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `scripts/gerar-blocos-rag.js` segue como espelho CommonJS executável. Importar a API não chama o modelo; somente executar a CLI diretamente inicia a geração real.
 - Mantido o comportamento de não sobrescrever arquivos existentes, validar identidade/categoria/conceito, exigir ao menos duas variantes HTML, rejeitar tags Blogger dentro de variantes e repetir até três tentativas.
 - `node --test scripts/gerar-blocos-rag.test.js` injeta respostas do Gemini e escrita de arquivo simuladas; nenhum dado real é gravado e nenhuma chamada de IA é feita pelos testes.
+
+## Lote — gerador de blocos CSS e hero para os temas Blogger
+
+- `scripts/generateBlocks.ts` é a fonte TypeScript do gerador de 14 nichos do compilador Blogger, com contratos explícitos para metadados, variantes CSS/hero, retorno do modelo e arquivos.
+- `scripts/generateBlocks.js` continua o CLI CommonJS. Importar o módulo deixa de executar a geração automaticamente; `node scripts/generateBlocks.js [nicho ...]` mantém a execução explícita.
+- Mantidos os prompts visuais originais, cinco variantes CSS e três hero por nicho, filtros que rejeitam sintaxe Blogger e placeholders, e armazenamento em `pipeline/temas/tema-{nicho}-blocks.json`.
+- `scripts/generateBlocks.test.js` utiliza Gemini, FS e pausa simulados, conferindo que importação não chama API nem grava temas reais.

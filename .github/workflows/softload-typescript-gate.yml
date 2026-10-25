@@ -39,6 +39,9 @@ on:
       - 'scripts/gerar-blocos-rag.ts'
       - 'scripts/gerar-blocos-rag.js'
       - 'scripts/gerar-blocos-rag.test.js'
+      - 'scripts/generateBlocks.ts'
+      - 'scripts/generateBlocks.js'
+      - 'scripts/generateBlocks.test.js'
       - 'scripts/ragCodeCollect.ts'
       - 'scripts/ragCodeCollect.js'
       - 'scripts/ragOrganizarRascunhos.ts'
@@ -117,6 +120,18 @@ jobs:
         run: node --test scripts/gerar-blocos-rag.test.js
       - name: Contratos de fidelidade estrutural Blogger (sem navegador)
         run: node --test scripts/audit-template-fidelity.contract.test.js
+      - name: Testar gerador de temas Blogger com Gemini simulado
+        run: node --test scripts/generateBlocks.test.js
+      - name: Capturar espelho compilado do gerador de temas (diagnóstico temporário)
+        run: |
+          node - <<'NODE'
+          const ts = require('typescript');
+          const fs = require('fs');
+          const fileName = 'scripts/generateBlocks.ts';
+          const source = fs.readFileSync(fileName,'utf8');
+          const result = ts.transpileModule(source,{fileName,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,newLine:ts.NewLineKind.LineFeed}}).outputText;
+          console.log('GENERATE_BLOCKS_MIRROR_JSON='+JSON.stringify(result));
+          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

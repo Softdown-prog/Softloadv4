@@ -138,5 +138,6 @@
   "scripts/generateRagBalcao.ts",
   "scripts/visual/compareTemplates.ts",
   "scripts/gerar-blocos-rag.ts",
-  "scripts/audit-template-fidelity.ts"
+  "scripts/audit-template-fidelity.ts",
+  "scripts/generateBlocks.ts"
 ]
