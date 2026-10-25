@@ -54,10 +54,12 @@ async function reservarCota(email, plano, tamanhoBytesEstimado, operacaoId) {
     verificarCota(storageMb, tamanhoBytesEstimado, limiteMb);
 
     return {
-        async confirmarUso(tamanhoBytesReal) {
+        async confirmarUso(tamanhoBytesReal, confirmacaoId = operacaoId) {
             if (!tamanhoBytesReal) return;
-            if (operacaoId !== undefined) {
-                await movimentarCotaIdempotente(emailKey, tamanhoBytesReal, operacaoId, { limiteMb });
+            // Compilations learn their stable Firestore ID only after upload.
+            // A confirmation-scoped key keeps the initial quota preflight unchanged.
+            if (confirmacaoId !== undefined) {
+                await movimentarCotaIdempotente(emailKey, tamanhoBytesReal, confirmacaoId, { limiteMb });
                 return;
             }
             await db.collection('clientes_premium').doc(emailKey).set(

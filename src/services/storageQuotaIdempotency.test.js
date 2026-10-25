@@ -113,3 +113,16 @@ test('operação idempotente recusa identificador vazio e bytes fracionários',a
     );
     assert.equal(usedBytes(),0);
 });
+
+test('compilação passa a chave idempotente somente ao confirmar upload', async()=>{
+    reset();
+    const reservation = await reservarCota(email, 'free', 40);
+    loseAckOnce = true;
+    await assert.rejects(reservation.confirmarUso(40, 'blogger-compilation:doc-77'), /acknowledgement lost/);
+    assert.equal(usedBytes(), 40);
+    await reservation.confirmarUso(40, 'blogger-compilation:doc-77');
+    assert.equal(usedBytes(), 40);
+    // A different history document represents distinct stored artifacts.
+    await reservation.confirmarUso(60, 'blogger-compilation:doc-78');
+    assert.equal(usedBytes(), 100);
+});

@@ -30,7 +30,7 @@ interface SavedFiles {
     gcPath: string; xmlPath: string; manifestoPath: string | null;
     nomeArquivo: string; tamanhoBytes: number;
 }
-interface QuotaReservation { confirmarUso(bytes: number): Promise<void> }
+interface QuotaReservation { confirmarUso(bytes: number, operationId?: string): Promise<void> }
 declare function require(name: string): unknown;
 declare const module: { exports: unknown };
 declare const Buffer: { byteLength(value: string, encoding: 'utf8'): number };
@@ -171,7 +171,10 @@ async function finalizarCompilacao(
 
     // Confirma o uso real de cota (tamanho REAL do ZIP gravado, não a
     // estimativa usada em reservarCota acima).
-    await confirmarUso(tamanhoBytes);
+    // The compilation history document provides a stable, unique idempotency key.
+    // If Firestore applied the debit but the ACK was lost, retrying confirmation
+    // for this SAME compilation cannot increment the user's quota twice.
+    await confirmarUso(tamanhoBytes, `blogger-compilation:${docRef.id}`);
 
     const downloadUrl = `/dashboard/compilacao/${docRef.id}/download`;
     console.log(`[PIPELINE] OK | ${email} | ${siteNameSanitizado} | origem=${origem} | enriched=${enriched} | ${downloadUrl}`);

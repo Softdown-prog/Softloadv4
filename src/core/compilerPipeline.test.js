@@ -32,7 +32,11 @@ function ambiente() {
                 events.push('RESERVAR');
                 assert.equal(email,'user@example.test');assert.equal(plano,'free');
                 assert.ok(bytes>0);
-                return {confirmarUso: async count => {events.push('CONFIRMAR');assert.equal(count,320);}};
+                return {confirmarUso: async (count,operationId) => {
+                    events.push('CONFIRMAR');
+                    assert.equal(count,320);
+                    assert.equal(operationId,'blogger-compilation:doc-1');
+                }};
             },
             salvarCompilacao: async (uid,slug,xml,manifesto) => {
                 events.push('SALVAR');

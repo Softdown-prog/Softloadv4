@@ -153,6 +153,7 @@ jobs:
           node src/core/skeletonRedactor.test.js
           node src/ai/solConhecimentoTecnico.test.js
           node src/core/xmlValidator.test.js
+          node src/core/compilerPipeline.test.js
           node src/core/templateExtractor.test.js
           node src/core/modules.test.js
           node src/ai/solAgent.test.js

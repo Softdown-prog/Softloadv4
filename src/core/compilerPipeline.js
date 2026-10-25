@@ -109,7 +109,10 @@ async function finalizarCompilacao(xmlFinal, ctx, user, onStatus = () => { }) {
     });
     // Confirma o uso real de cota (tamanho REAL do ZIP gravado, não a
     // estimativa usada em reservarCota acima).
-    await confirmarUso(tamanhoBytes);
+    // The compilation history document provides a stable, unique idempotency key.
+    // If Firestore applied the debit but the ACK was lost, retrying confirmation
+    // for this SAME compilation cannot increment the user's quota twice.
+    await confirmarUso(tamanhoBytes, `blogger-compilation:${docRef.id}`);
     const downloadUrl = `/dashboard/compilacao/${docRef.id}/download`;
     console.log(`[PIPELINE] OK | ${email} | ${siteNameSanitizado} | origem=${origem} | enriched=${enriched} | ${downloadUrl}`);
     // xmlPath/gcPath vão junto — sem eles, _snapshotDeManifesto() não consegue
