@@ -6,6 +6,7 @@
  */
 import { createHash } from 'node:crypto';
 import { TETOS_IA_EXPERIMENTAIS_CENTAVOS } from './geminiCost';
+import { converterCustoEmCreditosV2 } from './aiCreditsV2';
 
 type StatusRecibo = 'reservado' | 'liquidado' | 'cancelado';
 interface DadosUsuario { plano?: string; is_active?: boolean; creditos_expira_em?: string }
@@ -14,14 +15,33 @@ interface DadosOrcamento {
     reservadoMicroBrl?: number;
     gastoMicroBrl?: number;
 }
+export interface ContextoExtratoIa {
+    ferramenta: 'solaris-chat' | 'solaris-upload';
+    modelo: string;
+    projeto?: string;
+}
+export interface LancamentoExtratoIa extends ContextoExtratoIa {
+    id: string;
+    criadoEm: string;
+    liquidadoEm: string;
+    creditos: number;
+    estimado: boolean;
+}
 interface DadosRecibo {
+    contexto?: ContextoExtratoIa;
+    criadoEm?: string;
     status: StatusRecibo;
     ledgerId: string;
     reservaMicroBrl: number;
     custoRealMicroBrl?: number;
 }
 interface Snapshot<T> { exists: boolean; data(): T | undefined }
-interface DocRef<T> { readonly id: string }
+interface QueryDoc<T> { readonly id: string; data(): T | undefined }
+interface Subcolecao {
+    doc<T>(id: string): DocRef<T>;
+    orderBy(field: string, direction: 'desc'): { limit(count: number): { get(): Promise<{ docs: QueryDoc<LancamentoExtratoIa>[] }> } };
+}
+interface DocRef<T> { readonly id: string; collection(name: string): Subcolecao }
 interface Transacao {
     get<T>(ref: DocRef<T>): Promise<Snapshot<T>>;
     set<T>(ref: DocRef<T>, data: T): void;
@@ -34,6 +54,7 @@ export interface ReservaInput {
     email: string;
     operacaoId: string;
     reservaMicroBrl: number;
+    contexto?: ContextoExtratoIa;
 }
 export interface ReservaResultado {
     status: StatusRecibo;
@@ -45,6 +66,7 @@ export interface ReservaResultado {
 export interface LiquidacaoInput {
     reciboId: string;
     custoRealMicroBrl: number;
+    estimado?: boolean;
 }
 export class OrcamentoIaIndisponivel extends Error {
     constructor(public readonly codigo: string) {
@@ -74,6 +96,15 @@ function limitePlano(dados: DadosUsuario): number {
 }
 function idReciboValido(id: string): boolean {
     return /^[a-f0-9]{64}$/.test(id);
+}
+function validarContexto(ctx: ContextoExtratoIa | undefined): ContextoExtratoIa | undefined {
+    if (ctx === undefined) return undefined;
+    if (!ctx || !['solaris-chat', 'solaris-upload'].includes(ctx.ferramenta)
+        || typeof ctx.modelo !== 'string' || !/^gemini-[a-z0-9.-]{3,60}$/.test(ctx.modelo)
+        || (ctx.projeto !== undefined && (typeof ctx.projeto !== 'string' || !/^[A-Za-z0-9_-]{6,80}$/.test(ctx.projeto)))) {
+        throw new OrcamentoIaIndisponivel('CONTEXTO_INVALIDO');
+    }
+    return { ferramenta: ctx.ferramenta, modelo: ctx.modelo, ...(ctx.projeto ? { projeto: ctx.projeto } : {}) };
 }
 
 /**
@@ -122,12 +153,29 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
             });
         },
 
-        async reservar({ email, operacaoId, reservaMicroBrl }: ReservaInput): Promise<ReservaResultado> {
+        /** Extrato do ciclo ativo; apenas operações liquidadas, sem prompts ou custo em BRL. */
+        async listarExtrato(email: string, limite = 20): Promise<LancamentoExtratoIa[]> {
+            if (!Number.isSafeInteger(limite) || limite < 1 || limite > 40) {
+                throw new OrcamentoIaIndisponivel('CONSULTA_INVALIDA');
+            }
+            const { cicloExpiraEm } = await this.consultar(email);
+            const usuario = email.trim().toLowerCase();
+            const idCiclo = sha(usuario + '|' + cicloExpiraEm);
+            const snapshot = await orcamentos.doc<DadosOrcamento>(idCiclo)
+                .collection('extrato').orderBy('criadoEm', 'desc').limit(limite).get();
+            return snapshot.docs.map(doc => doc.data()).filter((v): v is LancamentoExtratoIa =>
+                !!v && typeof v.id === 'string' && typeof v.criadoEm === 'string'
+                && typeof v.creditos === 'number' && microValido(v.creditos)
+                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload'));
+        },
+
+        async reservar({ email, operacaoId, reservaMicroBrl, contexto }: ReservaInput): Promise<ReservaResultado> {
             const emailNormalizado = String(email || '').trim().toLowerCase();
             if (!emailNormalizado.includes('@') || emailNormalizado.length > 254
                 || !operacaoId || operacaoId.length > 160 || !microValido(reservaMicroBrl) || reservaMicroBrl === 0) {
                 throw new OrcamentoIaIndisponivel('RESERVA_INVALIDA');
             }
+            const contextoValidado = validarContexto(contexto);
             const userRef = usuarios.doc<DadosUsuario>(emailNormalizado);
             return db.runTransaction(async (tx) => {
                 const usuario = await tx.get(userRef);
@@ -149,7 +197,8 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
                 const reservadoMicroBrl = lerSaldo(ledger.reservadoMicroBrl);
                 if (reciboSnap.exists) {
                     const r = reciboSnap.data();
-                    if (!r || r.ledgerId !== ledgerId || r.reservaMicroBrl !== reservaMicroBrl) {
+                    if (!r || r.ledgerId !== ledgerId || r.reservaMicroBrl !== reservaMicroBrl
+                        || JSON.stringify(r.contexto) !== JSON.stringify(contextoValidado)) {
                         throw new OrcamentoIaIndisponivel('RECIBO_INCOMPATIVEL');
                     }
                     return { status: r.status, reciboId, limiteMicroBrl, gastoMicroBrl, reservadoMicroBrl };
@@ -162,13 +211,14 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
                     limiteMicroBrl, gastoMicroBrl,
                     reservadoMicroBrl: reservadoMicroBrl + reservaMicroBrl,
                 });
-                tx.set(reciboRef, { status: 'reservado', ledgerId, reservaMicroBrl });
+                tx.set(reciboRef, { status: 'reservado', ledgerId, reservaMicroBrl,
+                    ...(contextoValidado ? { contexto: contextoValidado, criadoEm: new Date().toISOString() } : {}) });
                 return { status: 'reservado', reciboId, limiteMicroBrl,
                     gastoMicroBrl, reservadoMicroBrl: reservadoMicroBrl + reservaMicroBrl };
             });
         },
 
-        async liquidar({ reciboId, custoRealMicroBrl }: LiquidacaoInput): Promise<StatusRecibo> {
+        async liquidar({ reciboId, custoRealMicroBrl, estimado = false }: LiquidacaoInput): Promise<StatusRecibo> {
             if (!idReciboValido(reciboId) || !microValido(custoRealMicroBrl)) {
                 throw new OrcamentoIaIndisponivel('LIQUIDACAO_INVALIDA');
             }
@@ -191,6 +241,16 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
                     gastoMicroBrl: gasto + custoRealMicroBrl,
                     reservadoMicroBrl: reservado - recibo.reservaMicroBrl });
                 tx.set(reciboRef, { ...recibo, status: 'liquidado', custoRealMicroBrl });
+                if (recibo.contexto && recibo.criadoEm) {
+                    const creditos = converterCustoEmCreditosV2(custoRealMicroBrl);
+                    if (creditos === null) throw new OrcamentoIaIndisponivel('ORCAMENTO_CORROMPIDO');
+                    const lancamento: LancamentoExtratoIa = {
+                        id: reciboId, ...recibo.contexto, criadoEm: recibo.criadoEm,
+                        liquidadoEm: new Date().toISOString(), creditos, estimado,
+                    };
+                    // Lançamento e gasto formam uma ÚNICA transação idempotente.
+                    tx.set(ledgerRef.collection('extrato').doc<LancamentoExtratoIa>(reciboId), lancamento);
+                }
                 return 'liquidado';
             });
         },

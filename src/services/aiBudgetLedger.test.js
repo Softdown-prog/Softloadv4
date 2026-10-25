@@ -9,7 +9,23 @@ function banco() {
   let fila = Promise.resolve();
   const db = {
     collection(name) {
-      return {doc(id) {return {id, key:name+'/'+id};}};
+      return {doc(id) {
+        const key=name+'/'+id;
+        return {id,key,collection(subname) {
+          const prefix=key+'/'+subname+'/';
+          return {
+            doc(docId) {return {id:docId,key:prefix+docId};},
+            orderBy(field, direction) {
+              assert.equal(field,'criadoEm');assert.equal(direction,'desc');
+              return {limit(n) {return {async get() {
+                const found=[...docs.entries()].filter(([k])=>k.startsWith(prefix))
+                  .sort((a,b)=>b[1].criadoEm.localeCompare(a[1].criadoEm)).slice(0,n);
+                return {docs:found.map(([k,v])=>({id:k.slice(prefix.length),data:()=>structuredClone(v)}))};
+              }}};
+            }},
+          };
+        }};
+      }};
     },
     runTransaction(work) {
       const previous = fila;
@@ -163,4 +179,54 @@ test('consulta V2 falha fechada para falta de usuário, ciclo e adulteração',a
   const ledgerKey=[...b2.docs.keys()].find(k=>k.startsWith('ia_orcamentos/'));
   b2.docs.get(ledgerKey).gastoMicroBrl=-5;
   await codigo(b2.livro.consultar('alice@example.test'),'ORCAMENTO_CORROMPIDO');
+});
+
+test('extrato V2 é transacional, idempotente, privado e só inclui liquidados',async()=>{
+  const b=banco();user(b.docs,'alice@example.test','pro');
+  const contexto={ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',projeto:'ProjetoAbc123'};
+  const a=await b.livro.reservar({email:'alice@example.test',operacaoId:'chamada-1',reservaMicroBrl:90000,contexto});
+  assert.deepEqual(await b.livro.listarExtrato('alice@example.test'),[]);
+  await b.livro.liquidar({reciboId:a.reciboId,custoRealMicroBrl:21000});
+  await b.livro.liquidar({reciboId:a.reciboId,custoRealMicroBrl:21000});
+  const eventos=await b.livro.listarExtrato('ALICE@EXAMPLE.TEST');
+  assert.equal(eventos.length,1);
+  assert.equal(eventos[0].creditos,3);
+  assert.equal(eventos[0].modelo,'gemini-2.5-pro');
+  assert.equal(eventos[0].projeto,'ProjetoAbc123');
+  assert.equal(eventos[0].ferramenta,'solaris-chat');
+  assert.equal(eventos[0].estimado,false);
+  assert.ok(!JSON.stringify(eventos).includes('alice@example.test'));
+  const contas=[...b.docs.entries()].filter(([key])=>key.includes('/extrato/'));
+  assert.equal(contas.length,1);
+  assert.equal(contas[0][1].id,a.reciboId);
+  assert.equal((await b.livro.consultar('alice@example.test')).gastoMicroBrl,21000);
+  user(b.docs,'bob@example.test','pro');
+  assert.deepEqual(await b.livro.listarExtrato('bob@example.test'),[]);
+});
+test('recibo estimado distingue ausência de uso; cancelado não gera lançamento',async()=>{
+  const b=banco();user(b.docs);
+  const context={ferramenta:'solaris-upload',modelo:'gemini-2.5-pro'};
+  const a=await b.livro.reservar({email:'alice@example.test',operacaoId:'est1',reservaMicroBrl:45000,contexto:context});
+  const c=await b.livro.reservar({email:'alice@example.test',operacaoId:'cancel1',reservaMicroBrl:500,contexto:context});
+  await b.livro.cancelar(c.reciboId);
+  await b.livro.liquidar({reciboId:a.reciboId,custoRealMicroBrl:45000,estimado:true});
+  const events=await b.livro.listarExtrato('alice@example.test');
+  assert.equal(events.length,1);assert.equal(events[0].estimado,true);
+  assert.equal(events[0].creditos,5);
+});
+test('contexto é restrito e repetição incompatível não reabre recibo',async()=>{
+  const b=banco();user(b.docs);
+  const ok={email:'alice@example.test',operacaoId:'ctx-test',reservaMicroBrl:10000,
+    contexto:{ferramenta:'solaris-chat',modelo:'gemini-2.5-flash',projeto:'project-123456'}};
+  const r=await b.livro.reservar(ok);
+  await codigo(b.livro.reservar({...ok,contexto:{...ok.contexto,modelo:'gemini-2.5-pro'}}),'RECIBO_INCOMPATIVEL');
+  for (const ctx of [
+    {ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',projeto:'not safe /'},
+    {ferramenta:'admin',modelo:'gemini-2.5-pro'},
+    {ferramenta:'solaris-chat',modelo:'OpenAI'},
+  ]) {
+    await codigo(b.livro.reservar({...ok,operacaoId:'other-'+Math.random(),contexto:ctx}),'CONTEXTO_INVALIDO');
+  }
+  await codigo(b.livro.listarExtrato('alice@example.test',500),'CONSULTA_INVALIDA');
+  assert.equal((await b.livro.listarExtrato('alice@example.test')).length,0);
 });

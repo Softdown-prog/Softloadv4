@@ -10,6 +10,7 @@ exports.criarLivroRazaoIa = criarLivroRazaoIa;
  */
 const node_crypto_1 = require("node:crypto");
 const geminiCost_1 = require("./geminiCost");
+const aiCreditsV2_1 = require("./aiCreditsV2");
 class OrcamentoIaIndisponivel extends Error {
     codigo;
     constructor(codigo) {
@@ -44,6 +45,16 @@ function limitePlano(dados) {
 }
 function idReciboValido(id) {
     return /^[a-f0-9]{64}$/.test(id);
+}
+function validarContexto(ctx) {
+    if (ctx === undefined)
+        return undefined;
+    if (!ctx || !['solaris-chat', 'solaris-upload'].includes(ctx.ferramenta)
+        || typeof ctx.modelo !== 'string' || !/^gemini-[a-z0-9.-]{3,60}$/.test(ctx.modelo)
+        || (ctx.projeto !== undefined && (typeof ctx.projeto !== 'string' || !/^[A-Za-z0-9_-]{6,80}$/.test(ctx.projeto)))) {
+        throw new OrcamentoIaIndisponivel('CONTEXTO_INVALIDO');
+    }
+    return { ferramenta: ctx.ferramenta, modelo: ctx.modelo, ...(ctx.projeto ? { projeto: ctx.projeto } : {}) };
 }
 /**
  * Reserva atômica. Duas solicitações disputando o mesmo saldo devem competir
@@ -84,12 +95,27 @@ function criarLivroRazaoIa(db) {
                 return { plano, cicloExpiraEm: ciclo, limiteMicroBrl, gastoMicroBrl, reservadoMicroBrl };
             });
         },
-        async reservar({ email, operacaoId, reservaMicroBrl }) {
+        /** Extrato do ciclo ativo; apenas operações liquidadas, sem prompts ou custo em BRL. */
+        async listarExtrato(email, limite = 20) {
+            if (!Number.isSafeInteger(limite) || limite < 1 || limite > 40) {
+                throw new OrcamentoIaIndisponivel('CONSULTA_INVALIDA');
+            }
+            const { cicloExpiraEm } = await this.consultar(email);
+            const usuario = email.trim().toLowerCase();
+            const idCiclo = sha(usuario + '|' + cicloExpiraEm);
+            const snapshot = await orcamentos.doc(idCiclo)
+                .collection('extrato').orderBy('criadoEm', 'desc').limit(limite).get();
+            return snapshot.docs.map(doc => doc.data()).filter((v) => !!v && typeof v.id === 'string' && typeof v.criadoEm === 'string'
+                && typeof v.creditos === 'number' && microValido(v.creditos)
+                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload'));
+        },
+        async reservar({ email, operacaoId, reservaMicroBrl, contexto }) {
             const emailNormalizado = String(email || '').trim().toLowerCase();
             if (!emailNormalizado.includes('@') || emailNormalizado.length > 254
                 || !operacaoId || operacaoId.length > 160 || !microValido(reservaMicroBrl) || reservaMicroBrl === 0) {
                 throw new OrcamentoIaIndisponivel('RESERVA_INVALIDA');
             }
+            const contextoValidado = validarContexto(contexto);
             const userRef = usuarios.doc(emailNormalizado);
             return db.runTransaction(async (tx) => {
                 const usuario = await tx.get(userRef);
@@ -112,7 +138,8 @@ function criarLivroRazaoIa(db) {
                 const reservadoMicroBrl = lerSaldo(ledger.reservadoMicroBrl);
                 if (reciboSnap.exists) {
                     const r = reciboSnap.data();
-                    if (!r || r.ledgerId !== ledgerId || r.reservaMicroBrl !== reservaMicroBrl) {
+                    if (!r || r.ledgerId !== ledgerId || r.reservaMicroBrl !== reservaMicroBrl
+                        || JSON.stringify(r.contexto) !== JSON.stringify(contextoValidado)) {
                         throw new OrcamentoIaIndisponivel('RECIBO_INCOMPATIVEL');
                     }
                     return { status: r.status, reciboId, limiteMicroBrl, gastoMicroBrl, reservadoMicroBrl };
@@ -125,12 +152,13 @@ function criarLivroRazaoIa(db) {
                     limiteMicroBrl, gastoMicroBrl,
                     reservadoMicroBrl: reservadoMicroBrl + reservaMicroBrl,
                 });
-                tx.set(reciboRef, { status: 'reservado', ledgerId, reservaMicroBrl });
+                tx.set(reciboRef, { status: 'reservado', ledgerId, reservaMicroBrl,
+                    ...(contextoValidado ? { contexto: contextoValidado, criadoEm: new Date().toISOString() } : {}) });
                 return { status: 'reservado', reciboId, limiteMicroBrl,
                     gastoMicroBrl, reservadoMicroBrl: reservadoMicroBrl + reservaMicroBrl };
             });
         },
-        async liquidar({ reciboId, custoRealMicroBrl }) {
+        async liquidar({ reciboId, custoRealMicroBrl, estimado = false }) {
             if (!idReciboValido(reciboId) || !microValido(custoRealMicroBrl)) {
                 throw new OrcamentoIaIndisponivel('LIQUIDACAO_INVALIDA');
             }
@@ -156,6 +184,17 @@ function criarLivroRazaoIa(db) {
                     gastoMicroBrl: gasto + custoRealMicroBrl,
                     reservadoMicroBrl: reservado - recibo.reservaMicroBrl });
                 tx.set(reciboRef, { ...recibo, status: 'liquidado', custoRealMicroBrl });
+                if (recibo.contexto && recibo.criadoEm) {
+                    const creditos = (0, aiCreditsV2_1.converterCustoEmCreditosV2)(custoRealMicroBrl);
+                    if (creditos === null)
+                        throw new OrcamentoIaIndisponivel('ORCAMENTO_CORROMPIDO');
+                    const lancamento = {
+                        id: reciboId, ...recibo.contexto, criadoEm: recibo.criadoEm,
+                        liquidadoEm: new Date().toISOString(), creditos, estimado,
+                    };
+                    // Lançamento e gasto formam uma ÚNICA transação idempotente.
+                    tx.set(ledgerRef.collection('extrato').doc(reciboId), lancamento);
+                }
                 return 'liquidado';
             });
         },
