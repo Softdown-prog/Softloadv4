@@ -132,7 +132,6 @@ function criarModelRouter(clientFactory = getClient) {
                 },
             };
         },
-
         // Mesmo modelo Flash em streaming — async generator, cede cada
         // trecho de texto assim que o Gemini gera (mesmo padrão de
         // src/services/geminiService.js:gerarChatStream). Uso EXCLUSIVO:
