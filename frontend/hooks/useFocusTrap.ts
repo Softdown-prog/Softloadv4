@@ -28,7 +28,7 @@ export default function useFocusTrap(containerRef: RefObject<HTMLElement | null>
             }
             if (e.key !== 'Tab') return;
 
-            const itens = elementosFocaveis(container);
+            const itens = elementosFocaveis(container!);
             if (itens.length === 0) return;
             const primeiro = itens[0];
             const ultimo = itens[itens.length - 1];
