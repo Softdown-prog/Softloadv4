@@ -1,6 +1,7 @@
 'use strict';
-const express         = require('express');
-const router          = express.Router();
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require('express');
+const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard');
 
 // Home do dashboard — antes renderizava 'pages/dashboard' (EJS/Bootstrap

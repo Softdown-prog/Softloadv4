@@ -1,6 +1,7 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
-const router  = express.Router();
+const router = express.Router();
 
 router.use(require('./home'));
 router.use(require('./compiler'));

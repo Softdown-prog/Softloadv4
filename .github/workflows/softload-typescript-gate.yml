@@ -181,6 +181,8 @@ jobs:
         run: node --test src/services/errorLogWorker.contract.test.js
       - name: Verificar guards de acesso e rotas do dashboard migradas (sem rede)
         run: node --test src/middlewares/backendMigration.contract.test.js src/routes/dashboard_routes/backendMigration.contract.test.js
+      - name: Testar entradas do dashboard e historico do chat sem dependencias externas
+        run: node --test src/routes/dashboard_routes/dashboardEntries.contract.test.js src/routes/api_routes/appConfig.contract.test.js src/routes/dashboard_routes/chat/chatHistory.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

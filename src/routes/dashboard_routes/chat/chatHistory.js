@@ -1,4 +1,5 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 
 // ──────────────────────────────────────────────────────────────────────────
 // montarHistoricoSeguro — corta o histórico do cliente pro tamanho aceito
