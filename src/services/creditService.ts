@@ -103,10 +103,10 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
 // Créditos Gemini por plano por ciclo de 30 dias
 export const PLAN_CREDITS: Record<string, number> = {
     free:    5,
-    starter: 500,
-    pro:     2000,
-    studio:  5500,
-    premium: 2000, // backward compat — usuários existentes com plano='premium'
+    starter: 150,
+    pro:     600,
+    studio:  1200,
+    premium: 600, // backward compat — usuários existentes com plano='premium'
 };
 
 // Provedor externo temporariamente sem orçamento de API.
@@ -124,10 +124,10 @@ export const GPT_PLAN_CREDITS: Record<string, number> = {
 // Free = 0 (gerador exige plano pago)
 export const BLOGGERAI_PLAN_CREDITS: Record<string, number> = {
     free:    0,
-    starter: 500,
-    premium: 2000,
-    pro:     2000,
-    studio:  5500,
+    starter: 150,
+    premium: 600,
+    pro:     600,
+    studio:  1200,
 };
 
 export function calcularCreditos(inputTokens: number, outputTokens: number): number {

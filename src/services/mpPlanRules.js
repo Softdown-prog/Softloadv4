@@ -7,7 +7,7 @@ exports.approvedPlanForPayment = approvedPlanForPayment;
  * Mantém os preços em centavos, a tolerância numérica histórica e a exigência
  * de status 'approved' e moeda BRL; não realiza chamadas ao Mercado Pago.
  */
-exports.PRICES_CENTS = Object.freeze({ starter: 4900, pro: 11900, studio: 24900 });
+exports.PRICES_CENTS = Object.freeze({ starter: 2990, pro: 3990, studio: 5990 });
 /** Retorna o plano recebido somente se o valor aprovado corresponder ao plano pendente. */
 function approvedPlanForPayment(payment, pendingPlan) {
     if (!Object.hasOwn(exports.PRICES_CENTS, pendingPlan))

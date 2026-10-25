@@ -103,8 +103,8 @@ function harness(initial = {}) {
 
 test('planos e cálculo dos créditos permanecem iguais, GPT sem novas cotas', () => {
     const {api}=harness();
-    assert.deepEqual({...api.PLAN_CREDITS},{free:5,starter:500,pro:2000,studio:5500,premium:2000});
-    assert.deepEqual({...api.BLOGGERAI_PLAN_CREDITS},{free:0,starter:500,premium:2000,pro:2000,studio:5500});
+    assert.deepEqual({...api.PLAN_CREDITS},{free:5,starter:150,pro:600,studio:1200,premium:600});
+    assert.deepEqual({...api.BLOGGERAI_PLAN_CREDITS},{free:0,starter:150,premium:600,pro:600,studio:1200});
     assert.deepEqual({...api.GPT_PLAN_CREDITS},{free:0,starter:0,pro:0,studio:0,premium:0});
     assert.equal(api.calcularCreditos(0,0),0);
     assert.equal(api.calcularCreditos(999,0),1);
@@ -116,11 +116,11 @@ test('concessão Gemini faz update com email em minúsculas e 30 dias de expira�
     const h=harness({[KEY]:{creditos:4}});
     const before=Date.now();
     const r=await h.api.concederCreditos(EMAIL,'starter');
-    assert.equal(r.creditos,500);
+    assert.equal(r.creditos,150);
     assert.equal(h.calls.writes.length,1);
     assert.equal(h.calls.writes[0].op,'update');
     assert.equal(h.calls.writes[0].key,KEY);
-    assert.equal(h.calls.writes[0].data.creditos_ciclo_total,500);
+    assert.equal(h.calls.writes[0].data.creditos_ciclo_total,150);
     assert.equal(h.calls.writes[0].data.creditos_expira_em,r.expira_em);
     assert.ok(Date.parse(r.expira_em)>=before+29*864e5);
     assert.ok(Date.parse(r.expira_em)<=Date.now()+31*864e5);
@@ -137,10 +137,10 @@ test('GPT sem orçamento não cria cotas; BloggerAI usa set com merge, gratuito 
     assert.equal(free.creditos,0);
     assert.equal(h.calls.writes.length,0);
     const paid=await h.api.concederCreditosBloggerAi(EMAIL,'pro');
-    assert.equal(paid.creditos,2000);
+    assert.equal(paid.creditos,600);
     assert.equal(h.calls.writes[0].op,'set');
     assert.equal(h.calls.writes[0].options.merge,true);
-    assert.equal(h.calls.writes[0].data.creditos_bloggerai,2000);
+    assert.equal(h.calls.writes[0].data.creditos_bloggerai,600);
     assert.equal(h.calls.writes[0].key,KEY);
 });
 

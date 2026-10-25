@@ -3,7 +3,7 @@
  * Mantém os preços em centavos, a tolerância numérica histórica e a exigência
  * de status 'approved' e moeda BRL; não realiza chamadas ao Mercado Pago.
  */
-export const PRICES_CENTS = Object.freeze({ starter: 4900, pro: 11900, studio: 24900 });
+export const PRICES_CENTS = Object.freeze({ starter: 2990, pro: 3990, studio: 5990 });
 export type PlanCode = keyof typeof PRICES_CENTS;
 
 export interface PaymentForPlanApproval {

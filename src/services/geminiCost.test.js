@@ -36,5 +36,5 @@ test('soma os tokens de pensamento e reconhece cache nas respostas do SDK', () =
 });
 
 test('limites V2 refletem os créditos já divulgados no checkout, sem alterar preços', () => {
-  assert.deepEqual({...TETOS_IA_EXPERIMENTAIS_CENTAVOS},{free:5,starter:500,pro:2000,studio:5500});
+  assert.deepEqual({...TETOS_IA_EXPERIMENTAIS_CENTAVOS},{free:5,starter:150,pro:600,studio:1200});
 });

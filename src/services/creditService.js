@@ -55,10 +55,10 @@ async function recuperarCobrancasPendentes(maxResults = 25) {
 // Créditos Gemini por plano por ciclo de 30 dias
 exports.PLAN_CREDITS = {
     free: 5,
-    starter: 500,
-    pro: 2000,
-    studio: 5500,
-    premium: 2000, // backward compat — usuários existentes com plano='premium'
+    starter: 150,
+    pro: 600,
+    studio: 1200,
+    premium: 600, // backward compat — usuários existentes com plano='premium'
 };
 // Provedor externo temporariamente sem orçamento de API.
 // Manter o contrato para registros legados, mas não conceder novas cotas.
@@ -74,10 +74,10 @@ exports.GPT_PLAN_CREDITS = {
 // Free = 0 (gerador exige plano pago)
 exports.BLOGGERAI_PLAN_CREDITS = {
     free: 0,
-    starter: 500,
-    premium: 2000,
-    pro: 2000,
-    studio: 5500,
+    starter: 150,
+    premium: 600,
+    pro: 600,
+    studio: 1200,
 };
 function calcularCreditos(inputTokens, outputTokens) {
     return Math.ceil((inputTokens + outputTokens) / TOKENS_POR_CREDITO);

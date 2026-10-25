@@ -53,9 +53,9 @@ const PLANOS: Plan[] = [
     {
         id: 'starter',
         nome: 'Starter',
-        preco: 'R$ 49',
+        preco: 'R$ 29,90',
         periodo: '/mês',
-        creditos: '500 créditos Gemini / mês',
+        creditos: '150 créditos Gemini / mês',
         cor: '#a78bfa',
         recursos: [
             { texto: 'Chat IA Especialista completo', ok: true },
@@ -67,9 +67,9 @@ const PLANOS: Plan[] = [
     {
         id: 'pro',
         nome: 'Pro',
-        preco: 'R$ 119',
+        preco: 'R$ 39,90',
         periodo: '/mês',
-        creditos: '2.000 créditos Gemini / mês',
+        creditos: '600 créditos Gemini / mês',
         cor: 'var(--sl-primary)',
         recursos: [
             { texto: 'Chat IA Especialista completo', ok: true },
@@ -81,9 +81,9 @@ const PLANOS: Plan[] = [
     {
         id: 'studio',
         nome: 'Studio',
-        preco: 'R$ 249',
+        preco: 'R$ 59,90',
         periodo: '/mês',
-        creditos: '5.500 créditos Gemini / mês',
+        creditos: '1.200 créditos Gemini / mês',
         cor: 'var(--sl-primary)',
         destaque: true,
         recursos: [

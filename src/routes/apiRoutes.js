@@ -4,7 +4,7 @@ const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const { db } = require('../services/firebase');
 const { PLAN_CREDITS, GPT_PLAN_CREDITS, BLOGGERAI_PLAN_CREDITS } = require('../services/creditService');
-const { approvedPlanForPayment } = require('../services/mpPlanRules');
+const { approvedPlanForPayment, PRICES_CENTS } = require('../services/mpPlanRules');
 const { STORAGE_LIMITS_MB }               = require('../services/storageService');
 const { enviarPlanoAtivado }              = require('../services/emailService');
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago');
@@ -110,9 +110,9 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         }
 
         const PLANOS = {
-            starter: { titulo: 'Plano Starter — Softload Engine', preco:  49.00, creditos: PLAN_CREDITS.starter },
-            pro:     { titulo: 'Plano Pro — Softload Engine',     preco: 119.00, creditos: PLAN_CREDITS.pro },
-            studio:  { titulo: 'Plano Studio — Softload Engine',  preco: 249.00, creditos: PLAN_CREDITS.studio },
+            starter: { titulo: 'Plano Starter — Softload Engine', preco: PRICES_CENTS.starter / 100, creditos: PLAN_CREDITS.starter },
+            pro:     { titulo: 'Plano Pro — Softload Engine',     preco: PRICES_CENTS.pro / 100, creditos: PLAN_CREDITS.pro },
+            studio:  { titulo: 'Plano Studio — Softload Engine',  preco: PRICES_CENTS.studio / 100, creditos: PLAN_CREDITS.studio },
         };
 
         if (!PLANOS[plano]) {
