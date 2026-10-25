@@ -34,6 +34,8 @@
     "frontend/components/CookieConsent.tsx",
     "frontend/components/landing/CapabilityChecklist.tsx",
     "frontend/components/admin/DonutChart.tsx",
+    "frontend/components/admin/BillingRecoveryPanel.tsx",
+    "frontend/services/billingRecovery.ts",
     "frontend/components/settings/AcessibilidadeTab.tsx",
     "frontend/components/CodeBlock.tsx",
     "frontend/components/MermaidBlock.tsx",

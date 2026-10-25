@@ -5,6 +5,7 @@ import {
     ShieldAlert, Bug, RefreshCw, Stars, CircleCheckBig, CircleX,
 } from 'lucide-react';
 import DonutChart from '../../components/admin/DonutChart';
+import BillingRecoveryPanel from '../../components/admin/BillingRecoveryPanel';
 import type { AppUser } from '../../services/api';
 interface AdminKpis { totalUsuarios: number; totalPremium: number; totalFree: number; receitaEstimada: number | string; storageTotal: number; compilacoesTotal: number; expirando7dias: number }
 interface AdminApiStatus { chave: boolean; modelo?: string; uso?: string; status?: string }
@@ -190,6 +191,9 @@ export default function AdminDashboard(): React.JSX.Element {
                     </div>
                 </div>
             )}
+
+            {/* Recuperação de créditos: métricas do último ciclo, sem dados pessoais */}
+            <BillingRecoveryPanel />
 
             {/* Links rápidos: Workers */}
             <div className="row g-3 mb-4">

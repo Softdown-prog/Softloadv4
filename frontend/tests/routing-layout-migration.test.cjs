@@ -60,6 +60,7 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/components/CookieConsent.tsx',
     'frontend/components/landing/CapabilityChecklist.tsx',
     'frontend/components/admin/DonutChart.tsx',
+    'frontend/components/admin/BillingRecoveryPanel.tsx',
     'frontend/components/settings/AcessibilidadeTab.tsx',
     'frontend/components/CodeBlock.tsx',
     'frontend/components/MermaidBlock.tsx',
@@ -244,6 +245,7 @@ test('dashboard admin em TSX preserva KPIs, saude e auditoria', () => {
   assert.ok(src.includes('setInterval(carregarSaude, 60000)'));
   assert.ok(src.includes('useState<AdminKpis | null>'));
   assert.ok(src.includes('<DonutChart data={['));
+  assert.ok(src.includes('<BillingRecoveryPanel />'));
 });
 
 test('administracao de usuarios em TSX preserva paginacao, quotas e focus traps', () => {
