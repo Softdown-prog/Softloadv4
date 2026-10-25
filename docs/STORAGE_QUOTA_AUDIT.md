@@ -88,3 +88,52 @@ dentro do lock para não perder a atualização de duas sessões simultâneas.
 Os testes simulam regravações, variação negativa de tamanho, sessões distintas,
 atualizações paralelas de memória, perda de ACK e falha do GCS. Nenhum teste toca
 armazenamento ou Firestore reais.
+
+
+## Etapa 76 — exclusão de sessões e devolução de cota
+
+A exclusão de sessões dos endpoints `DELETE /api/chat/sessions/:sessionId`
+e `DELETE /eu/api/sol/sessions/:sessionId` agora recebe o mesmo contexto
+`{email, plano}` utilizado no salvamento.
+
+Para chamadas com cota, `deleteSession` obtém o lock
+`chat_storage_bloqueios` do tipo de sessão, observa os bytes de três
+objetos (sessão, `_index.json`, `latest.json`), exclui a sessão, regrava
+o índice somente quando ele realmente mudou e remove `latest.json` apenas
+se a referência apontava para a sessão excluída.
+
+A devolução de espaço **não é presumida**: as operações de GCS são
+aguardadas com `Promise.allSettled` e os bytes atuais são relidos antes
+da transação de cota. O mesmo registro `storage_cota_arquivos` da etapa
+75 é atualizado atomicamente com `storage_usado_mb`. Se uma operação
+falhar depois de excluir parte dos objetos, a devolução só abrange o que
+foi realmente removido e o erro original continua visível para permitir
+repetir a exclusão restante.
+
+Ao solicitar `apenasCreditosRastreados`, arquivos legados que não tinham
+registro em `storage_cota_arquivos` não geram créditos negativos com base
+apenas no tamanho antigo. Essa proteção evita reduzir indevidamente um
+saldo que pode ter sido inflado antes da etapa 75. Uma regravação que
+aumentar um arquivo não rastreado ainda pode debitar apenas o acréscimo,
+seguindo a política de compatibilidade da etapa 75.
+
+Se um delete() concluir mas perder o ACK, uma leitura 404 confirma que o
+objeto já desapareceu. Exclusões repetidas devolvem **zero bytes adicionais**
+porque a transação já registrou o novo tamanho. A variante sem `cota`
+permanece disponível para chamadores legados, mas não realiza devolução.
+
+### Limites
+
+- Arquivos legados sem tracker exigem reconciliação auditada para corrigir
+  saldos antigos; nunca calcular créditos retroativos apenas por exclusões.
+- A primeira falha de leitura GCS depois de uma exclusão pode impedir a
+  reconciliação imediata. Repetir a operação com GCS disponível a completa.
+- GCS e Firestore não oferecem transação distribuída. Nunca remover a
+  coleção de rastreamento, ou aplicar TTL automático, sem política de
+  reconciliação e idempotência.
+- O histórico dos projetos Solaris anexados é removido por rotina
+  independente (`apagarProjeto`), já protegida por recibos de cota.
+
+Os testes usam GCS/Firestore simulados e cobrem latest/índice, sessões
+antigas, exclusão repetida, erro parcial, ACK perdido, saldo legado e
+compatibilidade sem cota.

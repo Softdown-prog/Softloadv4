@@ -226,7 +226,10 @@ router.delete('/api/chat/sessions/:sessionId', exigirLogin, async (req, res) => 
     const type      = req.query.type || 'chat-suporte';
     const { sessionId } = req.params;
     try {
-        await chatStorage.deleteSession(uid, type, sessionId);
+        await chatStorage.deleteSession(uid, type, sessionId, {
+            email: req.session.user.email,
+            plano: req.session.user?.plano || 'free',
+        });
 
         // Sessão do Solaris apagada pode ter um projeto anexado
         // (tools/projectStorage.js, chave = sessionId) — sem isso o projeto

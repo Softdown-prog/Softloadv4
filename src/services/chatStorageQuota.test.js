@@ -6,7 +6,7 @@ const Module=require('node:module');
 const path=require('node:path');
 
 const docs=new Map(),gcs=new Map();
-let seq=0,loseTxAck=false,loseGcsAck=null,failWrite=null;
+let seq=0,loseTxAck=false,loseGcsAck=null,failWrite=null,failDeletePath=null,loseDeleteAck=null;
 const EMAIL='test@example.com',UID='user-test';
 const key=(a,b)=>a+'/'+b;
 function ref(collection,id) {
@@ -69,7 +69,14 @@ const bucket={
                     throw Error('GCS acknowledgement lost');
                 }
             },
-            async delete(){gcs.delete(name);},
+            async delete(){
+                if(failDeletePath===name) throw Error('GCS delete rejected');
+                gcs.delete(name);
+                if(loseDeleteAck===name) {
+                    loseDeleteAck=null;
+                    throw Error('GCS delete acknowledgement lost');
+                }
+            },
         };
     },
 };
@@ -100,7 +107,7 @@ function quotaBytes() {
 function physicalBytes(){
     return [...gcs.entries()].reduce((sum,[name,content])=>name.startsWith('users/'+UID+'/')?sum+content.length:sum,0);
 }
-function reset() {docs.clear();gcs.clear();seq=0;loseTxAck=false;loseGcsAck=null;failWrite=null;}
+function reset() {docs.clear();gcs.clear();seq=0;loseTxAck=false;loseGcsAck=null;failWrite=null;failDeletePath=null;loseDeleteAck=null;}
 const session=(message)=>({messages:[{role:'user',content:message}],tokens:{total:0,input:0,output:0},meta:{}});
 const file=(p)=>gcs.get(p)?.toString('utf8');
 
@@ -196,4 +203,109 @@ test('gravações sem cota continuam disponíveis para chamadas legadas',async()
     assert.equal(quotaBytes(),0);
     assert.ok(physicalBytes()>0);
     assert.equal(await chat.loadMemory(UID).then(x=>x.notes),'sem cota');
+});
+
+test('exclusão de sessão mais recente devolve o espaço real e remove latest', async()=>{
+    reset();
+    await chat.saveSession(UID,'solaris-chat','alpha',session('primeira'),cota);
+    await chat.saveSession(UID,'solaris-chat','beta',session('segunda'),cota);
+    await chat.deleteSession(UID,'solaris-chat','beta',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+    assert.equal(await chat.loadSession(UID,'solaris-chat','beta'),null);
+    assert.deepEqual((await chat.listSessions(UID,'solaris-chat')).map(s=>s.sessionId),['alpha']);
+    assert.equal(file('users/'+UID+'/sessions/solaris-chat/latest.json'),undefined);
+});
+
+test('exclusão de sessão antiga preserva latest de outra sessão',async()=>{
+    reset();
+    await chat.saveSession(UID,'workspace-chat','older',session('antiga'),cota);
+    await chat.saveSession(UID,'workspace-chat','newer',session('nova'),cota);
+    const latestBefore=file('users/'+UID+'/sessions/workspace-chat/latest.json');
+    await chat.deleteSession(UID,'workspace-chat','older',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+    assert.equal(file('users/'+UID+'/sessions/workspace-chat/latest.json'),latestBefore);
+    assert.deepEqual((await chat.listSessions(UID,'workspace-chat')).map(s=>s.sessionId),['newer']);
+});
+
+test('excluir duas vezes não libera cota em duplicidade',async()=>{
+    reset();
+    await chat.saveSession(UID,'chat-suporte','repeat',session('uma sessão'),cota);
+    await chat.deleteSession(UID,'chat-suporte','repeat',cota);
+    const after=quotaBytes();
+    await chat.deleteSession(UID,'chat-suporte','repeat',cota);
+    assert.equal(quotaBytes(),after);
+    assert.equal(quotaBytes(),physicalBytes());
+});
+
+test('falha parcial de exclusão credita somente objetos realmente removidos',async()=>{
+    reset();
+    await chat.saveSession(UID,'sol','a',session('um'),cota);
+    await chat.saveSession(UID,'sol','b',session('dois'),cota);
+    const index='users/'+UID+'/sessions/sol/_index.json';
+    failWrite=index;
+    await assert.rejects(chat.deleteSession(UID,'sol','b',cota),/GCS write rejected/);
+    assert.equal(quotaBytes(),physicalBytes());
+    assert.equal(await chat.loadSession(UID,'sol','b'),null);
+    assert.equal((await chat.listSessions(UID,'sol')).length,2);
+    failWrite=null;
+    await chat.deleteSession(UID,'sol','b',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+    assert.equal((await chat.listSessions(UID,'sol')).length,1);
+});
+
+test('ACK de exclusão GCS perdido é verificado por 404 e não duplica crédito',async()=>{
+    reset();
+    await chat.saveSession(UID,'sol','ack',session('persistida'),cota);
+    loseDeleteAck='users/'+UID+'/sessions/sol/ack.json';
+    await chat.deleteSession(UID,'sol','ack',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+    await chat.deleteSession(UID,'sol','ack',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+});
+
+test('erro de delete antes da remoção preserva débito e permite retry',async()=>{
+    reset();
+    await chat.saveSession(UID,'workspace-chat','blocked',session('texto'),cota);
+    const sessionFile='users/'+UID+'/sessions/workspace-chat/blocked.json';
+    failDeletePath=sessionFile;
+    await assert.rejects(chat.deleteSession(UID,'workspace-chat','blocked',cota),/GCS delete rejected/);
+    assert.equal(quotaBytes(),physicalBytes());
+    assert.ok(gcs.has(sessionFile));
+    failDeletePath=null;
+    await chat.deleteSession(UID,'workspace-chat','blocked',cota);
+    assert.equal(quotaBytes(),physicalBytes());
+});
+
+test('ACK da transação de crédito perdido não permite devolução duplicada',async()=>{
+    reset();
+    await chat.saveSession(UID,'chat-suporte','ack-tx',session('hello'),cota);
+    loseTxAck=true;
+    await assert.rejects(chat.deleteSession(UID,'chat-suporte','ack-tx',cota),/Firestore acknowledgement lost/);
+    const charged=quotaBytes();
+    assert.equal(charged,physicalBytes());
+    await chat.deleteSession(UID,'chat-suporte','ack-tx',cota);
+    assert.equal(quotaBytes(),charged);
+});
+
+test('exclusão de sessão legada sem tracker nunca cria crédito presumido',async()=>{
+    reset();
+    const base='users/'+UID+'/sessions/sol/';
+    gcs.set(base+'old.json',Buffer.from(JSON.stringify({sessionId:'old',messages:[]})));
+    gcs.set(base+'_index.json',Buffer.from(JSON.stringify([{sessionId:'old'}])));
+    gcs.set(base+'latest.json',Buffer.from(JSON.stringify({sessionId:'old'})));
+    const previouslyUsed=3000;
+    docs.set('clientes_premium/'+EMAIL,{data:{storage_usado_mb:previouslyUsed/(1024*1024)},revision:++seq});
+    await chat.deleteSession(UID,'sol','old',cota);
+    assert.equal(quotaBytes(),previouslyUsed);
+    assert.equal(physicalBytes(),2); // remaining _index.json is []
+    await chat.deleteSession(UID,'sol','old',cota);
+    assert.equal(quotaBytes(),previouslyUsed);
+});
+
+test('chamadores antigos sem cota continuam podendo excluir sessão',async()=>{
+    reset();
+    await chat.saveSession(UID,'sol','legacy',session('sem cota'));
+    await chat.deleteSession(UID,'sol','legacy');
+    assert.equal(await chat.loadSession(UID,'sol','legacy'),null);
+    assert.equal(quotaBytes(),0);
 });

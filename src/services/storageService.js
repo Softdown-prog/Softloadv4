@@ -139,7 +139,7 @@ async function liberarCota(email, tamanhoBytes, operacaoId, trackingMutacao) {
  * lost after commit cannot double-charge a replay of the same objects.
  * Callers MUST serialize writes to these paths across processes.
  */
-async function reconciliarCotaArquivos(email, plano, uid, alteracoes) {
+async function reconciliarCotaArquivos(email, plano, uid, alteracoes, { apenasCreditosRastreados = false } = {}) {
     const emailKey = (email || '').toLowerCase();
     if (!emailKey || typeof uid !== 'string' || !uid || !Array.isArray(alteracoes) || alteracoes.length === 0) {
         throw new TypeError('Reconciliacao de quota exige email, uid e arquivos.');
@@ -162,8 +162,16 @@ async function reconciliarCotaArquivos(email, plano, uid, alteracoes) {
         // All reads precede any write, as required by Firestore transactions.
         const snapshots = await Promise.all(items.map(item => tx.get(item.ref)));
         const user = await tx.get(userRef);
-        const deltaBytes = items.reduce((sum, item, i) =>
-            sum + item.bytesDepois - (snapshots[i].exists ? snapshots[i].data().bytes : item.bytesAntes), 0);
+        const deltaBytes = items.reduce((sum, item, i) => {
+            const antigo = snapshots[i].exists ? snapshots[i].data().bytes : item.bytesAntes;
+            if (!Number.isSafeInteger(antigo) || antigo < 0) {
+                throw new Error('Registro de cota com tamanho invalido.');
+            }
+            const delta = item.bytesDepois - antigo;
+            // Legacy files without a tracked baseline may already be overcharged.
+            // A deletion must never grant guessed credit for those old bytes.
+            return sum + (apenasCreditosRastreados && !snapshots[i].exists && delta < 0 ? 0 : delta);
+        }, 0);
         if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Diferenca de armazenamento fora do limite.');
         const oldMb = user.exists ? (user.data().storage_usado_mb || 0) : 0;
         if (deltaBytes > 0) verificarCota(oldMb, deltaBytes, limiteMb);

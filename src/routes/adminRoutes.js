@@ -412,7 +412,10 @@ router.get('/eu/api/sol/sessions/:sessionId', exigirSuperAdmin, async (req, res)
 
 router.delete('/eu/api/sol/sessions/:sessionId', exigirSuperAdmin, async (req, res) => {
     try {
-        await chatStorage.deleteSession(req.session.user.uid, SOL_SESSION_TYPE, req.params.sessionId);
+        await chatStorage.deleteSession(req.session.user.uid, SOL_SESSION_TYPE, req.params.sessionId, {
+            email: req.session.user.email,
+            plano: req.session.user?.plano || 'free',
+        });
         res.json({ sucesso: true });
     } catch (err) {
         console.error('[ADMIN] Erro ao remover sessão do Sol:', err.message);

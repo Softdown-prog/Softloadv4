@@ -164,6 +164,24 @@ async function withChatLock(uid, scope, callback) {
     }
 }
 
+/**
+ * A DELETE may remove the GCS object and lose its acknowledgement.
+ * A 404 on read-back confirms removal; other failures stay visible.
+ */
+async function deleteGcsVerified(filePath) {
+    try {
+        await bucket.file(filePath).delete({ ignoreNotFound: true });
+    } catch (error) {
+        try {
+            await bucket.file(filePath).download();
+        } catch (readError) {
+            if (readError.code === 404 || readError.message?.includes('No such object')) return;
+            console.error('[CHAT-STORAGE] exclusão incerta; exige reconciliação:', filePath, readError);
+        }
+        throw error;
+    }
+}
+
 async function verifyWrites(entries) {
     // Wait for every write to settle before releasing the cross-process lock.
     const results = await Promise.allSettled(entries.map(item => writeGcsVerified(item.path, item.value)));
@@ -265,7 +283,48 @@ async function listSessions(uid, type) {
  * @param {string} type
  * @param {string} sessionId
  */
-async function deleteSession(uid, type, sessionId) {
+async function deleteSession(uid, type, sessionId, cota = null) {
+    if (cota) {
+        return withChatLock(uid, `sessions:${type}`, async () => {
+            const sessionFile = sessionPath(uid, type, sessionId);
+            const idxFile = indexPath(uid, type);
+            const latestFile = latestRefPath(uid, type);
+            const paths = [sessionFile, idxFile, latestFile];
+            const before = await Promise.all(paths.map(readGcsSized));
+
+            const existingIndex = before[1].value;
+            const newIndex = Array.isArray(existingIndex)
+                ? existingIndex.filter(item => item.sessionId !== sessionId)
+                : [];
+            const latestIsTarget = before[2].value?.sessionId === sessionId;
+            const ops = [];
+
+            // Do not fabricate index/latest objects when removing an already
+            // absent session. The first deletion must be safe to retry.
+            if (before[0].bytes) ops.push(deleteGcsVerified(sessionFile));
+            if (Array.isArray(existingIndex) && newIndex.length !== existingIndex.length) {
+                ops.push(writeGcsVerified(idxFile, newIndex));
+            }
+            if (latestIsTarget) ops.push(deleteGcsVerified(latestFile));
+
+            // A failure in one operation must not leave another in flight when
+            // the lock is released. Account for successfully changed objects
+            // even when another deletion failed; retry handles the remainder.
+            const results = await Promise.allSettled(ops);
+            const after = await Promise.all(paths.map(readGcsSized));
+            await reconciliarCotaArquivos(cota.email, cota.plano, uid,
+                paths.map((path, i) => ({
+                    path,
+                    bytesAntes: before[i].bytes,
+                    bytesDepois: after[i].bytes,
+                })), { apenasCreditosRastreados: true });
+
+            const failed = results.find(result => result.status === 'rejected');
+            if (failed) throw failed.reason;
+        });
+    }
+
+    // Legacy callers without cota retain the previous behaviour.
     const [index, latestRef] = await Promise.all([
         readGcs(indexPath(uid, type)),
         readGcs(latestRefPath(uid, type)),
@@ -274,18 +333,13 @@ async function deleteSession(uid, type, sessionId) {
     const ops = [
         bucket.file(sessionPath(uid, type, sessionId)).delete({ ignoreNotFound: true }),
     ];
-
-    // Actualiza o índice removendo a entrada
     const newIndex = Array.isArray(index)
-        ? index.filter(e => e.sessionId !== sessionId)
+        ? index.filter(entry => entry.sessionId !== sessionId)
         : [];
     ops.push(writeGcs(indexPath(uid, type), newIndex));
-
-    // Remove latest.json se apontava para a sessão deletada
     if (latestRef?.sessionId === sessionId) {
         ops.push(bucket.file(latestRefPath(uid, type)).delete({ ignoreNotFound: true }));
     }
-
     await Promise.all(ops);
 }
 
