@@ -15,7 +15,10 @@ const { criarSolarisChat } = require('../../solaris/chat/solarisChat');
 const { detectarMarcador, removerMarcadorTruncado } = require('../../solaris/chat/solarisGenerationTrigger');
 const { criarOrquestrador } = require('../../solaris/pipeline/orchestrator');
 const { buscarConhecimentoMisto } = require('../../../scripts/codeCorpus/codeSearchService');
-const { criarModelRouter }  = require('../../solaris/llm/modelRouter');
+const { criarModelRouter, MODEL_PRO } = require('../../solaris/llm/modelRouter');
+const { criarLivroRazaoIa } = require('../../services/aiBudgetLedger');
+const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGeminiClient');
+const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
 const { inspecionarProjeto } = require('../../solaris/pipeline/projectInspector');
 const { responderOuEditarProjeto } = require('../../solaris/pipeline/projectEditor');
@@ -58,6 +61,34 @@ const solarisChat = criarSolarisChat({ buscarConhecimento });
 const modelRouter  = criarModelRouter();
 const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 
+// A reserva financeira é ativada SOMENTE por opção explícita na VPS.
+// Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
+const livroOrcamento = criarLivroRazaoIa(db);
+function dependenciasPorRequisicao(req) {
+    if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
+        return { modelRouter, solarisChat, orquestrador };
+    }
+    // Identidade vem da sessão validada por exigirLogin, jamais do body HTTP.
+    const email = req.session?.user?.email;
+    if (!email) {
+        const erro = new Error('Sessão expirada. Faça login novamente.');
+        erro.status = 401;
+        throw erro;
+    }
+    const protegida = criarClienteGeminiComOrcamento(() => {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('[SOLARIS-LLM] GEMINI_API_KEY não configurada no ambiente.');
+        }
+        return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    }, { email, livro: livroOrcamento, modeloPro: MODEL_PRO });
+    const routerUsuario = criarModelRouter(protegida);
+    return {
+        modelRouter: routerUsuario,
+        solarisChat: criarSolarisChat({ modelRouter: routerUsuario, buscarConhecimento }),
+        orquestrador: criarOrquestrador({ modelRouter: routerUsuario, buscarConhecimento }),
+    };
+}
+
 let solarisAgent = null;
 async function getSolarisAgent() {
     if (!solarisAgent) {
@@ -80,11 +111,19 @@ router.get('/dashboard/solaris', exigirLogin, (req, res) => {
 // real (Fase 2) via solarisChat.perguntarStream — cada trecho de texto
 // do Gemini vira um evento "chunk" assim que chega.
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarSaldo, criarHandlerChatSolaris({
+const depsChatSolaris = {
     chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador,
     carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo,
     criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador,
-}));
+};
+const chatSolarisSemOrcamento = criarHandlerChatSolaris(depsChatSolaris);
+router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarSaldo, (req, res) => {
+    if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
+        return chatSolarisSemOrcamento(req, res);
+    }
+    const deps = dependenciasPorRequisicao(req);
+    return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps })(req, res);
+});
 
 // ──────────────────────────────────────────────────────────────────────────
 // POST /dashboard/solaris/upload — detector de framework a partir de
@@ -145,10 +184,18 @@ const upload = multer({
     },
 });
 
-router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarSaldo, criarHandlerUploadSolaris({
+const depsUploadSolaris = {
     upload, chatStorage, extrairZipViaSandbox, criarArquivo, listarProjeto, lerArquivo, detectarFramework,
     inspecionarProjeto, modelRouter, debitarCreditos, salvarProjeto,
-}));
+};
+const uploadSolarisSemOrcamento = criarHandlerUploadSolaris(depsUploadSolaris);
+router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarSaldo, (req, res) => {
+    if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
+        return uploadSolarisSemOrcamento(req, res);
+    }
+    const { modelRouter: routerUsuario } = dependenciasPorRequisicao(req);
+    return criarHandlerUploadSolaris({ ...depsUploadSolaris, modelRouter: routerUsuario })(req, res);
+});
 
 router.SOLARIS_CHAT_SESSION_TYPE = SOLARIS_CHAT_SESSION_TYPE;
 module.exports = router;
