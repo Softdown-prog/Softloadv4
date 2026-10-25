@@ -82,7 +82,7 @@ test('falha na precondição Firestore não é mascarada como sucesso',async()=>
 
 test('bloqueios de sessão com caracteres inseguros nunca chegam ao Firestore',async()=>{
     const {db,actions}=mockDb();
-    for(const id of ['/', '..', '.', 'a/b', 'a\\\\b', 'a\\0b']) {
+    for(const id of ['/', '..', '.', 'a/b', 'a\\b', 'a\0b']) {
         await assert.rejects(inspectSolarisLock(db,id,'s'),TypeError);
     }
     assert.equal(actions.get,0);

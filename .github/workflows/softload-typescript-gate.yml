@@ -24,6 +24,9 @@ on:
       - 'scripts/solarisProjectLockRecovery.ts'
       - 'scripts/solarisProjectLockRecovery.js'
       - 'scripts/solarisProjectLockRecovery.test.js'
+      - 'scripts/setupAdmin.ts'
+      - 'scripts/setupAdmin.js'
+      - 'scripts/setupAdmin.test.js'
       - 'scripts/ragCodeCollect.ts'
       - 'scripts/ragCodeCollect.js'
       - 'scripts/ragOrganizarRascunhos.ts'
@@ -92,6 +95,8 @@ jobs:
         run: node --test src/solaris/rag/ragVectorStore.test.js
       - name: Testar CLI de recuperação de bloqueios com dependências simuladas
         run: node --test scripts/solarisProjectLockRecovery.test.js
+      - name: Testar utilitário de administrador sem acesso ao Firestore real
+        run: node --test scripts/setupAdmin.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

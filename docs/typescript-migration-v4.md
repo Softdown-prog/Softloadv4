@@ -93,3 +93,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Mantidas sem mudanças as proteções de segurança: sem desbloqueio automático por idade, confirmação explícita de instâncias paradas, validação de UID/sessão, idade mínima de 60 minutos, comparação de `owner`/`updateTime` e exclusão atômica com `lastUpdateTime`.
 - Acrescentado teste de identificadores malformados incluindo barra, contrabarra e NUL. O teste `src/solaris/tools/projectLockRecovery.test.js` roda com banco simulado, sem conexão de produção.
 
+
+## Lote — utilitário administrativo de promoção de acesso
+
+- `scripts/setupAdmin.ts` define contratos tipados para o documento Firestore e a atualização restrita `{is_super_admin:true}`. Mantido o CLI manual `node scripts/setupAdmin.js <email>`.
+- `scripts/setupAdmin.js` é o espelho CommonJS de produção. Em ausência de conta, mantém o código de saída 1 sem atualizar o registro.
+- Novo `scripts/setupAdmin.test.js` verifica normalização de email, campo gravado, conta ausente e falta de argumento somente com Firestore simulado; não concede permissões reais.
+- Corrigidos os testes de segurança do bloqueio Solaris para testar os bytes reais de contrabarra e NUL, evitando escapes indevidos nas fixtures.
+
