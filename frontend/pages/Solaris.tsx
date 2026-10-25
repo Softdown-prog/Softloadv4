@@ -29,6 +29,12 @@ interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: 
 interface UploadCandidate { score: number; framework: string; evidencias: string[] }
 interface VisualStatus { enabled: boolean; origins: string[]; maxRequestsPerTenMinutes: number }
 interface VisualResponse { ok?: boolean; analise?: string; error?: string; tokens?: { input: number; output: number } }
+interface SolarisGithubStatus {
+    configured: boolean;
+    connected: boolean;
+    account: string | null;
+    repository: string | null;
+}
 interface UploadResponse {
     ok?: boolean; sessionId?: string; framework?: string; totalArquivos?: number;
     candidatos?: UploadCandidate[]; analiseIA?: string; temProjeto?: boolean; error?: string;
@@ -57,6 +63,8 @@ export default function Solaris(): React.JSX.Element {
     const [activeTool, setActiveTool] = useState<'none' | 'asset-forge-2d' | 'github'>('none');
     const [githubRepository, setGithubRepository] = useState('');
     const [toolError, setToolError] = useState('');
+    const [githubStatus, setGithubStatus] = useState<SolarisGithubStatus | null>(null);
+    const [githubBusy, setGithubBusy] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -65,6 +73,44 @@ export default function Solaris(): React.JSX.Element {
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
+
+    const carregarGithub = async (): Promise<void> => {
+        try {
+            const response = await fetch('/dashboard/solaris/github/status', {cache:'no-store'});
+            if (!response.ok) return;
+            const status = await response.json() as SolarisGithubStatus;
+            setGithubStatus(status);
+            if (status.repository) setGithubRepository('https://github.com/' + status.repository);
+        } catch { setGithubStatus(null); }
+    };
+    const salvarRepositorioGithub = async (): Promise<void> => {
+        if (!githubStatus?.connected) return;
+        setGithubBusy(true);
+        setToolError('');
+        try {
+            const response = await fetch('/dashboard/solaris/github/repository', {
+                method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({repository:githubRepository.trim()}),
+            });
+            const data = await response.json() as {repository?:string;erro?:string};
+            if (!response.ok) throw Error(data.erro || 'Não foi possível vincular o repositório.');
+            if (data.repository) setGithubRepository('https://github.com/' + data.repository);
+            await carregarGithub();
+        } catch (e) {
+            setToolError(e instanceof Error ? e.message : 'Falha ao vincular o repositório.');
+        } finally { setGithubBusy(false); }
+    };
+    const desconectarGithub = async (): Promise<void> => {
+        setGithubBusy(true);
+        setToolError('');
+        try {
+            const response = await fetch('/dashboard/solaris/github/disconnect', {method:'DELETE'});
+            if (!response.ok) throw Error('Não foi possível desconectar GitHub.');
+            setGithubStatus(status => status ? {...status,connected:false,repository:null,account:null} : null);
+            setGithubRepository('');
+        } catch (e) { setToolError(e instanceof Error ? e.message : 'Falha ao desconectar.'); }
+        finally { setGithubBusy(false); }
+    };
 
     const suggestions = [
         "Quero criar uma landing page de SaaS",
@@ -77,6 +123,7 @@ export default function Solaris(): React.JSX.Element {
     useEffect(() => {
         carregarCreditos();
         carregarHistorico();
+        void carregarGithub();
         fetch('/dashboard/solaris/visual-review/status')
             .then(async r => r.ok ? await r.json() as VisualStatus : null)
             .then(status => setVisualStatus(status))
@@ -681,10 +728,38 @@ export default function Solaris(): React.JSX.Element {
                                             maxLength={240}
                                             onChange={e => { setGithubRepository(e.target.value); setToolError(''); }}
                                             disabled={loading || uploading} />
+                                        <div className="d-flex flex-wrap gap-2 align-items-center">
+                                            {githubStatus?.connected ? (
+                                                <>
+                                                    <span className="small text-info">
+                                                        <CheckCircle2 size={13} className="me-1" />
+                                                        Conectado como {githubStatus.account}
+                                                    </span>
+                                                    <button type="button" className="btn btn-outline-info btn-sm"
+                                                        disabled={githubBusy || loading}
+                                                        onClick={() => { void salvarRepositorioGithub(); }}>
+                                                        {githubBusy ? 'Validando...' : 'Vincular repositório'}
+                                                    </button>
+                                                    <button type="button" className="btn btn-outline-secondary btn-sm"
+                                                        disabled={githubBusy || loading}
+                                                        onClick={() => { void desconectarGithub(); }}>
+                                                        Desconectar
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button type="button" className="btn btn-outline-info btn-sm"
+                                                    disabled={!githubStatus?.configured || githubBusy || loading}
+                                                    onClick={() => { window.location.assign('/dashboard/solaris/github/connect'); }}>
+                                                    <GitBranch size={14} className="me-1" /> Conectar GitHub
+                                                </button>
+                                            )}
+                                        </div>
                                         <p className="small text-secondary mb-0">
-                                            A primeira mensagem consulta o repositório e fornece o contexto ao Gemini.
-                                            Por enquanto, somente leitura de repositórios públicos: privados, autorização da conta e
-                                            publicação de commits exigem uma integração GitHub App separada.
+                                            {githubStatus?.connected
+                                                ? 'Conta autorizada. Escolha o repositório permitido para receber o contexto no chat. A leitura de privados depende das permissões concedidas à GitHub App; a publicação de commits ainda não está habilitada.'
+                                                : githubStatus?.configured
+                                                    ? 'Na primeira conexão, o GitHub pedirá autorização à GitHub App. Depois escolha o repositório. Repositórios públicos também podem ser consultados pelo link sem login.'
+                                                    : 'A conexão de contas requer configurar a GitHub App na Softload. Por enquanto, o link de um repositório público funciona para análise em modo somente leitura.'}
                                         </p>
                                     </div>
                                 )}
