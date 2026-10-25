@@ -6,21 +6,31 @@ import {
     Send, Sun, History, PlusCircle, Trash2, X,
     FileCode, RefreshCw, StopCircle
 } from 'lucide-react';
+type SolRole = 'assistant' | 'user';
+interface SolMessage { role: SolRole; content: string; arquivos?: string[] }
+interface SolSession { sessionId: string; updatedAt: string; firstMessage?: string; messageCount?: number }
+interface SolSessionResponse { session?: { messages?: SolMessage[] }; sessions?: SolSession[] }
+interface SolStreamEvent {
+    type: 'status' | 'chunk' | 'done' | 'error';
+    label?: string; text?: string; resposta?: string; sessionId?: string; message?: string;
+    budget?: { ficheirosCarregados?: string[] };
+}
+interface SolApiError { erro?: string }
 
-export default function Sol() {
-    const [messages, setMessages] = useState([
+export default function Sol(): React.JSX.Element {
+    const [messages, setMessages] = useState<SolMessage[]>([
         { role: 'assistant', content: 'Oi! Sou o Sol. Pergunte sobre a arquitetura da Softload, peça pra eu ler um arquivo específico, ou peça sugestão sobre algum trecho de código.' }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [statusText, setStatusText] = useState('');
-    const [sessionId, setSessionId] = useState(null);
-    const [sessionsList, setSessionsList] = useState([]);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [sessionsList, setSessionsList] = useState<SolSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const messagesEndRef = useRef(null);
-    const abortControllerRef = useRef(null);
-    const drawerRef = useRef(null);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const drawerRef = useRef<HTMLDivElement | null>(null);
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
@@ -33,11 +43,11 @@ export default function Sol() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, statusText]);
 
-    const carregarHistorico = async () => {
+    const carregarHistorico = async (): Promise<void> => {
         try {
             const res = await fetch('/eu/api/sol/sessions');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as SolSessionResponse;
                 setSessionsList(data.sessions || []);
             }
         } catch (err) {
@@ -45,7 +55,7 @@ export default function Sol() {
         }
     };
 
-    const iniciarNovaConversa = () => {
+    const iniciarNovaConversa = (): void => {
         if (loading) return;
         setMessages([{ role: 'assistant', content: 'Nova conversa. Pode perguntar.' }]);
         setSessionId(null);
@@ -53,12 +63,12 @@ export default function Sol() {
         setInput('');
     };
 
-    const carregarSessao = async (sessId) => {
+    const carregarSessao = async (sessId: string): Promise<void> => {
         if (loading) return;
         try {
             const res = await fetch(`/eu/api/sol/sessions/${sessId}`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as SolSessionResponse;
                 if (data.session) {
                     setSessionId(sessId);
                     setMessages((data.session.messages || []).filter(m => m.role === 'user' || m.role === 'assistant'));
@@ -70,7 +80,7 @@ export default function Sol() {
         }
     };
 
-    const excluirSessao = async (e, sessId) => {
+    const excluirSessao = async (e: React.MouseEvent<HTMLButtonElement>, sessId: string): Promise<void> => {
         e.stopPropagation();
         if (confirm('Deseja realmente excluir esta conversa?')) {
             try {
@@ -85,7 +95,7 @@ export default function Sol() {
         }
     };
 
-    const handleSend = async (e) => {
+    const handleSend = async (e?: React.FormEvent<HTMLFormElement>): Promise<void> => {
         if (e) e.preventDefault();
         const msg = input.trim();
         if (!msg || loading) return;
@@ -112,16 +122,17 @@ export default function Sol() {
             });
 
             if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
+                const err = await response.json().catch(() => ({})) as SolApiError;
                 throw new Error(err.erro || 'Erro ao perguntar ao Sol.');
             }
 
-            const reader = response.body.getReader();
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('Resposta do Sol sem stream.');
             const decoder = new TextDecoder('utf-8');
             let buffer = '';
-            let respostaFinal = null;
-            let erroFinal = null;
-            let arquivosLidos = [];
+            let respostaFinal: string | null = null;
+            let erroFinal: string | null = null;
+            let arquivosLidos: string[] = [];
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -137,9 +148,9 @@ export default function Sol() {
                     const dLine = block.match(/^data: (.+)$/m);
                     if (!dLine) continue;
 
-                    let event;
+                    let event: SolStreamEvent;
                     try {
-                        event = JSON.parse(dLine[1]);
+                        event = JSON.parse(dLine[1]) as SolStreamEvent;
                     } catch (_) {
                         continue;
                     }
@@ -147,13 +158,13 @@ export default function Sol() {
                     if (event.type === 'status') {
                         setStatusText(event.label || '');
                     } else if (event.type === 'chunk') {
-                        respostaFinal = event.text;
+                        respostaFinal = event.text ?? null;
                     } else if (event.type === 'done') {
-                        respostaFinal = event.resposta;
+                        respostaFinal = event.resposta ?? null;
                         arquivosLidos = event.budget?.ficheirosCarregados || [];
                         if (event.sessionId) setSessionId(event.sessionId);
                     } else if (event.type === 'error') {
-                        erroFinal = event.message;
+                        erroFinal = event.message ?? null;
                     }
                 }
             }
@@ -170,7 +181,7 @@ export default function Sol() {
             }
         } catch (err) {
             console.error('Erro no chat do Sol:', err);
-            const errMsg = err.message || 'Falha na conexão.';
+            const errMsg = err instanceof Error ? err.message : 'Falha na conexão.';
             setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro: ${errMsg}` }]);
         } finally {
             setLoading(false);
@@ -179,7 +190,7 @@ export default function Sol() {
         }
     };
 
-    const stopGeneration = () => {
+    const stopGeneration = (): void => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             setLoading(false);
@@ -273,7 +284,7 @@ export default function Sol() {
                         <div className="flex-grow-1 position-relative">
                             <textarea
                                 className="form-control bg-black text-light border-secondary pe-5 py-2"
-                                rows="1"
+                                rows={1}
                                 placeholder="Pergunte algo pro Sol... (Enter envia, Shift+Enter quebra linha)"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}

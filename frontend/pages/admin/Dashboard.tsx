@@ -5,8 +5,24 @@ import {
     ShieldAlert, Bug, RefreshCw, Stars, CircleCheckBig, CircleX,
 } from 'lucide-react';
 import DonutChart from '../../components/admin/DonutChart';
+import type { AppUser } from '../../services/api';
+interface AdminKpis { totalUsuarios: number; totalPremium: number; totalFree: number; receitaEstimada: number | string; storageTotal: number; compilacoesTotal: number; expirando7dias: number }
+interface AdminApiStatus { chave: boolean; modelo?: string; uso?: string; status?: string }
+interface AdminHealth {
+    deploy?: { gitSha: string; gitDate?: string; buildTime?: string };
+    apis: Record<string, AdminApiStatus | undefined>;
+    ambiente?: string;
+}
+interface AdminAuditLog {
+    id: string;
+    tipo: string;
+    criado_em?: string;
+    detalhes?: { email_alvo?: string; plano?: string; gemini?: number; gpt?: number; categoria?: string; erro?: string };
+}
+interface AdminRecentUser { email: string; nome?: string; is_active: boolean; criado_em?: string }
+interface AdminUser extends AppUser { email?: string }
 
-const TIPO_LABELS = {
+const TIPO_LABELS: Record<string, { label: string; cor: string }> = {
     plano_ativado: { label: 'Plano ativado', cor: '#4ade80' },
     plano_revogado: { label: 'Plano revogado', cor: '#f87171' },
     creditos_atualizados: { label: 'Créditos', cor: '#fbbf24' },
@@ -19,16 +35,16 @@ const APIS_SAUDE = [
     { nome: 'Gemini Lite', key: 'gemini_lite', icon: Zap, cor: '#34d399' },
 ];
 
-function fmtDataHora(iso) {
+function fmtDataHora(iso: string): string {
     return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function AdminDashboard() {
-    const { user } = useOutletContext();
-    const [kpis, setKpis] = useState(null);
-    const [recentes, setRecentes] = useState([]);
-    const [saude, setSaude] = useState(null);
-    const [logs, setLogs] = useState(null);
+export default function AdminDashboard(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: AdminUser }>();
+    const [kpis, setKpis] = useState<AdminKpis | null>(null);
+    const [recentes, setRecentes] = useState<AdminRecentUser[]>([]);
+    const [saude, setSaude] = useState<AdminHealth | null>(null);
+    const [logs, setLogs] = useState<AdminAuditLog[] | null>(null);
     const [logsLoading, setLogsLoading] = useState(true);
 
     const carregarKpis = useCallback(async () => {
@@ -49,7 +65,7 @@ export default function AdminDashboard() {
         setLogsLoading(true);
         try {
             const res = await fetch('/eu/api/logs?limit=20');
-            const data = await res.json();
+            const data = await res.json() as { logs?: AdminAuditLog[] };
             setLogs(data.logs || []);
         } catch (_) {
             setLogs(null);
@@ -66,7 +82,7 @@ export default function AdminDashboard() {
         (async () => {
             try {
                 const res = await fetch('/eu/api/usuarios?limit=10');
-                const data = await res.json();
+                const data = await res.json() as { usuarios?: AdminRecentUser[] };
                 setRecentes(data.usuarios || []);
             } catch (_) {}
         })();

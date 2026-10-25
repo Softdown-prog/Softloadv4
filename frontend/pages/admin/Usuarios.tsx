@@ -1,41 +1,45 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Coins, ArrowDownCircle, Info } from 'lucide-react';
 import useFocusTrap from '../../hooks/useFocusTrap';
+type PremiumPlan = 'starter' | 'pro' | 'studio';
+interface AdminAccount { email: string; nome: string; is_active: boolean; plano?: string; storage_usado_mb?: number; creditos?: number; criado_em?: string }
+interface AdminToast { msg: string; erro: boolean }
+interface SelectedAccount { email: string }
 
-const PLANO_INFO = {
+const PLANO_INFO: Record<PremiumPlan, { gemini: number; label: string }> = {
     starter: { gemini: 500, label: 'Starter' },
     pro: { gemini: 2000, label: 'Pro' },
     studio: { gemini: 5500, label: 'Studio' },
 };
 
-function planoBadgeClass(plano) {
+function planoBadgeClass(plano?: string): string {
     if (plano === 'studio') return 'plan-studio';
     if (plano === 'pro') return 'plan-pro';
     if (plano === 'starter') return 'plan-starter';
     return 'plan-free';
 }
 
-export default function AdminUsuarios() {
-    const [todos, setTodos] = useState([]);
-    const [nextCursor, setNextCursor] = useState(null);
+export default function AdminUsuarios(): React.JSX.Element {
+    const [todos, setTodos] = useState<AdminAccount[]>([]);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [busca, setBusca] = useState('');
     const [filtroPlano, setFiltroPlano] = useState('');
-    const [toast, setToast] = useState(null); // { msg, erro }
+    const [toast, setToast] = useState<AdminToast | null>(null); // { msg, erro }
 
-    const [modalAtivar, setModalAtivar] = useState(null); // { email }
-    const [planoEscolhido, setPlanoEscolhido] = useState('pro');
+    const [modalAtivar, setModalAtivar] = useState<SelectedAccount | null>(null); // { email }
+    const [planoEscolhido, setPlanoEscolhido] = useState<PremiumPlan>('pro');
     const [ativando, setAtivando] = useState(false);
 
-    const [modalCreditos, setModalCreditos] = useState(null); // { email, gemini }
+    const [modalCreditos, setModalCreditos] = useState<SelectedAccount | null>(null); // { email, gemini }
     const [inputGemini, setInputGemini] = useState('');
     const [salvandoCreditos, setSalvandoCreditos] = useState(false);
 
-    const [revogandoEmail, setRevogandoEmail] = useState(null);
+    const [revogandoEmail, setRevogandoEmail] = useState<string | null>(null);
 
-    const modalAtivarRef = useRef(null);
-    const modalCreditosRef = useRef(null);
+    const modalAtivarRef = useRef<HTMLDivElement | null>(null);
+    const modalCreditosRef = useRef<HTMLDivElement | null>(null);
     const fecharModalAtivar = useCallback(() => setModalAtivar(null), []);
     const fecharModalCreditos = useCallback(() => setModalCreditos(null), []);
     useFocusTrap(modalAtivarRef, !!modalAtivar, fecharModalAtivar);
@@ -62,7 +66,7 @@ export default function AdminUsuarios() {
         return () => clearTimeout(t);
     }, [toast]);
 
-    function mostrarToast(msg, erro) {
+    function mostrarToast(msg: string, erro: boolean): void {
         setToast({ msg, erro });
     }
 
@@ -75,7 +79,7 @@ export default function AdminUsuarios() {
         });
     }, [todos, busca, filtroPlano]);
 
-    async function carregarMais() {
+    async function carregarMais(): Promise<void> {
         if (!nextCursor) return;
         setLoadingMore(true);
         try {
@@ -85,18 +89,19 @@ export default function AdminUsuarios() {
             setTodos(prev => [...prev, ...(data.usuarios || [])]);
             setNextCursor(data.nextCursor || null);
         } catch (err) {
-            mostrarToast(err.message, true);
+            mostrarToast(err instanceof Error ? err.message : 'Erro desconhecido', true);
         } finally {
             setLoadingMore(false);
         }
     }
 
-    function abrirAtivacao(email) {
+    function abrirAtivacao(email: string): void {
         setModalAtivar({ email });
         setPlanoEscolhido('pro');
     }
 
-    async function confirmarAtivacao() {
+    async function confirmarAtivacao(): Promise<void> {
+        if (!modalAtivar) return;
         const email = modalAtivar.email;
         const plano = planoEscolhido;
         setModalAtivar(null);
@@ -112,13 +117,13 @@ export default function AdminUsuarios() {
             setTodos(prev => prev.map(u => u.email === email ? { ...u, is_active: true, plano: data.plano } : u));
             mostrarToast(`${email} → Plano ${data.plano} ativado com créditos alocados`, false);
         } catch (err) {
-            mostrarToast(err.message, true);
+            mostrarToast(err instanceof Error ? err.message : 'Erro desconhecido', true);
         } finally {
             setAtivando(false);
         }
     }
 
-    async function revogarPremium(email) {
+    async function revogarPremium(email: string): Promise<void> {
         if (!confirm(`Revogar acesso premium de ${email}?`)) return;
         setRevogandoEmail(email);
         try {
@@ -132,18 +137,19 @@ export default function AdminUsuarios() {
             setTodos(prev => prev.map(u => u.email === email ? { ...u, is_active: false, plano: 'free' } : u));
             mostrarToast(`${email} → Plano revogado`, false);
         } catch (err) {
-            mostrarToast(err.message, true);
+            mostrarToast(err instanceof Error ? err.message : 'Erro desconhecido', true);
         } finally {
             setRevogandoEmail(null);
         }
     }
 
-    function abrirCreditos(u) {
+    function abrirCreditos(u: AdminAccount): void {
         setModalCreditos({ email: u.email });
         setInputGemini(String(u.creditos ?? 0));
     }
 
-    async function confirmarCreditos() {
+    async function confirmarCreditos(): Promise<void> {
+        if (!modalCreditos) return;
         const email = modalCreditos.email;
         const gemini = inputGemini.trim();
         if (gemini === '') {
@@ -153,7 +159,7 @@ export default function AdminUsuarios() {
         setModalCreditos(null);
         setSalvandoCreditos(true);
         try {
-            const body = {};
+            const body: { gemini?: number } = {};
             if (gemini !== '') body.gemini = parseInt(gemini, 10);
             const res = await fetch(`/eu/api/usuario/${encodeURIComponent(email)}/creditos`, {
                 method: 'POST',
@@ -172,7 +178,7 @@ export default function AdminUsuarios() {
             if (data.creditos != null) msg += `Gemini=${data.creditos} `;
             mostrarToast(msg.trim(), false);
         } catch (err) {
-            mostrarToast(err.message, true);
+            mostrarToast(err instanceof Error ? err.message : 'Erro desconhecido', true);
         } finally {
             setSalvandoCreditos(false);
         }
@@ -352,7 +358,7 @@ export default function AdminUsuarios() {
                             Usuário: <strong className="text-white">{modalAtivar.email}</strong>
                         </p>
                         <label htmlFor="modal-ativar-select" className="form-label fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'var(--sl-text-400)' }}>Plano a ativar</label>
-                        <select id="modal-ativar-select" className="form-select mb-3" value={planoEscolhido} onChange={e => setPlanoEscolhido(e.target.value)}
+                        <select id="modal-ativar-select" className="form-select mb-3" value={planoEscolhido} onChange={e => setPlanoEscolhido(e.target.value as PremiumPlan)}
                                 style={{ background: 'var(--sl-bg-800)', borderColor: 'var(--sl-bg-700)', color: 'var(--sl-text-300)' }}>
                             <option value="starter">Starter — 500 créditos Gemini</option>
                             <option value="pro">Pro — 2.000 créditos Gemini</option>

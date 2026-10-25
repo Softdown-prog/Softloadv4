@@ -47,6 +47,9 @@
     "frontend/pages/Configuracoes.tsx",
     "frontend/pages/Landing.tsx",
     "frontend/pages/admin/Analytics.tsx",
+    "frontend/pages/admin/Dashboard.tsx",
+    "frontend/pages/admin/Usuarios.tsx",
+    "frontend/pages/admin/Sol.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [

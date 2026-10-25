@@ -74,6 +74,9 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/Configuracoes.tsx',
     'frontend/pages/Landing.tsx',
     'frontend/pages/admin/Analytics.tsx',
+    'frontend/pages/admin/Dashboard.tsx',
+    'frontend/pages/admin/Usuarios.tsx',
+    'frontend/pages/admin/Sol.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -225,4 +228,38 @@ test('analytics TypeScript preserva filtro, atualização periódica e diagnóst
   assert.ok(analytics.includes("searchParams.get('dias') ?? ''"));
   assert.ok(analytics.includes('setSemIndice(!!data.semIndice)'));
   assert.ok(analytics.includes('navigator.clipboard.writeText(DEPLOY_CMD)'));
+});
+
+test('dashboard admin em TSX preserva KPIs, saude e auditoria', () => {
+  const src = source('frontend/pages/admin/Dashboard.tsx');
+  for (const url of ['/eu/api/kpis', '/eu/api/saude', '/eu/api/logs?limit=20']) {
+    assert.ok(src.includes(url));
+  }
+  assert.ok(src.includes('setInterval(carregarKpis, 30000)'));
+  assert.ok(src.includes('setInterval(carregarSaude, 60000)'));
+  assert.ok(src.includes('useState<AdminKpis | null>'));
+  assert.ok(src.includes('<DonutChart data={['));
+});
+
+test('administracao de usuarios em TSX preserva paginacao, quotas e focus traps', () => {
+  const src = source('frontend/pages/admin/Usuarios.tsx');
+  assert.ok(src.includes('/eu/api/usuarios?limit=50'));
+  assert.ok(src.includes('encodeURIComponent(nextCursor)'));
+  assert.ok(src.includes('body: JSON.stringify({ ativo: true, plano })'));
+  assert.ok(src.includes('body: JSON.stringify({ ativo: false })'));
+  assert.ok(src.includes('body: JSON.stringify(body)'));
+  assert.ok(src.includes('if (!modalAtivar) return;'));
+  assert.ok(src.includes('if (!modalCreditos) return;'));
+  assert.ok(src.includes('useFocusTrap(modalAtivarRef, !!modalAtivar, fecharModalAtivar)'));
+});
+
+test('chat Sol administrativo em TSX preserva SSE e cancelamento do streaming', () => {
+  const src = source('frontend/pages/admin/Sol.tsx');
+  assert.ok(src.includes('/eu/api/sol/perguntar/stream'));
+  assert.ok(src.includes('new AbortController()'));
+  assert.ok(src.includes('const reader = response.body?.getReader()'));
+  assert.ok(src.includes('JSON.parse(dLine[1]) as SolStreamEvent'));
+  assert.ok(src.includes('abortControllerRef.current.abort()'));
+  assert.ok(src.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
+  assert.ok(src.includes('<MarkdownRenderer>{m.content}</MarkdownRenderer>'));
 });
