@@ -14,6 +14,12 @@ esses imports nem exige um loader TypeScript em produção.
   bloqueia o `npm run typecheck:agent`.
 - Novos módulos convertidos devem ser adicionados ao array `sources`
   desse script. Não contar um módulo como migrado sem entrar no gate.
+- Com a migração concluída, o verificador **varre automaticamente**
+  `agent/src` e `agent/scripts`: qualquer novo `.js` de produção sem
+  fonte `.ts` registrada (ou `.ts` não registrado) bloqueia o gate.
+  Os testes `*.test.js` e a pasta `__testUtils__` ficam fora do
+  inventário; o arquivo de contratos `capability-types.ts` é a exceção
+  intencional por não gerar JavaScript de runtime.
 - Nenhum npm install novo no Worker, binário de Chromium, nem container
   adicional é necessário.
 - `npm run build:agent:capabilities` recompila os módulos TS listados no gate para ESM

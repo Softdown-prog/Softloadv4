@@ -70,6 +70,59 @@ const sources = [
   "agent/scripts/vendorPowerUp.ts",
 ];
 
+// Prevent migration regressions: every production .js in the Worker
+// must have a corresponding .ts in the explicit, reviewable build list.
+// Tests and reusable test fixtures are intentionally not production code.
+const sourceSet = new Set(sources);
+const typeOnlySources = new Set([
+  "agent/src/capabilities/capability-types.ts",
+]);
+let inventoryErrors = 0;
+if (sourceSet.size !== sources.length) {
+  console.error("[AGENT-TS] Fonte duplicada na lista de módulos TypeScript.");
+  inventoryErrors++;
+}
+function discoverSources(relativeDir) {
+  const results = [];
+  for (const entry of fs.readdirSync(path.join(root, relativeDir), { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (entry.name === "__testUtils__" || entry.name === "__fixtures__") continue;
+      results.push(...discoverSources(path.posix.join(relativeDir, entry.name)));
+    } else if (entry.isFile() && /\.(?:js|ts)$/.test(entry.name) &&
+      !/\.(?:test|spec)\.(?:js|ts)$/.test(entry.name) &&
+      !entry.name.endsWith(".d.ts")) {
+      results.push(path.posix.join(relativeDir, entry.name));
+    }
+  }
+  return results;
+}
+const discovered = new Set([
+  ...discoverSources("agent/src"),
+  ...discoverSources("agent/scripts"),
+]);
+for (const file of discovered) {
+  if (file.endsWith(".js")) {
+    const typed = file.replace(/\.js$/, ".ts");
+    if (!sourceSet.has(typed)) {
+      console.error("[AGENT-TS] JavaScript de produção sem fonte TS registrada:", file);
+      inventoryErrors++;
+    }
+  } else if (!sourceSet.has(file) && !typeOnlySources.has(file)) {
+    console.error("[AGENT-TS] TypeScript não registrado no build:", file);
+    inventoryErrors++;
+  }
+}
+for (const typed of sources) {
+  if (!discovered.has(typed) || !discovered.has(typed.replace(/\.ts$/, ".js"))) {
+    console.error("[AGENT-TS] Par TS/JS ausente para módulo registrado:", typed);
+    inventoryErrors++;
+  }
+}
+if (inventoryErrors) {
+  console.error("[AGENT-TS] Corrija o inventário antes de compilar ou publicar.");
+  process.exit(1);
+}
+
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
 
 function semanticAst(source, fileName) {
