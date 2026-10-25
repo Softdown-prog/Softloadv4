@@ -108,6 +108,17 @@ esses imports nem exige um loader TypeScript em produção.
 - Ambos passam pela mesma compilação ESM e verificação AST antes dos
   testes HTTP de ponta a ponta.
 
+## Servidor HTTP tipado
+
+- `agent/src/server.ts` tipa o contrato de `Agent.execute()`, as
+  respostas HTTP e as rotas de `/run` e escalonamento humano.
+- `agent/src/express-types.d.ts` limita a superficie de tipos do
+  Express usada no Worker. E um arquivo so de declaracoes,
+  sem codigo ou dependencia na imagem.
+- A autenticacao por `WORKER_SHARED_SECRET`, limite JSON de 1 MB,
+  execucao sequencial das actions e tratamento de erros sao preservados
+  pela verificacao de equivalencia AST e pelos testes de HTTP.
+
 ## Como validar
 
 ```bash
