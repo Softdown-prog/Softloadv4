@@ -2,15 +2,46 @@ import React, { useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { FolderOpen, Plus, Trash2, Cpu, Download, FileCode, AlertCircle, RefreshCw, History, RotateCcw, X, MessageSquare } from 'lucide-react';
 import Pill from '../components/Pill';
+import type { AppUser } from '../services/api';
 
-export default function Workspace() {
-    const { user } = useOutletContext();
-    const [projetos, setProjetos] = useState([]);
+type WorkspaceId = string;
+
+interface WorkspaceVersion {
+    id: WorkspaceId;
+    origemLabel?: string;
+    criadoEmFmt?: string;
+    resumoMudancas?: string;
+}
+interface WorkspaceSession {
+    id: WorkspaceId;
+    nome?: string;
+    criadoEmFmt?: string;
+    snapshot?: { compilacaoId?: WorkspaceId; siteName?: string } | null;
+}
+interface WorkspaceProject {
+    id: WorkspaceId;
+    nome: string;
+    criadoEmFmt?: string;
+    sessoes: WorkspaceSession[];
+}
+interface WorkspaceHistory {
+    sessaoId: WorkspaceId;
+    versoes: WorkspaceVersion[];
+    carregando: boolean;
+}
+interface WorkspaceApiResponse {
+    projetos?: WorkspaceProject[];
+    erro?: string;
+}
+
+export default function Workspace(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: AppUser }>();
+    const [projetos, setProjetos] = useState<WorkspaceProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [novoNome, setNovoNome] = useState('');
     const [criando, setCriando] = useState(false);
     const [erro, setErro] = useState('');
-    const [selectedProjeto, setSelectedProjeto] = useState(null);
+    const [selectedProjeto, setSelectedProjeto] = useState<WorkspaceProject | null>(null);
 
     // Nova sessão
     const [criandoSessao, setCriandoSessao] = useState(false);
@@ -18,14 +49,14 @@ export default function Workspace() {
     const [mostrarFormSessao, setMostrarFormSessao] = useState(false);
 
     // Histórico de versões da sessão aberta
-    const [sessaoHistorico, setSessaoHistorico] = useState(null); // { sessaoId, versoes, carregando }
-    const [revertendoId, setRevertendoId] = useState(null);
+    const [sessaoHistorico, setSessaoHistorico] = useState<WorkspaceHistory | null>(null); // { sessaoId, versoes, carregando }
+    const [revertendoId, setRevertendoId] = useState<WorkspaceId | null>(null);
 
-    const carregarProjetos = async () => {
+    const carregarProjetos = async (): Promise<void> => {
         setLoading(true);
         try {
             const res = await fetch('/api/workspace/projetos');
-            const data = await res.json();
+            const data = await res.json() as WorkspaceApiResponse;
             if (res.ok) {
                 setProjetos(data.projetos || []);
                 if (data.projetos?.length > 0) {
@@ -49,7 +80,7 @@ export default function Workspace() {
         carregarProjetos();
     }, []);
 
-    const criarProjeto = async (e) => {
+    const criarProjeto = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         if (!novoNome.trim()) return;
         setCriando(true);
@@ -74,7 +105,7 @@ export default function Workspace() {
         }
     };
 
-    const deletarProjeto = async (id) => {
+    const deletarProjeto = async (id: WorkspaceId): Promise<void> => {
         if (!window.confirm('Tem certeza que deseja excluir este projeto e todas as suas sessões?')) return;
         try {
             const res = await fetch(`/api/workspace/projetos/${id}`, { method: 'DELETE' });
@@ -92,7 +123,7 @@ export default function Workspace() {
         }
     };
 
-    const criarSessao = async (e) => {
+    const criarSessao = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         if (!selectedProjeto || !nomeSessao.trim()) return;
         setCriandoSessao(true);
@@ -118,7 +149,7 @@ export default function Workspace() {
         }
     };
 
-    const deletarSessao = async (sid) => {
+    const deletarSessao = async (sid: WorkspaceId): Promise<void> => {
         if (!selectedProjeto || !window.confirm('Excluir esta sessão?')) return;
         try {
             const res = await fetch(`/api/workspace/projetos/${selectedProjeto.id}/sessoes/${sid}`, { method: 'DELETE' });
@@ -134,25 +165,27 @@ export default function Workspace() {
         }
     };
 
-    const abrirHistorico = async (sid) => {
+    const abrirHistorico = async (sid: WorkspaceId): Promise<void> => {
         if (sessaoHistorico?.sessaoId === sid) {
             setSessaoHistorico(null); // clique de novo = fecha
             return;
         }
         setSessaoHistorico({ sessaoId: sid, versoes: [], carregando: true });
         try {
+            if (!selectedProjeto) return;
             const res = await fetch(`/api/workspace/projetos/${selectedProjeto.id}/sessoes/${sid}/historico`);
-            const versoes = await res.json();
+            const versoes = await res.json() as WorkspaceVersion[];
             setSessaoHistorico({ sessaoId: sid, versoes: res.ok ? versoes : [], carregando: false });
         } catch (err) {
             setSessaoHistorico({ sessaoId: sid, versoes: [], carregando: false });
         }
     };
 
-    const reverterVersao = async (sid, compilacaoId) => {
+    const reverterVersao = async (sid: WorkspaceId, compilacaoId: WorkspaceId): Promise<void> => {
         if (!window.confirm('Reverter a sessão para esta versão? Isso vira uma nova entrada no histórico — nada é apagado.')) return;
         setRevertendoId(compilacaoId);
         try {
+            if (!selectedProjeto) return;
             const res = await fetch(`/api/workspace/projetos/${selectedProjeto.id}/sessoes/${sid}/reverter`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -384,15 +417,15 @@ export default function Workspace() {
 
                                                     {historicoAberto && (
                                                         <div className="mt-3 pt-3 border-top border-secondary">
-                                                            {sessaoHistorico.carregando ? (
+                                                            {sessaoHistorico?.carregando ? (
                                                                 <div className="text-center py-3">
                                                                     <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
                                                                 </div>
-                                                            ) : sessaoHistorico.versoes.length === 0 ? (
+                                                            ) : !sessaoHistorico?.versoes.length ? (
                                                                 <p className="small text-secondary mb-0">Nenhuma versão registrada para esta sessão.</p>
                                                             ) : (
                                                                 <div className="d-flex flex-column gap-2">
-                                                                    {sessaoHistorico.versoes.map(v => (
+                                                                    {sessaoHistorico?.versoes.map(v => (
                                                                         <div key={v.id} className="d-flex align-items-center justify-content-between gap-2 p-2 rounded" style={{ background: 'rgba(255,255,255,.03)' }}>
                                                                             <div className="min-width-0">
                                                                                 <div className="d-flex align-items-center gap-2">

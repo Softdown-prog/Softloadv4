@@ -79,6 +79,7 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/admin/Sol.tsx',
     'frontend/pages/Preview.tsx',
     'frontend/pages/Chat.tsx',
+    'frontend/pages/Workspace.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -291,4 +292,17 @@ test('chat TSX mantém créditos, sessões, SSE e cancelamento', () => {
   assert.ok(chat.includes('abortControllerRef.current.abort()'));
   assert.ok(chat.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
   assert.ok(chat.includes('handleSend(null, s)'));
+});
+
+test('workspace TSX mantém projetos, sessões, versões e reversão sem apagar histórico', () => {
+  const ws = source('frontend/pages/Workspace.tsx');
+  assert.ok(ws.includes("fetch('/api/workspace/projetos')"));
+  assert.ok(ws.includes("method: 'DELETE'"));
+  assert.ok(ws.includes('body: JSON.stringify({ compilacaoId })'));
+  assert.ok(ws.includes('useState<WorkspaceProject[]>([])'));
+  assert.ok(ws.includes('useState<WorkspaceHistory | null>(null)'));
+  assert.ok(ws.includes('setSelectedProjeto(prev =>'));
+  assert.ok(ws.includes('useOutletContext<{ user: AppUser }>()'));
+  assert.ok(ws.includes('sessaoHistorico?.versoes.map'));
+  assert.ok(ws.includes('/dashboard/workspace/chat'));
 });
