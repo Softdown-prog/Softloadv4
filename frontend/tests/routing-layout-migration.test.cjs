@@ -143,7 +143,7 @@ test('formulários de autenticação preservam POST nativo e campos esperados pe
   assert.match(register, /name="name" id="name"/);
   assert.match(register, /name="email" id="email"/);
   assert.match(register, /name="password" id="password"/);
-  assert.match(register, /required minLength={8}/);
+  assert.ok(register.includes('required minLength={8}'));
   assert.match(register, /password\.length >= 8 && password === confirm/);
   assert.match(register, /disabled={!valido}/);
   assert.match(register, /<input type="password" id="confirm"/);
