@@ -32,6 +32,7 @@ interface VisualResponse { ok?: boolean; analise?: string; error?: string; token
 interface SolarisGithubStatus {
     configured: boolean;
     connected: boolean;
+    installable?: boolean;
     account: string | null;
     repository: string | null;
 }
@@ -735,6 +736,13 @@ export default function Solaris(): React.JSX.Element {
                                                         <CheckCircle2 size={13} className="me-1" />
                                                         Conectado como {githubStatus.account}
                                                     </span>
+                                                    {githubStatus.installable && (
+                                                        <button type="button" className="btn btn-outline-secondary btn-sm"
+                                                            disabled={loading || githubBusy}
+                                                            onClick={() => { window.location.assign('/dashboard/solaris/github/install'); }}>
+                                                            Autorizar repositórios no GitHub
+                                                        </button>
+                                                    )}
                                                     <button type="button" className="btn btn-outline-info btn-sm"
                                                         disabled={githubBusy || loading}
                                                         onClick={() => { void salvarRepositorioGithub(); }}>

@@ -8,8 +8,10 @@ const BASE='https://softload.analysepro.com/dashboard/solaris/github/callback';
 function config(env=process.env){
  const id=env.SOLARIS_GITHUB_APP_CLIENT_ID||'',secret=env.SOLARIS_GITHUB_APP_CLIENT_SECRET||'';
  const raw=env.SOLARIS_GITHUB_ENCRYPTION_KEY||'';
+ const slug=env.SOLARIS_GITHUB_APP_SLUG||'';
  return {id,secret,key:/^[0-9a-f]{64}$/i.test(raw)?Buffer.from(raw,'hex'):null,
-  ready:!!(id&&secret&&/^[0-9a-f]{64}$/i.test(raw)),callback:BASE};
+  ready:!!(id&&secret&&/^[0-9a-f]{64}$/i.test(raw)),callback:BASE,
+  installUrl:/^[a-z0-9-]{3,80}$/i.test(slug)?'https://github.com/apps/'+slug+'/installations/new':null};
 }
 function key(uid){return crypto.createHash('sha256').update('solaris-gh-user-v1:'+uid).digest('hex');}
 function seal(value,k){
@@ -39,8 +41,9 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
   async status(uid){
    const row=await load(uid);
    return {configured:settings().ready,connected:settings().ready&&!!row?.encrypted&&row.expires>Date.now()+30000,
-    account:row?.account||null,repository:row?.repository||null};
+    account:row?.account||null,repository:row?.repository||null,installable:!!settings().installUrl};
   },
+  installUrl(){return settings().ready?settings().installUrl:null;},
   async begin(req){
    const cfg=settings();
    if(!cfg.ready)throw Error('GitHub App ainda não configurado pelo administrador.');

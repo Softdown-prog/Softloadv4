@@ -151,6 +151,11 @@ router.get('/dashboard/solaris/github/connect', exigirLogin, githubLimiter, asyn
     try { return res.redirect(await githubApp.begin(req)); }
     catch (_) { return res.redirect('/dashboard/solaris?github=setup'); }
 });
+router.get('/dashboard/solaris/github/install', exigirLogin, githubLimiter, (req,res)=>{
+    const url = githubApp.installUrl();
+    if (!url) return res.redirect('/dashboard/solaris?github=setup');
+    return res.redirect(url);
+});
 router.get('/dashboard/solaris/github/callback', exigirLogin, githubLimiter, async(req,res)=>{
     try {
         if (req.query.error) return res.redirect('/dashboard/solaris?github=denied');
