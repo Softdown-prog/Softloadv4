@@ -88,7 +88,7 @@ test('reserva, liquida consumo real e evita débito repetido',async()=>{
   const input={email:'ALICE@EXAMPLE.TEST',operacaoId:'pro-run-1',reservaMicroBrl:70000};
   const r=await b.livro.reservar(input);
   assert.equal(r.status,'reservado');
-  assert.equal(r.limiteMicroBrl,12_000_000);
+  assert.equal(r.limiteMicroBrl,55_000_000);
   assert.equal(r.reservadoMicroBrl,70000);
   assert.equal(await b.livro.liquidar({reciboId:r.reciboId,custoRealMicroBrl:50000}),'liquidado');
   assert.equal(await b.livro.liquidar({reciboId:r.reciboId,custoRealMicroBrl:50000}),'liquidado');
@@ -100,7 +100,7 @@ test('reserva, liquida consumo real e evita débito repetido',async()=>{
 
 test('duas reservas simultâneas não passam do teto',async()=>{
   const b=banco();user(b.docs,'alice@example.test','starter');
-  const req=id=>b.livro.reservar({email:'alice@example.test',operacaoId:id,reservaMicroBrl:1_500_000});
+  const req=id=>b.livro.reservar({email:'alice@example.test',operacaoId:id,reservaMicroBrl:3_000_000});
   const r=await Promise.allSettled([req('a'),req('b')]);
   assert.equal(r.filter(x=>x.status==='fulfilled').length,1);
   assert.equal(r.filter(x=>x.status==='rejected'&&x.reason.codigo==='ORCAMENTO_INSUFICIENTE').length,1);
@@ -176,7 +176,7 @@ test('consulta V2 reflete saldo reservado e gasto, sem novas escritas',async()=>
   const before=await b.livro.consultar('ALICE@EXAMPLE.TEST');
   assert.deepEqual(before,{
     plano:'pro',cicloExpiraEm:'2099-12-30T00:00:00.000Z',
-    limiteMicroBrl:5_000_000,gastoMicroBrl:0,reservadoMicroBrl:0,
+    limiteMicroBrl:20_000_000,gastoMicroBrl:0,reservadoMicroBrl:0,
   });
   const r=await b.livro.reservar({email:'alice@example.test',operacaoId:'preview',reservaMicroBrl:300000});
   const inFlight=await b.livro.consultar('alice@example.test');

@@ -35,6 +35,6 @@ test('soma os tokens de pensamento e reconhece cache nas respostas do SDK', () =
   assert.equal(extrairTokensFaturaveisGemini({promptTokenCount:0}),null);
 });
 
-test('tetos experimentais são explícitos e não alteram planos nem bloqueiam runtime', () => {
-  assert.deepEqual({...TETOS_IA_EXPERIMENTAIS_CENTAVOS},{free:5,starter:200,pro:500,studio:1200});
+test('limites V2 refletem os créditos já divulgados no checkout, sem alterar preços', () => {
+  assert.deepEqual({...TETOS_IA_EXPERIMENTAIS_CENTAVOS},{free:5,starter:500,pro:2000,studio:5500});
 });

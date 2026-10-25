@@ -18,12 +18,14 @@ exports.TARIFAS_GEMINI_USD_POR_MILHAO = Object.freeze({
     'gemini-2.5-flash': Object.freeze({ entrada: 0.30, saida: 2.50, cache: 0.03 }),
     'gemini-2.5-pro': Object.freeze({ entrada: 1.25, saida: 10.00, cache: 0.125 }),
 });
-// Valores de estudo: NÃO ativam bloqueio no runtime ou alteram planos legados.
+// Créditos V2 seguem os quantitativos anunciados nos planos do checkout.
+// 1 crédito = 1 centavo do orçamento interno Gemini, ainda estimado.
+// Este mapa não altera preço nem ativa enforcement por si só.
 exports.TETOS_IA_EXPERIMENTAIS_CENTAVOS = Object.freeze({
     free: 5,
-    starter: 200,
-    pro: 500,
-    studio: 1200,
+    starter: 500,
+    pro: 2000,
+    studio: 5500,
 });
 function inteiroNaoNegativo(n) {
     return Number.isSafeInteger(n) && n >= 0;
