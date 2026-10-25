@@ -129,5 +129,6 @@
   "scripts/ragOrganizarRascunhos.ts",
   "scripts/ragEmbedIndex.ts",
   "scripts/ragCodeIndex.ts",
-  "scripts/visual/renderPreview.ts"
+  "scripts/visual/renderPreview.ts",
+  "scripts/ragGenerate.ts"
 ]

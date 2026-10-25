@@ -18,6 +18,9 @@ on:
       - 'scripts/ragEmbedIndex.ts'
       - 'scripts/ragEmbedIndex.js'
       - 'scripts/ragEmbedIndex.test.js'
+      - 'scripts/ragGenerate.ts'
+      - 'scripts/ragGenerate.js'
+      - 'scripts/ragGenerate.test.js'
       - 'scripts/ragCodeCollect.ts'
       - 'scripts/ragCodeCollect.js'
       - 'scripts/ragOrganizarRascunhos.ts'
@@ -80,6 +83,8 @@ jobs:
         run: node scripts/ragOrganizarRascunhos.test.js
       - name: Testar preview visual com navegador simulado
         run: node scripts/visual/renderPreview.test.js
+      - name: Verificar gerador de catálogo Solaris RAG (modelo falso e pasta temporária)
+        run: node scripts/ragGenerate.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

@@ -67,3 +67,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - O indexador de código usa exclusivamente `solaris_code_vectors`, separado de `solaris_rag_vectors` e dos arquivos do Blogger.
 - Comando padrão `npm run rag:code-index` é **dry-run**: não chama Firestore nem o serviço de embeddings; `--apply` continua exigindo a execução prévia dos testes de exemplos e credenciais.
 - CI inclui `npm run rag:code-index -- --limit=3` sem `--apply` e regressões dos corpora. Nenhuma gravação ou limpeza de produção é feita nos testes.
+
+## Lote — pipeline gerador de entradas do RAG técnico Solaris
+
+- `scripts/ragGenerate.ts` é a fonte TypeScript do gerador de catálogo, com contratos para modelo de IA injetável, tópicos, resultados e entradas. O `.js` é o espelho CommonJS preservado para o Node.
+- Mantidas as validações de grupo/tópico, unicidade, schema e similaridade antes de escrever JSON no catálogo. Entradas suspeitas de duplicação são reportadas para revisão humana em vez de gravadas.
+- O teste `node scripts/ragGenerate.test.js` usa model router falso, catálogos injetados e diretórios temporários. **Não chamar `npm run rag:generate` no CI**, pois o CLI real invoca o modelo e grava arquivos.
+- Arquivos do RAG Blogger e a coleção de embeddings do Solaris Code não são consultados por esse gerador. A migração não altera dados reais.
