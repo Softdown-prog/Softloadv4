@@ -16,6 +16,16 @@ esses imports nem exige um loader TypeScript em produção.
   desse script. Não contar um módulo como migrado sem entrar no gate.
 - Nenhum npm install novo no Worker, binário de Chromium, nem container
   adicional é necessário.
+- `npm run build:agent:capabilities` recompila os 23 módulos TS para ESM
+  apenas se **todos** corresponderem semanticamente ao JS já versionado.
+  O comando sobrescreve arquivos `.js` no diretório atual: deve rodar em
+  um **checkout descartável** de CI, não diretamente em um workspace com
+  alterações locais. O compilador e o analisador AST são dependências do
+  repositório raiz, não dependências de produção do Worker.
+- O workflow do Agent executa os testes de runtime **após** essa compilação.
+  Assim, ele verifica código JavaScript realmente gerado das fontes TS.
+  O Docker da VPS ainda utiliza os arquivos `.js` existentes até a etapa
+  separada de integração no empacotamento da imagem.
 
 ## Módulos tipados nesta rodada
 
@@ -73,6 +83,7 @@ esses imports nem exige um loader TypeScript em produção.
 ```bash
 npm ci --legacy-peer-deps
 npm run typecheck:agent
+npm run build:agent:capabilities  # somente em checkout descartável
 cd agent && npm ci && npm test
 ```
 

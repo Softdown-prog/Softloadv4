@@ -36,6 +36,8 @@ jobs:
       - name: Instalar Worker Agent
         working-directory: agent
         run: npm ci
-      - name: Testar Worker Agent e contratos de capabilities
+      - name: Compilar TypeScript de capabilities para JavaScript ESM no checkout temporário
+        run: npm run build:agent:capabilities
+      - name: Testar Worker Agent com JavaScript gerado do TypeScript
         working-directory: agent
         run: npm test

@@ -15,6 +15,8 @@ const ts = require("typescript");
 const acorn = require("acorn");
 
 const root = path.resolve(__dirname, "..");
+const emitRuntime = process.argv.includes("--write");
+const verifiedOutputs = [];
 const sources = [
   "agent/src/capabilities/storage.ts",
   "agent/src/capabilities/artifacts.ts",
@@ -81,6 +83,7 @@ for (const relative of sources) {
       semanticAst(transpiled.outputText, pathTs),
       semanticAst(fs.readFileSync(pathJs, "utf8"), pathJs),
       "O espelho JavaScript divergiu do TypeScript");
+    verifiedOutputs.push({ relative, pathJs, compiled: transpiled.outputText });
     console.log("[AGENT-TS] OK", relative);
   } catch (error) {
     console.error("[AGENT-TS] DIVERGENCIA:", relative, error.message);
@@ -90,4 +93,14 @@ for (const relative of sources) {
 if (errors) {
   console.error("[AGENT-TS] Corrija o fonte TypeScript ou regenere seu espelho JS antes de publicar.");
   process.exitCode = 1;
+} else if (emitRuntime) {
+  // All 23 modules must pass AST parity BEFORE any runtime JS is overwritten.
+  // Intended for disposable GitHub Actions checkouts, never production VPS.
+  let changed = 0;
+  for (const { pathJs, compiled } of verifiedOutputs) {
+    if (fs.readFileSync(pathJs, "utf8") === compiled) continue;
+    fs.writeFileSync(pathJs, compiled, "utf8");
+    changed++;
+  }
+  console.log(`[AGENT-TS] Compilados ${verifiedOutputs.length} módulos ESM (${changed} espelhos atualizados neste checkout).`);
 }
