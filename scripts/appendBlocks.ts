@@ -275,7 +275,7 @@ export async function main(): Promise<void> {
     if (dryRun) console.log(`   [DRY-RUN] Nenhuma chamada real será feita.\n`);
     else console.log('');
 
-    const resultados = { ok: [], erro: [] };
+    const resultados: { ok: string[]; erro: string[] } = { ok: [], erro: [] };
 
     for (let i = 0; i < nichos.length; i++) {
         const nicho = nichos[i];
