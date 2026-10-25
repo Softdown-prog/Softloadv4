@@ -11,6 +11,9 @@ concurrency:
   group: softload-vps-production
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -240,21 +243,24 @@ jobs:
 
   activate:
     needs: build_and_transfer
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
     timeout-minutes: 20
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Configure restricted SSH key
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
         run: |
           test -n "$DEPLOY_KEY"
-          install -m 700 -d "$HOME/.ssh"
-          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/softload_deploy"
-          chmod 600 "$HOME/.ssh/softload_deploy"
-          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/known_hosts"
+          install -m 700 -d "$RUNNER_TEMP/softload-ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/softload-ssh/deploy_key"
+          chmod 600 "$RUNNER_TEMP/softload-ssh/deploy_key"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$RUNNER_TEMP/softload-ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/softload-ssh/known_hosts"
       - name: Activate only after every image arrives
-        run: ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes root@164.163.9.7 'deploy:${{ github.sha }}'
+        run: ssh -i "$RUNNER_TEMP/softload-ssh/deploy_key" -o UserKnownHostsFile="$RUNNER_TEMP/softload-ssh/known_hosts" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes root@164.163.9.7 'deploy:${{ github.sha }}'
 
       # The SSH command can succeed while the public site still serves a
       # previous image. Verify the commit from the application's own /health.
@@ -317,3 +323,6 @@ jobs:
           }
           console.log('[DEPLOY] OK: bundle React público sem modelo indisponível.');
           NODE
+      - name: Remove temporary deploy key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/softload-ssh/deploy_key" "$RUNNER_TEMP/softload-ssh/known_hosts"
