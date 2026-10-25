@@ -10,6 +10,7 @@ on:
       - 'examples/solaris-code/**'
       - 'scripts/codeCorpus/**'
       - 'scripts/ragCodeIndex.js'
+      - 'scripts/ragCodeIndex.ts'
       - 'scripts/ragEmbedIndex.ts'
       - 'scripts/ragEmbedIndex.js'
       - 'scripts/ragEmbedIndex.test.js'
@@ -65,6 +66,8 @@ jobs:
         run: npm run verify:vendor:templates
       - name: Verificar biblioteca autoral Solaris Code
         run: npm run rag:code-test
+      - name: Simular indexação do corpus de código (sem Firestore)
+        run: npm run rag:code-index -- --limit=3
       - name: Verificar isolamento dos três RAGs
         run: npm run rag:boundaries-test
       - name: Testar scripts CLI migrados sem Firestore real

@@ -59,3 +59,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `removerVetoresOrfaos` atua somente na coleção técnica `solaris_rag_vectors` e não remove vetores quando o catálogo está vazio ou quando `idsFiltro` restringe a indexação.
 - O RAG de receitas `solaris_code_vectors` e o RAG Blogger (`src/rag/`) continuam isolados. `ragEmbedIndex.test.js` usa Firestore falso e embeddings injetáveis.
 - O gatilho de GitHub Actions também cobre mudanças no novo `.ts`, no espelho `.js` e nos testes do indexador.
+
+## Lote — indexador de receitas autorais Solaris Code
+
+- `scripts/ragCodeIndex.ts` passa a ser a fonte TypeScript do CLI de receitas originais; `ragCodeIndex.js` permanece espelho CommonJS, sem mudança na API de `loadCorpus`, `indexCorpus` ou `verifyAuthoredExamples`.
+- A leitura de fontes externas legadas continua restrita por validações de licença, hash, origem e segredos. O CLI principal indexa o catálogo autoral versionado.
+- O indexador de código usa exclusivamente `solaris_code_vectors`, separado de `solaris_rag_vectors` e dos arquivos do Blogger.
+- Comando padrão `npm run rag:code-index` é **dry-run**: não chama Firestore nem o serviço de embeddings; `--apply` continua exigindo a execução prévia dos testes de exemplos e credenciais.
+- CI inclui `npm run rag:code-index -- --limit=3` sem `--apply` e regressões dos corpora. Nenhuma gravação ou limpeza de produção é feita nos testes.

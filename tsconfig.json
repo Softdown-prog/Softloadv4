@@ -174,7 +174,8 @@
     "scripts/codeCorpus/codeVectorStore.ts",
     "scripts/codeCorpus/codeCollector.ts",
     "scripts/ragOrganizarRascunhos.ts",
-    "scripts/ragEmbedIndex.ts"
+    "scripts/ragEmbedIndex.ts",
+    "scripts/ragCodeIndex.ts"
   ],
   "exclude": [
     "node_modules",
