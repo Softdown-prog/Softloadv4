@@ -396,3 +396,21 @@ test('dashboard visual: navegação com acesso inicial, rota ativa e tema respon
     '.sl-dashboard-main > .sl-conversation','[data-bs-theme="light"] .sl-dashboard-sidebar'])
     assert.ok(css.includes(required),'CSS ausente '+required);
 });
+
+test('histórico, configurações e upgrade seguem o tema unificado',()=>{
+  const history=source('frontend/pages/Historico.tsx');
+  const settings=source('frontend/pages/Configuracoes.tsx');
+  const upgrade=source('frontend/pages/Upgrade.tsx');
+  const css=source('public/css/softload.css');
+  for(const markup of [history,settings,upgrade]){
+    assert.ok(markup.includes('sl-dashboard-page-header'));
+    assert.ok(markup.includes('sl-dashboard-page p-3 p-md-5'));
+  }
+  assert.ok(history.includes('sl-dashboard-empty'));
+  assert.ok(history.includes('sl-dashboard-stat'));
+  assert.ok(settings.includes('sl-dashboard-settings-tabs'));
+  assert.ok(upgrade.includes('sl-dashboard-plan-card--featured'));
+  for(const selector of ['.sl-dashboard-settings-tabs','.sl-dashboard-plan-card','.sl-dashboard-empty']){
+    assert.ok(css.includes(selector),'Estilo ausente: '+selector);
+  }
+});

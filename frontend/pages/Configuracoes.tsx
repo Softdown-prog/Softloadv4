@@ -65,8 +65,8 @@ export default function Configuracoes(): React.JSX.Element {
     };
 
     return (
-        <div className="p-3 p-md-5" style={{ maxWidth: '800px' }}>
-            <div className="mb-5">
+        <div className="sl-dashboard-page p-3 p-md-5" style={{ maxWidth: '800px' }}>
+            <div className="sl-dashboard-page-header mb-5">
                 <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                     Configurações da Conta
                 </h1>
@@ -80,7 +80,7 @@ export default function Configuracoes(): React.JSX.Element {
                 </div>
             )}
 
-            <div className="d-flex flex-wrap gap-2 mb-4" role="tablist" aria-label="Seções de configurações">
+            <div className="sl-dashboard-settings-tabs d-flex flex-wrap gap-2 mb-4" role="tablist" aria-label="Seções de configurações">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const ativa = abaAtiva === tab.value;

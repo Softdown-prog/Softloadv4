@@ -113,8 +113,8 @@ export default function Historico(): React.JSX.Element {
     }
 
     return (
-        <div className="p-3 p-md-5">
-            <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-5">
+        <div className="sl-dashboard-page p-3 p-md-5">
+            <div className="sl-dashboard-page-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-5">
                 <div>
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                         Histórico de Compilações
@@ -134,7 +134,7 @@ export default function Historico(): React.JSX.Element {
 
             <div className="row g-3 mb-4">
                 <div className="col-12 col-md-4">
-                    <div className="sl-card mb-0 h-100">
+                    <div className="sl-card sl-dashboard-stat mb-0 h-100">
                         <div className="d-flex align-items-center gap-3">
                             <div className="rounded p-2" style={{ background: 'rgba(14,165,233,.1)', color: 'var(--sl-primary)' }}>
                                 <History size={20} />
@@ -147,7 +147,7 @@ export default function Historico(): React.JSX.Element {
                     </div>
                 </div>
                 <div className="col-12 col-md-4">
-                    <div className="sl-card mb-0 h-100">
+                    <div className="sl-card sl-dashboard-stat mb-0 h-100">
                         <div className="d-flex align-items-center gap-3">
                             <div className="rounded p-2" style={{ background: 'rgba(99,102,241,.1)', color: '#818cf8' }}>
                                 <Cpu size={20} />
@@ -160,7 +160,7 @@ export default function Historico(): React.JSX.Element {
                     </div>
                 </div>
                 <div className="col-12 col-md-4">
-                    <div className="sl-card mb-0 h-100">
+                    <div className="sl-card sl-dashboard-stat mb-0 h-100">
                         <div className="d-flex align-items-center gap-3 mb-2">
                             <div className="rounded p-2" style={{ background: 'rgba(34,197,94,.1)', color: '#22c55e' }}>
                                 <HardDrive size={20} />
@@ -197,7 +197,7 @@ export default function Historico(): React.JSX.Element {
                     <p className="text-secondary small mt-2">Carregando histórico...</p>
                 </div>
             ) : data.compilacoes.length === 0 ? (
-                <div className="sl-card text-center py-5">
+                <div className="sl-card sl-dashboard-empty text-center py-5">
                     <History size={48} className="text-muted mb-3" />
                     <h2 className="fw-bold mb-2 fs-3">Nenhuma compilação encontrada</h2>
                     <p className="text-secondary small mb-4">Gere seu primeiro template XML no Solaris Code ou no compilador.</p>

@@ -154,8 +154,8 @@ export default function Upgrade(): React.JSX.Element {
     }
 
     return (
-        <div className="p-3 p-md-5" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <div className="text-center mb-5">
+        <div className="sl-dashboard-page p-3 p-md-5" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div className="sl-dashboard-page-header text-center mb-5">
                 <Pill tone="primary" size="sm" uppercase={false} className="mb-2 font-monospace">UPGRADE DE CONTA</Pill>
                 <h1 className="fw-bolder text-uppercase mb-2" style={{ fontSize: '1.8rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                     Escolha seu Plano
@@ -185,7 +185,7 @@ export default function Upgrade(): React.JSX.Element {
                     return (
                         <div key={plano.id} className="col-12 col-sm-6 col-lg-3">
                             <div
-                                className="sl-card h-100 d-flex flex-column mb-0 position-relative overflow-hidden"
+                                className={`sl-card sl-dashboard-plan-card ${plano.destaque ? 'sl-dashboard-plan-card--featured' : ''} h-100 d-flex flex-column mb-0 position-relative overflow-hidden`}
                                 style={plano.destaque ? { border: '2px solid var(--sl-primary)', background: 'linear-gradient(135deg, rgba(14,165,233,0.05), rgba(37,99,235,0.05))' } : undefined}
                             >
                                 {plano.destaque && (
