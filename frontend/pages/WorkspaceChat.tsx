@@ -8,32 +8,54 @@ import {
     Layers, ArrowLeft, Cpu, Sparkles, Send, History, PlusCircle, 
     X, Clipboard, Check, HelpCircle, StopCircle, Eye, ArrowRight, Zap, RefreshCw
 } from 'lucide-react';
+import type { AppUser } from '../services/api';
 
-export default function WorkspaceChat() {
+type MessageRole = 'user' | 'assistant';
+interface ZipFile { base64: string; nome: string; totalArquivos: number }
+interface PreviewFile { xmlPath?: string; gcPath?: string; siteName?: string; colorPreset?: string; nichoTema?: string }
+interface ChatMessage { role: MessageRole; content: string; zip?: ZipFile; preview?: PreviewFile; patched?: { lang?: string } }
+interface ChatSession { sessionId: string; updatedAt: string; firstMessage?: string; messageCount?: number }
+interface ChatHistoryResponse { sessions?: ChatSession[]; session?: { messages?: ChatMessage[] } }
+interface ChatCreditsResponse { creditosGemini?: number; creditosGeminiTotal?: number }
+interface ChatApiError { error?: string; erro?: string }
+interface ChatStreamEvent {
+    type: 'status' | 'chunk' | 'done' | 'code_patch' | 'error';
+    label?: string; text?: string; reply?: string; sessionId?: string; message?: string;
+    zip?: ZipFile; preview?: PreviewFile; lang?: string;
+}
+interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: number }
+interface WorkspaceSnapshot { manifesto?: unknown; siteName?: string; colorPreset?: string }
+interface WorkspaceInfoResponse extends ChatCreditsResponse {
+    redirect?: string; snapshot?: WorkspaceSnapshot | null; sessionId?: string;
+    messages?: ChatMessage[];
+}
+
+
+export default function WorkspaceChat(): React.JSX.Element {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { user } = useOutletContext();
+    const { user } = useOutletContext<{ user: AppUser }>();
     
     const wsSessionId = searchParams.get('wsSession');
     const wsProjetoId = searchParams.get('projeto');
 
     const [loadingInfo, setLoadingInfo] = useState(true);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [statusText, setStatusText] = useState('');
-    const [statusHistory, setStatusHistory] = useState([]);
-    const [sessionId, setSessionId] = useState(null);
-    const [credits, setCredits] = useState({ creditos: 0, creditosTotal: 0 });
-    const [snapshot, setSnapshot] = useState(null);
-    const [sessionsList, setSessionsList] = useState([]);
+    const [statusHistory, setStatusHistory] = useState<string[]>([]);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [credits, setCredits] = useState<ChatCredits>({ creditos: 0, creditosTotal: 0 });
+    const [snapshot, setSnapshot] = useState<WorkspaceSnapshot | null>(null);
+    const [sessionsList, setSessionsList] = useState<ChatSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [copiedId, setCopiedId] = useState(null);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
 
-    const messagesEndRef = useRef(null);
-    const abortControllerRef = useRef(null);
-    const pendingPatchRef = useRef(null);
-    const drawerRef = useRef(null);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const pendingPatchRef = useRef<{ lang?: string } | null>(null);
+    const drawerRef = useRef<HTMLDivElement | null>(null);
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
@@ -66,11 +88,11 @@ export default function WorkspaceChat() {
     // sem esses params) cria projeto+sessão vazios na hora e devolve pra onde
     // navegar; sessão sem snapshot já cai automaticamente no modo geração do
     // chat (chatGenerationFlow.js) — não depende de template pré-compilado.
-    const iniciarChatRapido = async () => {
+    const iniciarChatRapido = async (): Promise<void> => {
         try {
             const res = await fetch('/api/workspace/chat/info');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as WorkspaceInfoResponse;
                 if (data.redirect) {
                     navigate(data.redirect, { replace: true });
                     return;
@@ -86,12 +108,12 @@ export default function WorkspaceChat() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, statusText, statusHistory]);
 
-    const carregarInfoInicial = async () => {
+    const carregarInfoInicial = async (): Promise<void> => {
         try {
             setLoadingInfo(true);
             const res = await fetch(`/api/workspace/chat/info?wsSession=${wsSessionId}&projeto=${wsProjetoId}`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as WorkspaceInfoResponse;
                 setCredits({
                     creditos: data.creditosGemini || 0,
                     creditosTotal: data.creditosGeminiTotal || 0
@@ -121,11 +143,11 @@ export default function WorkspaceChat() {
     //    de ser enviada) e apaga a conversa que o usuário acabou de ver na
     //    tela. `sessionId` também não precisa ser re-buscado: já vem certo
     //    no próprio evento SSE `done` (ver handleSend).
-    const atualizarCreditosSnapshot = async () => {
+    const atualizarCreditosSnapshot = async (): Promise<void> => {
         try {
             const res = await fetch(`/api/workspace/chat/info?wsSession=${wsSessionId}&projeto=${wsProjetoId}`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as WorkspaceInfoResponse;
                 setCredits({
                     creditos: data.creditosGemini || 0,
                     creditosTotal: data.creditosGeminiTotal || 0
@@ -137,11 +159,11 @@ export default function WorkspaceChat() {
         }
     };
 
-    const carregarHistorico = async () => {
+    const carregarHistorico = async (): Promise<void> => {
         try {
             const res = await fetch('/api/chat/sessions?type=workspace-chat');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatHistoryResponse;
                 setSessionsList(data.sessions || []);
             }
         } catch (err) {
@@ -149,7 +171,7 @@ export default function WorkspaceChat() {
         }
     };
 
-    const iniciarNovaConversa = () => {
+    const iniciarNovaConversa = (): void => {
         if (loading) return;
         setMessages([]);
         setSessionId(null);
@@ -158,13 +180,13 @@ export default function WorkspaceChat() {
         setInput('');
     };
 
-    const carregarSessao = async (sessId) => {
+    const carregarSessao = async (sessId: string): Promise<void> => {
         if (loading) return;
         setStatusText('Carregando conversa...');
         try {
             const res = await fetch(`/api/chat/sessions/${sessId}?type=workspace-chat`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatHistoryResponse;
                 if (data.session) {
                     setSessionId(sessId);
                     setMessages(data.session.messages || []);
@@ -179,14 +201,14 @@ export default function WorkspaceChat() {
         }
     };
 
-    const handleCopy = (text, id) => {
+    const handleCopy = (text: string, id: number): void => {
         navigator.clipboard.writeText(text).then(() => {
             setCopiedId(id);
             setTimeout(() => setCopiedId(null), 2000);
         });
     };
 
-    const handleVerAlteracao = async (preview) => {
+    const handleVerAlteracao = async (preview: PreviewFile): Promise<void> => {
         if (!preview || !preview.xmlPath) return;
         try {
             const res = await fetch('/api/workspace/set-preview', {
@@ -211,7 +233,7 @@ export default function WorkspaceChat() {
         }
     };
 
-    const handleSend = async (e, textToSend = null) => {
+    const handleSend = async (e?: React.FormEvent<HTMLFormElement> | null, textToSend: string | null = null): Promise<void> => {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
         if (!msg || loading) return;
@@ -221,7 +243,7 @@ export default function WorkspaceChat() {
         setStatusHistory([]);
         setStatusText('Iniciando conexão...');
 
-        const updatedHistory = [...messages, { role: 'user', content: msg }];
+        const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         setMessages(updatedHistory);
 
         const controller = new AbortController();
@@ -245,14 +267,15 @@ export default function WorkspaceChat() {
 
             if (!response.ok) {
                 if (response.status === 402) {
-                    const err402 = await response.json().catch(() => ({}));
+                    const err402 = await response.json().catch(() => ({})) as ChatApiError;
                     throw new Error(err402.error || err402.erro || 'Seus créditos de IA acabaram.');
                 }
-                const err = await response.json().catch(() => ({}));
+                const err = await response.json().catch(() => ({})) as ChatApiError;
                 throw new Error(err.error || err.erro || 'Erro ao processar mensagem.');
             }
 
-            const reader = response.body.getReader();
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('Resposta do chat sem stream.');
             const decoder = new TextDecoder('utf-8');
             let buffer = '';
             let currentAssistantReply = '';
@@ -272,19 +295,19 @@ export default function WorkspaceChat() {
                     const dLine = block.match(/^data: (.+)$/m);
                     if (!dLine) continue;
 
-                    let event;
+                    let event: ChatStreamEvent;
                     try {
-                        event = JSON.parse(dLine[1]);
+                        event = JSON.parse(dLine[1]) as ChatStreamEvent;
                     } catch (_) {
                         continue;
                     }
 
                     if (event.type === 'status') {
-                        setStatusText(event.label);
-                        setStatusHistory(prev => [...prev, event.label]);
+                        setStatusText(event.label ?? '');
+                        setStatusHistory(prev => [...prev, event.label ?? '']);
                     } else if (event.type === 'chunk') {
                         setStatusText('');
-                        currentAssistantReply += event.text;
+                        currentAssistantReply += event.text ?? '';
 
                         let visibleText = currentAssistantReply;
                         const markerIdx = currentAssistantReply.indexOf('[[TEMPLATE:');
@@ -316,7 +339,7 @@ export default function WorkspaceChat() {
                             setSessionId(event.sessionId);
                         }
 
-                        const assistantMsg = { role: 'assistant', content: cleanedReply };
+                        const assistantMsg: ChatMessage = { role: 'assistant', content: cleanedReply };
                         if (event.preview) {
                             assistantMsg.preview = event.preview;
                         }
@@ -351,7 +374,7 @@ export default function WorkspaceChat() {
 
         } catch (err) {
             console.error('Streaming error:', err);
-            const errMsg = err.message || 'Falha na conexão.';
+            const errMsg = err instanceof Error ? err.message : 'Falha na conexão.';
             setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro: ${errMsg}` }]);
         } finally {
             setLoading(false);
@@ -360,7 +383,7 @@ export default function WorkspaceChat() {
         }
     };
 
-    const stopGeneration = () => {
+    const stopGeneration = (): void => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             setLoading(false);
@@ -590,7 +613,7 @@ export default function WorkspaceChat() {
                         <div className="flex-grow-1 position-relative">
                             <textarea 
                                 className="form-control bg-black text-light border-secondary pe-5 py-2"
-                                rows="1"
+                                rows={1}
                                 placeholder="Descreva as alterações..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}

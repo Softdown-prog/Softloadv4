@@ -80,6 +80,8 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/Preview.tsx',
     'frontend/pages/Chat.tsx',
     'frontend/pages/Workspace.tsx',
+    'frontend/pages/Solaris.tsx',
+    'frontend/pages/WorkspaceChat.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -305,4 +307,29 @@ test('workspace TSX mantém projetos, sessões, versões e reversão sem apagar 
   assert.ok(ws.includes('useOutletContext<{ user: AppUser }>()'));
   assert.ok(ws.includes('sessaoHistorico?.versoes.map'));
   assert.ok(ws.includes('/dashboard/workspace/chat'));
+});
+
+test('Solaris TSX preserva importação ZIP, créditos, streaming e downloads', () => {
+  const code = source('frontend/pages/Solaris.tsx');
+  assert.ok(code.includes("fetch('/dashboard/solaris/upload'"));
+  assert.ok(code.includes("formData.append('arquivo', file)"));
+  assert.ok(code.includes("fetch('/dashboard/solaris/chat/stream'"));
+  assert.ok(code.includes('response.body?.getReader()'));
+  assert.ok(code.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(code.includes('const assistantMsg: ChatMessage'));
+  assert.ok(code.includes('m.zip.base64'));
+  assert.ok(code.includes('abortControllerRef.current.abort()'));
+});
+
+test('WorkspaceChat TSX mantém sessão, preview e refresh sem sobrescrever mensagens', () => {
+  const code = source('frontend/pages/WorkspaceChat.tsx');
+  assert.ok(code.includes("fetch('/api/workspace/chat/info')"));
+  assert.ok(code.includes("fetch('/dashboard/workspace/chat/stream'"));
+  assert.ok(code.includes("fetch('/api/workspace/set-preview'"));
+  assert.ok(code.includes("window.open('/dashboard/preview/session', '_blank')"));
+  assert.ok(code.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(code.includes('const assistantMsg: ChatMessage'));
+  assert.ok(code.includes('pendingPatchRef.current = event'));
+  assert.ok(code.includes('atualizarCreditosSnapshot()'));
+  assert.ok(code.includes('abortControllerRef.current.abort()'));
 });

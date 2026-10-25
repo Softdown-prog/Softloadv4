@@ -9,25 +9,47 @@ import {
     Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, 
     ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle
 } from 'lucide-react';
+import type { AppUser } from '../services/api';
 
-export default function Solaris() {
-    const { user } = useOutletContext();
-    const [messages, setMessages] = useState([]);
+type MessageRole = 'user' | 'assistant';
+interface ZipFile { base64: string; nome: string; totalArquivos: number }
+interface PreviewFile { xmlPath?: string; gcPath?: string; siteName?: string; colorPreset?: string; nichoTema?: string }
+interface ChatMessage { role: MessageRole; content: string; zip?: ZipFile; preview?: PreviewFile; patched?: { lang?: string } }
+interface ChatSession { sessionId: string; updatedAt: string; firstMessage?: string; messageCount?: number }
+interface ChatHistoryResponse { sessions?: ChatSession[]; session?: { messages?: ChatMessage[] } }
+interface ChatCreditsResponse { creditosGemini?: number; creditosGeminiTotal?: number }
+interface ChatApiError { error?: string; erro?: string }
+interface ChatStreamEvent {
+    type: 'status' | 'chunk' | 'done' | 'code_patch' | 'error';
+    label?: string; text?: string; reply?: string; sessionId?: string; message?: string;
+    zip?: ZipFile; preview?: PreviewFile; lang?: string;
+}
+interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: number }
+interface UploadCandidate { score: number; framework: string; evidencias: string[] }
+interface UploadResponse {
+    ok?: boolean; sessionId?: string; framework?: string; totalArquivos?: number;
+    candidatos?: UploadCandidate[]; analiseIA?: string; temProjeto?: boolean; error?: string;
+}
+
+
+export default function Solaris(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: AppUser }>();
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [statusText, setStatusText] = useState('');
-    const [statusHistory, setStatusHistory] = useState([]);
-    const [sessionId, setSessionId] = useState(null);
-    const [credits, setCredits] = useState({ creditos: 0, creditosTotal: 0 });
-    const [sessionsList, setSessionsList] = useState([]);
+    const [statusHistory, setStatusHistory] = useState<string[]>([]);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [credits, setCredits] = useState<ChatCredits>({ creditos: 0, creditosTotal: 0 });
+    const [sessionsList, setSessionsList] = useState<ChatSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [copiedId, setCopiedId] = useState(null);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
     const [uploading, setUploading] = useState(false);
 
-    const messagesEndRef = useRef(null);
-    const fileInputRef = useRef(null);
-    const abortControllerRef = useRef(null);
-    const drawerRef = useRef(null);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const drawerRef = useRef<HTMLDivElement | null>(null);
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
@@ -50,11 +72,11 @@ export default function Solaris() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, statusText, statusHistory]);
 
-    const carregarCreditos = async () => {
+    const carregarCreditos = async (): Promise<void> => {
         try {
             const res = await fetch('/api/chat/status');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatCreditsResponse;
                 setCredits({
                     creditos: data.creditosGemini || 0,
                     creditosTotal: data.creditosGeminiTotal || 0
@@ -65,11 +87,11 @@ export default function Solaris() {
         }
     };
 
-    const carregarHistorico = async () => {
+    const carregarHistorico = async (): Promise<void> => {
         try {
             const res = await fetch('/api/chat/sessions?type=solaris-chat');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatHistoryResponse;
                 setSessionsList(data.sessions || []);
             }
         } catch (err) {
@@ -77,7 +99,7 @@ export default function Solaris() {
         }
     };
 
-    const iniciarNovaConversa = () => {
+    const iniciarNovaConversa = (): void => {
         if (loading) return;
         setMessages([]);
         setSessionId(null);
@@ -86,13 +108,13 @@ export default function Solaris() {
         setInput('');
     };
 
-    const carregarSessao = async (sessId) => {
+    const carregarSessao = async (sessId: string): Promise<void> => {
         if (loading) return;
         setStatusText('Carregando conversa...');
         try {
             const res = await fetch(`/api/chat/sessions/${sessId}?type=solaris-chat`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatHistoryResponse;
                 if (data.session) {
                     setSessionId(sessId);
                     setMessages(data.session.messages || []);
@@ -107,7 +129,7 @@ export default function Solaris() {
         }
     };
 
-    const excluirSessao = async (e, sessId) => {
+    const excluirSessao = async (e: React.MouseEvent<HTMLButtonElement>, sessId: string): Promise<void> => {
         e.stopPropagation();
         if (confirm('Deseja realmente excluir esta conversa?')) {
             try {
@@ -126,19 +148,19 @@ export default function Solaris() {
         }
     };
 
-    const handleCopy = (text, id) => {
+    const handleCopy = (text: string, id: number): void => {
         navigator.clipboard.writeText(text).then(() => {
             setCopiedId(id);
             setTimeout(() => setCopiedId(null), 2000);
         });
     };
 
-    const handleUploadClick = () => {
+    const handleUploadClick = (): void => {
         if (loading || uploading) return;
         fileInputRef.current?.click();
     };
 
-    const handleFileUpload = async (e) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (!/\.zip$/i.test(file.name)) {
@@ -162,7 +184,7 @@ export default function Solaris() {
                 body: formData
             });
 
-            const data = await res.json();
+            const data = await res.json() as UploadResponse;
             if (res.ok && data.ok !== false) {
                 if (data.sessionId) setSessionId(data.sessionId);
 
@@ -204,7 +226,7 @@ export default function Solaris() {
         }
     };
 
-    const handleSend = async (e, textToSend = null) => {
+    const handleSend = async (e?: React.FormEvent<HTMLFormElement> | null, textToSend: string | null = null): Promise<void> => {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
         if (!msg || loading) return;
@@ -215,7 +237,7 @@ export default function Solaris() {
         setStatusText('Iniciando conexão...');
 
         // Adicionar mensagem do usuário
-        const updatedHistory = [...messages, { role: 'user', content: msg }];
+        const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         setMessages(updatedHistory);
 
         const controller = new AbortController();
@@ -238,14 +260,15 @@ export default function Solaris() {
 
             if (!response.ok) {
                 if (response.status === 402) {
-                    const err402 = await response.json().catch(() => ({}));
+                    const err402 = await response.json().catch(() => ({})) as ChatApiError;
                     throw new Error(err402.error || err402.erro || 'Seus créditos de IA acabaram.');
                 }
-                const err = await response.json().catch(() => ({}));
+                const err = await response.json().catch(() => ({})) as ChatApiError;
                 throw new Error(err.error || err.erro || 'Erro ao processar requisição.');
             }
 
-            const reader = response.body.getReader();
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('Resposta do chat sem stream.');
             const decoder = new TextDecoder('utf-8');
             let buffer = '';
             let currentAssistantReply = '';
@@ -265,19 +288,19 @@ export default function Solaris() {
                     const dLine = block.match(/^data: (.+)$/m);
                     if (!dLine) continue;
 
-                    let event;
+                    let event: ChatStreamEvent;
                     try {
-                        event = JSON.parse(dLine[1]);
+                        event = JSON.parse(dLine[1]) as ChatStreamEvent;
                     } catch (_) {
                         continue;
                     }
 
                     if (event.type === 'status') {
-                        setStatusText(event.label);
-                        setStatusHistory(prev => [...prev, event.label]);
+                        setStatusText(event.label ?? '');
+                        setStatusHistory(prev => [...prev, event.label ?? '']);
                     } else if (event.type === 'chunk') {
                         setStatusText(''); // Limpar status ao começar a transmitir texto
-                        currentAssistantReply += event.text;
+                        currentAssistantReply += event.text ?? '';
 
                         // Esconder marcador interno se houver
                         let visibleText = currentAssistantReply;
@@ -311,7 +334,7 @@ export default function Solaris() {
                             setSessionId(event.sessionId);
                         }
 
-                        const assistantMsg = { role: 'assistant', content: cleanedReply };
+                        const assistantMsg: ChatMessage = { role: 'assistant', content: cleanedReply };
                         if (event.zip && event.zip.base64) {
                             assistantMsg.zip = {
                                 base64: event.zip.base64,
@@ -342,7 +365,7 @@ export default function Solaris() {
 
         } catch (err) {
             console.error('Streaming error:', err);
-            const errMsg = err.message || 'Falha na conexão.';
+            const errMsg = err instanceof Error ? err.message : 'Falha na conexão.';
             setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro: ${errMsg}` }]);
         } finally {
             setLoading(false);
@@ -351,7 +374,7 @@ export default function Solaris() {
         }
     };
 
-    const stopGeneration = () => {
+    const stopGeneration = (): void => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             setLoading(false);
@@ -564,7 +587,7 @@ export default function Solaris() {
                         <div className="flex-grow-1 position-relative">
                             <textarea 
                                 className="form-control bg-black text-light border-secondary pe-5 py-2"
-                                rows="1"
+                                rows={1}
                                 placeholder="Fale com o Solaris..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
