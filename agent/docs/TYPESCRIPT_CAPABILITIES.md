@@ -189,6 +189,14 @@ esses imports nem exige um loader TypeScript em produção.
 - A comparação AST garante que a configuração, os endpoints e o
   comportamento dos segredos permaneçam iguais ao JavaScript original.
 
+## Execução de comandos tipada
+
+- `agent/src/utils/run-command.ts` descreve entrada e saída dos
+  subprocessos sem shell, preservando os argumentos literais, a opção
+  `stripFinalNewline`, timeout e os limites de saída existentes.
+- O contrato de tipos local de `execa` inclui a opção opcional de
+  preservação da quebra de linha; não altera a instalação de produção.
+
 ## Como validar
 
 ```bash
