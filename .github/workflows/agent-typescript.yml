@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/src/core/**'
       - 'agent/src/index.ts'
       - 'agent/src/index.js'
       - 'agent/src/utils/logger.ts'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/src/core/**'
       - 'agent/src/index.ts'
       - 'agent/src/index.js'
       - 'agent/src/utils/logger.ts'

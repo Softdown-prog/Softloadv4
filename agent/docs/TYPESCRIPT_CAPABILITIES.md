@@ -90,6 +90,14 @@ esses imports nem exige um loader TypeScript em produção.
   Docker executa os equivalentes `.js` gerados no runner do GitHub;
   não há compilação dentro da VPS nem mudança de entrypoint.
 
+## Roteamento e execução tipados
+
+- `agent/src/core/task-router.ts` declara os tipos de tarefa, capability,
+  mapa de roteamento e erro para operações desconhecidas.
+- `agent/src/core/task-runner.ts` declara o contrato do executor,
+  duração, resultados e tratamento de falhas. A compilação é verificada
+  por equivalência AST com os respectivos `.js` de produção.
+
 ## Como validar
 
 ```bash

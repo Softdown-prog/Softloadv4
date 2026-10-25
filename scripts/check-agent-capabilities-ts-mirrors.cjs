@@ -43,6 +43,8 @@ const sources = [
   "agent/src/capabilities/web-search.ts",
   "agent/src/utils/logger.ts",
   "agent/src/index.ts",
+  "agent/src/core/task-router.ts",
+  "agent/src/core/task-runner.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
