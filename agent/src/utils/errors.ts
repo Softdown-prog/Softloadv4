@@ -12,6 +12,9 @@
  * (security/permissions.js).
  */
 export class AgentError extends Error {
+  declare code: string;
+  declare details: unknown;
+
   constructor(message: string, code: string = "AGENT_ERROR", details: unknown = undefined) {
     super(message);
 
