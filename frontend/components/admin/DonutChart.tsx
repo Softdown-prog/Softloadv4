@@ -19,7 +19,7 @@ export interface DonutChartProps {
 
 export default function DonutChart({ data }: DonutChartProps): React.JSX.Element {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const chartRef = useRef<ChartInstance<'doughnut'> | null>(null);
+    const chartRef = useRef<ChartInstance<'doughnut', number[], string> | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -29,7 +29,7 @@ export default function DonutChart({ data }: DonutChartProps): React.JSX.Element
             if (cancelado || !canvasRef.current) return;
 
             if (!chartRef.current) {
-                chartRef.current = new Chart<'doughnut'>(canvasRef.current, {
+                chartRef.current = new Chart<'doughnut', number[], string>(canvasRef.current, {
                     type: 'doughnut',
                     data: {
                         labels: data.map(d => d.label),
@@ -46,7 +46,7 @@ export default function DonutChart({ data }: DonutChartProps): React.JSX.Element
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { color: '#94a3b8', font: { size: 11, weight: '700' }, padding: 16 },
+                                labels: { color: '#94a3b8', font: { size: 11, weight: 700 }, padding: 16 },
                             },
                         },
                         cutout: '65%',
