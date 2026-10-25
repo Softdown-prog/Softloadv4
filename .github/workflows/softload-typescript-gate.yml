@@ -145,6 +145,8 @@ jobs:
         run: npm run test:frontend-base
       - name: Conferir rotas e layouts React migrados
         run: npm run test:frontend-layouts
+      - name: Testar prévia isolada de créditos V2 do dashboard
+        run: node --test frontend/tests/creditsV2.test.cjs
       - name: Verificar TypeScript do frontend React
         run: npm run typecheck:frontend
       - name: Compilar frontend React pelo Vite
