@@ -34,7 +34,8 @@
     "src/archive/zipExtractWorker.ts",
     "src/webSandbox/runner.ts",
     "src/server.ts",
-    "src/archive/extractArchive.ts"
+    "src/archive/extractArchive.ts",
+    "src/archive/extractZip.ts"
   ],
   "exclude": [
     "node_modules"

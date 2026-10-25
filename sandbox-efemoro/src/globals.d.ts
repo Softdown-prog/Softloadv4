@@ -5,6 +5,7 @@ declare module "node:fs" {
   const fs: {
     readFileSync(path: URL, encoding: "utf8"): string;
     mkdirSync(path: string, options?: { recursive?: boolean }): string | undefined;
+    createWriteStream(path: string): { destroy(): void; on(event: "error", listener: (error: Error) => void): void; on(event: "close", listener: () => void): void };
   };
   export default fs;
   export function existsSync(path: string): boolean;
@@ -22,7 +23,12 @@ declare module "node:os" {
   export default os;
 }
 declare module "node:path" {
-  const path: { join(...paths: string[]): string };
+  const path: {
+    join(...paths: string[]): string;
+    resolve(...paths: string[]): string;
+    dirname(path: string): string;
+    sep: string;
+  };
   export default path;
   export function isAbsolute(path: string): boolean;
 }
@@ -33,6 +39,13 @@ declare module "node:url" {
 declare module "node:worker_threads" {
   export const workerData: unknown;
   export const parentPort: { postMessage(value: unknown): void } | null;
+  export class Worker {
+    constructor(file: string, options: { workerData: { baseDir: string; zipBuffer: ArrayBuffer | Buffer; opts: unknown }; transferList: ArrayBuffer[]; resourceLimits: { maxOldGenerationSizeMb: number } });
+    terminate(): Promise<number>;
+    once(event: "message", listener: (message: { ok: boolean; arquivos: Array<{ caminho: string; conteudo: string | null; binario: boolean }>; message: string }) => void): this;
+    once(event: "error", listener: (error: Error) => void): this;
+    once(event: "exit", listener: (code: number) => void): this;
+  }
 }
 interface Buffer extends Uint8Array {
   toString(encoding?: string): string;
@@ -80,4 +93,27 @@ declare module "node:fs/promises" {
     statfs(path: string): Promise<{ bavail: number; bsize: number }>;
   };
   export default fsp;
+}
+
+declare module "yauzl" {
+  export interface ZipEntry { fileName: string; uncompressedSize: number; externalFileAttributes: number }
+  export interface ZipReadable {
+    destroy(): void;
+    pipe(dest: unknown): void;
+    on(event: "data", cb: (chunk: Buffer) => void): void;
+    on(event: "error", cb: (error: Error) => void): void;
+  }
+  export interface ZipFile {
+    readEntry(): void;
+    close(): void;
+    on(event: "entry", cb: (entry: ZipEntry) => void): void;
+    on(event: "error", cb: (err: Error) => void): void;
+    on(event: "end", cb: () => void): void;
+    openReadStream(entry: ZipEntry, cb: (error: Error | null, stream: ZipReadable) => void): void;
+  }
+  const yauzl: {
+    fromBuffer(buffer: Buffer, options: { lazyEntries: boolean }, cb: (error: Error | null, file: ZipFile) => void): void;
+    validateFileName(name: string): string | null;
+  };
+  export default yauzl;
 }
