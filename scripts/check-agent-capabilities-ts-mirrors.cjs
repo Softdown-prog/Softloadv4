@@ -62,6 +62,9 @@ for (const relative of sources) {
     compilerOptions: {
       target: ts.ScriptTarget.ES2022,
       module: ts.ModuleKind.ESNext,
+      // Preserve imports that exist in the runtime JS even when unused.
+      // Type-only imports continue to be erased from the generated JS.
+      verbatimModuleSyntax: true,
       newLine: ts.NewLineKind.LineFeed,
     },
     reportDiagnostics: true,
