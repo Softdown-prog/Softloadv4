@@ -1405,3 +1405,22 @@ O teste `scripts/appendBlocks.test.js` valida o fluxo com API simulada:
 zero consumo em dry-run/import, uma chamada no `--apply`, concatenação
 do catálogo anterior, filtros CSS/HTML e falhas sem escrita. O gate
 executa o teste sem chave de API.
+
+## Etapa 81 — namespaces dos três RAGs em TypeScript
+
+`src/knowledge/ragNamespaces.ts` passa a definir, com contratos tipados e
+imutáveis, os namespaces de Blogger, Solaris técnico e Solaris Code.
+O JavaScript `src/knowledge/ragNamespaces.js` continua como espelho
+CommonJS para os serviços Node existentes. **Nenhum nome de coleção,
+identificador, caminho ou heurística de consulta foi alterado.**
+
+Blogger continua restrito ao filesystem em `src/rag`, sem coleção de
+vetores. Solaris técnico mantém `solaris_rag_vectors` e Solaris Code
+mantém `solaris_code_vectors`, separados e com modos de consulta
+permitidos apenas `catalogo`, `codigo` ou `ambos`.
+
+`src/knowledge/ragNamespacesContract.test.js` adiciona testes isolados
+para imutabilidade, coleções e caminhos exclusivos, rejeição de
+configurações duplicadas ou malformadas e bloqueio de intenções genéricas
+Blogger na seleção do corpus de código. O Gate TypeScript continua
+executando as regressões completas de fronteiras entre RAGs.

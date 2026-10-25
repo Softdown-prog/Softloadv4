@@ -104,6 +104,8 @@ jobs:
         run: npm run rag:code-test
       - name: Simular indexação do corpus de código (sem Firestore)
         run: npm run rag:code-index -- --limit=3
+      - name: Validar contratos tipados dos namespaces RAG
+        run: node --test src/knowledge/ragNamespacesContract.test.js
       - name: Verificar isolamento dos três RAGs
         run: npm run rag:boundaries-test
       - name: Testar scripts CLI migrados sem Firestore real
