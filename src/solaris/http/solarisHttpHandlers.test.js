@@ -93,7 +93,8 @@ test('chat mantém streaming SSE, histórico, tokens, débito e persistência', 
   assert.equal(response.events[3].sessionId,'1790000000000_abcd');
   assert.equal(calls.loaded.length,1);
   assert.equal(calls.saved.length,1);
-  assert.deepEqual(calls.debit[0], ['dev@example.test',3,5]);
+  assert.deepEqual(calls.debit[0].slice(0,3), ['dev@example.test',3,5]);
+  assert.match(calls.debit[0][3], /^[a-zA-Z0-9_-]{12,128}$/);
   const stored=calls.saved[0][3];
   assert.equal(stored.messages.length,3);
   assert.equal(stored.messages[0].content, 'contexto');
@@ -176,7 +177,7 @@ test('falha da sessão anterior deixa o editor funcionar sem propostas', async (
   await criarHandlerChatSolaris(dependencies)(req({message:'revise index.html'}),response);
   assert.deepEqual(proposals,[]);
   assert.deepEqual(response.events.map(e=>e.type),['status','chunk','done']);
-  assert.deepEqual(calls.debit[0],['dev@example.test',2,4]);
+  assert.deepEqual(calls.debit[0].slice(0,3),['dev@example.test',2,4]);
 });
 
 test('sessão anterior com propostas de formato inválido não derruba o editor', async () => {
@@ -204,7 +205,7 @@ test('editor com tokens malformados usa estimativa em vez de cobrar contagens in
   const response=fakeResponse();
   await criarHandlerChatSolaris(dependencies)(req({message:'teste'}),response);
   assert.deepEqual(response.events.at(-1).tokens,{total:0,input:0,output:0});
-  assert.deepEqual(calls.debit[0],['dev@example.test',Math.ceil(5/3.5),Math.ceil(9/3.5)]);
+  assert.deepEqual(calls.debit[0].slice(0,3),['dev@example.test',Math.ceil(5/3.5),Math.ceil(9/3.5)]);
 });
 
 test('falha ao salvar sessão não impede SSE nem cobrança', async () => {

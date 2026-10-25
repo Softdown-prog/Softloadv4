@@ -172,5 +172,5 @@ test('falha no GCS não bloqueia cobrança nem finge que o histórico foi salvo'
 
 test('modo edição também aguarda o débito antes de concluir', () => {
     const edit = fs.readFileSync(path.join(__dirname, 'chat/chatEditFlow.js'), 'utf8');
-    assert.match(edit, /await debitarCreditos\(user\.email, tokens\.input, tokens\.output\)/);
+    assert.match(edit, /await debitarCreditos\(user\.email, tokens\.input, tokens\.output, billingOperationId\)/);
 });

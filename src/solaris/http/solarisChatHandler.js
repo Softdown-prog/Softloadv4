@@ -21,6 +21,7 @@ function criarHandlerChatSolaris(deps) {
         const uid = req.session.user?.uid;
         const email = req.session.user?.email || '';
         const sessionId = sessaoCliente.sessionId || chatStorage.newSessionId();
+        const billingOperationId = chatStorage.newSessionId(); // chave independente por geração
         const safeHistory = sanitizarHistoricoSolaris(history);
         const historicoSolaris = historicoParaMotorSolaris(safeHistory);
         res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -276,7 +277,7 @@ function criarHandlerChatSolaris(deps) {
             if (email && textoParaSalvar) {
                 const debito = calcularDebitoChatSolaris(msg, textoParaSalvar, tokensRef, tokensGeracao);
                 try {
-                    await debitarCreditos(email, debito.input, debito.output);
+                    await debitarCreditos(email, debito.input, debito.output, billingOperationId);
                 }
                 catch (e) {
                     debitoConfirmado = false;

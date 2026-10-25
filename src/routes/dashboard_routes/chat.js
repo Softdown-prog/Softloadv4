@@ -88,6 +88,8 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
     const email     = req.session.user?.email || '';
     const isGpt     = false; // Gemini é o único provedor ativo neste chat.
     const sessionId = clientSessionId || chatStorage.newSessionId();
+    // Chave gerada no servidor por geração; nunca aceitar ID controlado pelo cliente.
+    const billingOperationId = chatStorage.newSessionId();
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 
@@ -188,7 +190,7 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
             const inputToks = tokensRef.input > 0 ? tokensRef.input : Math.ceil(msg.length / 3.5);
             const outputToks = tokensRef.output > 0 ? tokensRef.output : Math.ceil(fullText.length / 3.5);
             try {
-                await debitarCreditos(email, inputToks, outputToks);
+                await debitarCreditos(email, inputToks, outputToks, billingOperationId);
             } catch (e) {
                 debitoConfirmado = false;
                 console.error(`[BILLING] chat debit err: ${e.message}`);

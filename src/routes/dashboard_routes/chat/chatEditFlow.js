@@ -32,7 +32,7 @@ const { _snapshotDeManifesto }       = require('./chatTemplateCompiler');
  *
  * @returns {Promise<{ fullText: string, downloadUrl?: string }>}
  */
-async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId }) {
+async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId }) {
     const aplicarEdicaoReal = async (campos, resumoMudancas) => {
         sendEvent({ type: 'status', label: 'Recompilando template com as alterações...' });
         return aplicarEdicao(wsSnapshot.manifesto, campos, user, label => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
@@ -55,7 +55,7 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
 
     if (tokens && (tokens.input || tokens.output)) {
         try {
-            await debitarCreditos(user.email, tokens.input, tokens.output);
+            await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
         } catch (e) {
             console.error(`[BILLING] chat-edicao-agente debit err: ${e.message}`);
         }

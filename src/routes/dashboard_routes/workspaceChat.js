@@ -221,6 +221,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
     // ignorado (defesa em profundidade; a view nem envia outro valor).
     const isGpt     = false;
     const sessionId = clientSessionId || chatStorage.newSessionId();
+    const billingOperationId = chatStorage.newSessionId(); // chave exclusiva do servidor
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 
@@ -305,7 +306,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
             debitoManual = true;
             const resultado = await processarEdicaoDeTemplate({
                 msg, wsSnapshot, edicaoPendente, sessaoRef, user: req.session.user, sendEvent,
-                historico: safeHistory, wsProjetoId, wsSessionId,
+                historico: safeHistory, wsProjetoId, wsSessionId, billingOperationId,
             });
             fullText = resultado.fullText;
             preview  = resultado.preview || null;
@@ -437,7 +438,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
             const inputToks = tokensRef.input > 0 ? tokensRef.input : Math.ceil(msg.length / 3.5);
             const outputToks = tokensRef.output > 0 ? tokensRef.output : Math.ceil(fullText.length / 3.5);
             try {
-                await debitarCreditos(email, inputToks, outputToks);
+                await debitarCreditos(email, inputToks, outputToks, billingOperationId);
             } catch (e) {
                 console.error(`[BILLING] workspace-chat debit err: ${e.message}`);
             }

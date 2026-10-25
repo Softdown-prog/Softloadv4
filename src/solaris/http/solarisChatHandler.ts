@@ -38,7 +38,7 @@ export interface SolarisChatHandlerDependencies {
   chatStorage: SolarisChatStorage;
   db: { collection(name: string): { add(value: unknown): Promise<unknown> } };
   admin: { firestore: { FieldValue: { serverTimestamp(): unknown } } };
-  debitarCreditos(email: string, input: number, output: number): Promise<unknown>;
+  debitarCreditos(email: string, input: number, output: number, operacaoId?: string): Promise<unknown>;
   solarisChat: Pick<SolarisChat, 'perguntarStream'>;
   modelRouter: ProjectEditorRouter;
   orquestrador: Pick<OrquestradorSolaris, 'gerarProjeto'>;
@@ -72,6 +72,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     const uid       = req.session.user?.uid;
     const email     = req.session.user?.email || '';
     const sessionId = sessaoCliente.sessionId || chatStorage.newSessionId();
+    const billingOperationId = chatStorage.newSessionId(); // chave independente por geração
 
     const safeHistory: SolarisHistoricoCliente[] = sanitizarHistoricoSolaris(history);
     const historicoSolaris: SolarisHistoricoMotor[] = historicoParaMotorSolaris(safeHistory);
@@ -336,7 +337,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         if (email && textoParaSalvar) {
             const debito = calcularDebitoChatSolaris(msg, textoParaSalvar, tokensRef, tokensGeracao);
             try {
-                await debitarCreditos(email, debito.input, debito.output);
+                await debitarCreditos(email, debito.input, debito.output, billingOperationId);
             } catch (e) {
                 debitoConfirmado = false;
                 console.error(`[BILLING] solaris-chat debit err: ${e instanceof Error ? e.message : String(e)}`);
