@@ -85,6 +85,13 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
    const {value}=await token(uid);
    return contextoRepositorioPublico(repo,{token:value,fetchImpl});
   },
+  async selectRepo(uid,url){
+   const repo=normalizarRepositorioGithub(url);
+   if(!repo)throw Error('Informe o link completo do repositório GitHub.');
+   await this.repoContext(uid,repo); // confirma permissão no GitHub antes de salvar
+   await doc(uid).update({repository:repo});
+   return repo;
+  },
   async disconnect(uid){await doc(uid).delete();}
  };
 }
