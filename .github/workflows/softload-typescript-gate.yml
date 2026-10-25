@@ -88,6 +88,8 @@ jobs:
         run: node scripts/visual/renderPreview.test.js
       - name: Verificar gerador de catálogo Solaris RAG (modelo falso e pasta temporária)
         run: node scripts/ragGenerate.test.js
+      - name: Verificar Firestore em memória (sem conexão remota)
+        run: node --test src/solaris/rag/ragVectorStore.test.js
       - name: Testar CLI de recuperação de bloqueios com dependências simuladas
         run: node --test scripts/solarisProjectLockRecovery.test.js
       - name: Verificar TypeScript, espelhos e auditoria

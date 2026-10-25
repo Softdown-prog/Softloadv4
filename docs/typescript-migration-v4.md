@@ -80,3 +80,9 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Fonte `scripts/solarisProjectLockRecovery.ts` tipa identificadores de sessão, carimbo de atualização e a inspeção/recuperação. O espelho `.js` mantém a API CommonJS e o comando atual.
 - Operação real exige `recover UID SESSION OWNER UPDATED_AT --instances-stopped --confirm`; o módulo `src/solaris/tools/projectLockRecovery.js` continua impondo validações, idade mínima e exclusão com precondição do Firestore.
 - Testes de CLI em `scripts/solarisProjectLockRecovery.test.js` verificam argumentos e chamadas usando apenas mocks locais. Não acessam VPS, Firestore nem liberam locks.
+
+## Lote — fake Firestore tipado para testes RAG Solaris
+
+- `src/solaris/rag/__testUtils__/fakeFirestore.ts` exporta a mesma função `criarFakeFirestore` e contratos tipados para documentos, vetores, filtros, consultas KNN e lotes atômicos simulados.
+- O `.js` é somente o espelho CommonJS. O helper não carrega `firebase-admin`, credenciais, Firestore de produção nem serviços HTTP.
+- A etapa `node --test src/solaris/rag/ragVectorStore.test.js` no CI verifica a substituição de chunks, deduplicação, isolamento entre entradas e busca por distância de cosseno com dados em memória.

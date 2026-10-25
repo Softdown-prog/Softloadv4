@@ -1,33 +1,26 @@
-'use strict';
-
-// ============================================================
-// FAKE FIRESTORE (só pra teste)
-// ============================================================
-// Implementa só a fatia da API usada por ragVectorStore.js:
-// collection().where('==').get(), collection().doc(), db.batch(),
-// collection().findNearest().get(). Nunca toca rede/Firestore de
-// verdade -- injetado no lugar de `db` nos testes.
-// ============================================================
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.criarFakeFirestore = criarFakeFirestore;
 function _distanciaCosseno(a, b) {
     const dot = a.reduce((soma, v, i) => soma + v * (b[i] ?? 0), 0);
     const normA = Math.sqrt(a.reduce((soma, v) => soma + v * v, 0));
     const normB = Math.sqrt(b.reduce((soma, v) => soma + v * v, 0));
-    if (normA === 0 || normB === 0) return 1;
+    if (normA === 0 || normB === 0)
+        return 1;
     return 1 - dot / (normA * normB);
 }
-
 function criarFakeFirestore() {
-    const colecoes = new Map(); // nome -> Map(docId -> dados)
-
+    const colecoes = new Map();
     function _mapaDaColecao(nome) {
-        if (!colecoes.has(nome)) colecoes.set(nome, new Map());
-        return colecoes.get(nome);
+        let mapa = colecoes.get(nome);
+        if (!mapa) {
+            mapa = new Map();
+            colecoes.set(nome, mapa);
+        }
+        return mapa;
     }
-
     function collection(nome) {
         const mapa = _mapaDaColecao(nome);
-
         function doc(id) {
             return {
                 id,
@@ -39,7 +32,6 @@ function criarFakeFirestore() {
                 }),
             };
         }
-
         return {
             doc,
             get: async () => {
@@ -48,7 +40,7 @@ function criarFakeFirestore() {
             },
             where(campo, operador, valor) {
                 if (operador !== '==') {
-                    throw new Error(`fakeFirestore: operador "${operador}" não suportado`);
+                    throw new Error('fakeFirestore: operador "' + operador + '" não suportado');
                 }
                 return {
                     get: async () => {
@@ -64,7 +56,8 @@ function criarFakeFirestore() {
                     get: async () => {
                         const q = queryVector.toArray();
                         const candidatos = [...mapa.entries()].map(([id, dados]) => {
-                            const v = dados[vectorField]?.toArray?.() || [];
+                            const vetor = dados[vectorField];
+                            const v = vetor?.toArray?.() || [];
                             const distancia = _distanciaCosseno(q, v);
                             return { id, dados: { ...dados, _distancia: distancia }, distancia };
                         });
@@ -79,7 +72,6 @@ function criarFakeFirestore() {
             },
         };
     }
-
     function batch() {
         const operacoes = [];
         return {
@@ -90,16 +82,14 @@ function criarFakeFirestore() {
                 operacoes.push(() => _mapaDaColecao(ref._colecao).set(ref.id, dados));
             },
             commit: async () => {
-                for (const op of operacoes) op();
+                for (const op of operacoes)
+                    op();
             },
         };
     }
-
     return {
         collection,
         batch,
         _dump: (nome) => new Map(_mapaDaColecao(nome)),
     };
 }
-
-module.exports = { criarFakeFirestore };
