@@ -28,7 +28,7 @@ function custoDaReserva(modelo, payload, tokensOutput, cambio) {
             const bytesImagem = Math.floor(value.data.length * 3 / 4)
                 - (value.data.endsWith('==') ? 2 : value.data.endsWith('=') ? 1 : 0);
             if (bytesImagem <= 0 || bytesImagem > 512 * 1024) {
-                throw new OrcamentoIaIndisponivel('IMAGEM_FORA_DO_LIMITE');
+                throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('IMAGEM_FORA_DO_LIMITE');
             }
             return { mimeType: value.mimeType, data: 'x'.repeat(32 * 1024) };
         }
