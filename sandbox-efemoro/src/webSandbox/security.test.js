@@ -73,3 +73,11 @@ test("validateOptions clampa timeout fora do intervalo permitido para o default"
   assert.equal(tooLow.timeout, 30000);
   assert.equal(tooHigh.timeout, 30000);
 });
+
+test("screenshotDelivery: conserva contrato path e aceita inline somente quando explícito", () => {
+  const base = { url: "http://localhost:3000" };
+  assert.equal(validateOptions(base).screenshotDelivery, "path");
+  assert.equal(validateOptions({ ...base, screenshotDelivery: "inline" }).screenshotDelivery, "inline");
+  assert.throws(() => validateOptions({ ...base, screenshotDelivery: "url" }), /screenshotDelivery/);
+  assert.throws(() => validateOptions({ ...base, screenshotDelivery: 123 }), /screenshotDelivery/);
+});

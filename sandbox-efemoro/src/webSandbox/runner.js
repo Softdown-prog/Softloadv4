@@ -26,6 +26,7 @@ const NETWORK_IDLE_WAIT_MS = 3000;
  * @param {string} [options.device='desktop']
  * @param {object} [options.viewport]
  * @param {boolean} [options.screenshot=true]
+ * @param {"path"|"inline"} [options.screenshotDelivery="path"]
  * @param {boolean} [options.accessibility=true]
  * @param {string[]} [options.allowedHosts]
  * @param {number} [options.timeout=30000]
@@ -53,6 +54,7 @@ async function runWebSandbox(options) {
     responsive: { horizontalOverflow: false, viewportWarnings: [] },
     accessibility: { violations: [] },
     screenshotPath: null,
+    screenshot: null,
     errors: [],
     security: { blockedRequests: [] },
   };
@@ -60,6 +62,7 @@ async function runWebSandbox(options) {
   let browser = null;
   let context = null;
   let page = null;
+  let screenshotFailed = false;
 
   try {
     const validated = validateOptions(options);
@@ -69,6 +72,7 @@ async function runWebSandbox(options) {
       device,
       viewport,
       screenshot,
+      screenshotDelivery,
       accessibility,
       allowedHosts,
       timeout,
@@ -107,9 +111,13 @@ async function runWebSandbox(options) {
       .catch(() => {});
 
     if (screenshot) {
-      const screenshotResult = await captureScreenshot(page, browserType, device);
+      const screenshotResult = await captureScreenshot(page, browserType, device, {
+        delivery: screenshotDelivery,
+      });
       result.screenshotPath = screenshotResult.path;
+      result.screenshot = screenshotResult.screenshot || null;
       if (screenshotResult.error) {
+        screenshotFailed = true;
         result.errors.push({ message: `Screenshot failed: ${screenshotResult.error}` });
       }
     }
@@ -125,7 +133,9 @@ async function runWebSandbox(options) {
     result.network.failedRequests = networkPolicy.failedRequests.slice(0, MAX_LOGGED_ITEMS);
     result.security.blockedRequests = networkPolicy.blockedRequests.slice(0, MAX_LOGGED_ITEMS);
 
-    result.success = true;
+    // Se o solicitante pediu um screenshot e ele não chegou, não
+    // reportar auditoria completa como sucesso silencioso.
+    result.success = !screenshotFailed;
   } catch (error) {
     result.errors.push({
       message: error.message,

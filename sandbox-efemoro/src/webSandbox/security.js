@@ -55,6 +55,13 @@ function validateOptions(options) {
   const screenshot =
     typeof options.screenshot === "boolean" ? options.screenshot : true;
 
+  // `inline` é a entrega de PNG via HTTP, com teto de bytes. O
+  // default continua `path` para clientes antigos do serviço.
+  const screenshotDelivery = options.screenshotDelivery ?? "path";
+  if (!["path", "inline"].includes(screenshotDelivery)) {
+    throw new Error("screenshotDelivery deve ser path ou inline");
+  }
+
   const accessibility =
     typeof options.accessibility === "boolean" ? options.accessibility : true;
 
@@ -73,6 +80,7 @@ function validateOptions(options) {
     device,
     viewport,
     screenshot,
+    screenshotDelivery,
     accessibility,
     timeout,
     allowedHosts,

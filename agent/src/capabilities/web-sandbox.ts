@@ -90,6 +90,9 @@ export class WebSandboxCapability {
       device: task.device,
       viewport: task.viewport,
       screenshot: task.screenshot,
+      // A API continua compatível com `path`, mas o Agent roda em OUTRO
+      // container; por isso solicita bytes reais em vez de /tmp local.
+      screenshotDelivery: task.screenshot === false ? undefined : "inline",
       accessibility: task.accessibility,
       allowedHosts: task.allowedHosts,
       timeout: task.timeout,
@@ -118,6 +121,36 @@ export class WebSandboxCapability {
       );
     }
 
-    return response.json();
+    const result = await response.json();
+    const image = result?.screenshot as {
+      mimeType?: unknown;
+      dataBase64?: unknown;
+      bytes?: unknown;
+      fullPage?: unknown;
+    } | null | undefined;
+    if (image != null) {
+      // O sandbox é uma fronteira de confiança. Não repassamos um PNG
+      // arbitrariamente grande ou inválido para o agente/LLM.
+      const encoded = image.dataBase64;
+      const declaredBytes = image.bytes;
+      const actualBytes = typeof encoded === "string"
+        ? Math.floor(encoded.length * 3 / 4) - (encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0)
+        : -1;
+      if (
+        image.mimeType !== "image/png" ||
+        typeof encoded !== "string" ||
+        !encoded.startsWith("iVBORw0KGgo") ||
+        encoded.length > 5592408 ||
+        !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) ||
+        typeof declaredBytes !== "number" ||
+        !Number.isSafeInteger(declaredBytes) ||
+        declaredBytes !== actualBytes ||
+        declaredBytes > 4 * 1024 * 1024 ||
+        typeof image.fullPage !== "boolean"
+      ) {
+        throw new Error("sandbox-efemoro retornou PNG inline inválido ou grande demais");
+      }
+    }
+    return result;
   }
 }

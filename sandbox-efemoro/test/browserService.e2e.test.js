@@ -119,6 +119,41 @@ test("headless-shell API: autenticação, screenshot, auditorias desktop/mobile 
     });
   }
 
+  await t.test("PNG inline chega pelo HTTP sem caminho do filesystem", async () => {
+    const response = await post({
+      url: targetUrl,
+      browser: "chromium",
+      device: "android-mobile",
+      screenshot: true,
+      screenshotDelivery: "inline",
+      accessibility: false,
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.success, true, JSON.stringify(result.errors));
+    assert.equal(result.screenshotPath, null);
+    assert.equal(result.screenshot.mimeType, "image/png");
+    assert.equal(result.screenshot.fullPage, true);
+    const decoded = Buffer.from(result.screenshot.dataBase64, "base64");
+    assert.equal(result.screenshot.bytes, decoded.length);
+    assert.ok(decoded.length > 100);
+    assert.deepEqual([...decoded.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  });
+
+  await t.test("modo screenshot=false não devolve PNG", async () => {
+    const response = await post({
+      url: targetUrl,
+      screenshot: false,
+      screenshotDelivery: "inline",
+      accessibility: false,
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.success, true, JSON.stringify(result.errors));
+    assert.equal(result.screenshot, null);
+    assert.equal(result.screenshotPath, null);
+  });
+
   await t.test("recusa metadata de nuvem antes de navegar", async () => {
     const response = await post({ url: "http://169.254.169.254/latest/meta-data/" });
     assert.equal(response.status, 200);
