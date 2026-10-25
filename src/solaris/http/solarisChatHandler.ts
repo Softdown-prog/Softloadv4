@@ -77,6 +77,12 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     const safeHistory: SolarisHistoricoCliente[] = sanitizarHistoricoSolaris(history);
     const historicoSolaris: SolarisHistoricoMotor[] = historicoParaMotorSolaris(safeHistory);
 
+    if (req.body.requestId === undefined) {
+        return res.status(400).json({
+            error: 'Identificador de envio obrigatório. Atualize a página antes de continuar.',
+            codigo: 'REQUEST_ID_OBRIGATORIO',
+        });
+    }
     if (req.body.requestId !== undefined) {
       if (!uid) return res.status(401).json({ error: 'Usuário não autenticado.' });
       let gateStatus: 'accepted' | 'duplicate' | 'mismatch' | 'invalid';

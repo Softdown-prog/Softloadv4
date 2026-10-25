@@ -93,6 +93,12 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 
+    if (req.body.requestId === undefined) {
+        return res.status(400).json({
+            error: 'Identificador de envio obrigatório. Atualize a página antes de continuar.',
+            codigo: 'REQUEST_ID_OBRIGATORIO',
+        });
+    }
     if (req.body.requestId !== undefined) {
         if (!uid) return res.status(401).json({ error: 'Usuário não autenticado.' });
         let gateStatus;

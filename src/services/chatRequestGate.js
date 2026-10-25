@@ -37,7 +37,8 @@ async function registrarRequisicaoChat(db, uid, produto, requestId, payload) {
             fingerprint,
             criado_em: new Date().toISOString(),
             // Habilitar política de TTL Firestore neste campo em produção.
-            expira_em: new Date(Date.now() + 30 * 86400000).toISOString(),
+            // Firestore TTL exige timestamp, não string ISO.
+            expira_em: new Date(Date.now() + 30 * 86400000),
         });
         return 'accepted';
     });

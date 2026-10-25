@@ -25,7 +25,15 @@ function fakeChatDeps() {
       async loadSession() { return null; },
       async saveSession(...args) { calls.saved.push(args); },
     },
-    db: { collection() { return { async add() {} }; } },
+    db: {
+      collection(name) {
+        if (name === 'chat_stream_requests') return { doc(id) { return { id }; } };
+        return { async add() {} };
+      },
+      async runTransaction(callback) {
+        return callback({async get() {return {exists:false};},set(){}});
+      },
+    },
     admin: { firestore: { FieldValue: { serverTimestamp: () => 'now' } } },
     async debitarCreditos(...args) { calls.debit.push(args); },
     solarisChat: { async *perguntarStream(_message, _history, tokens) {
@@ -76,7 +84,9 @@ function fakeUploadDeps() {
   };
   return { dependencies, calls };
 }
-const req = (body = {}, user = {uid: 'u-123', email: 'dev@example.test', plano: 'free'}) => ({ body, session: {user} });
+const req = (body = {}, user = {uid: 'u-123', email: 'dev@example.test', plano: 'free'}) => ({
+  body: { requestId: '2f071443-bd75-4fc3-98d8-d2aacbb626c8', ...body }, session: {user},
+});
 
 test('chat mantém streaming SSE, histórico, tokens, débito e persistência', async () => {
   const { dependencies, calls } = fakeChatDeps();

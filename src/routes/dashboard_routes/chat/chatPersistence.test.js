@@ -23,6 +23,7 @@ function createHarness({saveGate=null,debitGate=null,failSave=false,failDebit=fa
     express:{Router:()=>router},
     '../../middlewares/authGuard':{exigirLogin(){},verificarSaldo(){}},
     '../../services/chatStorageService':storage,
+    '../../services/chatRequestGate':{async registrarRequisicaoChat(){return 'accepted';}},
     '../../services/firebase':{db:{collection(){return {add(){return Promise.resolve();}}}},admin:{firestore:{FieldValue:{serverTimestamp(){return 0}}}}},
     '../../services/creditService':{async debitarCreditos(...args){if(debitGate)await debitGate;calls.push(['debit',args]);if(failDebit)throw Error('sem Firestore');}},
     './chat/chatGenerationFlow':{async gerarComPossivelTemplate({sendEvent,tokensRef}){
@@ -40,7 +41,7 @@ function createHarness({saveGate=null,debitGate=null,failSave=false,failDebit=fa
     module,exports:module.exports,require(id){if(!(id in mocks))throw Error('module inesperado '+id);return mocks[id];},
     console:{error(){},warn(){}},process:{env:{}},Date,
   },{filename});
-  const req={body:{message:'Oi',history:[],sessionId:'sess-1'},session:{user:{uid:'uid-1',email:'cliente@test.invalid',plano:'studio'}}};
+  const req={body:{message:'Oi',history:[],sessionId:'sess-1',requestId:'2f071443-bd75-4fc3-98d8-d2aacbb626c8'},session:{user:{uid:'uid-1',email:'cliente@test.invalid',plano:'studio'}}};
   const response={
     setHeader(){},flushHeaders(){},write(wire){events.push(['event',JSON.parse(wire.slice(6).trim())]);},
     end(){events.push(['end']);},

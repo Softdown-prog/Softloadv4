@@ -65,6 +65,7 @@ function createHarness({ failSave = false, delaySave = null, delayDebit = null }
             return { exigirLogin() {}, exigirPlanoStudio() {}, verificarSaldo() {} };
         }
         if (id.endsWith('chatStorageService')) return storage;
+        if (id.endsWith('services/chatRequestGate')) return {registrarRequisicaoChat:async()=> 'accepted'};
         if (id.endsWith('services/firebase')) {
             return { db, admin: { firestore: { FieldValue: {
                 serverTimestamp: () => 'server-time',
@@ -107,7 +108,7 @@ const fakeReq = (body = {}) => ({
     session: { user: { uid: 'uid-1', email: 'cliente@example.test', plano: 'studio' } },
     query: { wsSession: 'ws-1', projeto: 'project-1' },
     body: {
-        message: 'Criar template', history: [], sessionId: 'chat-1',
+        message: 'Criar template', history: [], sessionId: 'chat-1', requestId: '2f071443-bd75-4fc3-98d8-d2aacbb626c8',
         wsSessionId: 'ws-1', wsProjetoId: 'project-1', ...body,
     },
 });

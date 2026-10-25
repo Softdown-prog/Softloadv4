@@ -41,6 +41,9 @@ test('primeiro envio é aceito; segundo idêntico é barrado de forma persistent
     assert.equal(await registrarRequisicaoChat(db, 'u-1', 'solaris', id, payload), 'accepted');
     assert.equal(await registrarRequisicaoChat(db, 'u-1', 'solaris', id, payload), 'duplicate');
     assert.equal(db.docs.size, 1);
+    const saved = [...db.docs.values()][0];
+    assert.ok(saved.expira_em instanceof Date);
+    assert.ok(saved.expira_em.getTime() > Date.now());
     assert.equal(db.calls.length, 2);
 });
 
@@ -67,4 +70,18 @@ test('erro de Firestore impede admissão: não prosseguir para a IA', async () =
     await assert.rejects(registrarRequisicaoChat(db, 'u-1', 'solaris', id, {message:'x'}), /UNAVAILABLE/);
     assert.equal(db.docs.size, 0);
     assert.equal(await registrarRequisicaoChat(db, 'u-1', 'solaris', id, {message:'x'}), 'accepted');
+});
+
+
+test('as três rotas exigem requestId até de clientes antigos', () => {
+    const fs = require('node:fs'), path = require('node:path');
+    for (const file of [
+        '../routes/dashboard_routes/chat.js',
+        '../routes/dashboard_routes/workspaceChat.js',
+        '../solaris/http/solarisChatHandler.ts',
+    ]) {
+        const code = fs.readFileSync(path.join(__dirname, file), 'utf8');
+        assert.match(code, /if \(req\.body\.requestId === undefined\)/, file);
+        assert.match(code, /REQUEST_ID_OBRIGATORIO/, file);
+    }
 });

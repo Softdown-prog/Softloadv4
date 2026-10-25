@@ -24,6 +24,12 @@ function criarHandlerChatSolaris(deps) {
         const billingOperationId = require('node:crypto').randomUUID(); // chave independente por geração
         const safeHistory = sanitizarHistoricoSolaris(history);
         const historicoSolaris = historicoParaMotorSolaris(safeHistory);
+        if (req.body.requestId === undefined) {
+            return res.status(400).json({
+                error: 'Identificador de envio obrigatório. Atualize a página antes de continuar.',
+                codigo: 'REQUEST_ID_OBRIGATORIO',
+            });
+        }
         if (req.body.requestId !== undefined) {
             if (!uid)
                 return res.status(401).json({ error: 'Usuário não autenticado.' });
