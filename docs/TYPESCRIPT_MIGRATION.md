@@ -1353,3 +1353,19 @@ templates publicados no Blogger real.
 parâmetros da compilação e fechamento correto sob erro usando mocks,
 sem instalar ou executar Chromium. O Gate TypeScript executa o teste
 isolado, confere o espelho CommonJS e inclui os arquivos no gatilho.
+
+## Etapa 77 — comparador visual Blogger tipado
+
+`scripts/visual/compareTemplates.ts` passa a ser a fonte tipada; o espelho
+CommonJS `compareTemplates.js` mantém a API `run`, `outputHtml` e o CLI.
+O comparador preserva o uso de XML autoral, XML compilado, 1400×900 e
+390×844, métricas (largura de rolagem, altura, elementos visíveis, headings,
+links, imagens), overflow horizontal, captura de erros e painel HTML lado a lado.
+A avaliação ainda é um **mock** dos posts e widgets, não uma renderização real
+no Blogger nem uma nota de fidelidade visual.
+
+`scripts/visual/compareTemplates.test.js` testa, sem navegador real, o fluxo
+desktop/mobile, relatório JSON e painel, ignorar nicho sem referência e isolar
+falhas de navegação; verifica fechamento de cada página e do navegador.
+O Gate TypeScript valida a fonte e o espelho exato e executa as regressões
+com mocks em arquivos temporários.

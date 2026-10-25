@@ -10,6 +10,9 @@ on:
       - 'examples/solaris-code/**'
       - 'scripts/codeCorpus/**'
       - 'scripts/visual/renderPreview.ts'
+      - 'scripts/visual/compareTemplates.ts'
+      - 'scripts/visual/compareTemplates.js'
+      - 'scripts/visual/compareTemplates.test.js'
       - 'scripts/visual/renderPreview.js'
       - 'scripts/visual/renderPreview.test.js'
       - 'scripts/ragCodeIndex.js'
@@ -90,6 +93,8 @@ jobs:
         run: npm run test:typescript-clis
       - name: Verificar organização de rascunhos RAG (dados temporários)
         run: node scripts/ragOrganizarRascunhos.test.js
+      - name: Comparar templates com navegador simulado
+        run: node --test scripts/visual/compareTemplates.test.js
       - name: Testar preview visual com navegador simulado
         run: node scripts/visual/renderPreview.test.js
       - name: Verificar gerador de catálogo Solaris RAG (modelo falso e pasta temporária)

@@ -135,5 +135,6 @@
   "src/solaris/rag/__testUtils__/fakeFirestore.ts",
   "src/solaris/tools/projectLockRecovery.ts",
   "scripts/setupAdmin.ts",
-  "scripts/generateRagBalcao.ts"
+  "scripts/generateRagBalcao.ts",
+  "scripts/visual/compareTemplates.ts"
 ]
