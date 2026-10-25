@@ -157,6 +157,18 @@ esses imports nem exige um loader TypeScript em produção.
 - Os arquivos de segurança participam da checagem estrita de tipos,
   da comparação AST e dos testes de regressão antes da publicação.
 
+## Proteção SSRF e parser de comandos
+
+- `agent/src/security/ssrf-guard.ts` tipa o resolvedor DNS injetável,
+  endereços IPv4/IPv6 e validação de URLs antes de requisições externas.
+  Preserva bloqueio de metadados, faixas privadas e inspeção de todos
+  os endereços retornados pelo DNS.
+- `agent/src/utils/parse-command.ts` tipa a separação de argumentos
+  com aspas/escapes, utilizada pela política de comandos.
+- O gate AST impede diferenças de execução entre os dois arquivos
+  TypeScript e os JavaScript existentes. O DNS nativo só recebe uma
+  declaração de tipos local, sem dependências novas.
+
 ## Como validar
 
 ```bash

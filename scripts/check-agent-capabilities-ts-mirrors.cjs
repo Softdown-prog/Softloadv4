@@ -53,6 +53,8 @@ const sources = [
   "agent/src/security/permissions.ts",
   "agent/src/security/command-policy.ts",
   "agent/src/security/role-permissions.ts",
+  "agent/src/security/ssrf-guard.ts",
+  "agent/src/utils/parse-command.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

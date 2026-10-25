@@ -159,3 +159,17 @@ test("endereço IPv4 malformado é tratado como bloqueado (falha segura)", async
     /endereço privado\/reservado/,
   );
 });
+
+test("bloqueia hostname de metadata sem sequer consultar DNS", async () => {
+  let chamadas = 0;
+  await assert.rejects(
+    () => assertUrlIsFetchable("https://metadata.google.internal/computeMetadata/v1", {
+      resolveHostname: async () => {
+        chamadas++;
+        return [{ address: "93.184.216.34", family: 4 }];
+      },
+    }),
+    /host sempre bloqueado/,
+  );
+  assert.equal(chamadas, 0);
+});
