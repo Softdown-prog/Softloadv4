@@ -179,7 +179,8 @@
     "scripts/visual/renderPreview.ts",
     "scripts/ragGenerate.ts",
     "scripts/solarisProjectLockRecovery.ts",
-    "src/solaris/rag/__testUtils__/fakeFirestore.ts"
+    "src/solaris/rag/__testUtils__/fakeFirestore.ts",
+    "src/solaris/tools/projectLockRecovery.ts"
   ],
   "exclude": [
     "node_modules",

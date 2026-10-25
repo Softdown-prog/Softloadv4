@@ -86,3 +86,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `src/solaris/rag/__testUtils__/fakeFirestore.ts` exporta a mesma função `criarFakeFirestore` e contratos tipados para documentos, vetores, filtros, consultas KNN e lotes atômicos simulados.
 - O `.js` é somente o espelho CommonJS. O helper não carrega `firebase-admin`, credenciais, Firestore de produção nem serviços HTTP.
 - A etapa `node --test src/solaris/rag/ragVectorStore.test.js` no CI verifica a substituição de chunks, deduplicação, isolamento entre entradas e busca por distância de cosseno com dados em memória.
+
+## Lote — recuperação manual segura de bloqueios do Solaris
+
+- `src/solaris/tools/projectLockRecovery.ts` é agora a fonte autoritativa tipada: contratos de leitura Firestore, carimbo de versão, identidade, confirmação e inspeção. O `.js` continua espelho CommonJS compatível.
+- Mantidas sem mudanças as proteções de segurança: sem desbloqueio automático por idade, confirmação explícita de instâncias paradas, validação de UID/sessão, idade mínima de 60 minutos, comparação de `owner`/`updateTime` e exclusão atômica com `lastUpdateTime`.
+- Acrescentado teste de identificadores malformados incluindo barra, contrabarra e NUL. O teste `src/solaris/tools/projectLockRecovery.test.js` roda com banco simulado, sem conexão de produção.
+
