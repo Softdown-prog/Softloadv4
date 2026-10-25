@@ -149,6 +149,10 @@ jobs:
         run: npm run typecheck:frontend
       - name: Compilar frontend React pelo Vite
         run: npm run build
+      - name: Verificar segurança do boot (ambiente simulado)
+        run: |
+          node src/services/envBoot.test.js
+          node --test src/services/envBoot.contract.test.js
       - name: Testar buildInfo com Docker simulado e fallback local
         run: node --test src/services/buildInfo.test.js
       - name: Verificar TypeScript, espelhos e auditoria

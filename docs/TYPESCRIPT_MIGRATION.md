@@ -1443,3 +1443,19 @@ fontes TypeScript no diretório requerem entrada no manifesto, inclusão
 no typecheck estrito e espelho JS correspondente. A regressão
 `src/core/typescriptMigrationAudit.test.js` cobre fontes e espelhos
 ausentes nessa nova pasta. O Gate executa os testes sem acessar a VPS.
+
+## Etapa 83 — validação do boot em TypeScript
+
+`src/services/envBoot.ts` é a fonte tipada de
+`src/services/envBoot.js` (espelho CommonJS compatível com o servidor).
+A função `validarEnvBoot` mantém o comportamento anterior: verifica
+`SESSION_SECRET`, `FIREBASE_API_KEY` e `FIREBASE_APP_ID` como
+obrigatórias; trata as integrações de IA, pagamentos, email, armazenamento
+e limpeza como opcionais. Valores vazios continuam sendo ausentes.
+
+A função não imprime segredos, não encerra processos e aceita uma tabela
+de ambiente injetada nos testes. O servidor continua responsável por
+decidir se aborta o boot com base em `ok`. O Gate TypeScript agora
+executa o teste histórico `envBoot.test.js` e quatro casos adicionais
+em `envBoot.contract.test.js`, sem modificar variáveis reais nem
+realizar chamadas de rede.

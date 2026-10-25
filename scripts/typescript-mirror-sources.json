@@ -144,5 +144,6 @@
   "scripts/fixImplCssVars.ts",
   "scripts/check-typescript-mirrors.ts",
   "src/knowledge/ragNamespaces.ts",
-  "src/services/buildInfo.ts"
+  "src/services/buildInfo.ts",
+  "src/services/envBoot.ts"
 ]
