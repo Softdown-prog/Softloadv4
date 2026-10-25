@@ -3,11 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.modoCreditosSolarisV2 = modoCreditosSolarisV2;
 exports.criarGateCreditosSolarisV2 = criarGateCreditosSolarisV2;
 exports.debitoLegadoSolaris = debitoLegadoSolaris;
-/**
- * Cutover controlado dos créditos Solaris V2.
- * Não permite ativar V2 com Flash livre de reserva, nem usar contadores
- * legados como segunda cobrança de uma operação já liquidada no ledger.
- */
 function modoCreditosSolarisV2(env = process.env) {
     if (env.SOLARIS_AI_CREDITS_V2 !== 'true')
         return 'legado';
