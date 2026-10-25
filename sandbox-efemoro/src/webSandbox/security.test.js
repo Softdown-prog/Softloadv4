@@ -81,3 +81,10 @@ test("screenshotDelivery: conserva contrato path e aceita inline somente quando 
   assert.throws(() => validateOptions({ ...base, screenshotDelivery: "url" }), /screenshotDelivery/);
   assert.throws(() => validateOptions({ ...base, screenshotDelivery: 123 }), /screenshotDelivery/);
 });
+
+test("screenshotMode: viewport explícito, mantendo auto para clientes antigos", () => {
+  const base = { url: "http://localhost:3000" };
+  assert.equal(validateOptions(base).screenshotMode, "auto");
+  assert.equal(validateOptions({ ...base, screenshotMode: "viewport" }).screenshotMode, "viewport");
+  assert.throws(() => validateOptions({ ...base, screenshotMode: "fullPage" }), /screenshotMode/);
+});
