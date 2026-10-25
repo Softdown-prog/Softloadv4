@@ -127,6 +127,21 @@ jobs:
         run: node --test scripts/generateBlocks.test.js
       - name: Testar appender de blocos sem consumo de API Gemini
         run: node --test scripts/appendBlocks.test.js
+      - name: Diagnóstico temporário do espelho TypeScript appender
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const ts = require('typescript');
+          const js = ts.transpileModule(fs.readFileSync('scripts/appendBlocks.ts', 'utf8'), {
+            fileName: 'scripts/appendBlocks.ts',
+            compilerOptions: {
+              module: ts.ModuleKind.CommonJS,
+              target: ts.ScriptTarget.ES2022,
+              newLine: ts.NewLineKind.LineFeed
+            }
+          }).outputText;
+          console.log('APPENDER_MIRROR_BEGIN' + JSON.stringify(js) + 'APPENDER_MIRROR_END');
+          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
