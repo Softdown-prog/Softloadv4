@@ -230,7 +230,7 @@ export class Agent {
       archive: new ArchiveCapability({
         // Workspace.read(path, null) yields Buffer at runtime. The JS
         // inference assumes UTF-8 because it only sees the default arg.
-        workspace: this.workspace as unknown as ConstructorParameters<typeof ArchiveCapability>[0]["workspace"],
+        workspace: this.workspace as unknown as NonNullable<ConstructorParameters<typeof ArchiveCapability>[0]>["workspace"],
         permissions: this.permissions,
       }),
 
