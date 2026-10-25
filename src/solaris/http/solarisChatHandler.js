@@ -6,6 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { normalizarUsoTokensSolaris, calcularDebitoChatSolaris } = require('./solarisBilling');
 const { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } = require('./solarisHttpProtocol');
+const { validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico } = require('../tools/solarisToolModes');
 const SOLARIS_CHAT_SESSION_TYPE = 'solaris-chat';
 function criarHandlerChatSolaris(deps) {
     const { chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador, carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo, criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador } = deps;
@@ -17,6 +18,9 @@ function criarHandlerChatSolaris(deps) {
         const sessaoCliente = validarSessaoSolaris(clientSessionId);
         if (!sessaoCliente.ok)
             return res.status(400).json({ error: sessaoCliente.erro });
+        const ferramenta = validarFerramentaSolaris(req.body.tool, req.body.githubRepository);
+        if (!ferramenta.ok)
+            return res.status(400).json({ error: ferramenta.error });
         const msg = entrada.mensagem;
         const uid = req.session.user?.uid;
         const email = req.session.user?.email || '';
@@ -38,6 +42,7 @@ function criarHandlerChatSolaris(deps) {
                 const { registrarRequisicaoChat } = require('../../services/chatRequestGate');
                 gateStatus = await registrarRequisicaoChat(db, uid, 'solaris', req.body.requestId, {
                     message: msg, sessionId: sessaoCliente.sessionId, history: safeHistory,
+                    tool: ferramenta.tool, githubRepository: ferramenta.repo,
                 });
             }
             catch (err) {
@@ -71,6 +76,15 @@ function criarHandlerChatSolaris(deps) {
         // anexado (nunca existiu proposta pra essa sessão).
         let propostasPendentes = [];
         try {
+            // Seleção vem do servidor e nunca polui a mensagem salva no histórico.
+            let mensagemModelo = msg;
+            if (ferramenta.tool === 'asset-forge-2d') {
+                mensagemModelo = instrucoesForge() + '\n\nPedido do usuário: ' + msg;
+            }
+            else if (ferramenta.tool === 'github' && ferramenta.repo) {
+                sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });
+                mensagemModelo = await contextoRepositorioPublico(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
+            }
             // Fase 2c/2d: se a sessão tem um projeto anexado (upload anterior
             // persistido no GCS via tools/projectStorage.js), o turno inteiro
             // passa pro editor agêntico (leitura + proposta/aplicação de
@@ -118,7 +132,7 @@ function criarHandlerChatSolaris(deps) {
                             baseDir: baseDirProjeto,
                             framework: projeto.framework,
                             arquivos: projeto.arquivos,
-                            mensagem: msg,
+                            mensagem: mensagemModelo,
                             historico: historicoSolaris,
                             propostasPendentes,
                             modelRouter,
@@ -171,7 +185,7 @@ function criarHandlerChatSolaris(deps) {
             }
             if (!usouProjeto) {
                 sendEvent({ type: 'status', label: 'Consultando o Solaris...' });
-                for await (const pedaco of solarisChat.perguntarStream(msg, historicoSolaris, tokensRef)) {
+                for await (const pedaco of solarisChat.perguntarStream(mensagemModelo, historicoSolaris, tokensRef)) {
                     fullText += pedaco;
                     sendEvent({ type: 'chunk', text: pedaco });
                 }

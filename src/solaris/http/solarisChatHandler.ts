@@ -13,9 +13,14 @@ const os = require('node:os') as typeof import('node:os');
 const path = require('node:path') as typeof import('node:path');
 const { normalizarUsoTokensSolaris, calcularDebitoChatSolaris } = require('./solarisBilling') as typeof import('./solarisBilling');
 const { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } = require('./solarisHttpProtocol') as typeof import('./solarisHttpProtocol');
+const { validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico } = require('../tools/solarisToolModes') as {
+  validarFerramentaSolaris(tool: unknown, repo: unknown): {ok: boolean; tool?: string; repo?: string; error?: string};
+  instrucoesForge(): string;
+  contextoRepositorioPublico(repo: string): Promise<string>;
+};
 
 export interface SolarisHttpRequest {
-  body: { message?: unknown; history?: unknown; sessionId?: unknown; requestId?: unknown };
+  body: { message?: unknown; history?: unknown; sessionId?: unknown; requestId?: unknown; tool?: unknown; githubRepository?: unknown };
   session: { user?: { uid?: string; email?: string; plano?: string } };
   file?: { buffer: Buffer };
 }
@@ -67,6 +72,8 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     if (!entrada.ok) return res.status(400).json({ error: entrada.erro });
     const sessaoCliente = validarSessaoSolaris(clientSessionId);
     if (!sessaoCliente.ok) return res.status(400).json({ error: sessaoCliente.erro });
+    const ferramenta = validarFerramentaSolaris(req.body.tool, req.body.githubRepository);
+    if (!ferramenta.ok) return res.status(400).json({ error: ferramenta.error });
 
     const msg       = entrada.mensagem;
     const uid       = req.session.user?.uid;
@@ -93,6 +100,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         };
         gateStatus = await registrarRequisicaoChat(db, uid, 'solaris', req.body.requestId, {
           message: msg, sessionId: sessaoCliente.sessionId, history: safeHistory,
+          tool: ferramenta.tool, githubRepository: ferramenta.repo,
         });
       } catch (err) {
         console.error('[CHAT-REQUEST] Falha ao registrar envio:', err);
@@ -129,6 +137,14 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     let propostasPendentes: PropostaSolaris[] = [];
 
     try {
+        // Seleção vem do servidor e nunca polui a mensagem salva no histórico.
+        let mensagemModelo = msg;
+        if (ferramenta.tool === 'asset-forge-2d') {
+            mensagemModelo = instrucoesForge() + '\n\nPedido do usuário: ' + msg;
+        } else if (ferramenta.tool === 'github' && ferramenta.repo) {
+            sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });
+            mensagemModelo = await contextoRepositorioPublico(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
+        }
         // Fase 2c/2d: se a sessão tem um projeto anexado (upload anterior
         // persistido no GCS via tools/projectStorage.js), o turno inteiro
         // passa pro editor agêntico (leitura + proposta/aplicação de
@@ -175,7 +191,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
                         baseDir: baseDirProjeto,
                         framework: projeto.framework,
                         arquivos: projeto.arquivos,
-                        mensagem: msg,
+                        mensagem: mensagemModelo,
                         historico: historicoSolaris,
                         propostasPendentes,
                         modelRouter,
@@ -226,7 +242,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         if (!usouProjeto) {
             sendEvent({ type: 'status', label: 'Consultando o Solaris...' });
 
-            for await (const pedaco of solarisChat.perguntarStream(msg, historicoSolaris, tokensRef)) {
+            for await (const pedaco of solarisChat.perguntarStream(mensagemModelo, historicoSolaris, tokensRef)) {
                 fullText += pedaco;
                 sendEvent({ type: 'chunk', text: pedaco });
             }
