@@ -55,6 +55,8 @@ const sources = [
   "agent/src/security/role-permissions.ts",
   "agent/src/security/ssrf-guard.ts",
   "agent/src/utils/parse-command.ts",
+  "agent/src/config/solaris-allowed-domains.ts",
+  "agent/src/config/sandbox-endpoints.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

@@ -169,6 +169,16 @@ esses imports nem exige um loader TypeScript em produção.
   TypeScript e os JavaScript existentes. O DNS nativo só recebe uma
   declaração de tipos local, sem dependências novas.
 
+## Configurações de rede tipadas
+
+- `agent/src/config/solaris-allowed-domains.ts` tipa a lista
+  permitida de fontes de documentação, mantendo os domínios atuais.
+- `agent/src/config/sandbox-endpoints.ts` tipa a seleção de URLs
+  dedicadas ao navegador e ao serviço de extração, incluindo fallback
+  para as variáveis de ambiente legadas.
+- Ambas passam pelo gate de equivalência ESM; não há modificação nos
+  endpoints, chaves ou valores de configuração em produção.
+
 ## Como validar
 
 ```bash
