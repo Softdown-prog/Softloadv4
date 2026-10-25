@@ -1334,3 +1334,22 @@ do serviço de embeddings por entrada.
 
 O Gate TypeScript executa esse teste no bloco de regressões e o inclui
 nos gatilhos por caminho. Nenhum acesso a produção é necessário.
+
+## Etapa 76 — renderizador visual Blogger em TypeScript
+
+`scripts/visual/renderPreview.ts` agora é a fonte tipada para os previews
+de templates, com `renderPreview.js` gerado como espelho CommonJS.
+O comando existente `node scripts/visual/renderPreview.js <nicho>`
+mantém os tamanhos desktop (1400 × 1000) e mobile (390 × 844), gera
+`preview.html`, captura os screenshots e registra erros de página.
+
+A migração inclui fechamento de páginas e navegador em blocos
+`finally`, inclusive quando `goto` ou a captura falha, para evitar
+processos Chromium órfãos. O código não muda o compilador, o parser
+Blogger nem o alcance do preview mockado — não é validação final de
+templates publicados no Blogger real.
+
+`scripts/visual/renderPreview.test.js` testa duas telas, relatório,
+parâmetros da compilação e fechamento correto sob erro usando mocks,
+sem instalar ou executar Chromium. O Gate TypeScript executa o teste
+isolado, confere o espelho CommonJS e inclui os arquivos no gatilho.

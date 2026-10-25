@@ -175,7 +175,8 @@
     "scripts/codeCorpus/codeCollector.ts",
     "scripts/ragOrganizarRascunhos.ts",
     "scripts/ragEmbedIndex.ts",
-    "scripts/ragCodeIndex.ts"
+    "scripts/ragCodeIndex.ts",
+    "scripts/visual/renderPreview.ts"
   ],
   "exclude": [
     "node_modules",
