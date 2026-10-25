@@ -8,7 +8,7 @@ import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
     Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, Camera, 
-    ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle
+    ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, Github, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
 
@@ -53,6 +53,10 @@ export default function Solaris(): React.JSX.Element {
     const [visualDevice, setVisualDevice] = useState<'desktop' | 'android-mobile'>('desktop');
     const [visualStatus, setVisualStatus] = useState<VisualStatus | null>(null);
     const [visualBusy, setVisualBusy] = useState(false);
+    const [toolsOpen, setToolsOpen] = useState(false);
+    const [activeTool, setActiveTool] = useState<'none' | 'asset-forge-2d' | 'github'>('none');
+    const [githubRepository, setGithubRepository] = useState('');
+    const [toolError, setToolError] = useState('');
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -283,7 +287,11 @@ export default function Solaris(): React.JSX.Element {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
         if (!msg || loading || visualBusy) return;
-
+        if (activeTool === 'github' && !/^(?:https:\/\/github\.com\/)?[A-Za-z0-9-]{1,39}\/[A-Za-z0-9_.-]{1,100}(?:\.git)?\/?$/.test(githubRepository.trim())) {
+            setToolError('Cole o link do repositório público: https://github.com/dono/repositorio');
+            return;
+        }
+        setToolError('');
         setInput('');
         setLoading(true);
         setStatusHistory([]);
@@ -308,6 +316,8 @@ export default function Solaris(): React.JSX.Element {
                     message: msg,
                     history: historyToSend,
                     sessionId: sessionId,
+                    tool: activeTool,
+                    ...(activeTool === 'github' ? { githubRepository: githubRepository.trim() } : {}),
                     requestId
                 }),
                 signal: controller.signal
@@ -614,6 +624,73 @@ export default function Solaris(): React.JSX.Element {
             <div className="p-3 bg-dark border-top border-secondary flex-shrink-0">
                 <div className="max-w-3xl mx-auto">
                     <div className="mb-2">
+                        <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <button
+                                type="button"
+                                className="btn btn-outline-info btn-sm d-flex align-items-center gap-2"
+                                aria-expanded={toolsOpen}
+                                aria-controls="solaris-tools-panel"
+                                onClick={() => setToolsOpen(open => !open)}
+                                disabled={loading || uploading || visualBusy}
+                            >
+                                <Wrench size={15} /> Ferramentas
+                            </button>
+                            {activeTool !== 'none' && (
+                                <span className="badge rounded-pill bg-info bg-opacity-25 text-info">
+                                    {activeTool === 'asset-forge-2d' ? 'Criar Assets 2D ativo' : 'GitHub (público) ativo'}
+                                </span>
+                            )}
+                        </div>
+                        {toolsOpen && (
+                            <div id="solaris-tools-panel" className="rounded-3 border border-secondary p-3 mb-2 d-flex flex-column gap-2"
+                                style={{ background: 'rgba(0,0,0,0.45)' }}>
+                                <p className="small text-secondary mb-1">Escolha uma ferramenta para as próximas mensagens.</p>
+                                <div className="d-flex flex-wrap gap-2">
+                                    <button type="button" className={`btn btn-sm ${activeTool === 'asset-forge-2d' ? 'btn-info' : 'btn-outline-secondary'}`}
+                                        aria-pressed={activeTool === 'asset-forge-2d'}
+                                        disabled={loading || uploading}
+                                        onClick={() => { setActiveTool('asset-forge-2d'); setToolError(''); }}>
+                                        <Shapes size={14} className="me-1" /> Criar Assets 2D
+                                    </button>
+                                    <button type="button" className={`btn btn-sm ${activeTool === 'github' ? 'btn-info' : 'btn-outline-secondary'}`}
+                                        aria-pressed={activeTool === 'github'}
+                                        disabled={loading || uploading}
+                                        onClick={() => { setActiveTool('github'); setToolError(''); }}>
+                                        <Github size={14} className="me-1" /> GitHub
+                                    </button>
+                                    <button type="button" className={`btn btn-sm ${activeTool === 'none' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                                        aria-pressed={activeTool === 'none'}
+                                        onClick={() => { setActiveTool('none'); setToolError(''); }}
+                                        disabled={loading || uploading}>
+                                        Sem ferramenta
+                                    </button>
+                                </div>
+                                {activeTool === 'asset-forge-2d' && (
+                                    <p className="small text-secondary mb-0">
+                                        Solaris usará o Asset Forge 2D para criar sprites, personagens, cenários e assets procedurais.
+                                        Os arquivos renderizados serão entregues no ZIP quando a geração for executada.
+                                    </p>
+                                )}
+                                {activeTool === 'github' && (
+                                    <div className="d-flex flex-column gap-2">
+                                        <label htmlFor="solaris-github-repo" className="small text-secondary">Link do repositório GitHub público</label>
+                                        <input id="solaris-github-repo" type="url"
+                                            className="form-control form-control-sm bg-dark text-light border-secondary"
+                                            placeholder="https://github.com/dono/repositorio"
+                                            value={githubRepository}
+                                            maxLength={240}
+                                            onChange={e => { setGithubRepository(e.target.value); setToolError(''); }}
+                                            disabled={loading || uploading} />
+                                        <p className="small text-secondary mb-0">
+                                            A primeira mensagem consulta o repositório e fornece o contexto ao Gemini.
+                                            Por enquanto, somente leitura de repositórios públicos: privados, autorização da conta e
+                                            publicação de commits exigem uma integração GitHub App separada.
+                                        </p>
+                                    </div>
+                                )}
+                                {toolError && <p className="small text-warning mb-0" role="alert">{toolError}</p>}
+                            </div>
+                        )}
                         <button
                             type="button"
                             className="btn btn-outline-info btn-sm d-flex align-items-center gap-2"
