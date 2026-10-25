@@ -11,11 +11,14 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "types": []
+    "types": [],
+    "allowJs": true,
+    "checkJs": false
   },
   "include": [
     "src/utils/envInt.ts",
-    "src/utils/logger.ts"
+    "src/utils/logger.ts",
+    "src/globals.d.ts"
   ],
   "exclude": [
     "node_modules"
