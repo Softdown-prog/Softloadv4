@@ -1,0 +1,29 @@
+name: VPS Runner Health
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 5
+    steps:
+      - name: Check runner isolation and published site
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(id -un)" = softloadrunner
+          if id -nG | tr ' ' '\n' | grep -qx docker; then
+            echo 'Runner unexpectedly has Docker access' >&2
+            exit 1
+          fi
+          if sudo -n true >/dev/null 2>&1; then
+            echo 'Runner unexpectedly has sudo access' >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error --max-time 20 \
+            'https://softload.analysepro.com/health?runner_check=1' \
+            | python3 -c 'import json,sys; p=json.load(sys.stdin); assert p.get("status")=="ok"; print("Healthy VPS revision:", p.get("deploy",{}).get("gitSha"))'
