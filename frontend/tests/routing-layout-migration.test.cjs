@@ -378,3 +378,21 @@ test('os tres chats deixam o cancelamento terminar antes de habilitar novo envio
     assert.doesNotMatch(code, /abortControllerRef\.current\.abort\(\);\s*setLoading\(false\);/, path);
   }
 });
+
+test('dashboard visual: navegação com acesso inicial, rota ativa e tema responsivo',()=>{
+  const layout=source('frontend/layouts/DashboardLayout.tsx');
+  const home=source('frontend/pages/DashboardHome.tsx');
+  const workspace=source('frontend/pages/Workspace.tsx');
+  const css=source('public/css/softload.css');
+  for(const required of [
+    'label="Visão geral"', 'aria-current={active', "startsWith('/dashboard/workspace/')",
+    'mobileSectionLabel', 'sl-dashboard-mobile-topbar','sl-dashboard-main'
+  ]) assert.ok(layout.includes(required),'Navegação perdeu '+required);
+  for(const required of ['sl-dashboard-page','sl-dashboard-stat','sl-dashboard-quicklink','ArrowUpRight'])
+    assert.ok(home.includes(required),'Dashboard perdeu '+required);
+  for(const required of ['sl-dashboard-page','sl-workspace-project-item','sl-workspace-list-header'])
+    assert.ok(workspace.includes(required),'Workspace perdeu '+required);
+  for(const required of ['.sl-dashboard-sidebar','.sl-dashboard-stat','.sl-dashboard-quicklink',
+    '.sl-dashboard-main > .sl-conversation','[data-bs-theme="light"] .sl-dashboard-sidebar'])
+    assert.ok(css.includes(required),'CSS ausente '+required);
+});

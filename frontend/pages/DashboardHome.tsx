@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Zap, HardDrive, MessageCircle, Settings } from 'lucide-react';
+import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Zap, HardDrive, MessageCircle, Settings, ArrowUpRight } from 'lucide-react';
 import { fetchAppConfig, type AppUser } from '../services/api';
 import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
@@ -34,17 +34,18 @@ interface QuickAccessCardProps {
 function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badgeTone, desc }: QuickAccessCardProps): React.JSX.Element {
     return (
         <div className="col-12 col-md-6">
-            <Link to={to} className="sl-card h-100 mb-0 text-decoration-none d-block sl-hover-lift">
+            <Link to={to} className="sl-card sl-dashboard-quicklink h-100 mb-0 text-decoration-none d-block sl-hover-lift">
                 <div className="d-flex align-items-center gap-3 mb-2">
-                    <div className="rounded d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: iconBg, color: iconColor }}>
+                    <div className="sl-dashboard-quicklink-icon rounded d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: iconBg, color: iconColor }}>
                         <Icon size={20} />
                     </div>
                     <h3 className="fw-bold mb-0" style={{ fontSize: '1rem', color: 'var(--bs-body-color)' }}>
                         {title}
                         {badge && <Pill tone={badgeTone} size="sm" className="ms-2">{badge}</Pill>}
                     </h3>
+                    <ArrowUpRight size={18} className="sl-dashboard-quicklink-arrow ms-auto flex-shrink-0" aria-hidden="true" />
                 </div>
-                <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>{desc}</p>
+                <p className="sl-dashboard-quicklink-description small mb-0" style={{ color: 'var(--sl-text-400)' }}>{desc}</p>
             </Link>
         </div>
     );
@@ -96,10 +97,11 @@ export default function DashboardHome(): React.JSX.Element {
     const firstName = (user?.nome || 'Usuário').split(' ')[0];
 
     return (
-        <div className="p-3 p-md-5">
+        <div className="sl-dashboard-page p-3 p-md-5">
             {/* Header desktop */}
-            <div className="d-none d-lg-flex align-items-start justify-content-between mb-5">
+            <div className="sl-dashboard-page-header sl-dashboard-intro d-none d-lg-flex align-items-start justify-content-between mb-5">
                 <div>
+                    <span className="sl-dashboard-eyebrow">Painel Softload</span>
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                         Bem-vindo, {firstName}
                     </h1>
@@ -116,7 +118,7 @@ export default function DashboardHome(): React.JSX.Element {
             <div className="row g-3 mb-5 row-cols-xl-5">
                 {/* Plano */}
                 <div className="col-12 col-md-6 col-xl">
-                    <div className="sl-card h-100 mb-0">
+                    <div className="sl-card sl-dashboard-stat h-100 mb-0">
                         <div className="d-flex justify-content-between align-items-start mb-3">
                             <ShieldCheck size={18} style={{ color: 'var(--sl-primary)' }} />
                             <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Plano</span>
@@ -136,7 +138,7 @@ export default function DashboardHome(): React.JSX.Element {
                 {stats && (
                     <>
                         <div className="col-12 col-md-6 col-xl">
-                            <div className="sl-card h-100 mb-0">
+                            <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <Zap size={18} style={{ color: '#eab308' }} />
                                     <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Compilações</span>
@@ -147,7 +149,7 @@ export default function DashboardHome(): React.JSX.Element {
                         </div>
 
                         <div className="col-12 col-md-6 col-xl">
-                            <div className="sl-card h-100 mb-0">
+                            <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <HardDrive size={18} style={{ color: '#a855f7' }} />
                                     <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Armazenamento</span>
@@ -162,7 +164,7 @@ export default function DashboardHome(): React.JSX.Element {
                         </div>
 
                         <div className="col-12 col-md-6 col-xl">
-                            <div className="sl-card h-100 mb-0">
+                            <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <Cpu size={18} style={{ color: 'var(--sl-primary)' }} />
                                     <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>{previaV2?.modo === 'ativo' ? 'Créditos Gemini (outras ferramentas)' : 'Créditos Gemini'}</span>
@@ -181,7 +183,7 @@ export default function DashboardHome(): React.JSX.Element {
                         </div>
 
                         <div className="col-12 col-md-6 col-xl">
-                            <div className="sl-card h-100 mb-0">
+                            <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <FolderOpen size={18} style={{ color: 'var(--sl-primary)' }} />
                                     <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Projetos</span>

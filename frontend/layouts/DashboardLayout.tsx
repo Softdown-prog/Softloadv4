@@ -29,7 +29,7 @@ interface SidebarItemProps {
 }
 function SidebarItem({ to, icon: Icon, label, badge, badgeColor, active, onNavigate }: SidebarItemProps): React.JSX.Element {
     return (
-        <Link to={to} className={`sl-nav-item ${active ? 'active' : ''}`} onClick={onNavigate}>
+        <Link to={to} aria-current={active ? 'page' : undefined} className={`sl-nav-item ${active ? 'active' : ''}`} onClick={onNavigate}>
             <span className="sl-nav-label">
                 <Icon size={18} className="sl-nav-icon me-2" />
                 {label}
@@ -55,9 +55,9 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
             {/* Logo */}
             <div className="d-flex align-items-center justify-content-between px-4 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
                 <div>
-                    <a href="/" className="fw-black text-decoration-none sl-brand d-block" style={{ fontSize: '1.05rem', color: 'var(--bs-body-color)' }}>
+                    <Link to="/dashboard" className="fw-black text-decoration-none sl-brand d-block" style={{ fontSize: '1.05rem', color: 'var(--bs-body-color)' }}>
                         SOFTLOAD<span className="sl-accent">ENGINE</span>
-                    </a>
+                    </Link>
                     <p className="mb-0 text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.25em', marginTop: '2px' }}>
                         Fábrica de Templates XML
                     </p>
@@ -75,7 +75,7 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
             </div>
 
             {/* User Info */}
-            <div className="px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
+            <div className="sl-dashboard-identity px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                     <div className="rounded-3 d-flex align-items-center justify-content-center text-white fw-black flex-shrink-0"
                          style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg,#0ea5e9,#2563eb)', fontSize: '14px' }}>
@@ -94,13 +94,14 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
             </div>
 
             {/* Navigation */}
-            <nav className="flex-grow-1 px-3 py-3" style={{ overflowY: 'auto' }}>
-                <p className="fw-black text-uppercase mb-2 px-2" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Ferramentas</p>
+            <nav className="sl-dashboard-nav flex-grow-1 px-3 py-3" aria-label="Navegação do painel" style={{ overflowY: 'auto' }}>
+                <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Visão geral" active={location.pathname === '/dashboard' || location.pathname === '/dashboard/'} onNavigate={onNavigate} />
+                <p className="fw-black text-uppercase mb-2 px-2 mt-3" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Ferramentas</p>
                 <SidebarItem to="/dashboard/chat" icon={MessageSquare} label="Especialista Blogger" badge="Gemini" badgeColor="primary" active={location.pathname === '/dashboard/chat'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/solaris" icon={Cpu} label="Solaris Code" badge="Novo" badgeColor="secondary" active={location.pathname === '/dashboard/solaris'} onNavigate={onNavigate} />
 
                 <p className="fw-black text-uppercase mb-2 px-2 mt-4" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Conta</p>
-                <SidebarItem to="/dashboard/workspace" icon={FolderOpen} label="Workspace" active={location.pathname === '/dashboard/workspace'} onNavigate={onNavigate} />
+                <SidebarItem to="/dashboard/workspace" icon={FolderOpen} label="Workspace" active={location.pathname === '/dashboard/workspace' || location.pathname.startsWith('/dashboard/workspace/')} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/historico" icon={History} label="Histórico XML" active={location.pathname === '/dashboard/historico'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/configuracoes" icon={Settings} label="Configurações" active={location.pathname === '/dashboard/configuracoes'} onNavigate={onNavigate} />
             </nav>
@@ -141,10 +142,18 @@ export default function DashboardLayout(): React.JSX.Element | null {
 
     const user = config.user || { nome: 'Usuário', is_active: false, plano: 'Gratuito' };
 
+    const mobileSectionLabel = location.pathname.startsWith('/dashboard/workspace/chat') ? 'Editor do Workspace'
+        : location.pathname.startsWith('/dashboard/workspace') ? 'Workspace'
+        : location.pathname.startsWith('/dashboard/solaris') ? 'Solaris Code'
+        : location.pathname.startsWith('/dashboard/chat') ? 'Especialista Blogger'
+        : location.pathname.startsWith('/dashboard/historico') ? 'Histórico'
+        : location.pathname.startsWith('/dashboard/configuracoes') ? 'Configurações'
+        : location.pathname.startsWith('/dashboard/upgrade') ? 'Assinatura'
+        : 'Visão geral';
     return (
         <div className="sl-dash-wrapper" style={{ display: 'flex' }}>
             {/* Sidebar Desktop */}
-            <aside id="sl-dash-sidebar" className="sl-sidebar d-none d-lg-flex flex-column" style={{ width: '260px', borderRight: '1px solid var(--bs-border-color)' }}>
+            <aside id="sl-dash-sidebar" className="sl-sidebar sl-dashboard-sidebar d-none d-lg-flex flex-column" style={{ width: '260px', borderRight: '1px solid var(--bs-border-color)' }}>
                 <SidebarContent user={user} location={location} />
             </aside>
 
@@ -170,7 +179,7 @@ export default function DashboardLayout(): React.JSX.Element | null {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'tween', duration: 0.25 }}
-                            className="sl-sidebar d-lg-none d-flex flex-column position-fixed top-0 start-0 h-100"
+                            className="sl-sidebar sl-dashboard-sidebar d-lg-none d-flex flex-column position-fixed top-0 start-0 h-100"
                             style={{ width: 'min(280px, 85vw)', zIndex: 1050, boxShadow: '4px 0 24px rgba(0,0,0,0.3)' }}
                         >
                             <SidebarContent user={user} location={location} onNavigate={() => setDrawerOpen(false)} onClose={() => setDrawerOpen(false)} />
@@ -180,9 +189,9 @@ export default function DashboardLayout(): React.JSX.Element | null {
             </AnimatePresence>
 
             {/* Main Content Area */}
-            <main className="flex-grow-1 overflow-auto d-flex flex-column" style={{ minWidth: 0 }}>
+            <main className="sl-dashboard-main flex-grow-1 overflow-auto d-flex flex-column" style={{ minWidth: 0 }}>
                 {/* Topbar mobile */}
-                <div className="sl-topbar d-lg-none p-3 d-flex align-items-center gap-2" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
+                <div className="sl-topbar sl-dashboard-mobile-topbar d-lg-none d-flex align-items-center gap-2" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
                     <button
                         onClick={() => setDrawerOpen(true)}
                         className="btn btn-link p-1"
@@ -191,8 +200,8 @@ export default function DashboardLayout(): React.JSX.Element | null {
                     >
                         <Menu size={20} />
                     </button>
-                    <span className="flex-grow-1 fw-bolder text-uppercase small" style={{ color: 'var(--bs-body-color)', letterSpacing: '-0.02em' }}>Painel</span>
-                    <Link to="/dashboard/configuracoes" title="Configurações" className="btn btn-link p-1" style={{ color: 'var(--sl-text-400)' }}>
+                    <span className="sl-dashboard-mobile-title flex-grow-1 fw-bolder text-truncate">{mobileSectionLabel}</span>
+                    <Link to="/dashboard/configuracoes" title="Configurações" aria-label="Abrir configurações" className="btn btn-link p-1" style={{ color: 'var(--sl-text-400)' }}>
                         <Settings size={20} />
                     </Link>
                 </div>

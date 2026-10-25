@@ -207,9 +207,9 @@ export default function Workspace(): React.JSX.Element {
     };
 
     return (
-        <div className="p-3 p-md-5">
+        <div className="sl-dashboard-page p-3 p-md-5">
             {/* Header */}
-            <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-5">
+            <div className="sl-dashboard-page-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-5">
                 <div>
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                         Workspace Industrial
@@ -273,7 +273,7 @@ export default function Workspace(): React.JSX.Element {
                     {/* Seletor Lateral de Projetos */}
                     <div className="col-12 col-lg-4">
                         <div className="sl-card p-0 overflow-hidden mb-0">
-                            <div className="p-3 border-bottom border-secondary bg-dark">
+                            <div className="sl-workspace-list-header p-3 border-bottom">
                                 <h2 className="fw-black text-uppercase mb-0 small" style={{ letterSpacing: '0.1em', color: 'var(--sl-text-400)' }}>
                                     Projetos Salvos ({projetos.length})
                                 </h2>
@@ -289,8 +289,8 @@ export default function Workspace(): React.JSX.Element {
                                             tabIndex={0}
                                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedProjeto(proj); setSessaoHistorico(null); setMostrarFormSessao(false); } }}
                                             aria-pressed={isSelected}
-                                            className={`list-group-item list-group-item-action bg-transparent text-light border-secondary p-3 ${isSelected ? 'active-project' : ''}`}
-                                            style={{ cursor: 'pointer', background: isSelected ? 'rgba(14,165,233,0.1)' : 'transparent' }}
+                                            className={`sl-workspace-project-item list-group-item list-group-item-action p-3 ${isSelected ? 'active-project' : ''}`}
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             <div className="d-flex align-items-center justify-content-between mb-1">
                                                 <h3 className="fw-bold mb-0 text-truncate fs-6">{proj.nome}</h3>
