@@ -21,7 +21,7 @@ function criarHandlerChatSolaris(deps) {
         const uid = req.session.user?.uid;
         const email = req.session.user?.email || '';
         const sessionId = sessaoCliente.sessionId || chatStorage.newSessionId();
-        const billingOperationId = chatStorage.newSessionId(); // chave independente por geração
+        const billingOperationId = require('node:crypto').randomUUID(); // chave independente por geração
         const safeHistory = sanitizarHistoricoSolaris(history);
         const historicoSolaris = historicoParaMotorSolaris(safeHistory);
         if (req.body.requestId !== undefined) {

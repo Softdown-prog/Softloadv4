@@ -221,7 +221,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
     // ignorado (defesa em profundidade; a view nem envia outro valor).
     const isGpt     = false;
     const sessionId = clientSessionId || chatStorage.newSessionId();
-    const billingOperationId = chatStorage.newSessionId(); // chave exclusiva do servidor
+    const billingOperationId = require('node:crypto').randomUUID(); // chave exclusiva do servidor
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 

@@ -72,7 +72,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     const uid       = req.session.user?.uid;
     const email     = req.session.user?.email || '';
     const sessionId = sessaoCliente.sessionId || chatStorage.newSessionId();
-    const billingOperationId = chatStorage.newSessionId(); // chave independente por geração
+    const billingOperationId = (require('node:crypto') as { randomUUID(): string }).randomUUID(); // chave independente por geração
 
     const safeHistory: SolarisHistoricoCliente[] = sanitizarHistoricoSolaris(history);
     const historicoSolaris: SolarisHistoricoMotor[] = historicoParaMotorSolaris(safeHistory);

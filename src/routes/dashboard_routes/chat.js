@@ -89,7 +89,7 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
     const isGpt     = false; // Gemini é o único provedor ativo neste chat.
     const sessionId = clientSessionId || chatStorage.newSessionId();
     // Chave gerada no servidor por geração; nunca aceitar ID controlado pelo cliente.
-    const billingOperationId = chatStorage.newSessionId();
+    const billingOperationId = require('node:crypto').randomUUID();
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 
