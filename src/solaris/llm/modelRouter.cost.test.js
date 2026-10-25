@@ -28,7 +28,7 @@ test('Solaris registra custo estimado por chamada sem incluir prompts e sem afet
         const parts=[];
         for await (const chunk of router.executarTriagemStream({prompt:'chat'})) parts.push(chunk);
         assert.deepEqual(parts,['A','B']);
-        assert.equal((await router.executarTarefaComFerramentas({prompt:'editar'})).texto,'done');
+        assert.equal((await router.executarTarefaComFerramentas({prompt:'editar',executorFerramenta:async()=>({ok:true})})).texto,'done');
         const registros=logs.filter(args=>args[0]==='[GEMINI-COST]').map(args=>JSON.parse(args[1]));
         assert.deepEqual(registros.map(r=>r.operacao),['triagem','arquitetura','stream','ferramentas']);
         assert.ok(registros.every(r=>r.origem==='solaris' && r.custo_microbrl>0 && r.estimativa===true));
