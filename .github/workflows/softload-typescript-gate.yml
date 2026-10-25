@@ -40,6 +40,9 @@ on:
       - 'scripts/gerar-blocos-rag.js'
       - 'scripts/gerar-blocos-rag.test.js'
       - 'scripts/generateBlocks.ts'
+      - 'scripts/appendBlocks.ts'
+      - 'scripts/appendBlocks.js'
+      - 'scripts/appendBlocks.test.js'
       - 'scripts/generateBlocks.js'
       - 'scripts/generateBlocks.test.js'
       - 'scripts/ragCodeCollect.ts'
@@ -122,6 +125,8 @@ jobs:
         run: node --test scripts/audit-template-fidelity.contract.test.js
       - name: Testar gerador de temas Blogger com Gemini simulado
         run: node --test scripts/generateBlocks.test.js
+      - name: Testar appender de blocos sem consumo de API Gemini
+        run: node --test scripts/appendBlocks.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

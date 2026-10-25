@@ -1385,3 +1385,23 @@ injeta compilador e diagnóstico simulados, verifica pesos, deduplicação,
 referências ausentes, falhas individuais e os arquivos gerados, sem
 requerer navegador nem servidor. O Gate TypeScript inclui o novo teste e
 verifica que o JavaScript coincide com a geração do compilador.
+
+## Etapa 79 — appender de variantes Blogger em TypeScript e opt-in de custos
+
+`scripts/appendBlocks.ts` é a fonte tipada; o JavaScript CommonJS segue
+como espelho para Node. O appender preserva os 14 nichos, gera até cinco
+variantes CSS e duas Hero adicionais, informa estilos anteriores no prompt,
+filtra placeholders e sintaxe Blogger e **não sobrescreve** variantes
+existentes ao juntar novos blocos válidos.
+
+**Mudança de segurança de custo:** `node scripts/appendBlocks.js [nicho]`
+passa a ser `dry-run` sem gravar ou chamar Gemini. Para gerar de verdade,
+exigir `node scripts/appendBlocks.js --apply [nicho]`. A flag
+`--dry-run` sempre prevalece, inclusive combinada com `--apply`.
+O parâmetro `--delay=N` continua sendo em segundos e o CLI exibe
+a estimativa de chamadas antes de qualquer execução real.
+
+O teste `scripts/appendBlocks.test.js` valida o fluxo com API simulada:
+zero consumo em dry-run/import, uma chamada no `--apply`, concatenação
+do catálogo anterior, filtros CSS/HTML e falhas sem escrita. O gate
+executa o teste sem chave de API.

@@ -1,5 +1,15 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HERO_NOVAS = exports.CSS_NOVAS = exports.TODOS_OS_NICHOS = void 0;
+exports.gerarTextoComRetry = gerarTextoComRetry;
+exports.extrairJSON = extrairJSON;
+exports.validarCSS = validarCSS;
+exports.validarHero = validarHero;
+exports.extrairNomeEstilo = extrairNomeEstilo;
+exports.buildPromptAppend = buildPromptAppend;
+exports.appendBlocosParaNicho = appendBlocosParaNicho;
+exports.main = main;
 
 // ============================================================
 // BLOCK APPENDER — Gera variantes ADICIONAIS de CSS e Hero
@@ -40,11 +50,12 @@ async function gerarTextoComRetry(prompt, maxRetries = 3) {
             }
         }
     }
+    throw new Error('Tentativas Gemini esgotadas');
 }
 
 const TEMAS_DIR = path.join(__dirname, '../src/rag/rag-ia-compiler/pipeline/temas');
 
-const TODOS_OS_NICHOS = [
+exports.TODOS_OS_NICHOS = [
     'gamer-playerone',
     'pop-retro-pixel',
     'natureza-bulma-vegan',
@@ -62,8 +73,8 @@ const TODOS_OS_NICHOS = [
 ];
 
 // Quantas variantes NOVAS gerar por slot
-const CSS_NOVAS  = 5;
-const HERO_NOVAS = 2;
+exports.CSS_NOVAS = 5;
+exports.HERO_NOVAS = 2;
 
 function extrairJSON(texto) {
     let limpo = texto.trim();
@@ -115,7 +126,7 @@ ESTILOS JÁ EXISTENTES (NÃO REPITA ESTES):
 ${estilosStr}
 
 TAREFA:
-Gere exatamente ${CSS_NOVAS} variantes de CSS e ${HERO_NOVAS} variantes de hero HTML que sejam COMPLETAMENTE DIFERENTES dos estilos listados acima.
+Gere exatamente ${exports.CSS_NOVAS} variantes de CSS e ${exports.HERO_NOVAS} variantes de hero HTML que sejam COMPLETAMENTE DIFERENTES dos estilos listados acima.
 
 EXEMPLOS DE ESTILOS AINDA NÃO USADOS (use como inspiração):
 - Neumorphism (sombras suaves internas/externas sem borda)
@@ -158,7 +169,7 @@ Retorne SOMENTE JSON válido, sem markdown:
   ]
 }
 
-IMPORTANTE: card_css deve ter EXATAMENTE ${CSS_NOVAS} strings. hero_html deve ter EXATAMENTE ${HERO_NOVAS} strings.`;
+IMPORTANTE: card_css deve ter EXATAMENTE ${exports.CSS_NOVAS} strings. hero_html deve ter EXATAMENTE ${exports.HERO_NOVAS} strings.`;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -166,7 +177,7 @@ IMPORTANTE: card_css deve ter EXATAMENTE ${CSS_NOVAS} strings. hero_html deve te
 // ──────────────────────────────────────────────────────────────
 async function appendBlocosParaNicho(nicho) {
     const blocksPath = path.join(TEMAS_DIR, `tema-${nicho}-blocks.json`);
-    let existente = null;
+    let existente;
     try {
         existente = JSON.parse(fs.readFileSync(blocksPath, 'utf-8'));
     } catch (_) {
@@ -181,7 +192,7 @@ async function appendBlocosParaNicho(nicho) {
     // Extrai nomes dos estilos existentes para passar ao Gemini
     const estilosExistentes = (existente.card_css || [])
         .map(extrairNomeEstilo)
-        .filter(Boolean);
+        .filter((name) => Boolean(name));
 
     console.log(`  existente: ${(existente.card_css||[]).length} css | ${(existente.hero_html||[]).length} hero`);
     console.log(`  estilos existentes: ${estilosExistentes.slice(0,3).join(', ')}${estilosExistentes.length>3?'...':''}`);
@@ -205,7 +216,7 @@ async function appendBlocosParaNicho(nicho) {
     const cssNovos  = (Array.isArray(json.card_css)  ? json.card_css  : []).filter(validarCSS);
     const heroNovos = (Array.isArray(json.hero_html) ? json.hero_html : []).filter(validarHero);
 
-    console.log(`  novos válidos: ${cssNovos.length}/${CSS_NOVAS} css | ${heroNovos.length}/${HERO_NOVAS} hero`);
+    console.log(`  novos válidos: ${cssNovos.length}/${exports.CSS_NOVAS} css | ${heroNovos.length}/${exports.HERO_NOVAS} hero`);
 
     if (cssNovos.length === 0 && heroNovos.length === 0) {
         console.error(`  [erro] Nenhum bloco novo válido`);
@@ -238,15 +249,15 @@ async function main() {
     const flags   = rawArgs.filter(a => a.startsWith('--'));
     const args    = rawArgs.filter(a => !a.startsWith('--'));
 
-    const dryRun   = flags.includes('--dry-run');
+    const dryRun = !flags.includes('--apply') || flags.includes('--dry-run');
     const delayFlag = flags.find(f => f.startsWith('--delay='));
     const pauseMs   = delayFlag ? parseInt(delayFlag.split('=')[1], 10) * 1000 : 10_000;
 
-    const nichos = args.length > 0 ? args : TODOS_OS_NICHOS;
+    const nichos = args.length > 0 ? args : exports.TODOS_OS_NICHOS;
     const totalChamadas = nichos.length; // 1 chamada Gemini por nicho
     const tempoEstimadoMin = ((totalChamadas * pauseMs) / 60_000).toFixed(1);
 
-    console.log(`\n🎨 Block Appender — ${nichos.length} nicho(s) × +${CSS_NOVAS} css +${HERO_NOVAS} hero`);
+    console.log(`\n🎨 Block Appender — ${nichos.length} nicho(s) × +${exports.CSS_NOVAS} css +${exports.HERO_NOVAS} hero`);
     console.log(`   Chamadas Gemini estimadas : ${totalChamadas}`);
     console.log(`   Delay entre chamadas      : ${pauseMs / 1000}s`);
     console.log(`   Tempo total estimado      : ~${tempoEstimadoMin} min`);
@@ -282,4 +293,4 @@ async function main() {
     }
 }
 
-main().catch(err => { console.error('Erro fatal:', err); process.exit(1); });
+if (require.main === module) main().catch(err => { console.error('Erro fatal:', err); process.exit(1); });
