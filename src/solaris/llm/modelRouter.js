@@ -71,7 +71,6 @@ function registrarEstimativaSolaris(modelo, usageMetadata, operacao) {
         // Uma falha de observabilidade não deve derrubar um pedido pago.
     }
 }
-
 let _genAI = null;
 function getClient() {
     const key = process.env.GEMINI_API_KEY;
