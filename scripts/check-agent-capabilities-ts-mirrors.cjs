@@ -45,6 +45,8 @@ const sources = [
   "agent/src/index.ts",
   "agent/src/core/task-router.ts",
   "agent/src/core/task-runner.ts",
+  "agent/src/protocol/protocol-adapter.ts",
+  "agent/src/utils/errors.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

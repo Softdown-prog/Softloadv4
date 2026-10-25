@@ -98,6 +98,16 @@ esses imports nem exige um loader TypeScript em produção.
   duração, resultados e tratamento de falhas. A compilação é verificada
   por equivalência AST com os respectivos `.js` de produção.
 
+## Contratos do protocolo
+
+- `agent/src/protocol/protocol-adapter.ts` traduz as ações HTTP
+  validadas em tarefas tipadas, preservando as renomeações dos campos
+  de protocolo (snake_case) para os campos internos (camelCase).
+- `agent/src/utils/errors.ts` tipa o erro do Agent e seu código de
+  falha, preservando as mensagens e respostas de execução.
+- Ambos passam pela mesma compilação ESM e verificação AST antes dos
+  testes HTTP de ponta a ponta.
+
 ## Como validar
 
 ```bash

@@ -6,6 +6,9 @@ on:
     paths:
       - 'agent/src/capabilities/**'
       - 'agent/src/core/**'
+      - 'agent/src/protocol/**'
+      - 'agent/src/utils/errors.ts'
+      - 'agent/src/utils/errors.js'
       - 'agent/src/index.ts'
       - 'agent/src/index.js'
       - 'agent/src/utils/logger.ts'
@@ -17,6 +20,9 @@ on:
     paths:
       - 'agent/src/capabilities/**'
       - 'agent/src/core/**'
+      - 'agent/src/protocol/**'
+      - 'agent/src/utils/errors.ts'
+      - 'agent/src/utils/errors.js'
       - 'agent/src/index.ts'
       - 'agent/src/index.js'
       - 'agent/src/utils/logger.ts'

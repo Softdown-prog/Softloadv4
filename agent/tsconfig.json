@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src/capabilities/**/*.ts", "src/core/*.ts", "src/index.ts", "src/utils/logger.ts"],
+  "include": ["src/capabilities/**/*.ts", "src/core/*.ts", "src/protocol/*.ts", "src/index.ts", "src/utils/*.ts"],
   "exclude": ["node_modules"]
 }
