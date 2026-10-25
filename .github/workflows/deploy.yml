@@ -289,7 +289,12 @@ jobs:
 
   activate:
     needs: build_and_transfer
-    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    # O upload das imagens já usa GitHub-hosted + SSH restrito com sucesso.
+    # A ativação não precisa de Docker/sudo no runner da VPS; quando
+    # o self-hosted ficou indisponível, ela terminou sem executar steps.
+    # Executar daqui mantém a mesma allowlist de comandos SSH e evita
+    # um deploy incompleto após transferir todas as imagens.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Skip superseded revision before activation

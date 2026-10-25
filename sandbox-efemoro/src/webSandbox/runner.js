@@ -73,6 +73,7 @@ async function runWebSandbox(options) {
       viewport,
       screenshot,
       screenshotDelivery,
+      screenshotMode,
       accessibility,
       allowedHosts,
       timeout,
@@ -113,6 +114,7 @@ async function runWebSandbox(options) {
     if (screenshot) {
       const screenshotResult = await captureScreenshot(page, browserType, device, {
         delivery: screenshotDelivery,
+        mode: screenshotMode,
       });
       result.screenshotPath = screenshotResult.path;
       result.screenshot = screenshotResult.screenshot || null;

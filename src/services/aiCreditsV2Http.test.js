@@ -131,7 +131,11 @@ test('cursor malformado falha antes de consultar o Firestore e nao e refletido',
     const response=res();
     await h({...req('owner@example.test'),query:{cursor}},response);
     assert.equal(response.statusCode,400);
-    assert.equal(JSON.stringify(response.body).includes(String(cursor)),false);
+    // Toda string contém a string vazia. Não é possível verificar
+    // vazamento com includes(''); o HTTP 400 continua obrigatório.
+    if (String(cursor).length > 0) {
+      assert.equal(JSON.stringify(response.body).includes(String(cursor)),false);
+    }
   }
   assert.equal(calls,0);
 });

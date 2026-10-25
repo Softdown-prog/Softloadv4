@@ -50,10 +50,10 @@ async function shouldCaptureFullPage(page) {
  * @param {string} device
  * @param {{delivery?: "path"|"inline"}} options
  */
-async function captureScreenshot(page, browserType, device, { delivery = "path" } = {}) {
+async function captureScreenshot(page, browserType, device, { delivery = "path", mode = "auto" } = {}) {
   try {
     if (delivery === "inline") {
-      let fullPage = await shouldCaptureFullPage(page);
+      let fullPage = mode === "viewport" ? false : await shouldCaptureFullPage(page);
       let png = await page.screenshot({ type: "png", fullPage });
       // Páginas visualmente muito complexas ainda podem exceder o
       // limite de bytes; tenta o viewport sem gravar em /tmp.
