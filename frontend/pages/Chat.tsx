@@ -8,23 +8,57 @@ import {
     History, PlusCircle, Trash2, X, Clipboard, Check, 
     ArrowRight, RefreshCw, StopCircle, Zap, Settings, HelpCircle
 } from 'lucide-react';
+import type { AppUser } from '../services/api';
 
-export default function Chat() {
-    const { user } = useOutletContext();
-    const [messages, setMessages] = useState([]);
+type ChatRole = 'user' | 'assistant';
+interface ChatPatch { lang?: string }
+interface ChatMessage {
+    role: ChatRole;
+    content: string;
+    patched?: ChatPatch;
+}
+interface ChatSession {
+    sessionId: string;
+    updatedAt: string;
+    firstMessage?: string;
+    messageCount?: number;
+}
+interface ChatApiResponse {
+    sessions?: ChatSession[];
+    session?: { messages?: ChatMessage[] };
+    creditosGemini?: number;
+    creditosGeminiTotal?: number;
+}
+interface ChatStreamEvent {
+    type: 'status' | 'chunk' | 'done' | 'code_patch' | 'error';
+    label?: string;
+    text?: string;
+    reply?: string;
+    sessionId?: string;
+    message?: string;
+    lang?: string;
+}
+interface ChatApiError {
+    error?: string;
+    erro?: string;
+}
+
+export default function Chat(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: AppUser }>();
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [statusText, setStatusText] = useState('');
-    const [sessionId, setSessionId] = useState(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const [credits, setCredits] = useState({ creditosGemini: 0, creditosGeminiTotal: 0 });
-    const [sessionsList, setSessionsList] = useState([]);
+    const [sessionsList, setSessionsList] = useState<ChatSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [copiedId, setCopiedId] = useState(null);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
 
-    const messagesEndRef = useRef(null);
-    const abortControllerRef = useRef(null);
-    const pendingPatchRef = useRef(null);
-    const drawerRef = useRef(null);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const pendingPatchRef = useRef<ChatPatch | null>(null);
+    const drawerRef = useRef<HTMLDivElement | null>(null);
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
@@ -45,11 +79,11 @@ export default function Chat() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, statusText]);
 
-    const carregarCreditos = async () => {
+    const carregarCreditos = async (): Promise<void> => {
         try {
             const res = await fetch('/api/chat/status');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatApiResponse;
                 setCredits({
                     creditosGemini: data.creditosGemini || 0,
                     creditosGeminiTotal: data.creditosGeminiTotal || 0
@@ -60,11 +94,11 @@ export default function Chat() {
         }
     };
 
-    const carregarHistorico = async () => {
+    const carregarHistorico = async (): Promise<void> => {
         try {
             const res = await fetch('/api/chat/sessions?type=chat-suporte');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatApiResponse;
                 setSessionsList(data.sessions || []);
             }
         } catch (err) {
@@ -72,7 +106,7 @@ export default function Chat() {
         }
     };
 
-    const iniciarNovaConversa = () => {
+    const iniciarNovaConversa = (): void => {
         if (loading) return;
         setMessages([]);
         setSessionId(null);
@@ -80,13 +114,13 @@ export default function Chat() {
         setInput('');
     };
 
-    const carregarSessao = async (sessId) => {
+    const carregarSessao = async (sessId: string): Promise<void> => {
         if (loading) return;
         setStatusText('Carregando conversa...');
         try {
             const res = await fetch(`/api/chat/sessions/${sessId}?type=chat-suporte`);
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as ChatApiResponse;
                 if (data.session) {
                     setSessionId(sessId);
                     setMessages(data.session.messages || []);
@@ -100,7 +134,7 @@ export default function Chat() {
         }
     };
 
-    const excluirSessao = async (e, sessId) => {
+    const excluirSessao = async (e: React.MouseEvent<HTMLButtonElement>, sessId: string): Promise<void> => {
         e.stopPropagation();
         if (confirm('Deseja realmente excluir esta conversa?')) {
             try {
@@ -119,14 +153,14 @@ export default function Chat() {
         }
     };
 
-    const handleCopy = (text, id) => {
+    const handleCopy = (text: string, id: number): void => {
         navigator.clipboard.writeText(text).then(() => {
             setCopiedId(id);
             setTimeout(() => setCopiedId(null), 2000);
         });
     };
 
-    const handleSend = async (e, textToSend = null) => {
+    const handleSend = async (e?: React.FormEvent<HTMLFormElement> | null, textToSend: string | null = null): Promise<void> => {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
         if (!msg || loading) return;
@@ -135,7 +169,7 @@ export default function Chat() {
         setLoading(true);
         setStatusText('Iniciando conexão...');
 
-        const updatedHistory = [...messages, { role: 'user', content: msg }];
+        const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         setMessages(updatedHistory);
 
         const controller = new AbortController();
@@ -158,14 +192,15 @@ export default function Chat() {
 
             if (!response.ok) {
                 if (response.status === 402) {
-                    const err402 = await response.json().catch(() => ({}));
+                    const err402 = await response.json().catch(() => ({})) as ChatApiError;
                     throw new Error(err402.error || err402.erro || 'Seus créditos de IA acabaram.');
                 }
-                const err = await response.json().catch(() => ({}));
+                const err = await response.json().catch(() => ({})) as ChatApiError;
                 throw new Error(err.error || err.erro || 'Erro ao processar mensagem.');
             }
 
-            const reader = response.body.getReader();
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('Resposta do chat sem stream.');
             const decoder = new TextDecoder('utf-8');
             let buffer = '';
             let currentAssistantReply = '';
@@ -185,18 +220,18 @@ export default function Chat() {
                     const dLine = block.match(/^data: (.+)$/m);
                     if (!dLine) continue;
 
-                    let event;
+                    let event: ChatStreamEvent;
                     try {
-                        event = JSON.parse(dLine[1]);
+                        event = JSON.parse(dLine[1]) as ChatStreamEvent;
                     } catch (_) {
                         continue;
                     }
 
                     if (event.type === 'status') {
-                        setStatusText(event.label);
+                        setStatusText(event.label ?? '');
                     } else if (event.type === 'chunk') {
                         setStatusText('');
-                        currentAssistantReply += event.text;
+                        currentAssistantReply += event.text ?? '';
 
                         if (!addedAssistantBubble) {
                             setMessages(prev => [...prev, { role: 'assistant', content: currentAssistantReply }]);
@@ -216,7 +251,7 @@ export default function Chat() {
                             setSessionId(event.sessionId);
                         }
 
-                        const assistantMsg = { role: 'assistant', content: finalReply };
+                        const assistantMsg: ChatMessage = { role: 'assistant', content: finalReply };
                         if (pendingPatchRef.current) {
                             assistantMsg.patched = { lang: pendingPatchRef.current.lang };
                             pendingPatchRef.current = null;
@@ -245,7 +280,7 @@ export default function Chat() {
 
         } catch (err) {
             console.error('Streaming error:', err);
-            const errMsg = err.message || 'Falha na conexão.';
+            const errMsg = err instanceof Error ? err.message : 'Falha na conexão.';
             setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro: ${errMsg}` }]);
         } finally {
             setLoading(false);
@@ -254,7 +289,7 @@ export default function Chat() {
         }
     };
 
-    const stopGeneration = () => {
+    const stopGeneration = (): void => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             setLoading(false);
@@ -428,7 +463,7 @@ export default function Chat() {
                         <div className="flex-grow-1 position-relative">
                             <textarea 
                                 className="form-control bg-black text-light border-secondary pe-5 py-2"
-                                rows="1"
+                                rows={1}
                                 placeholder="Pergunte ao Especialista Blogger..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}

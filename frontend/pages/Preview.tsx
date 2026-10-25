@@ -3,6 +3,16 @@ import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Monitor, Tablet, Smartphone, Download, Eye, AlertTriangle } from 'lucide-react';
 import Pill from '../components/Pill';
 
+interface PreviewData {
+    siteName?: string;
+    compilacaoId?: string;
+    nichoTema?: string;
+    from?: 'workspace' | 'historico' | string;
+    previewHtml?: string;
+    erro?: string;
+}
+type PreviewViewport = keyof typeof VIEWPORTS;
+
 const VIEWPORTS = {
     desktop: { maxWidth: '1280px', label: '1280px — Desktop', icon: Monitor },
     tablet:  { maxWidth: '768px',  label: '768px — Tablet',   icon: Tablet },
@@ -12,7 +22,7 @@ const VIEWPORTS = {
 // Script injetado dentro do iframe para reportar a altura real do conteúdo
 // via postMessage — mais confiável que ler contentDocument.scrollHeight
 // de fora, que em vários browsers retorna a altura do próprio viewport.
-function buildHeightScript() {
+function buildHeightScript(): string {
     return `<script>(function(){
         function send(){ window.parent.postMessage({ type: 'sl-height', h: document.body.scrollHeight || document.documentElement.scrollHeight }, '*'); }
         window.addEventListener('load', function(){ setTimeout(send, 200); });
@@ -21,19 +31,19 @@ function buildHeightScript() {
     })()</` + `script>`;
 }
 
-export default function Preview() {
+export default function Preview(): React.JSX.Element {
     const { id } = useParams();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const isSession = location.pathname.endsWith('/session');
 
-    const [data, setData] = useState(null);
+    const [data, setData] = useState<PreviewData | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    const [viewport, setViewport] = useState('desktop');
+    const [viewport, setViewport] = useState<PreviewViewport>('desktop');
     const [iframeHeight, setIframeHeight] = useState(780);
 
-    const iframeRef = useRef(null);
+    const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -47,12 +57,12 @@ export default function Preview() {
 
         fetch(url)
             .then(async (res) => {
-                const body = await res.json().catch(() => ({}));
+                const body = await res.json().catch(() => ({})) as PreviewData;
                 if (!res.ok) throw new Error(body.erro || 'Falha ao carregar preview.');
                 return body;
             })
             .then((body) => { if (!cancelled) setData(body); })
-            .catch((err) => { if (!cancelled) setError(err.message || 'Falha ao carregar preview.'); })
+            .catch((err: unknown) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Falha ao carregar preview.'); })
             .finally(() => { if (!cancelled) setLoading(false); });
 
         return () => { cancelled = true; };
@@ -60,7 +70,7 @@ export default function Preview() {
 
     // Escuta a mensagem de altura vinda do iframe
     useEffect(() => {
-        function onMessage(e) {
+        function onMessage(e: MessageEvent): void {
             if (e.data && e.data.type === 'sl-height' && e.data.h > 200) {
                 setIframeHeight(Math.min(e.data.h + 60, 8000));
             }
@@ -72,17 +82,17 @@ export default function Preview() {
     // Reme a altura direto (iframe tem allow-same-origin) depois que a
     // transição CSS de max-width termina — uma mudança de largura vinda
     // do pai não dispara o script injetado sozinho.
-    const remedirAposTransicao = () => {
+    const remedirAposTransicao = (): void => {
         setTimeout(() => {
             try {
                 const doc = iframeRef.current?.contentDocument;
                 const h = doc?.body?.scrollHeight || doc?.documentElement?.scrollHeight;
-                if (h > 200) setIframeHeight(Math.min(h + 60, 8000));
+                if (h != null && h > 200) setIframeHeight(Math.min(h + 60, 8000));
             } catch (_) { /* cross-origin ou iframe não pronto — ignora */ }
         }, 320);
     };
 
-    const handleSetViewport = (vp) => {
+    const handleSetViewport = (vp: PreviewViewport): void => {
         if (vp === viewport) return;
         setViewport(vp);
         remedirAposTransicao();
@@ -139,7 +149,7 @@ export default function Preview() {
                                 const Icon = cfg.icon;
                                 const active = viewport === key;
                                 return (
-                                    <button key={key} type="button" onClick={() => handleSetViewport(key)} title={cfg.label} aria-label={cfg.label}
+                                    <button key={key} type="button" onClick={() => handleSetViewport(key as PreviewViewport)} title={cfg.label} aria-label={cfg.label}
                                         className="btn"
                                         style={{
                                             minHeight: '36px', padding: '6px 12px', fontSize: '.85rem',

@@ -77,6 +77,8 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/admin/Dashboard.tsx',
     'frontend/pages/admin/Usuarios.tsx',
     'frontend/pages/admin/Sol.tsx',
+    'frontend/pages/Preview.tsx',
+    'frontend/pages/Chat.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -262,4 +264,31 @@ test('chat Sol administrativo em TSX preserva SSE e cancelamento do streaming', 
   assert.ok(src.includes('abortControllerRef.current.abort()'));
   assert.ok(src.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
   assert.ok(src.includes('<MarkdownRenderer>{m.content}</MarkdownRenderer>'));
+});
+
+test('preview TSX preserva carregamento, isolamento de iframe e viewports', () => {
+  const preview = source('frontend/pages/Preview.tsx');
+  assert.ok(preview.includes("'/api/preview/session'"));
+  assert.ok(preview.includes('/api/preview/${id}?from='));
+  assert.ok(preview.includes("window.addEventListener('message', onMessage)"));
+  assert.ok(preview.includes('h != null && h > 200'));
+  assert.ok(preview.includes('useRef<HTMLIFrameElement | null>(null)'));
+  assert.ok(preview.includes('buildHeightScript()'));
+  assert.ok(preview.includes('sandbox="allow-same-origin allow-scripts allow-popups allow-forms"'));
+  assert.ok(preview.includes("maxWidth: VIEWPORTS[viewport].maxWidth"));
+});
+
+test('chat TSX mantém créditos, sessões, SSE e cancelamento', () => {
+  const chat = source('frontend/pages/Chat.tsx');
+  assert.ok(chat.includes("fetch('/api/chat/status')"));
+  assert.ok(chat.includes("fetch('/api/chat/sessions?type=chat-suporte')"));
+  assert.ok(chat.includes("fetch('/dashboard/chat/stream'"));
+  assert.ok(chat.includes("model: 'gemini-flash'"));
+  assert.ok(chat.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(chat.includes("event.type === 'code_patch'"));
+  assert.ok(chat.includes('pendingPatchRef.current = event'));
+  assert.ok(chat.includes('useRef<AbortController | null>(null)'));
+  assert.ok(chat.includes('abortControllerRef.current.abort()'));
+  assert.ok(chat.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
+  assert.ok(chat.includes('handleSend(null, s)'));
 });

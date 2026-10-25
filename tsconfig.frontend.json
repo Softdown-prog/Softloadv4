@@ -50,6 +50,8 @@
     "frontend/pages/admin/Dashboard.tsx",
     "frontend/pages/admin/Usuarios.tsx",
     "frontend/pages/admin/Sol.tsx",
+    "frontend/pages/Preview.tsx",
+    "frontend/pages/Chat.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [
