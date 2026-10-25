@@ -7,6 +7,7 @@ const { PRICES_CENTS, approvedPlanForPayment } = require('./mpPlanRules');
 const { TETOS_IA_EXPERIMENTAIS_CENTAVOS } = require('./geminiCost');
 const root = path.resolve(__dirname, '../..');
 const frontend = fs.readFileSync(path.join(root, 'frontend/pages/Upgrade.tsx'),'utf8');
+const adminUsers = fs.readFileSync(path.join(root, 'frontend/pages/admin/Usuarios.tsx'),'utf8');
 const checkout = fs.readFileSync(path.join(root,'src/routes/apiRoutes.js'),'utf8');
 const grant = fs.readFileSync(path.join(root,'src/services/creditService.ts'),'utf8');
 const catalog = [["starter",2990,150,"R$ 29,90","150 créditos Gemini / mês"],["pro",3990,600,"R$ 39,90","600 créditos Gemini / mês"],["studio",5990,1200,"R$ 59,90","1.200 créditos Gemini / mês"]];
@@ -37,6 +38,14 @@ test('pior caso de consumo da API + encargos estimados deixa pelo menos R$20 ap�
     const caixa=price-credits-encargos-provisaoOperacionalCentavos;
     assert.ok(caixa >= saldoMinimoCentavos,
       plan+': sobra R$'+(caixa/100).toFixed(2)+' abaixo de R$20');
+  }
+});
+test('painel admin sempre usa as mesmas cotas dos planos que o cliente compra',()=>{
+  for(const [plan,_price,credits] of catalog) {
+    assert.match(adminUsers,new RegExp(plan+": \\{ gemini: "+credits+", label:"));
+    const show=credits.toLocaleString('pt-BR');
+    const caption=plan==='starter'?'Starter':plan==='pro'?'Pro':'Studio';
+    assert.ok(adminUsers.includes(caption+' — '+show+' créditos Gemini'));
   }
 });
 test('pagamentos antigos sao rejeitados em vez de ativar plano pelo valor errado',()=>{
