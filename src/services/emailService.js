@@ -5,17 +5,14 @@ exports.enviarBoasVindas = enviarBoasVindas;
 exports.enviarRecuperacaoSenha = enviarRecuperacaoSenha;
 exports.enviarPlanoAtivado = enviarPlanoAtivado;
 const nodemailer = require('nodemailer');
-
 const FROM = `"${process.env.EMAIL_FROM_NAME || 'Softload Engine'}" <${process.env.EMAIL_FROM || 'contato@softload.analysepro.com'}>`;
-const BASE  = process.env.BASE_URL || 'https://softload.analysepro.com';
-
+const BASE = process.env.BASE_URL || 'https://softload.analysepro.com';
 exports.transporter = nodemailer.createTransport({
-    host:   'smtp.resend.com',
-    port:   465,
+    host: 'smtp.resend.com',
+    port: 465,
     secure: true,
     auth: { user: 'resend', pass: process.env.RESEND_API_KEY },
 });
-
 // ── Layout base de email ──────────────────────────────────────────────────
 function layout(titulo, corpo) {
     return `<!DOCTYPE html>
@@ -52,17 +49,13 @@ function layout(titulo, corpo) {
 </body>
 </html>`;
 }
-
 function btnPrimario(url, texto) {
     return `<a href="${url}" style="display:inline-block;margin:24px 0;background:#0ea5e9;color:#ffffff;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;padding:14px 32px;border-radius:8px;text-decoration:none">${texto}</a>`;
 }
-
 function divisor() {
     return '<hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0">';
 }
-
 // ── Templates ─────────────────────────────────────────────────────────────
-
 function templateBoasVindas(nome) {
     const corpo = `
       <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.02em">
@@ -89,7 +82,6 @@ function templateBoasVindas(nome) {
     `;
     return layout('Bem-vindo ao Softload Engine', corpo);
 }
-
 function templateRecuperacaoSenha(nome, resetLink) {
     const corpo = `
       <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.02em">
@@ -110,10 +102,9 @@ function templateRecuperacaoSenha(nome, resetLink) {
     `;
     return layout('Redefinição de senha — Softload Engine', corpo);
 }
-
 function templatePlanoAtivado(nome, plano, creditos, expiraEm) {
     const planoLabel = plano.charAt(0).toUpperCase() + plano.slice(1);
-    const dataExp    = expiraEm ? new Date(expiraEm).toLocaleDateString('pt-BR') : '30 dias';
+    const dataExp = expiraEm ? new Date(expiraEm).toLocaleDateString('pt-BR') : '30 dias';
     const corpo = `
       <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.02em">
         Plano ${planoLabel} ativado!
@@ -151,33 +142,24 @@ function templatePlanoAtivado(nome, plano, creditos, expiraEm) {
     `;
     return layout(`Plano ${planoLabel} ativado — Softload Engine`, corpo);
 }
-
 // ── Funções públicas ──────────────────────────────────────────────────────
-
 async function enviar(to, subject, html) {
     try {
         await exports.transporter.sendMail({ from: FROM, to, subject, html });
         console.log(`[EMAIL] Enviado: "${subject}" → ${to}`);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(`[EMAIL] Falha ao enviar para ${to}:`, err.message);
         throw err;
     }
 }
-
 async function enviarBoasVindas(email, nome) {
     await enviar(email, 'Bem-vindo ao Softload Engine!', templateBoasVindas(nome));
 }
-
 async function enviarRecuperacaoSenha(email, nome, resetLink) {
     await enviar(email, 'Redefinição de senha — Softload Engine', templateRecuperacaoSenha(nome, resetLink));
 }
-
 async function enviarPlanoAtivado(email, nome, plano, creditos, expiraEm) {
-    await enviar(
-        email,
-        `Plano ${plano.charAt(0).toUpperCase() + plano.slice(1)} ativado! — Softload Engine`,
-        templatePlanoAtivado(nome, plano, creditos, expiraEm)
-    );
+    await enviar(email, `Plano ${plano.charAt(0).toUpperCase() + plano.slice(1)} ativado! — Softload Engine`, templatePlanoAtivado(nome, plano, creditos, expiraEm));
 }
-
 // Transporter reutilizável para o formulário de contato (contatoRoutes.js).
