@@ -32,8 +32,17 @@ const app = express();
 // só serviria para esgotar memória.
 app.use(express.json({ limit: "64kb" }));
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+app.get("/health", (_req, res) => {
+  // Metadados de capacidades, sem revelar credenciais ou caminhos internos.
+  // O cliente visual precisa saber se aponta para o sandbox com Chromium,
+  // e não para a imagem archive-only.
+  res.status(200).json({
+    status: "ok",
+    capabilities: {
+      browser: sandboxSupports(SANDBOX_MODE, "browser"),
+      archive: sandboxSupports(SANDBOX_MODE, "archive"),
+    },
+  });
 });
 
 function requireCapability(capability) {
