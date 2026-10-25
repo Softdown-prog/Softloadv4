@@ -155,6 +155,10 @@ jobs:
           node --test src/services/envBoot.contract.test.js
       - name: Testar buildInfo com Docker simulado e fallback local
         run: node --test src/services/buildInfo.test.js
+      - name: Testar contratos Mercado Pago e aprovação de planos sem rede
+        run: |
+          node src/services/mpPlanRules.test.js
+          node --test src/services/mpPlanRules.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

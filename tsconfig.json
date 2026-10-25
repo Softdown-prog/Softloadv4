@@ -192,7 +192,8 @@
     "scripts/check-typescript-mirrors.ts",
     "src/knowledge/ragNamespaces.ts",
     "src/services/buildInfo.ts",
-    "src/services/envBoot.ts"
+    "src/services/envBoot.ts",
+    "src/services/mpPlanRules.ts"
   ],
   "exclude": [
     "node_modules",

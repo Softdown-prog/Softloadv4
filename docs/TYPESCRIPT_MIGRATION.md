@@ -1459,3 +1459,20 @@ decidir se aborta o boot com base em `ok`. O Gate TypeScript agora
 executa o teste histórico `envBoot.test.js` e quatro casos adicionais
 em `envBoot.contract.test.js`, sem modificar variáveis reais nem
 realizar chamadas de rede.
+
+## Etapa 84 — regras de aprovação de planos em TypeScript
+
+`src/services/mpPlanRules.ts` torna-se a fonte tipada de
+`src/services/mpPlanRules.js` (espelho CommonJS mantido).
+A API `approvedPlanForPayment(payment, pendingPlan)` mantém os preços
+congelados **em centavos** (`starter=4900`, `pro=11900`,
+`studio=24900`) e só reconhece pagamentos com `status=approved`,
+`currency_id=BRL` e valor correspondente ao plano pendente.
+A conversão por `Number()`, o limite numérico de `0.000001` centavo
+e os retornos `plan|null` são preservados sem alterações de cobrança.
+
+O Gate TypeScript executa `mpPlanRules.test.js` (teste histórico) e
+`mpPlanRules.contract.test.js` (quatro regressões: preços e planos,
+status/moeda/plano, valores ausentes/não finitos e tolerância numérica).
+São testes **offline**, sem cobrar clientes, enviar requisições
+ao Mercado Pago ou consultar chaves de API.
