@@ -80,7 +80,6 @@ export default function Solaris(): React.JSX.Element {
     const scrollToLatest = (): void => {
         shouldFollowRef.current = true;
         setShowJumpToLatest(false);
-        setShowJumpToLatest(false);
         const feed = chatFeedRef.current;
         if (feed) feed.scrollTop = feed.scrollHeight;
     };
