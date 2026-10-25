@@ -92,3 +92,17 @@ test("path legado continua gravando PNG sem base64 na resposta", async () => {
   assert.ok(result.path?.endsWith("_chromium_desktop.png"));
   assert.equal(result.screenshot, undefined);
 });
+
+test("inline viewport: captura somente a tela sem medir página inteira", async () => {
+  const png = Buffer.from("89504e470d0a1a0a11223344", "hex");
+  const calls = [];
+  const page = {
+    screenshot: async options => { calls.push(options); return png; },
+  };
+  const result = await captureScreenshot(page, "chromium", "desktop", {
+    delivery: "inline", mode: "viewport",
+  });
+  assert.equal(result.error, null);
+  assert.equal(result.screenshot.fullPage, false);
+  assert.deepEqual(calls, [{ type: "png", fullPage: false }]);
+});
