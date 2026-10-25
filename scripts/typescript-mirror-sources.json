@@ -140,5 +140,6 @@
   "scripts/gerar-blocos-rag.ts",
   "scripts/audit-template-fidelity.ts",
   "scripts/generateBlocks.ts",
-  "scripts/appendBlocks.ts"
+  "scripts/appendBlocks.ts",
+  "scripts/fixImplCssVars.ts"
 ]

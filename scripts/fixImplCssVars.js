@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NICHOS_COM_CSS = void 0;
+exports.gerarTextoComRetry = gerarTextoComRetry;
+exports.extrairJSON = extrairJSON;
+exports.coletarCssStrings = coletarCssStrings;
+exports.setByPath = setByPath;
+exports.buildPrompt = buildPrompt;
+exports.processarNicho = processarNicho;
+exports.main = main;
 
 // ============================================================
 // CSS Var Fixer — Substitui cores hardcoded por var(--sl-*)
@@ -43,12 +52,13 @@ async function gerarTextoComRetry(prompt, maxRetries = 3) {
             }
         }
     }
+    throw new Error('Falha inesperada no limite de tentativas');
 }
 
 const TEMAS_DIR = path.join(__dirname, '../src/rag/rag-ia-compiler/pipeline/temas');
 
 // Apenas os nichos que têm CSS significativo
-const NICHOS_COM_CSS = [
+exports.NICHOS_COM_CSS = [
     'gamer-playerone',
     'appstore-bulma-mobile',
     'natureza-bulma-vegan',
@@ -212,11 +222,11 @@ async function main() {
     const flags   = rawArgs.filter(a => a.startsWith('--'));
     const args    = rawArgs.filter(a => !a.startsWith('--'));
 
-    const dryRun    = flags.includes('--dry-run');
+    const dryRun    = !flags.includes('--apply') || flags.includes('--dry-run');
     const delayFlag = flags.find(f => f.startsWith('--delay='));
     const pauseMs   = delayFlag ? parseInt(delayFlag.split('=')[1], 10) * 1000 : 10_000;
 
-    const nichos = args.length > 0 ? args : NICHOS_COM_CSS;
+    const nichos = args.length > 0 ? args : exports.NICHOS_COM_CSS;
     const tempoEstimadoMin = ((nichos.length * pauseMs) / 60_000).toFixed(1);
 
     console.log(`\n🎨 CSS Var Fixer — ${nichos.length} nicho(s)`);
@@ -257,7 +267,7 @@ async function main() {
     }
 }
 
-main().catch(err => {
+if (require.main === module) main().catch(err => {
     console.error('Erro fatal:', err);
     process.exit(1);
 });

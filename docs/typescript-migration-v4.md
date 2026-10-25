@@ -122,3 +122,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `scripts/generateBlocks.js` continua o CLI CommonJS. Importar o módulo deixa de executar a geração automaticamente; `node scripts/generateBlocks.js [nicho ...]` mantém a execução explícita.
 - Mantidos os prompts visuais originais, cinco variantes CSS e três hero por nicho, filtros que rejeitam sintaxe Blogger e placeholders, e armazenamento em `pipeline/temas/tema-{nicho}-blocks.json`.
 - `scripts/generateBlocks.test.js` utiliza Gemini, FS e pausa simulados, conferindo que importação não chama API nem grava temas reais.
+
+## Lote — migração do atualizador CSS de temas Blogger
+
+- `scripts/fixImplCssVars.ts` torna a fonte TypeScript do reescritor de cores fixas para variáveis de tema, incluindo estruturas tipadas para caminhos CSS, alterações solicitadas ao modelo, carga e persistência de `impl.json`.
+- `scripts/fixImplCssVars.js` permanece como espelho CommonJS; importar o módulo não executa mais o processamento.
+- Por segurança de custos, executar a CLI sem argumentos ou com `--dry-run` **não chama Gemini nem altera o disco**. Para efetivar mudanças, usar `node scripts/fixImplCssVars.js --apply [nicho]`, com custo de API conforme provedor.
+- O fluxo real preserva a extração recursiva de CSS, cardinalidade do retorno, substituições por caminho, backoff contra 429 e a manutenção de campos não-CSS.
+- `node --test scripts/fixImplCssVars.test.js` verifica todos esses contratos com Gemini e FS em memória, sem chaves reais nem alterações em temas.
