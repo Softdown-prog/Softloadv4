@@ -1,4 +1,5 @@
 const archiver = require('archiver');
+const { createHash } = require('node:crypto');
 const admin = require('firebase-admin');
 const { bucket, db } = require('./firebase');
 
@@ -45,7 +46,7 @@ function verificarCota(storageMb, tamanhoBytes, limiteMb = 100) {
  * @param {number} tamanhoBytesEstimado
  * @returns {Promise<{ confirmarUso: (tamanhoBytesReal: number) => Promise<void> }>}
  */
-async function reservarCota(email, plano, tamanhoBytesEstimado) {
+async function reservarCota(email, plano, tamanhoBytesEstimado, operacaoId) {
     const emailKey = (email || '').toLowerCase();
     const snap      = await db.collection('clientes_premium').doc(emailKey).get();
     const storageMb = snap.exists ? (snap.data().storage_usado_mb || 0) : 0;
@@ -55,6 +56,10 @@ async function reservarCota(email, plano, tamanhoBytesEstimado) {
     return {
         async confirmarUso(tamanhoBytesReal) {
             if (!tamanhoBytesReal) return;
+            if (operacaoId !== undefined) {
+                await movimentarCotaIdempotente(emailKey, tamanhoBytesReal, operacaoId, { limiteMb });
+                return;
+            }
             await db.collection('clientes_premium').doc(emailKey).set(
                 { storage_usado_mb: admin.firestore.FieldValue.increment(tamanhoBytesReal / (1024 * 1024)) },
                 { merge: true }
@@ -74,9 +79,48 @@ async function reservarCota(email, plano, tamanhoBytesEstimado) {
  * @param {string} email
  * @param {number} tamanhoBytes
  */
-async function liberarCota(email, tamanhoBytes) {
-    if (!tamanhoBytes) return;
+/**
+ * Registrado no mesmo commit Firestore que atualiza o saldo. Recibos devem
+ * permanecer: expirarlos permitiria aplicar o mesmo credito ou debito novamente.
+ */
+async function movimentarCotaIdempotente(emailKey, deltaBytes, operacaoId, { limiteMb, trackingMutacao } = {}) {
+    if (typeof operacaoId !== 'string' || operacaoId.length === 0 || operacaoId.length > 512) {
+        throw new TypeError('Operacao de cota sem identificador valido.');
+    }
+    if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Cota deve usar bytes inteiros.');
+    const hash = createHash('sha256').update(JSON.stringify([emailKey, operacaoId])).digest('hex');
+    const opRef = db.collection('storage_cota_operacoes').doc(hash);
+    const userRef = db.collection('clientes_premium').doc(emailKey);
+    return db.runTransaction(async tx => {
+        const prior = await tx.get(opRef);
+        if (prior.exists) {
+            if (prior.data().deltaBytes !== deltaBytes) throw new Error('Recibo reutilizado com quantidade diferente.');
+            return { aplicada: false };
+        }
+        const user = await tx.get(userRef);
+        if (deltaBytes > 0 && limiteMb !== undefined) {
+            verificarCota(user.exists ? (user.data().storage_usado_mb || 0) : 0, deltaBytes, limiteMb);
+        }
+        if (deltaBytes !== 0) tx.set(userRef, {
+            storage_usado_mb: admin.firestore.FieldValue.increment(deltaBytes / (1024 * 1024))
+        }, { merge: true });
+        if (trackingMutacao) {
+            if (trackingMutacao.data === null) tx.delete(trackingMutacao.ref);
+            else tx.set(trackingMutacao.ref, trackingMutacao.data);
+        }
+        tx.create(opRef, { deltaBytes, criadoEm: admin.firestore.FieldValue.serverTimestamp(), origem: 'solaris' });
+        return { aplicada: true };
+    });
+}
+
+async function liberarCota(email, tamanhoBytes, operacaoId, trackingMutacao) {
+    if (!tamanhoBytes && !trackingMutacao) return;
     const emailKey = (email || '').toLowerCase();
+    if (operacaoId !== undefined) {
+        await movimentarCotaIdempotente(emailKey, -(tamanhoBytes || 0), operacaoId, { trackingMutacao });
+        return;
+    }
+    if (trackingMutacao) throw new Error('Mutacao atomica exige identificador idempotente.');
     await db.collection('clientes_premium').doc(emailKey).set(
         { storage_usado_mb: admin.firestore.FieldValue.increment(-(tamanhoBytes / (1024 * 1024))) },
         { merge: true }

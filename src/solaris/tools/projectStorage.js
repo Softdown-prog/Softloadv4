@@ -63,6 +63,9 @@ function _arquivoPath(uid, sessionId, caminhoRelativo, versao) {
         ? `${_prefixo(uid, sessionId)}/versions/${versao}/files/${caminhoRelativo}`
         : `${_prefixo(uid, sessionId)}/files/${caminhoRelativo}`;
 }
+function _operacaoCota(tipo, uid, sessionId, versao) {
+    return `solaris:${tipo}:${uid}:${sessionId}:${versao}`;
+}
 /**
  * Exclusão mútua distribuída por sessão: create() é atômico no Firestore.
  * Não reutilize um lock órfão automaticamente: uma operação que ainda
@@ -159,7 +162,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
     const tamanhoAnterior = oldTracking?.tamanhoBytes || 0;
     const tamanhoAtivoAnterior = oldTracking?.activeTamanhoBytes ?? tamanhoAnterior;
     // Keep the previous quota accounted for until its GCS objects are deleted.
-    const { confirmarUso } = await reservarCota(email, plano, tamanhoBytes);
+    const { confirmarUso } = await reservarCota(email, plano, tamanhoBytes, _operacaoCota('debit', uid, sessionId, versao));
     let quotaConfirmada = false;
     let trackingWriteStarted = false;
     let manifestWriteStarted = false;
@@ -181,6 +184,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
             criadoEm: manifesto.criadoEm,
             tamanhoBytes: tamanhoAnterior + tamanhoBytes,
             activeTamanhoBytes: tamanhoBytes,
+            versaoAtiva: versao,
         });
         // This single manifest write publishes the new generation last.
         manifestWriteStarted = true;
@@ -229,7 +233,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
             }
             if (quotaConfirmada && cleaned) {
                 try {
-                    await liberarCota(email, tamanhoBytes);
+                    await liberarCota(email, tamanhoBytes, _operacaoCota('rollback', uid, sessionId, versao));
                 }
                 catch (quotaError) {
                     console.error('[SOLARIS-STORAGE] falha liberando cota da versão incompleta:', quotaError);
@@ -249,15 +253,21 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
             : `${_prefixo(uid, sessionId)}/files/`;
         try {
             await bucket.deleteFiles({ prefix: oldPrefix, force: true });
-            // Once old bytes are gone, adjust the tracking size and credit pool.
-            await trackingRef.set({
+            // Balance credit, receipt and tracking adjustment are a single
+            // Firestore transaction. A lost ACK cannot partially apply them.
+            const updatedTracking = {
                 uid, sessionId, email: (email || '').toLowerCase(),
                 criadoEm: manifesto.criadoEm,
                 tamanhoBytes: Math.max(0, tamanhoAnterior - tamanhoAtivoAnterior) + tamanhoBytes,
                 activeTamanhoBytes: tamanhoBytes,
-            });
-            if (oldTracking && tamanhoAtivoAnterior) {
-                await liberarCota(oldTracking.email, tamanhoAtivoAnterior);
+                versaoAtiva: versao,
+            };
+            if (oldTracking) {
+                await liberarCota(oldTracking.email, tamanhoAtivoAnterior,
+                    _operacaoCota('replace-credit', uid, sessionId, oldManifest.versao || oldManifest.criadoEm),
+                    { ref: trackingRef, data: updatedTracking });
+            } else {
+                await trackingRef.set(updatedTracking);
             }
         }
         catch (error) {
@@ -352,10 +362,16 @@ async function _apagarProjetoComBloqueio(uid, sessionId) {
     // Do not release quota or remove tracking unless storage deletion succeeds.
     await bucket.deleteFiles({ prefix: `${_prefixo(uid, sessionId)}/`, force: true });
     if (trackingSnap && trackingSnap.exists) {
-        const { email, tamanhoBytes } = trackingSnap.data();
-        await trackingRef.delete();
-        if (email && tamanhoBytes)
-            await liberarCota(email, tamanhoBytes);
+        const data = trackingSnap.data();
+        const { email, tamanhoBytes } = data;
+        if (email && tamanhoBytes) {
+            // Firestore transaction commits credit + receipt + tracking deletion.
+            await liberarCota(email, tamanhoBytes,
+                _operacaoCota('delete-credit', uid, sessionId, data.versaoAtiva || data.criadoEm),
+                { ref: trackingRef, data: null });
+        } else {
+            await trackingRef.delete();
+        }
     }
 }
 // Pura — decide se um projeto está expirado dado o timestamp de criação.

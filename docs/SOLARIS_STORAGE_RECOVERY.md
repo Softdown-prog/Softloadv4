@@ -44,3 +44,31 @@ necessária, especialmente se a operação for interrompida após
 confirmarUso(), se liberarCota() perder o ACK, ou se exclusões parciais
 de blobs ocorrerem. Não executar scripts de correção de cotas sem
 verificar o manifesto atual, os rastreamentos e a existência dos blobs.
+
+## Etapa 73 — recibos idempotentes e transações de cota
+
+O `storageService` mantém compatibilidade com chamadas antigas sem chave,
+mas passou a aceitar um `operacaoId` opcional na reserva/confirmacao e
+liberacao de cota. Cada operacao com ID grava recibo em
+`storage_cota_operacoes` e altera `clientes_premium.storage_usado_mb`
+**na mesma transacao Firestore**. Na repeticao, a operacao nao repete
+o incremento/decremento. Recibo repetido com valor diferente falha.
+O debito revalida os limites do plano dentro da transacao.
+
+No Solaris, cada nova geracao versionada recebe ID de debito proprio.
+Estornos de rollback, substituicoes e exclusoes usam IDs distintos
+e estaveis. A exclusao agora credita e remove o rastreamento numa unica
+transacao; a substituicao credita a geracao anterior e ajusta o
+rastreamento na mesma transacao. Erros de ACK podem ser repetidos sem
+creditar a mesma operacao duas vezes.
+
+IMPORTANTE: nao aplicar TTL aos recibos sem uma politica comprovadamente
+segura; apagar o recibo permite reaplicar operacoes antigas. O historico
+de saldos deve ser auditado e eventualmente reconciliado pela contagem
+dos objetos reais do GCS. Reservas/compensacoes que falham entre servicos
+ainda podem exigir reparacao — recibos idempotentes nao transformam GCS
++ Firestore numa transacao distribuida.
+
+Testes simulam ACK perdido, repeated debit/credit, alteracao de tracking
+na mesma transacao, limite do plano e reuso indevido de ID. Testes nao
+acessam Firestore de producao.

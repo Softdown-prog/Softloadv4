@@ -184,6 +184,7 @@ jobs:
           node src/solaris/tools/archiveExtractClient.test.js
           node src/solaris/tools/projectStorage.test.js
           node src/solaris/tools/projectStorage.transaction.test.js
+          node src/services/storageQuotaIdempotency.test.js
           node src/solaris/tools/projectLockRecovery.test.js
           node src/solaris/chat/solarisGenerationTrigger.test.js
           node src/solaris/prompts/systemPrompt.test.js

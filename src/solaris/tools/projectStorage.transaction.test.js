@@ -13,6 +13,8 @@ let failLockCreate = null;
 let beforeSave = null;
 let beforeDownload = null;
 const quota = { used: 0, released: 0, confirmed: 0, failReserve: false };
+const quotaReceipts = new Map();
+let failCreditAckOnce = false;
 let failSave = null;
 let failDelete = null;
 let failSaveAfterWrite = null;
@@ -81,15 +83,37 @@ const db = {
 const deps = [
   ['../../services/firebase', {bucket, db}],
   ['../../services/storageService', {
-    async reservarCota(_email,_plano,bytes) {
+    async reservarCota(_email,_plano,bytes,operationId) {
       if (quota.failReserve) throw Error('Limite de armazenamento');
       return {async confirmarUso(actual) {
         assert.equal(actual,bytes);
+        if (operationId && quotaReceipts.has(operationId)) {
+          assert.equal(quotaReceipts.get(operationId),actual);
+          return;
+        }
+        if (operationId) quotaReceipts.set(operationId,actual);
         quota.used+=actual;
         quota.confirmed+=actual;
       }};
     },
-    async liberarCota(_email,bytes) { quota.used-=bytes; quota.released+=bytes; },
+    async liberarCota(_email,bytes,operationId,trackingMutation) {
+      if (trackingMutation?.data===null && failTrackingDelete) throw Error('Firestore delete denied');
+      if (operationId && quotaReceipts.has(operationId)) {
+        assert.equal(quotaReceipts.get(operationId),-bytes);
+        return;
+      }
+      if (operationId) quotaReceipts.set(operationId,-bytes);
+      quota.used-=bytes;
+      quota.released+=bytes;
+      if (trackingMutation) {
+        if (trackingMutation.data===null) tracking.delete(trackedId);
+        else tracking.set(trackedId,{...trackingMutation.data});
+      }
+      if (failCreditAckOnce) {
+        failCreditAckOnce=false;
+        throw Error('Firestore credit acknowledgement lost');
+      }
+    },
   }]
 ];
 for(const [rel,exports] of deps) {
@@ -102,10 +126,10 @@ const manifestKey='users/user-test/solaris-projects/session-test/manifesto.json'
 const trackedId='user-test_session-test';
 const config=arquivos=>({uid,sessionId,email,plano:'free',framework:'html5',arquivos});
 function reset() {
-  objects.clear();tracking.clear();locks.clear();deleteHistory.length=0;
+  objects.clear();tracking.clear();locks.clear();quotaReceipts.clear();deleteHistory.length=0;
   quota.used=0;quota.released=0;quota.confirmed=0;quota.failReserve=false;
   failSave=null;failDelete=null;failSaveAfterWrite=null;failTrackingSetAfterWrite=false;failTrackingDelete=false;
-  failLockCreate=null;beforeSave=null;beforeDownload=null;
+  failCreditAckOnce=false;failLockCreate=null;beforeSave=null;beforeDownload=null;
 }
 async function readProject() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-storage-test-'));
@@ -577,4 +601,35 @@ test('falha no delete de rastreamento não libera cota e permite retry',async()=
   await apagarProjeto(uid,sessionId);
   assert.equal(quota.used,0);
   assert.equal(tracking.size,0);
+});
+
+test('ACK perdido após crédito de substituição não devolve cota duas vezes',async()=>{
+  reset();await initial();
+  failCreditAckOnce=true;
+  const second=await salvarProjeto(config([{caminho:'two.txt',conteudo:'version 2'}]));
+  assert.equal(second.ok,true);
+  const afterSecond=quota.used;
+  assert.equal(afterSecond,second.tamanhoBytes);
+  assert.equal(tracking.get(trackedId).tamanhoBytes,second.tamanhoBytes);
+  const third=await salvarProjeto(config([{caminho:'three.txt',conteudo:'version 3'}]));
+  assert.equal(third.ok,true);
+  assert.equal(quota.used,third.tamanhoBytes);
+  assert.equal((await readProject()).files[0][0],'three.txt');
+});
+
+test('ACK perdido após crédito e delete atômicos não duplica estorno em retry',async()=>{
+  reset();await initial();
+  const initialUsage=quota.used;
+  failCreditAckOnce=true;
+  await assert.rejects(apagarProjeto(uid,sessionId),/Firestore credit acknowledgement lost/);
+  assert.ok(initialUsage>0);
+  assert.equal(quota.used,0);
+  assert.equal(tracking.size,0);
+  const released=quota.released;
+  await apagarProjeto(uid,sessionId);
+  assert.equal(quota.used,0);
+  assert.equal(quota.released,released);
+  await initial();
+  await apagarProjeto(uid,sessionId);
+  assert.equal(quota.used,0);
 });

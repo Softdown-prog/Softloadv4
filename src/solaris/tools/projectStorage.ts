@@ -11,7 +11,7 @@ export interface LoadedProject { framework: string | null; arquivos: string[]; v
 export interface ExpiredProjectsResult { apagados: string[]; erros: { id: string; erro: string }[] }
 export interface CleanupOptions { diasParaExpirar?: number }
 interface ProjectManifest { sessionId: string; framework: string | null; arquivos: string[]; criadoEm: string; versao?: string }
-interface TrackingData { uid: string; sessionId: string; email: string; criadoEm: string; tamanhoBytes: number; activeTamanhoBytes?: number }
+interface TrackingData { uid: string; sessionId: string; email: string; criadoEm: string; tamanhoBytes: number; activeTamanhoBytes?: number; versaoAtiva?: string }
 interface TrackingRef {
     get(): Promise<{ exists: boolean; data(): TrackingData }>;
     set(data: TrackingData): Promise<unknown>;
@@ -68,8 +68,8 @@ declare function require(name: string): unknown;
 
 const { bucket, db } = require('../../services/firebase') as { bucket: GcsBucket; db: { collection(name: string): TrackingCollection } };
 const { reservarCota, liberarCota } = require('../../services/storageService') as {
-    reservarCota(email: string, plano: string, tamanho: number): Promise<{ confirmarUso(bytes: number): Promise<unknown> }>;
-    liberarCota(email: string, bytes: number): Promise<unknown>;
+    reservarCota(email: string, plano: string, tamanho: number, operationId?: string): Promise<{ confirmarUso(bytes: number): Promise<unknown> }>;
+    liberarCota(email: string, bytes: number, operationId?: string, trackingMutation?: { ref: TrackingRef; data: TrackingData | null }): Promise<unknown>;
 };
 const { randomUUID } = require('node:crypto') as typeof import('node:crypto');
 const { criarArquivo } = require('./fileTools') as { criarArquivo(dir: string, path: string, data: Buffer): unknown };
@@ -94,6 +94,10 @@ function _arquivoPath(uid: string, sessionId: string, caminhoRelativo: string, v
     return versao
         ? `${_prefixo(uid, sessionId)}/versions/${versao}/files/${caminhoRelativo}`
         : `${_prefixo(uid, sessionId)}/files/${caminhoRelativo}`;
+}
+
+function _operacaoCota(tipo: string, uid: string, sessionId: string, versao: string): string {
+    return `solaris:${tipo}:${uid}:${sessionId}:${versao}`;
 }
 
 /**
@@ -199,7 +203,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
     const tamanhoAnterior = oldTracking?.tamanhoBytes || 0;
     const tamanhoAtivoAnterior = oldTracking?.activeTamanhoBytes ?? tamanhoAnterior;
     // Keep the previous quota accounted for until its GCS objects are deleted.
-    const { confirmarUso } = await reservarCota(email, plano, tamanhoBytes);
+    const { confirmarUso } = await reservarCota(email, plano, tamanhoBytes, _operacaoCota('debit', uid, sessionId, versao));
     let quotaConfirmada = false;
     let trackingWriteStarted = false;
     let manifestWriteStarted = false;
@@ -223,6 +227,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
             criadoEm: manifesto.criadoEm,
             tamanhoBytes: tamanhoAnterior + tamanhoBytes,
             activeTamanhoBytes: tamanhoBytes,
+            versaoAtiva: versao,
         });
         // This single manifest write publishes the new generation last.
         manifestWriteStarted = true;
@@ -264,7 +269,7 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
                 console.error('[SOLARIS-STORAGE] falha removendo versão incompleta:', cleanupError);
             }
             if (quotaConfirmada && cleaned) {
-                try { await liberarCota(email, tamanhoBytes); }
+                try { await liberarCota(email, tamanhoBytes, _operacaoCota('rollback', uid, sessionId, versao)); }
                 catch (quotaError) { console.error('[SOLARIS-STORAGE] falha liberando cota da versão incompleta:', quotaError); }
             }
             throw error;
@@ -281,15 +286,21 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
             : `${_prefixo(uid, sessionId)}/files/`;
         try {
             await bucket.deleteFiles({ prefix: oldPrefix, force: true });
-            // Once old bytes are gone, adjust the tracking size and credit pool.
-            await trackingRef.set({
+            // Balance credit, receipt and tracking adjustment are a single
+            // Firestore transaction. A lost ACK cannot partially apply them.
+            const updatedTracking = {
                 uid, sessionId, email: (email || '').toLowerCase(),
                 criadoEm: manifesto.criadoEm,
                 tamanhoBytes: Math.max(0, tamanhoAnterior - tamanhoAtivoAnterior) + tamanhoBytes,
                 activeTamanhoBytes: tamanhoBytes,
-            });
-            if (oldTracking && tamanhoAtivoAnterior) {
-                await liberarCota(oldTracking.email, tamanhoAtivoAnterior);
+                versaoAtiva: versao,
+            };
+            if (oldTracking) {
+                await liberarCota(oldTracking.email, tamanhoAtivoAnterior,
+                    _operacaoCota('replace-credit', uid, sessionId, oldManifest.versao || oldManifest.criadoEm),
+                    { ref: trackingRef, data: updatedTracking });
+            } else {
+                await trackingRef.set(updatedTracking);
             }
         } catch (error) {
             console.warn('[SOLARIS-STORAGE] projeto novo publicado; limpeza antiga pendente:', error);
@@ -382,9 +393,16 @@ async function _apagarProjetoComBloqueio(uid: string, sessionId: string): Promis
     await bucket.deleteFiles({ prefix: `${_prefixo(uid, sessionId)}/`, force: true });
 
     if (trackingSnap && trackingSnap.exists) {
-        const { email, tamanhoBytes } = trackingSnap.data();
-        await trackingRef.delete();
-        if (email && tamanhoBytes) await liberarCota(email, tamanhoBytes);
+        const data = trackingSnap.data();
+        const { email, tamanhoBytes } = data;
+        if (email && tamanhoBytes) {
+            // Firestore transaction commits credit + receipt + tracking deletion.
+            await liberarCota(email, tamanhoBytes,
+                _operacaoCota('delete-credit', uid, sessionId, data.versaoAtiva || data.criadoEm),
+                { ref: trackingRef, data: null });
+        } else {
+            await trackingRef.delete();
+        }
     }
 }
 
