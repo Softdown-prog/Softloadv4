@@ -202,7 +202,8 @@
     "src/services/aiBudgetLedger.ts",
     "src/services/aiBudgetGeminiClient.ts",
     "src/services/aiCreditsV2.ts",
-    "src/services/aiCreditsV2Http.ts"
+    "src/services/aiCreditsV2Http.ts",
+    "src/services/aiCreditsV2Mode.ts"
   ],
   "exclude": [
     "node_modules",
