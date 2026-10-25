@@ -22,11 +22,19 @@ declare module "execa" {
   export function execa(
     executable: string,
     args: string[],
-    options: { cwd: string; reject: false; timeout: number },
+    options: { cwd: string; reject: false; timeout?: number },
   ): Promise<{
     exitCode: number | undefined;
     stdout: string;
     stderr: string;
     failed: boolean;
   }>;
+}
+
+/** Subconjunto tipado do Octokit exigido pelas operações do Agent. */
+declare module "@octokit/rest" {
+  export class Octokit {
+    constructor(options: { auth: string });
+    rest: import("./github.js").GithubClient["rest"];
+  }
 }

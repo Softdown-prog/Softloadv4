@@ -43,6 +43,10 @@ esses imports nem exige um loader TypeScript em produção.
 - `shell.ts` — execução restrita com validação de comando e argumentos,
   preservando a política de segurança do Worker.
 
+- `git.ts` — comandos Git tipados, commit, staging e workspace.
+- `github.ts` — contratos de issues, PRs e repositórios via Octokit,
+  com validações obrigatórias preservadas.
+
 ## Como validar
 
 ```bash

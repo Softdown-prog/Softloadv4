@@ -29,6 +29,8 @@ const sources = [
   "agent/src/capabilities/project-inspector.ts",
   "agent/src/capabilities/asset-forge.ts",
   "agent/src/capabilities/shell.ts",
+  "agent/src/capabilities/git.ts",
+  "agent/src/capabilities/github.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
