@@ -208,7 +208,7 @@ export default function WorkspaceChat(): React.JSX.Element {
         });
     };
 
-    const handleVerAlteracao = async (preview: PreviewFile): Promise<void> => {
+    const handleVerAlteracao = async (preview: PreviewFile | undefined): Promise<void> => {
         if (!preview || !preview.xmlPath) return;
         try {
             const res = await fetch('/api/workspace/set-preview', {
