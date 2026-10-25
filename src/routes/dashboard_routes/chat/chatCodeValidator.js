@@ -141,7 +141,7 @@ async function _validarECorrigir(fullText, msg, isGpt, tokensRef, sendEvent) {
         });
         validation.retried = true;
         validation.fixApplied = true;
-        validation.fixMethod  = 'ia';
+        validation.fixMethod = 'ia';
         return { finalText: patchedText, validation };
     }
     catch (retryErr) {
