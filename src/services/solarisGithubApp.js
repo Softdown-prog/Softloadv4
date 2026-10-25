@@ -48,9 +48,12 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
    const cfg=settings();
    if(!cfg.ready)throw Error('GitHub App ainda não configurado pelo administrador.');
    const state=crypto.randomBytes(24).toString('hex');
-   req.session.solarisGithubState={state,uid:req.session.user.uid,until:Date.now()+600000};
+   const verifier=crypto.randomBytes(32).toString('base64url');
+   const challenge=crypto.createHash('sha256').update(verifier).digest('base64url');
+   req.session.solarisGithubState={state,verifier,uid:req.session.user.uid,until:Date.now()+600000};
    await saveSession(req);
-   const params=new URLSearchParams({client_id:cfg.id,redirect_uri:cfg.callback,state});
+   const params=new URLSearchParams({client_id:cfg.id,redirect_uri:cfg.callback,state,
+     code_challenge:challenge,code_challenge_method:'S256'});
    return 'https://github.com/login/oauth/authorize?'+params.toString();
   },
   async finish(req,{state,code}){
@@ -63,7 +66,8 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
       throw Error('Autorização GitHub inválida ou expirada.');
    const response=await fetchImpl('https://github.com/login/oauth/access_token',{
      method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},
-     body:JSON.stringify({client_id:cfg.id,client_secret:cfg.secret,code,redirect_uri:cfg.callback}),
+     body:JSON.stringify({client_id:cfg.id,client_secret:cfg.secret,code,redirect_uri:cfg.callback,
+       code_verifier:pending.verifier}),
      signal:AbortSignal.timeout(12000)});
    if(!response.ok)throw Error('Autorização GitHub indisponível.');
    const auth=await response.json();
