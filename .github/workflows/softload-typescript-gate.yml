@@ -21,6 +21,9 @@ on:
       - 'scripts/ragGenerate.ts'
       - 'scripts/ragGenerate.js'
       - 'scripts/ragGenerate.test.js'
+      - 'scripts/solarisProjectLockRecovery.ts'
+      - 'scripts/solarisProjectLockRecovery.js'
+      - 'scripts/solarisProjectLockRecovery.test.js'
       - 'scripts/ragCodeCollect.ts'
       - 'scripts/ragCodeCollect.js'
       - 'scripts/ragOrganizarRascunhos.ts'
@@ -85,6 +88,8 @@ jobs:
         run: node scripts/visual/renderPreview.test.js
       - name: Verificar gerador de catálogo Solaris RAG (modelo falso e pasta temporária)
         run: node scripts/ragGenerate.test.js
+      - name: Testar CLI de recuperação de bloqueios com dependências simuladas
+        run: node --test scripts/solarisProjectLockRecovery.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

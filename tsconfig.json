@@ -177,7 +177,8 @@
     "scripts/ragEmbedIndex.ts",
     "scripts/ragCodeIndex.ts",
     "scripts/visual/renderPreview.ts",
-    "scripts/ragGenerate.ts"
+    "scripts/ragGenerate.ts",
+    "scripts/solarisProjectLockRecovery.ts"
   ],
   "exclude": [
     "node_modules",

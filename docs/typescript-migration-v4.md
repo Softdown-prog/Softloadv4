@@ -74,3 +74,9 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Mantidas as validações de grupo/tópico, unicidade, schema e similaridade antes de escrever JSON no catálogo. Entradas suspeitas de duplicação são reportadas para revisão humana em vez de gravadas.
 - O teste `node scripts/ragGenerate.test.js` usa model router falso, catálogos injetados e diretórios temporários. **Não chamar `npm run rag:generate` no CI**, pois o CLI real invoca o modelo e grava arquivos.
 - Arquivos do RAG Blogger e a coleção de embeddings do Solaris Code não são consultados por esse gerador. A migração não altera dados reais.
+
+## Lote — CLI administrativa de recuperação de bloqueios Solaris
+
+- Fonte `scripts/solarisProjectLockRecovery.ts` tipa identificadores de sessão, carimbo de atualização e a inspeção/recuperação. O espelho `.js` mantém a API CommonJS e o comando atual.
+- Operação real exige `recover UID SESSION OWNER UPDATED_AT --instances-stopped --confirm`; o módulo `src/solaris/tools/projectLockRecovery.js` continua impondo validações, idade mínima e exclusão com precondição do Firestore.
+- Testes de CLI em `scripts/solarisProjectLockRecovery.test.js` verificam argumentos e chamadas usando apenas mocks locais. Não acessam VPS, Firestore nem liberam locks.
