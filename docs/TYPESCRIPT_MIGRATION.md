@@ -1321,3 +1321,16 @@ impedir salvar uma leitura que ficou obsoleta depois do download.
 Testes determinísticos simulam substituição de geração versionada,
 legado, arquivo ausente, falha transitória 503 e remoção do manifesto;
 nenhum teste acessa GCS real.
+
+## Etapa 75 — regressões de segurança para o indexador TypeScript
+
+O indexador `scripts/ragCodeIndex.ts` já foi migrado na etapa anterior.
+`scripts/ragCodeIndexMigration.test.js` complementa sua cobertura,
+sem trocar ou reescrever o código migrado em outra sessão.
+As regressões verificam: importação de JSON validado, ignorar links
+simbólicos e arquivos de nome inválido, SHA-256 e licença/origem GitHub,
+`dry-run` que não depende de Firestore/embeddings, e isolamento de falhas
+do serviço de embeddings por entrada.
+
+O Gate TypeScript executa esse teste no bloco de regressões e o inclui
+nos gatilhos por caminho. Nenhum acesso a produção é necessário.

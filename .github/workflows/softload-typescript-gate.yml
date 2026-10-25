@@ -11,6 +11,7 @@ on:
       - 'scripts/codeCorpus/**'
       - 'scripts/ragCodeIndex.js'
       - 'scripts/ragCodeIndex.ts'
+      - 'scripts/ragCodeIndexMigration.test.js'
       - 'scripts/ragEmbedIndex.ts'
       - 'scripts/ragEmbedIndex.js'
       - 'scripts/ragEmbedIndex.test.js'
@@ -109,6 +110,7 @@ jobs:
           node src/core/modules.test.js
           node src/ai/solAgent.test.js
           node src/solaris/rag/codeCorpus.test.js
+          node scripts/ragCodeIndexMigration.test.js
           node src/solaris/rag/codeCollectorSafety.test.js
           node src/solaris/rag/codeVectorStoreContract.test.js
           node src/solaris/rag/codeSearchIsolation.test.js
