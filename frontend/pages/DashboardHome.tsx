@@ -4,7 +4,7 @@ import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Za
 import { fetchAppConfig, type AppUser } from '../services/api';
 import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
-import { buscarPreviaCreditosV2, buscarExtratoCreditosV2, type ExtratoCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
+import { buscarPreviaCreditosV2, buscarExtratoCreditosV2, juntarPaginasExtratoV2, resumirSessoesCarregadasV2, type ExtratoCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
 
 interface DashboardUser extends AppUser {
     premium_ate?: string | number;
@@ -55,6 +55,10 @@ export default function DashboardHome(): React.JSX.Element {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [previaV2, setPreviaV2] = useState<ResumoCreditosV2 | null>(null);
     const [extratoV2, setExtratoV2] = useState<ExtratoCreditosV2 | null>(null);
+    const [filtroSessaoV2, setFiltroSessaoV2] = useState('');
+    const [filtroFerramentaV2, setFiltroFerramentaV2] = useState('');
+    const [carregandoV2, setCarregandoV2] = useState(false);
+    const [erroHistoricoV2, setErroHistoricoV2] = useState(false);
 
     useEffect(() => {
         fetch('/api/dashboard/stats').then(res => res.json()).then(setStats);
@@ -70,6 +74,25 @@ export default function DashboardHome(): React.JSX.Element {
         return () => { montado = false; };
     }, []);
 
+    const gruposV2 = resumirSessoesCarregadasV2(extratoV2?.itens || []);
+    const linhasV2 = (extratoV2?.itens || []).filter(item =>
+        (!filtroSessaoV2 || (item.projeto || '__sem_sessao__') === filtroSessaoV2) &&
+        (!filtroFerramentaV2 || item.ferramenta === filtroFerramentaV2)
+    );
+    async function carregarMaisExtratoV2(): Promise<void> {
+        const cursor = extratoV2?.proximoCursor;
+        if (!cursor || carregandoV2) return;
+        setCarregandoV2(true);
+        setErroHistoricoV2(false);
+        const pagina = await buscarExtratoCreditosV2(fetch, cursor);
+        if (pagina) {
+            setExtratoV2(atual => atual && atual.proximoCursor === cursor
+                ? juntarPaginasExtratoV2(atual, pagina) : atual);
+        } else {
+            setErroHistoricoV2(true);
+        }
+        setCarregandoV2(false);
+    }
     const firstName = (user?.nome || 'Usuário').split(' ')[0];
 
     return (
@@ -207,28 +230,83 @@ export default function DashboardHome(): React.JSX.Element {
                     )}
                     {extratoV2 && (
                         <div className="mt-4">
-                            <h3 className="fw-bold mb-2" style={{ fontSize: '0.95rem' }}>Últimas operações de IA</h3>
+                            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                <h3 className="fw-bold mb-0" style={{ fontSize: '0.95rem' }}>Histórico de consumo de IA</h3>
+                                <span className="small" style={{ color: 'var(--sl-text-400)' }}>
+                                    {extratoV2.itens.length.toLocaleString('pt-BR')} operações carregadas
+                                </span>
+                            </div>
                             <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
-                                Apenas operações V2 deste ciclo, contabilizadas após a ativação do controle.
-                                Cada linha representa uma chamada ao modelo, não necessariamente um projeto inteiro.
+                                Extrato experimental do ciclo atual. Os totais por sessão incluem apenas as operações carregadas;
+                                cada linha corresponde a uma chamada ao modelo, não ao projeto inteiro.
                             </p>
+                            {gruposV2.length > 0 && (
+                                <div className="table-responsive mb-3">
+                                    <h4 className="fw-semibold mb-2" style={{ fontSize: '0.9rem' }}>Créditos por sessão (operações carregadas)</h4>
+                                    <table className="table table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr><th scope="col">Sessão / projeto</th><th scope="col" className="text-end">Chamadas</th><th scope="col" className="text-end">Créditos</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {gruposV2.map(grupo => (
+                                                <tr key={grupo.projeto || '__sem_sessao__'}>
+                                                    <td className="small">{grupo.projeto ? 'Sessão ' + grupo.projeto.slice(0, 16) : 'Sem sessão identificada'}</td>
+                                                    <td className="small text-end">{grupo.chamadas.toLocaleString('pt-BR')}</td>
+                                                    <td className="small fw-semibold text-end">{grupo.creditosDasChamadas.toLocaleString('pt-BR')}{grupo.chamadasEstimadas ? ' *' : ''}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                            <div className="d-flex flex-wrap gap-2 mb-3">
+                                <select
+                                    className="form-select form-select-sm"
+                                    aria-label="Filtrar consumo por sessão"
+                                    value={filtroSessaoV2}
+                                    onChange={e => setFiltroSessaoV2(e.target.value)}
+                                    style={{ maxWidth: '210px' }}
+                                >
+                                    <option value="">Todas as sessões</option>
+                                    {gruposV2.map(grupo => (
+                                        <option key={grupo.projeto || '__sem_sessao__'} value={grupo.projeto || '__sem_sessao__'}>
+                                            {grupo.projeto ? 'Sessão ' + grupo.projeto.slice(0, 16) : 'Sem sessão identificada'}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="form-select form-select-sm"
+                                    aria-label="Filtrar consumo por ferramenta"
+                                    value={filtroFerramentaV2}
+                                    onChange={e => setFiltroFerramentaV2(e.target.value)}
+                                    style={{ maxWidth: '190px' }}
+                                >
+                                    <option value="">Todas as ferramentas</option>
+                                    <option value="solaris-chat">Solaris Code</option>
+                                    <option value="solaris-upload">Inspeção ZIP</option>
+                                </select>
+                            </div>
                             {extratoV2.itens.length === 0 ? (
                                 <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>
                                     Ainda não há operações V2 registradas neste ciclo.
+                                </p>
+                            ) : linhasV2.length === 0 ? (
+                                <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                    Nenhuma operação carregada corresponde aos filtros selecionados.
                                 </p>
                             ) : (
                                 <div className="table-responsive">
                                     <table className="table table-sm align-middle mb-0">
                                         <thead>
-                                            <tr><th scope="col">Quando</th><th scope="col">Ferramenta / projeto</th><th scope="col">Modelo</th><th scope="col" className="text-end">Créditos</th></tr>
+                                            <tr><th scope="col">Quando</th><th scope="col">Ferramenta / sessão</th><th scope="col">Modelo</th><th scope="col" className="text-end">Créditos</th></tr>
                                         </thead>
                                         <tbody>
-                                            {extratoV2.itens.map(item => (
+                                            {linhasV2.map(item => (
                                                 <tr key={item.id}>
                                                     <td className="small text-nowrap">{new Date(item.criadoEm).toLocaleString('pt-BR')}</td>
                                                     <td className="small">
                                                         {item.ferramenta === 'solaris-upload' ? 'Inspeção ZIP' : 'Solaris Code'}
-                                                        {item.projeto && <span className="d-block" style={{ color: 'var(--sl-text-400)' }}>Sessão {item.projeto.slice(0, 12)}</span>}
+                                                        {item.projeto && <span className="d-block" style={{ color: 'var(--sl-text-400)' }}>Sessão {item.projeto.slice(0, 16)}</span>}
                                                     </td>
                                                     <td className="small">{item.modelo.replace('gemini-2.5-', '')}</td>
                                                     <td className="small fw-semibold text-end text-nowrap">
@@ -238,12 +316,32 @@ export default function DashboardHome(): React.JSX.Element {
                                             ))}
                                         </tbody>
                                     </table>
-                                    {extratoV2.itens.some(item => item.estimado) && (
-                                        <p className="small mt-2 mb-0" style={{ color: 'var(--sl-text-400)' }}>
-                                            * Custo estimado por ausência de metadados ou chamada interrompida.
-                                        </p>
-                                    )}
                                 </div>
+                            )}
+                            {extratoV2.itens.some(item => item.estimado) && (
+                                <p className="small mt-2 mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                    * Crédito estimado por ausência de metadados ou chamada interrompida.
+                                </p>
+                            )}
+                            {extratoV2.proximoCursor ? (
+                                <div className="mt-3">
+                                    <button type="button" className="btn btn-outline-secondary btn-sm"
+                                        disabled={carregandoV2} onClick={() => { void carregarMaisExtratoV2(); }}>
+                                        {carregandoV2 ? 'Carregando...' : 'Carregar mais 20 operações'}
+                                    </button>
+                                    <p className="small mt-2 mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                        Ainda há chamadas anteriores. Os totais por sessão serão atualizados ao carregar mais.
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="small mt-3 mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                    Todas as operações V2 registradas neste ciclo foram carregadas.
+                                </p>
+                            )}
+                            {erroHistoricoV2 && (
+                                <p role="alert" className="small mt-2 mb-0" style={{ color: 'var(--bs-warning)' }}>
+                                    Não foi possível carregar mais operações. Tente novamente.
+                                </p>
                             )}
                         </div>
                     )}
