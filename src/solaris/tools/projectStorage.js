@@ -255,23 +255,58 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
  * @returns {Promise<{framework:string|null, arquivos:string[]}|null>}
  */
 async function carregarProjeto(uid, sessionId, destDir) {
-    let manifestoBuf;
-    try {
-        [manifestoBuf] = await bucket.file(_manifestoPath(uid, sessionId)).download();
+    // Keep all downloads in memory until one complete version is available.
+    // A concurrent writer publishes a new manifest before deleting old files:
+    // if an old object disappears, retry only if the manifest version changed.
+    let manifestoBuf = null;
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+        if (!manifestoBuf) {
+            try {
+                [manifestoBuf] = await bucket.file(_manifestoPath(uid, sessionId)).download();
+            }
+            catch (e) {
+                const err = e;
+                if (err.code === 404 || err.message?.includes('No such object'))
+                    return null;
+                throw e;
+            }
+        }
+        const manifesto = JSON.parse(manifestoBuf.toString('utf-8'));
+        try {
+            const arquivos = await Promise.all(manifesto.arquivos.map(async (caminho) => {
+                const [conteudo] = await bucket.file(_arquivoPath(uid, sessionId, caminho, manifesto.versao)).download();
+                return { caminho, conteudo };
+            }));
+            // Do not write even one file until all requested blobs were downloaded.
+            // This also prevents a failed attempt from leaving a mixed local tree.
+            for (const { caminho, conteudo } of arquivos)
+                criarArquivo(destDir, caminho, conteudo);
+            return { framework: manifesto.framework || null, arquivos: manifesto.arquivos, versao: manifesto.versao ?? null };
+        }
+        catch (e) {
+            const err = e;
+            if (err.code !== 404 && !err.message?.includes('No such object'))
+                throw e;
+            if (tentativa === 2)
+                throw e;
+            let novoManifestoBuf;
+            try {
+                [novoManifestoBuf] = await bucket.file(_manifestoPath(uid, sessionId)).download();
+            }
+            catch (readError) {
+                const missing = readError;
+                if (missing.code === 404 || missing.message?.includes('No such object'))
+                    return null;
+                throw readError;
+            }
+            const novoManifesto = JSON.parse(novoManifestoBuf.toString('utf-8'));
+            // A missing object from the current generation is corruption, not a race.
+            if (novoManifesto.versao === manifesto.versao)
+                throw e;
+            manifestoBuf = novoManifestoBuf;
+        }
     }
-    catch (e) {
-        const err = e;
-        const is404 = err.code === 404 || err.message?.includes('No such object');
-        if (is404)
-            return null;
-        throw e;
-    }
-    const manifesto = JSON.parse(manifestoBuf.toString('utf-8'));
-    await Promise.all(manifesto.arquivos.map(async (caminho) => {
-        const [conteudoBuf] = await bucket.file(_arquivoPath(uid, sessionId, caminho, manifesto.versao)).download();
-        criarArquivo(destDir, caminho, conteudoBuf);
-    }));
-    return { framework: manifesto.framework || null, arquivos: manifesto.arquivos, versao: manifesto.versao ?? null };
+    throw new Error('Não foi possível carregar um snapshot completo do Solaris.');
 }
 /** Runtime check: Firestore data and caller arguments can bypass TS types. */
 function _identificadoresValidos(uid, sessionId) {

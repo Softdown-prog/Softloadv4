@@ -1302,3 +1302,22 @@ e rejeitada. O teste com GitHub simulado existente em
 `src/solaris/rag/codeCorpus.test.js` continua cobrindo dry-run, gravacao,
 reimportacao sem duplicacao e detecao de segredos. Os testes nao acessam
 rede real nem sistemas de producao.
+
+## Etapa 71 — leitura consistente sob substituições concorrentes no GCS
+
+`carregarProjeto` baixa os blobs de **uma mesma versão** para memória e
+somente escreve no diretório temporário após todos os downloads concluírem.
+Assim, uma tentativa interrompida não deixa arquivos antigos misturados com
+os de uma versão mais nova. Caso um blob desapareça com HTTP 404 por uma
+substituição simultânea, compara a nova versão do manifesto e tenta novamente,
+limitado a **três snapshots**, sem bloquear escritores ou criar locks.
+Se o manifesto não mudou, o 404 significa inconsistência real: falha visível
+sem mascarar corrupção nem repetir desnecessariamente. Erros não-404 são
+propagados, e a exclusão do manifesto durante a leitura retorna `null`.
+Projetos legados sem `versao` também são suportados.
+
+O editor segue usando `expectedVersion` na gravação (etapa 70) para
+impedir salvar uma leitura que ficou obsoleta depois do download.
+Testes determinísticos simulam substituição de geração versionada,
+legado, arquivo ausente, falha transitória 503 e remoção do manifesto;
+nenhum teste acessa GCS real.

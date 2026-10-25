@@ -11,6 +11,7 @@ const tracking = new Map();
 const locks = new Map();
 let failLockCreate = null;
 let beforeSave = null;
+let beforeDownload = null;
 const quota = { used: 0, released: 0, confirmed: 0, failReserve: false };
 let failSave = null;
 let failDelete = null;
@@ -24,6 +25,7 @@ const bucket = {
         objects.set(key, Buffer.from(data));
       },
       async download() {
+        if (beforeDownload) await beforeDownload(key);
         if (!objects.has(key)) throw Object.assign(Error('No such object'), {code:404});
         return [Buffer.from(objects.get(key))];
       }
@@ -89,7 +91,7 @@ const config=arquivos=>({uid,sessionId,email,plano:'free',framework:'html5',arqu
 function reset() {
   objects.clear();tracking.clear();locks.clear();deleteHistory.length=0;
   quota.used=0;quota.released=0;quota.confirmed=0;quota.failReserve=false;
-  failSave=null;failDelete=null;failLockCreate=null;beforeSave=null;
+  failSave=null;failDelete=null;failLockCreate=null;beforeSave=null;beforeDownload=null;
 }
 async function readProject() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-storage-test-'));
@@ -399,4 +401,109 @@ test('versao esperada invalida falha antes de reservar armazenamento',async()=>{
   await assert.rejects(salvarProjeto({...config([{caminho:'bad.txt',conteudo:'bad'}]),expectedVersion:42}),TypeError);
   assert.equal(quota.used,before);
   assert.equal(locks.size,0);
+});
+
+test('leitura refaz snapshot quando versão antiga desaparece durante substituição', async () => {
+  reset();
+  await salvarProjeto(config([
+    {caminho:'alpha.txt',conteudo:'antigo A'},
+    {caminho:'beta.txt',conteudo:'antigo B'},
+  ]));
+  let switched=false;
+  beforeDownload=async key=>{
+    if (!switched && key.includes('/versions/') && key.endsWith('/files/beta.txt')) {
+      switched=true;
+      await salvarProjeto(config([
+        {caminho:'alpha.txt',conteudo:'novo A'},
+        {caminho:'beta.txt',conteudo:'novo B'},
+      ]));
+    }
+  };
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-read-race-'));
+  try {
+    const project=await carregarProjeto(uid,sessionId,root);
+    assert.equal(switched,true);
+    assert.equal(project.versao,JSON.parse(objects.get(manifestKey)).versao);
+    assert.equal(fs.readFileSync(path.join(root,'alpha.txt'),'utf8'),'novo A');
+    assert.equal(fs.readFileSync(path.join(root,'beta.txt'),'utf8'),'novo B');
+    assert.equal(quota.used,tracking.get(trackedId).tamanhoBytes);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('leitura de legado refaz snapshot se upload remove a geração sem versão', async () => {
+  reset();
+  const prefix='users/user-test/solaris-projects/session-test/';
+  objects.set(manifestKey,Buffer.from(JSON.stringify({sessionId,framework:'html5',arquivos:['legacy.txt'],criadoEm:new Date().toISOString()})));
+  objects.set(prefix+'files/legacy.txt',Buffer.from('legado'));
+  let replaced=false;
+  beforeDownload=async key=>{
+    if (!replaced && key.endsWith('/files/legacy.txt')) {
+      replaced=true;
+      await salvarProjeto(config([{caminho:'modern.txt',conteudo:'atual'}]));
+    }
+  };
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-legacy-race-'));
+  try {
+    const project=await carregarProjeto(uid,sessionId,root);
+    assert.equal(replaced,true);
+    assert.ok(project.versao);
+    assert.deepEqual(project.arquivos,['modern.txt']);
+    assert.deepEqual(fs.readdirSync(root),['modern.txt']);
+    assert.equal(fs.readFileSync(path.join(root,'modern.txt'),'utf8'),'atual');
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('manifesto íntegro com blob ausente falha sem criar arquivos parciais', async () => {
+  reset();
+  await salvarProjeto(config([
+    {caminho:'exists.txt',conteudo:'texto válido'},
+    {caminho:'missing.txt',conteudo:'texto removido'},
+  ]));
+  const rootManifest=JSON.parse(objects.get(manifestKey));
+  objects.delete(`users/${uid}/solaris-projects/${sessionId}/versions/${rootManifest.versao}/files/missing.txt`);
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-broken-read-'));
+  try {
+    await assert.rejects(carregarProjeto(uid,sessionId,root),err=>err.code===404);
+    assert.deepEqual(fs.readdirSync(root),[]);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('erro transitório de leitura não cai em retry e não deixa conteúdo parcial', async () => {
+  reset();
+  await salvarProjeto(config([{caminho:'exists.txt',conteudo:'x'},{caminho:'blocked.txt',conteudo:'y'}]));
+  let hits=0;
+  beforeDownload=async key=>{
+    if (key.endsWith('/files/blocked.txt')) {
+      hits++;
+      throw Object.assign(Error('GCS unavailable'),{code:503});
+    }
+  };
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-503-read-'));
+  try {
+    await assert.rejects(carregarProjeto(uid,sessionId,root),err=>err.code===503);
+    assert.equal(hits,1);
+    assert.deepEqual(fs.readdirSync(root),[]);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('manifesto removido entre snapshots retorna null e não escreve arquivos', async () => {
+  reset();
+  await salvarProjeto(config([{caminho:'original.txt',conteudo:'original'}]));
+  let removed=false;
+  beforeDownload=async key=>{
+    if (!removed && key.endsWith('/files/original.txt')) {
+      removed=true;
+      objects.delete(manifestKey);
+      const old=JSON.parse(objects.get(manifestKey) || '{}');
+      // Simula exclusão: só o manifesto precisa desaparecer para impedir retry.
+      void old;
+      throw Object.assign(Error('No such object'),{code:404});
+    }
+  };
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-removed-read-'));
+  try {
+    const project=await carregarProjeto(uid,sessionId,root);
+    assert.equal(project,null);
+    assert.deepEqual(fs.readdirSync(root),[]);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
