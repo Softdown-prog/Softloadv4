@@ -38,3 +38,8 @@ declare module "@octokit/rest" {
     rest: import("./github.js").GithubClient["rest"];
   }
 }
+
+/** Limitador assíncrono tipado; nenhuma dependência extra em produção. */
+declare module "p-limit" {
+  export default function pLimit(concurrency: number): <T>(fn: () => Promise<T>) => Promise<T>;
+}

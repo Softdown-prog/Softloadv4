@@ -50,6 +50,11 @@ esses imports nem exige um loader TypeScript em produção.
 - `code-search.ts` — busca no código com ripgrep/fallback e limites de
   resultados, sem alterar a execução existente.
 
+- `escalation.ts` — pedidos e respostas humanas, estados e webhook,
+  mantendo segredo fora do resultado público.
+- `agent-parallel-dispatch.ts` — contratos de subagentes e worktrees
+  isolados, incluindo limites de concorrência e erros estruturados.
+
 ## Como validar
 
 ```bash

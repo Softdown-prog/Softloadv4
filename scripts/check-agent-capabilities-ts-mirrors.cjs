@@ -32,6 +32,8 @@ const sources = [
   "agent/src/capabilities/git.ts",
   "agent/src/capabilities/github.ts",
   "agent/src/capabilities/code-search.ts",
+  "agent/src/capabilities/escalation.ts",
+  "agent/src/capabilities/agent-parallel-dispatch.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
