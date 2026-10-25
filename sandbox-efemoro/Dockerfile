@@ -1,4 +1,4 @@
-FROM node:22-bookworm
+FROM node:22-bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_ENV=production
