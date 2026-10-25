@@ -41,3 +41,39 @@ test('prévia 404/503, sessão expirada e falha de rede nunca quebram o dashboar
   assert.equal(await buscarPreviaCreditosV2(async()=>{throw Error('network offline')}),null);
   assert.equal(await buscarPreviaCreditosV2(async()=>({ok:true,json:async()=>({erro:'not available'})})),null);
 });
+
+test('extrato V2 aceita lançamentos íntegros e ignora campos financeiros internos',async()=>{
+  const id='a'.repeat(64);
+  const raw={versao:2,modo:'previsualizacao',itens:[{
+    id,ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',projeto:'session-xyz123',
+    criadoEm:'2026-10-25T13:00:00Z',creditos:7,estimado:true,
+    custoRealMicroBrl:123000,prompt:'secreto',
+  }]};
+  const result=mod.exports.normalizarExtratoCreditosV2(raw);
+  assert.equal(result.itens.length,1);
+  assert.equal(result.itens[0].creditos,7);
+  assert.equal(result.itens[0].estimado,true);
+  assert.equal(result.itens[0].custoRealMicroBrl,undefined);
+  assert.equal(result.itens[0].prompt,undefined);
+});
+test('extrato V2 recusa registros adulterados, tipos incorretos e URLs desabilitadas',async()=>{
+  const id='f'.repeat(64);
+  const base={id,ferramenta:'solaris-upload',modelo:'gemini-2.5-pro',
+    criadoEm:'2026-10-25T13:00:00Z',creditos:5,estimado:false};
+  const cases=[
+    {...base,creditos:-1},{...base,creditos:NaN},{...base,id:'../../hack'},
+    {...base,modelo:'openai-test'},{...base,criadoEm:'tomorrow'}, {...base,projeto:'../secret'},
+    {...base,estimado:'yes'}
+  ];
+  for(const bad of cases)assert.equal(mod.exports.normalizarExtratoCreditosV2({
+    versao:2,modo:'previsualizacao',itens:[bad]}),null);
+  assert.equal(mod.exports.normalizarExtratoCreditosV2({versao:2,modo:'previsualizacao',itens:Array(41).fill(base)}),null);
+  let called=false;
+  const response=await mod.exports.buscarExtratoCreditosV2(async(url,options)=>{
+    called=true;assert.equal(url,'/api/ai-credits/v2/history');assert.equal(options.credentials,'same-origin');
+    return {ok:true,json:async()=>({versao:2,modo:'previsualizacao',itens:[base]})};
+  });
+  assert.equal(called,true);
+  assert.equal(response.itens[0].creditos,5);
+  assert.equal(await mod.exports.buscarExtratoCreditosV2(async()=>({ok:false,status:404})),null);
+});

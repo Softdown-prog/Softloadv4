@@ -4,7 +4,7 @@ import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Za
 import { fetchAppConfig, type AppUser } from '../services/api';
 import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
-import { buscarPreviaCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
+import { buscarPreviaCreditosV2, buscarExtratoCreditosV2, type ExtratoCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
 
 interface DashboardUser extends AppUser {
     premium_ate?: string | number;
@@ -54,11 +54,19 @@ export default function DashboardHome(): React.JSX.Element {
     const { user } = useOutletContext<{ user: DashboardUser }>();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [previaV2, setPreviaV2] = useState<ResumoCreditosV2 | null>(null);
+    const [extratoV2, setExtratoV2] = useState<ExtratoCreditosV2 | null>(null);
 
     useEffect(() => {
         fetch('/api/dashboard/stats').then(res => res.json()).then(setStats);
         let montado = true;
-        void buscarPreviaCreditosV2().then(preview => { if (montado) setPreviaV2(preview); });
+        void buscarPreviaCreditosV2().then(async preview => {
+            if (!montado) return;
+            setPreviaV2(preview);
+            if (preview) {
+                const historico = await buscarExtratoCreditosV2();
+                if (montado) setExtratoV2(historico);
+            }
+        });
         return () => { montado = false; };
     }, []);
 
@@ -196,6 +204,48 @@ export default function DashboardHome(): React.JSX.Element {
                         <p className="small mb-0 mt-3" role="status" style={{ color: 'var(--bs-warning)' }}>
                             Excedente contábil: {previaV2.saldo.creditosExcedentes.toLocaleString('pt-BR')} crédito(s).
                         </p>
+                    )}
+                    {extratoV2 && (
+                        <div className="mt-4">
+                            <h3 className="fw-bold mb-2" style={{ fontSize: '0.95rem' }}>Últimas operações de IA</h3>
+                            <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
+                                Apenas operações V2 deste ciclo, contabilizadas após a ativação do controle.
+                                Cada linha representa uma chamada ao modelo, não necessariamente um projeto inteiro.
+                            </p>
+                            {extratoV2.itens.length === 0 ? (
+                                <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                    Ainda não há operações V2 registradas neste ciclo.
+                                </p>
+                            ) : (
+                                <div className="table-responsive">
+                                    <table className="table table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr><th scope="col">Quando</th><th scope="col">Ferramenta / projeto</th><th scope="col">Modelo</th><th scope="col" className="text-end">Créditos</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {extratoV2.itens.map(item => (
+                                                <tr key={item.id}>
+                                                    <td className="small text-nowrap">{new Date(item.criadoEm).toLocaleString('pt-BR')}</td>
+                                                    <td className="small">
+                                                        {item.ferramenta === 'solaris-upload' ? 'Inspeção ZIP' : 'Solaris Code'}
+                                                        {item.projeto && <span className="d-block" style={{ color: 'var(--sl-text-400)' }}>Sessão {item.projeto.slice(0, 12)}</span>}
+                                                    </td>
+                                                    <td className="small">{item.modelo.replace('gemini-2.5-', '')}</td>
+                                                    <td className="small fw-semibold text-end text-nowrap">
+                                                        −{item.creditos.toLocaleString('pt-BR')}{item.estimado ? ' *' : ''}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    {extratoV2.itens.some(item => item.estimado) && (
+                                        <p className="small mt-2 mb-0" style={{ color: 'var(--sl-text-400)' }}>
+                                            * Custo estimado por ausência de metadados ou chamada interrompida.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     )}
                 </section>
             )}
