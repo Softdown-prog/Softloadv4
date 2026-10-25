@@ -58,6 +58,12 @@ function validateOptions(options) {
   // `inline` é a entrega de PNG via HTTP, com teto de bytes. O
   // default continua `path` para clientes antigos do serviço.
   const screenshotDelivery = options.screenshotDelivery ?? "path";
+  // Auditorias de IA podem pedir viewport para limitar custo/tamanho;
+  // clientes antigos seguem capturando página inteira.
+  const screenshotMode = options.screenshotMode ?? "auto";
+  if (!["auto", "viewport"].includes(screenshotMode)) {
+    throw new Error("screenshotMode deve ser auto ou viewport");
+  }
   if (!["path", "inline"].includes(screenshotDelivery)) {
     throw new Error("screenshotDelivery deve ser path ou inline");
   }
@@ -81,6 +87,7 @@ function validateOptions(options) {
     viewport,
     screenshot,
     screenshotDelivery,
+    screenshotMode,
     accessibility,
     timeout,
     allowedHosts,
