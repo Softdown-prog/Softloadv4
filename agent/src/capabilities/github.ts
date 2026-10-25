@@ -1,5 +1,7 @@
 import type { PermissionGuard } from "./capability-types.js";
 
+declare const process: { env: Record<string, string | undefined> };
+
 export interface GithubTask {
   type: string;
   owner?: string;
