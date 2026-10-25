@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import ChatHeaderActions from '../components/ChatHeaderActions';
 import Pill from '../components/Pill';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
-    Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, Camera, 
+    Paperclip, History, Plus, Trash2, X, Clipboard, Check, Camera, 
     ArrowRight, ArrowDown, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
@@ -60,6 +61,7 @@ export default function Solaris(): React.JSX.Element {
     const [visualDevice, setVisualDevice] = useState<'desktop' | 'android-mobile'>('desktop');
     const [visualStatus, setVisualStatus] = useState<VisualStatus | null>(null);
     const [visualBusy, setVisualBusy] = useState(false);
+    const [quickMenuOpen, setQuickMenuOpen] = useState(false);
     const [toolsOpen, setToolsOpen] = useState(false);
     const [activeTool, setActiveTool] = useState<'none' | 'asset-forge-2d' | 'github'>('none');
     const [githubRepository, setGithubRepository] = useState('');
@@ -72,6 +74,8 @@ export default function Solaris(): React.JSX.Element {
     const [showJumpToLatest, setShowJumpToLatest] = useState(false);
     // O streaming acompanha a conversa somente enquanto o leitor estiver no fim.
     const shouldFollowRef = useRef(true);
+    const quickMenuRef = useRef<HTMLDivElement | null>(null);
+    const quickTriggerRef = useRef<HTMLButtonElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -86,6 +90,31 @@ export default function Solaris(): React.JSX.Element {
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
+
+    // Fecha as ferramentas ao tocar fora do menu ou pressionar Escape.
+    useEffect(() => {
+        if (!quickMenuOpen) return;
+        const closeMenu = (): void => {
+            setQuickMenuOpen(false);
+            setToolsOpen(false);
+            setVisualOpen(false);
+        };
+        const onOutside = (event: PointerEvent): void => {
+            if (!quickMenuRef.current?.contains(event.target as Node)) closeMenu();
+        };
+        const onEscape = (event: KeyboardEvent): void => {
+            if (event.key === 'Escape') {
+                closeMenu();
+                quickTriggerRef.current?.focus();
+            }
+        };
+        document.addEventListener('pointerdown', onOutside);
+        document.addEventListener('keydown', onEscape);
+        return () => {
+            document.removeEventListener('pointerdown', onOutside);
+            document.removeEventListener('keydown', onEscape);
+        };
+    }, [quickMenuOpen]);
 
     const carregarGithub = async (): Promise<void> => {
         try {
@@ -141,9 +170,11 @@ export default function Solaris(): React.JSX.Element {
         if (retornoGithub === 'connected') {
             setActiveTool('github');
             setToolsOpen(true);
+            setQuickMenuOpen(true);
         } else if (retornoGithub === 'denied' || retornoGithub === 'error' || retornoGithub === 'setup') {
             setActiveTool('github');
             setToolsOpen(true);
+            setQuickMenuOpen(true);
             setToolError(retornoGithub === 'setup'
                 ? 'A conexão GitHub precisa ser configurada pelo administrador da Softload.'
                 : 'A autorização do GitHub não foi concluída. Você pode tentar novamente.');
@@ -347,6 +378,7 @@ export default function Solaris(): React.JSX.Element {
                 content: `**Auditoria visual — ${visualDevice === 'desktop' ? 'Desktop' : 'Android'}**\n\n${data.analise}\n\n_Imagem analisada pelo Gemini Flash. O relatório pode ser utilizado nesta conversa para pedir ajustes; nenhum código foi alterado automaticamente._`,
             }]);
             setVisualOpen(false);
+            setQuickMenuOpen(false);
             carregarCreditos();
         } catch (error) {
             setMessages(prev => [...prev, {
@@ -545,24 +577,11 @@ export default function Solaris(): React.JSX.Element {
                         <span className="text-muted d-none d-sm-inline">{credits.creditsTotal ? credits.creditsTotal.toLocaleString('pt-BR') : credits.creditosTotal.toLocaleString('pt-BR')}</span>
                     </div>
 
-                    <button
-                        onClick={() => setDrawerOpen(true)}
-                        aria-label="Histórico"
-                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <History size={14} />
-                        <span className="d-none d-md-inline">Histórico</span>
-                    </button>
-
-                    <button
-                        onClick={iniciarNovaConversa}
-                        disabled={loading}
-                        aria-label="Nova conversa"
-                        className="btn btn-sl-outline btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <PlusCircle size={14} />
-                        <span className="d-none d-md-inline">Nova Conversa</span>
-                    </button>
+                    <ChatHeaderActions
+                        onHistory={() => setDrawerOpen(true)}
+                        onNewChat={iniciarNovaConversa}
+                        disableNewChat={loading}
+                    />
                 </div>
             </div>
 
@@ -721,7 +740,18 @@ export default function Solaris(): React.JSX.Element {
             {/* Input e Controles de Chat */}
             <div className="sl-conversation__composer p-3 flex-shrink-0">
                 <div className="sl-conversation__composer-inner">
-                    <div className="mb-2">
+                    <div className="sl-conversation__actions-scope" ref={quickMenuRef}>
+                        {quickMenuOpen && (
+                            <div id="solaris-actions-menu" className="sl-conversation__actions-popover" role="group" aria-label="Opções e ferramentas do Solaris">
+                                <div className="sl-conversation__actions-title">Opções e ferramentas</div>
+                                <button type="button"
+                                    className="sl-conversation__action-item"
+                                    disabled={loading || uploading || visualBusy}
+                                    onClick={() => { setQuickMenuOpen(false); handleUploadClick(); }}
+                                >
+                                    <Paperclip size={17} aria-hidden="true" /> Anexar projeto ZIP
+                                </button>
+                    <div className="sl-conversation__actions-sections">
                         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <button
                                 type="button"
@@ -747,7 +777,7 @@ export default function Solaris(): React.JSX.Element {
                                     <button type="button" className={`btn btn-sm ${activeTool === 'asset-forge-2d' ? 'btn-info' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'asset-forge-2d'}
                                         disabled={loading || uploading}
-                                        onClick={() => { setActiveTool('asset-forge-2d'); setToolError(''); }}>
+                                        onClick={() => { setActiveTool('asset-forge-2d'); setToolError(''); setQuickMenuOpen(false); setToolsOpen(false); }}>
                                         <Shapes size={14} className="me-1" /> Criar Assets 2D
                                     </button>
                                     <button type="button" className={`btn btn-sm ${activeTool === 'github' ? 'btn-info' : 'btn-outline-secondary'}`}
@@ -758,7 +788,7 @@ export default function Solaris(): React.JSX.Element {
                                     </button>
                                     <button type="button" className={`btn btn-sm ${activeTool === 'none' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'none'}
-                                        onClick={() => { setActiveTool('none'); setToolError(''); }}
+                                        onClick={() => { setActiveTool('none'); setToolError(''); setQuickMenuOpen(false); setToolsOpen(false); }}
                                         disabled={loading || uploading}>
                                         Sem ferramenta
                                     </button>
@@ -877,16 +907,23 @@ export default function Solaris(): React.JSX.Element {
                             </div>
                         )}
                     </div>
+
+                            </div>
+                        )}
                     <form onSubmit={handleSend} className="d-flex gap-2">
-                        <button 
+                        <button
+                            ref={quickTriggerRef}
                             type="button"
-                            onClick={handleUploadClick}
-                            disabled={loading || uploading || visualBusy}
-                            className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-                            style={{ width: '46px', height: '46px' }}
-                            title="Anexar projeto .zip"
+                            className="sl-conversation__plus-button"
+                            aria-label="Abrir opções e ferramentas"
+                            title="Opções e ferramentas"
+                            aria-haspopup="true"
+                            aria-expanded={quickMenuOpen}
+                            aria-controls="solaris-actions-menu"
+                            onClick={() => setQuickMenuOpen(open => !open)}
                         >
-                            <Paperclip size={18} />
+                            <Plus size={21} aria-hidden="true" />
+                            {activeTool !== 'none' && <span className="sl-conversation__active-dot" aria-hidden="true" />}
                         </button>
                         <input 
                             ref={fileInputRef}
@@ -940,6 +977,7 @@ export default function Solaris(): React.JSX.Element {
                             )}
                         </div>
                     </form>
+                    </div>
                     {/* Dica de atalhos de teclado — só faz sentido com teclado físico (desktop) */}
                     <div className="d-none d-md-flex align-items-center justify-content-between mt-2 px-1 text-secondary" style={{ fontSize: '0.65rem' }}>
                         <span>Aperte <kbd className="bg-secondary bg-opacity-20 px-1 py-0.5 rounded">Enter</kbd> para enviar, <kbd className="bg-secondary bg-opacity-20 px-1 py-0.5 rounded">Shift + Enter</kbd> para pular linha.</span>

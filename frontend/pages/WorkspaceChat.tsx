@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import ChatHeaderActions from '../components/ChatHeaderActions';
 import Pill from '../components/Pill';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
-    Layers, ArrowLeft, Cpu, Sparkles, Send, History, PlusCircle, 
+    Layers, ArrowLeft, Cpu, Sparkles, Send, History, 
     X, Clipboard, Check, HelpCircle, StopCircle, Eye, ArrowRight, ArrowDown, Zap, RefreshCw
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
@@ -458,24 +459,11 @@ export default function WorkspaceChat(): React.JSX.Element {
                         <span className="text-muted d-none d-sm-inline">{credits.creditosTotal.toLocaleString('pt-BR')}</span>
                     </div>
 
-                    <button
-                        onClick={() => setDrawerOpen(true)}
-                        aria-label="Histórico"
-                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <History size={14} />
-                        <span className="d-none d-md-inline">Histórico</span>
-                    </button>
-
-                    <button
-                        onClick={iniciarNovaConversa}
-                        disabled={loading}
-                        aria-label="Nova conversa"
-                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <PlusCircle size={14} />
-                        <span className="d-none d-md-inline">Nova Conversa</span>
-                    </button>
+                    <ChatHeaderActions
+                        onHistory={() => setDrawerOpen(true)}
+                        onNewChat={iniciarNovaConversa}
+                        disableNewChat={loading}
+                    />
                 </div>
             </div>
 

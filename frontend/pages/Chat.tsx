@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import ChatHeaderActions from '../components/ChatHeaderActions';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     MessageSquare, Send, Cpu, Sparkles, AlertCircle, 
-    History, PlusCircle, Trash2, X, Clipboard, Check, 
+    History, Trash2, X, Clipboard, Check, 
     ArrowRight, ArrowDown, RefreshCw, StopCircle, Zap, Settings, HelpCircle
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
@@ -339,24 +340,11 @@ export default function Chat(): React.JSX.Element {
                         <span className="text-muted d-none d-sm-inline">{credits.creditosGeminiTotal.toLocaleString('pt-BR')} GEMINI</span>
                     </div>
 
-                    <button
-                        onClick={() => setDrawerOpen(true)}
-                        aria-label="Histórico"
-                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <History size={14} />
-                        <span className="d-none d-md-inline">Histórico</span>
-                    </button>
-
-                    <button
-                        onClick={iniciarNovaConversa}
-                        disabled={loading}
-                        aria-label="Nova conversa"
-                        className="btn btn-sl-outline btn-sm d-flex align-items-center gap-1 px-3"
-                    >
-                        <PlusCircle size={14} />
-                        <span className="d-none d-md-inline">Nova Conversa</span>
-                    </button>
+                    <ChatHeaderActions
+                        onHistory={() => setDrawerOpen(true)}
+                        onNewChat={iniciarNovaConversa}
+                        disableNewChat={loading}
+                    />
                 </div>
             </div>
 

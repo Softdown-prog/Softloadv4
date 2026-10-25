@@ -2164,3 +2164,99 @@ body.sl-admin-body { background: var(--sl-bg-950); color: var(--sl-text-300); }
   .sl-conversation__jump { transition: none; }
   .sl-conversation__jump:hover { transform: none; }
 }
+
+
+/* Chat compacto: um menu no canto sem ocupar a área de escrita. */
+.sl-conversation__header { position: relative; }
+.sl-conversation__head-actions,
+.sl-conversation__actions-scope { position: relative; min-width: 0; }
+.sl-conversation__icon-button,
+.sl-conversation__plus-button {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 44px; width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+  border: 1px solid rgba(148,163,184,.22); border-radius: 14px;
+  background: rgba(148,163,184,.07); color: var(--bs-body-color);
+  transition: background .16s,border-color .16s;
+}
+.sl-conversation__icon-button:hover,
+.sl-conversation__plus-button:hover {
+  background: rgba(56,189,248,.12); border-color: rgba(56,189,248,.45);
+}
+.sl-conversation__icon-button[aria-expanded="true"],
+.sl-conversation__plus-button[aria-expanded="true"] {
+  background: rgba(14,165,233,.15); border-color: rgba(56,189,248,.55);
+}
+.sl-conversation__icon-button:focus-visible,
+.sl-conversation__plus-button:focus-visible,
+.sl-conversation__action-item:focus-visible {
+  outline: 3px solid #7dd3fc; outline-offset: 2px;
+}
+.sl-conversation__active-dot {
+  position: absolute; right: 5px; top: 5px; width: 7px; height: 7px;
+  border-radius: 50%; background: #38bdf8; box-shadow: 0 0 0 2px var(--sl-bg-900);
+}
+.sl-conversation__head-popover,
+.sl-conversation__actions-popover {
+  background: var(--sl-bg-900); color: var(--bs-body-color);
+  border: 1px solid rgba(148,163,184,.24); border-radius: 17px;
+  box-shadow: 0 18px 52px rgba(2,6,23,.46);
+  z-index: 40;
+}
+.sl-conversation__head-popover {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: min(220px, calc(100vw - 24px)); padding: 7px;
+}
+.sl-conversation__actions-popover {
+  position: absolute; bottom: calc(100% + 12px); left: 0;
+  width: min(390px, calc(100vw - 24px)); padding: 12px;
+  max-height: min(65dvh, 530px); overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.sl-conversation__actions-title {
+  padding: 4px 10px 10px; font-size: .76rem; font-weight: 700;
+  color: var(--sl-text-400); letter-spacing: .02em;
+}
+.sl-conversation__action-item {
+  width: 100%; min-height: 43px; display: flex; align-items: center;
+  gap: 12px; border: 0; border-radius: 11px; padding: 10px 12px;
+  background: transparent; color: inherit; text-align: left;
+  font-size: .88rem; font-weight: 550;
+}
+.sl-conversation__action-item:hover:not(:disabled) { background: rgba(56,189,248,.1); }
+.sl-conversation__action-item:disabled { opacity: .4; cursor: not-allowed; }
+.sl-conversation__actions-sections { margin-top: 3px; }
+.sl-conversation__actions-sections > .d-flex { margin-bottom: 0 !important; }
+.sl-conversation__actions-sections > .d-flex > .btn,
+.sl-conversation__actions-sections > .btn {
+  width: 100%; min-height: 43px; justify-content: flex-start;
+  border: 0; background: transparent; color: inherit;
+  text-align: left; border-radius: 11px; padding: 10px 12px;
+  font-weight: 550; font-size: .88rem;
+}
+.sl-conversation__actions-sections > .d-flex > .btn:hover,
+.sl-conversation__actions-sections > .btn:hover {
+  background: rgba(56,189,248,.1); color: inherit;
+}
+.sl-conversation__actions-sections > .d-flex > .badge { margin: 5px 10px; }
+.sl-conversation__actions-sections #solaris-tools-panel,
+.sl-conversation__actions-sections #solaris-tools-panel + button {
+  min-width: 0;
+}
+[data-bs-theme="light"] .sl-conversation__head-popover,
+[data-bs-theme="light"] .sl-conversation__actions-popover {
+  background: #fff; border-color: #cbd5e1;
+  box-shadow: 0 16px 38px rgba(15,23,42,.18);
+}
+[data-bs-theme="light"] .sl-conversation__icon-button,
+[data-bs-theme="light"] .sl-conversation__plus-button { background: #fff; }
+[data-bs-theme="light"] .sl-conversation__action-item:hover,
+[data-bs-theme="light"] .sl-conversation__actions-sections > .btn:hover { background: #e0f2fe; }
+@media (max-width: 575.98px) {
+  .sl-conversation__header { flex-wrap: nowrap !important; }
+  .sl-conversation__header > .d-flex:first-child { flex: 1 1 auto; min-width: 0; }
+  .sl-conversation__header > .d-flex:first-child h1 { overflow: hidden; }
+  .sl-conversation__actions-popover { max-height: min(60dvh, 475px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-conversation__icon-button,.sl-conversation__plus-button { transition: none; }
+}

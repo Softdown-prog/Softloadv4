@@ -67,3 +67,35 @@ test('retorno à mensagem mais recente aparece ao subir no histórico sem quebra
     assert.ok(css.includes(term),'CSS de melhoria visual ausente: '+term);
   }
 });
+
+test('ações dos três chats ficam em menu compacto com saída acessível',()=>{
+  const shared=fs.readFileSync(path.join(root,'frontend/components/ChatHeaderActions.tsx'),'utf8');
+  for(const selector of [
+    'aria-label="Opções da conversa"',
+    'aria-expanded={open}',
+    "event.key === 'Escape'",
+    "document.addEventListener('pointerdown', onOutside)",
+    'Histórico','Nova conversa'
+  ]) assert.ok(shared.includes(selector),'Menu do cabeçalho sem comportamento: '+selector);
+  for(const {name,file} of pages){
+    const source=fs.readFileSync(path.join(root,file),'utf8');
+    assert.ok(source.includes('<ChatHeaderActions'),name+' não reutiliza menu');
+    assert.ok(!source.includes('aria-label="Nova conversa"'),name+' ainda possui botão redundante');
+    assert.ok(!source.includes('aria-label="Histórico"'),name+' ainda possui botão de histórico separado');
+  }
+  const solaris=fs.readFileSync(path.join(root,'frontend/pages/Solaris.tsx'),'utf8');
+  for(const token of [
+    'sl-conversation__actions-scope','sl-conversation__actions-popover',
+    'sl-conversation__plus-button','aria-label="Abrir opções e ferramentas"',
+    'onClick={handleVisualReview}','ref={fileInputRef}','handleUploadClick()',
+    "event.key === 'Escape'",'setQuickMenuOpen(false)',
+    'id="solaris-tools-panel"','id="solaris-visual-url"'
+  ]) assert.ok(solaris.includes(token),'Solaris perdeu opção de ferramenta: '+token);
+  const originalPanelPosition=solaris.indexOf('sl-conversation__actions-popover');
+  const chatFormPosition=solaris.indexOf('<form onSubmit={handleSend}',originalPanelPosition);
+  assert.ok(originalPanelPosition>0 && chatFormPosition>originalPanelPosition,'Menu precisa ficar antes do formulário');
+  for(const selector of ['.sl-conversation__head-popover','.sl-conversation__actions-popover',
+    '.sl-conversation__plus-button','.sl-conversation__action-item']){
+    assert.ok(css.includes(selector),'CSS do menu ausente: '+selector);
+  }
+});
