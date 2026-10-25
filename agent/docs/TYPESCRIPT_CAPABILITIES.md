@@ -58,6 +58,11 @@ esses imports nem exige um loader TypeScript em produção.
 - `filesystem.ts` — contratos de leitura, escrita, edição, diff, patch,
   listagem e busca de arquivos, preservando as verificações do workspace.
 
+- `mcp-client.ts` — integração MCP remota com permissões, allowlist de
+  ferramentas e fechamento da sessão, mantendo segredos fora da listagem.
+- `web-fetch.ts` — busca HTTP textual com validação SSRF em todos os
+  redirecionamentos, timeout e limites de leitura em streaming.
+
 ## Como validar
 
 ```bash

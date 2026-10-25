@@ -43,3 +43,22 @@ declare module "@octokit/rest" {
 declare module "p-limit" {
   export default function pLimit(concurrency: number): <T>(fn: () => Promise<T>) => Promise<T>;
 }
+
+/** Tipos transitórios mínimos: Node 22 ESM conserva os pacotes atuais. */
+declare module "html-to-text" {
+  export function convert(html: string, options: { wordwrap: false }): string;
+}
+declare module "@modelcontextprotocol/sdk/client/index.js" {
+  export class Client {
+    constructor(info: { name: string; version: string }, options: { capabilities: Record<string, never> });
+    connect(transport: unknown): Promise<void>;
+    close(): Promise<void>;
+    listTools(a: undefined, b: undefined, options: { timeout: number }): Promise<{ tools: import("./mcp-client.js").McpTool[] }>;
+    callTool(a: { name: string; arguments: Record<string, unknown> }, b: undefined, options: { timeout: number }): Promise<{ isError?: boolean; content: unknown; structuredContent?: unknown }>;
+  }
+}
+declare module "@modelcontextprotocol/sdk/client/streamableHttp.js" {
+  export class StreamableHTTPClientTransport {
+    constructor(url: URL, options: { fetch: typeof fetch; requestInit?: { headers: Record<string, string> } });
+  }
+}
