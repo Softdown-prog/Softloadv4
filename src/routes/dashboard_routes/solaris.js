@@ -30,6 +30,7 @@ const { salvarProjeto, carregarProjeto } = require('../../solaris/tools/projectS
 const { lerProjetoParaPersistir } = require('../../solaris/tools/fileTools');
 const { criarHandlerChatSolaris } = require('../../solaris/http/solarisChatHandler');
 const { criarHandlerUploadSolaris } = require('../../solaris/http/solarisUploadHandler');
+const { criarHandlerVisual } = require('../../solaris/visual/visualReview');
 
 // ──────────────────────────────────────────────────────────────────────────
 // CHAT DO SOLARIS CODE — rota + view próprias, motor totalmente separado
@@ -114,6 +115,66 @@ router.get('/dashboard/solaris', exigirLogin, (req, res) => {
         user: req.session.user
     });
 });
+
+// Análise de layout OPT-IN: chama o sandbox isolado (sem usar o Agent
+// em modo full e sem conceder acesso à shell). Uma única foto por pedido.
+// Sem SOLARIS_VISUAL_REVIEW_ENABLED e SOLARIS_AI_BUDGET_ENFORCE,
+// a rota é desativada e não provoca gastos automáticos.
+const visualLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: req => req.session?.user?.uid || req.ip,
+    handler: (_req, res) => res.status(429).json({error:'Limite de auditorias visuais atingido. Tente mais tarde.'}),
+});
+async function capturarParaVisual({ url, device }) {
+    const serviceUrl = process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL;
+    const secret = process.env.SANDBOX_BROWSER_SHARED_SECRET || process.env.SANDBOX_SHARED_SECRET;
+    if (!serviceUrl || !secret) throw new Error('Sandbox visual sem URL/segredo configurados.');
+    const response = await fetch(serviceUrl.replace(/[/]+$/, '') + '/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-sandbox-secret': secret },
+        body: JSON.stringify({
+            url, device, browser: 'chromium', screenshot: true,
+            screenshotDelivery: 'inline', accessibility: false, timeout: 20000,
+        }),
+        signal: AbortSignal.timeout(35000),
+    });
+    // A fronteira HTTP pode conter imagem em base64: limite antes de parsear.
+    const sizeHeader = Number(response.headers.get('content-length'));
+    if (sizeHeader > 900000) throw new Error('Resposta do sandbox excedeu limite visual.');
+    if (!response.ok) throw new Error('Captura no sandbox falhou.');
+    const text = await response.text();
+    if (text.length > 900000) throw new Error('Resposta do sandbox excedeu limite visual.');
+    return JSON.parse(text);
+}
+const visualHandler = criarHandlerVisual({
+    enabled: process.env.SOLARIS_VISUAL_REVIEW_ENABLED === 'true'
+        && process.env.SOLARIS_AI_BUDGET_ENFORCE === 'true',
+    origins: process.env.SOLARIS_VISUAL_PREVIEW_ORIGINS || '',
+    capturar: capturarParaVisual,
+    criarRouter: req => {
+        const protegida = criarClienteGeminiComOrcamento(() => {
+            if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY ausente.');
+            return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        }, {
+            email: req.session.user.email,
+            livro: livroOrcamento,
+            modeloPro: MODEL_FLASH,
+            maxOutputTokens: 1024,
+        });
+        return criarModelRouter(protegida);
+    },
+    debitarCreditos,
+});
+router.post('/dashboard/solaris/visual-review', exigirLogin, (req, res, next) => {
+    if (process.env.SOLARIS_VISUAL_REVIEW_ENABLED !== 'true'
+        || process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
+        return res.status(404).json({error:'visual_review_disabled'});
+    }
+    return next();
+}, visualLimiter, verificarSaldo, visualHandler);
 
 // ──────────────────────────────────────────────────────────────────────────
 // POST /dashboard/solaris/chat/stream — mesmo protocolo de eventos SSE

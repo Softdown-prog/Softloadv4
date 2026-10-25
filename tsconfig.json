@@ -146,6 +146,7 @@
     "src/solaris/pipeline/orchestrator.ts",
     "src/contracts/solarisOrchestrator.typecheck.ts",
     "src/solaris/llm/modelRouter.ts",
+    "src/solaris/visual/visualReview.ts",
     "src/contracts/solarisModelRouter.typecheck.ts",
     "src/solaris/prompts/systemPrompt.ts",
     "src/solaris/chat/solarisChat.ts",
