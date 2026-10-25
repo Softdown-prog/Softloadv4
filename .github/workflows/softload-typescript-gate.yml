@@ -161,6 +161,24 @@ jobs:
           node --test src/services/mpPlanRules.contract.test.js
       - name: Testar ciclo de créditos com Firestore simulado
         run: node --test src/services/creditService.contract.test.js
+      - name: Testar SMTP Resend e templates sem envio real
+        run: node --test src/services/emailService.contract.test.js
+      - name: Diagnóstico temporário do espelho emailService TypeScript
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const ts = require('typescript');
+          const content = fs.readFileSync('src/services/emailService.ts', 'utf8');
+          const output = ts.transpileModule(content, {
+            fileName: 'src/services/emailService.ts',
+            compilerOptions: {
+              module: ts.ModuleKind.CommonJS,
+              target: ts.ScriptTarget.ES2022,
+              newLine: ts.NewLineKind.LineFeed
+            }
+          }).outputText;
+          console.log('MAIL_MIRROR_BEGIN' + JSON.stringify(output) + 'MAIL_MIRROR_END');
+          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

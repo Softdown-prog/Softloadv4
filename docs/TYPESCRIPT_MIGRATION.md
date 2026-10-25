@@ -1495,3 +1495,19 @@ Nenhum preço ou regra comercial é alterado nesta conversão.
 `src/services/creditService.contract.test.js` testa os três contadores,
 concessão, débito, saldo insuficiente, expiração, transações e logs
 com **Firestore simulado**, sem serviços remotos nem custos de API.
+
+## Etapa 86 — serviços de email transacional tipados
+
+`src/services/emailService.ts` passa a ser a fonte TypeScript autoritativa,
+mantendo `src/services/emailService.js` como espelho CommonJS.
+As quatro exportações públicas permanecem: `transporter`,
+`enviarBoasVindas`, `enviarRecuperacaoSenha` e
+`enviarPlanoAtivado`. Não há troca de provedor ou mudança de comportamento:
+continuam SMTP Resend com TLS/porta 465, variáveis de ambiente existentes,
+templates HTML e propagação de erros de envio ao chamador.
+
+`src/services/emailService.contract.test.js` usa Nodemailer simulado
+para testar SMTP, remetente, links, textos de boas-vindas, recuperação de
+senha, plano ativado e falha de entrega. Nenhum email é enviado e
+nenhuma chave externa ou rede é necessária. O Gate TypeScript verifica
+o novo módulo, espelho e cinco regressões.

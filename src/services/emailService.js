@@ -1,10 +1,15 @@
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.transporter = void 0;
+exports.enviarBoasVindas = enviarBoasVindas;
+exports.enviarRecuperacaoSenha = enviarRecuperacaoSenha;
+exports.enviarPlanoAtivado = enviarPlanoAtivado;
 const nodemailer = require('nodemailer');
 
 const FROM = `"${process.env.EMAIL_FROM_NAME || 'Softload Engine'}" <${process.env.EMAIL_FROM || 'contato@softload.analysepro.com'}>`;
 const BASE  = process.env.BASE_URL || 'https://softload.analysepro.com';
 
-const transporter = nodemailer.createTransport({
+exports.transporter = nodemailer.createTransport({
     host:   'smtp.resend.com',
     port:   465,
     secure: true,
@@ -151,7 +156,7 @@ function templatePlanoAtivado(nome, plano, creditos, expiraEm) {
 
 async function enviar(to, subject, html) {
     try {
-        await transporter.sendMail({ from: FROM, to, subject, html });
+        await exports.transporter.sendMail({ from: FROM, to, subject, html });
         console.log(`[EMAIL] Enviado: "${subject}" → ${to}`);
     } catch (err) {
         console.error(`[EMAIL] Falha ao enviar para ${to}:`, err.message);
@@ -175,10 +180,4 @@ async function enviarPlanoAtivado(email, nome, plano, creditos, expiraEm) {
     );
 }
 
-// Transporter reutilizável para o formulário de contato (contatoRoutes.js)
-module.exports = {
-    transporter,
-    enviarBoasVindas,
-    enviarRecuperacaoSenha,
-    enviarPlanoAtivado,
-};
+// Transporter reutilizável para o formulário de contato (contatoRoutes.js).
