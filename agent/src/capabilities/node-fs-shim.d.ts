@@ -9,6 +9,7 @@ declare module "node:fs/promises" {
   }
   const fs: {
     access(path: string): Promise<void>;
+    mkdtemp(prefix: string): Promise<string>;
     realpath(path: string): Promise<string>;
     mkdir(path: string, options: { recursive: true }): Promise<string | undefined>;
     readFile(path: string, encoding: "utf8"): Promise<string>;

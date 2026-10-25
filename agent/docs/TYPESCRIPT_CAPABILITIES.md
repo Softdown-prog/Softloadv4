@@ -245,6 +245,15 @@ esses imports nem exige um loader TypeScript em produção.
 - Os testes verificam rejeição de papéis desconhecidos, passagem do
   payload e propagação de falhas do subagente ao executor central.
 
+## Motor nativo de diff e patch tipado
+
+- `agent/src/utils/diff-patch-engine.ts` declara o contrato do patch
+  estrutural, opções de timeout e erros com exit code do binário C++.
+- Mantém o uso de `runCommand` sem shell, a gravação temporária
+  isolada, a limpeza em `finally` e a preservação de quebras de linha.
+- Os testes de ponta a ponta continuam compilando e executando o
+  binário C++ real, com verificação de hash e de divergências.
+
 ## Como validar
 
 ```bash

@@ -64,6 +64,7 @@ const sources = [
   "agent/src/orchestration/git-worktree-pool.ts",
   "agent/src/orchestration/coder-validator-loop.ts",
   "agent/src/agent-dispatch-capability.ts",
+  "agent/src/utils/diff-patch-engine.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
