@@ -16,6 +16,11 @@ const sources = [
   "src/webSandbox/devices.ts",
   "src/webSandbox/security.ts",
   "src/archive/security.ts",
+  "src/webSandbox/console.ts",
+  "src/webSandbox/responsive.ts",
+  "src/webSandbox/accessibility.ts",
+  "src/webSandbox/index.ts",
+  "src/archive/index.ts",
 ];
 const ignored = new Set(["start", "end", "loc", "range", "raw"]);
 function semanticAst(input) {
