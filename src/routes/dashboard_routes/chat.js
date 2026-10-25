@@ -101,6 +101,7 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
 
     let fullText  = '';
     let tokensRef = { total: 0, input: 0, output: 0 };
+    let doneEvent = null;
 
     try {
         // permitirGeracao:false — o Especialista nunca compila/gera template
@@ -112,13 +113,15 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
         });
         fullText = resultado.fullText;
 
-        sendEvent({
+        // O frontend consulta o histórico e os créditos quando recebe done.
+        // Adiar o evento até as gravações terminarem evita uma atualização vazia.
+        doneEvent = {
             type:      'done',
             reply:     fullText,
             sessionId,
             tokens:    tokensRef,
             ...(resultado.codeValidation ? { codeValidation: resultado.codeValidation } : {}),
-        });
+        };
 
     } catch (err) {
         const detalhe  = err.cause?.message ? ` | causa: ${err.cause.message}` : '';
@@ -154,34 +157,56 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
                    :               `Especialista temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
         });
     } finally {
-        res.end();
+        let historicoSalvo = false;
+        let debitoConfirmado = true;
 
         if (fullText && uid) {
-            const ts       = new Date().toISOString();
+            const ts = new Date().toISOString();
             const messages = [
                 ...safeHistory,
-                { role: 'user',      content: msg,      ts },
-                { role: 'assistant', content: fullText,  ts, tokens: tokensRef },
+                { role: 'user', content: msg, ts },
+                { role: 'assistant', content: fullText, ts, tokens: tokensRef },
             ];
-            // Sem meta.commandJson aqui — o Especialista não gera templates
-            // (permitirGeracao:false), então não há lastTemplate pra
-            // capturar pra memória persistente nesta rota.
+            // O Especialista não gera templates: nenhuma mudança em meta.
             const cotaChat = { email, plano: req.session.user?.plano || 'free' };
-            chatStorage.saveSession(uid, 'chat-suporte', sessionId, {
-                messages,
-                tokens: tokensRef,
-                meta:   {},
-            }, cotaChat)
-            .then(session => chatStorage.updateMemoryFromSession(uid, session, cotaChat))
-            .catch(e => console.error(`[CHAT-STORAGE] especialista save err: ${e.message}`));
+            try {
+                const session = await chatStorage.saveSession(uid, 'chat-suporte', sessionId, {
+                    messages, tokens: tokensRef, meta: {},
+                }, cotaChat);
+                historicoSalvo = true;
+                // Memória secundária não impede o histórico principal.
+                Promise.resolve().then(() => chatStorage.updateMemoryFromSession(uid, session, cotaChat))
+                    .catch(e => console.error(`[CHAT-STORAGE] especialista memory err: ${e.message}`));
+            } catch (e) {
+                console.error(`[CHAT-STORAGE] especialista save err: ${e.message}`);
+            }
         }
 
-        // Débito separado do save — roda sempre que houver resposta e email.
+        // Contabilizar antes de liberar o frontend para ler o saldo novo.
+        // O débito não depende de o GCS estar disponível.
         if (email && fullText) {
-            const inputToks  = tokensRef.input  > 0 ? tokensRef.input  : Math.ceil(msg.length / 3.5);
+            const inputToks = tokensRef.input > 0 ? tokensRef.input : Math.ceil(msg.length / 3.5);
             const outputToks = tokensRef.output > 0 ? tokensRef.output : Math.ceil(fullText.length / 3.5);
-            debitarCreditos(email, inputToks, outputToks)
-                .catch(e => console.error(`[BILLING] chat debit err: ${e.message}`));
+            try {
+                await debitarCreditos(email, inputToks, outputToks);
+            } catch (e) {
+                debitoConfirmado = false;
+                console.error(`[BILLING] chat debit err: ${e.message}`);
+            }
+        }
+
+        try {
+            if (doneEvent && !res.destroyed) {
+                if (!historicoSalvo) {
+                    doneEvent.reply += '\n\n⚠️ Não consegui salvar esta conversa no histórico. Copie a resposta antes de sair.';
+                }
+                if (!debitoConfirmado) {
+                    doneEvent.reply += '\n\n⚠️ Não foi possível confirmar a atualização dos créditos.';
+                }
+                sendEvent(doneEvent);
+            }
+        } finally {
+            res.end();
         }
     }
 });
