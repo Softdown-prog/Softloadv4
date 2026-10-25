@@ -47,7 +47,7 @@ interface FieldValueApi {
   serverTimestamp(): unknown;
 }
 declare function require(path: string): unknown;
-declare const console: {error(...args: unknown[]): void};
+declare const console: {error(...args: unknown[]): void; info(...args: unknown[]): void};
 declare function setTimeout(callback: () => void, delay: number): unknown;
 const { db, admin, bucket } = require('./firebase') as {db: FirestoreCredits; admin: {firestore: {FieldValue: FieldValueApi}}; bucket?: BillingBucket};
 const FV = admin.firestore.FieldValue;
@@ -80,14 +80,17 @@ async function lerCursorRecuperacao(): Promise<EstadoCursor> {
 }
 /** CAS impede uma instância mais lenta de sobrescrever o avanço de outra.
  *  Um conflito 412 não é erro: a próxima execução lê o cursor atualizado. */
-async function gravarCursorRecuperacao(cursor: string | null, generation: string | number): Promise<void> {
+async function gravarCursorRecuperacao(cursor: string | null, generation: string | number): Promise<boolean> {
   try {
     await bucket!.file(BILLING_CURSOR_OBJECT).save(JSON.stringify({ versao: 1, cursor }), {
       contentType: 'application/json', resumable: false,
       preconditionOpts: { ifGenerationMatch: generation },
     });
+    return true;
   } catch (e) {
     if ((e as { code?: number } | null)?.code !== 412) throw e;
+    // Outro worker venceu o CAS. Preservar o cursor vencedor.
+    return false;
   }
 }
 
@@ -113,8 +116,8 @@ function cobrancaPendenteValida(v: CobrancaPendente, nome: string): boolean {
 
 /** Reexecuta débitos registrados antes da falha do Firestore. Cada operação
  *  possui recibo transacional, então múltiplos workers são seguros. */
-export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ processadas: number; falhas: number }> {
-  if (!bucket) return { processadas: 0, falhas: 0 };
+export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ processadas: number; falhas: number; conflitosCursor: number }> {
+  if (!bucket) return { processadas: 0, falhas: 0, conflitosCursor: 0 };
   const limite = Number.isSafeInteger(maxResults) ? Math.max(1, Math.min(maxResults, 100)) : 25;
   async function obterLote(inicio: string | null): Promise<BillingObject[]> {
     // O startOffset do GCS é inclusivo; buscamos um extra e excluímos
@@ -134,6 +137,7 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
   const proximoCursor = files.length ? files[files.length - 1].name : null;
   let processadas = 0;
   let falhas = 0;
+  let conflitosCursor = 0;
   for (const file of files) {
     try {
       const [bytes] = await file.download();
@@ -152,13 +156,18 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
   // anterior não duplica débitos por causa dos recibos transacionais.
   if (proximoCursor !== anterior.cursor) {
     try {
-      await gravarCursorRecuperacao(proximoCursor, anterior.generation);
+      const salvo = await gravarCursorRecuperacao(proximoCursor, anterior.generation);
+      if (!salvo) {
+        conflitosCursor++;
+        // Conflito esperado sob concorrência; não é falha de cobrança.
+        console.info('[BILLING] Cursor GCS avançado por outro worker; retomando na próxima verificação.');
+      }
     } catch (e) {
       falhas++;
       console.error('[BILLING] Falha ao persistir cursor GCS:', e);
     }
   }
-  return { processadas, falhas };
+  return { processadas, falhas, conflitosCursor };
 }
 
 // Créditos Gemini por plano por ciclo de 30 dias

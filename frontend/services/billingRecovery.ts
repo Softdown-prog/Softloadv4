@@ -9,6 +9,7 @@ export interface BillingRecoveryStatus {
     ultimoAlertaEm: string | null;
     processadas: number | null;
     falhas: number | null;
+    conflitosCursor: number | null;
     quantidadeAmostrada: number | null;
     amostraLimitada: boolean;
     maisAntigaMinutos: number | null;
@@ -50,6 +51,7 @@ export function parseBillingRecoveryStatus(value: unknown): BillingRecoveryStatu
         ultimoAlertaEm: validDate(value.ultimoAlertaEm),
         processadas: count(value.processadas),
         falhas: count(value.falhas),
+        conflitosCursor: count(value.conflitosCursor),
         quantidadeAmostrada: count(value.quantidadeAmostrada),
         amostraLimitada: value.amostraLimitada === true,
         maisAntigaMinutos: count(value.maisAntigaMinutos),

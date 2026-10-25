@@ -45,10 +45,13 @@ async function gravarCursorRecuperacao(cursor, generation) {
             contentType: 'application/json', resumable: false,
             preconditionOpts: { ifGenerationMatch: generation },
         });
+        return true;
     }
     catch (e) {
         if (e?.code !== 412)
             throw e;
+        // Outro worker venceu o CAS. Preservar o cursor vencedor.
+        return false;
     }
 }
 function registroPendenteIgual(v, email, input, output, operacaoId) {
@@ -66,7 +69,7 @@ function cobrancaPendenteValida(v, nome) {
  *  possui recibo transacional, então múltiplos workers são seguros. */
 async function recuperarCobrancasPendentes(maxResults = 25) {
     if (!bucket)
-        return { processadas: 0, falhas: 0 };
+        return { processadas: 0, falhas: 0, conflitosCursor: 0 };
     const limite = Number.isSafeInteger(maxResults) ? Math.max(1, Math.min(maxResults, 100)) : 25;
     async function obterLote(inicio) {
         // O startOffset do GCS é inclusivo; buscamos um extra e excluímos
@@ -86,6 +89,7 @@ async function recuperarCobrancasPendentes(maxResults = 25) {
     const proximoCursor = files.length ? files[files.length - 1].name : null;
     let processadas = 0;
     let falhas = 0;
+    let conflitosCursor = 0;
     for (const file of files) {
         try {
             const [bytes] = await file.download();
@@ -106,14 +110,19 @@ async function recuperarCobrancasPendentes(maxResults = 25) {
     // anterior não duplica débitos por causa dos recibos transacionais.
     if (proximoCursor !== anterior.cursor) {
         try {
-            await gravarCursorRecuperacao(proximoCursor, anterior.generation);
+            const salvo = await gravarCursorRecuperacao(proximoCursor, anterior.generation);
+            if (!salvo) {
+                conflitosCursor++;
+                // Conflito esperado sob concorrência; não é falha de cobrança.
+                console.info('[BILLING] Cursor GCS avançado por outro worker; retomando na próxima verificação.');
+            }
         }
         catch (e) {
             falhas++;
             console.error('[BILLING] Falha ao persistir cursor GCS:', e);
         }
     }
-    return { processadas, falhas };
+    return { processadas, falhas, conflitosCursor };
 }
 // Créditos Gemini por plano por ciclo de 30 dias
 exports.PLAN_CREDITS = {

@@ -21,7 +21,7 @@ const now = Date.parse('2026-10-25T18:00:00.000Z');
 function state(overrides = {}) {
     return parseBillingRecoveryStatus({
         estado: 'ok', emExecucao: false, ultimaExecucaoEm: new Date(now - 60_000).toISOString(),
-        processadas: 3, falhas: 0, quantidadeAmostrada: 2,
+        processadas: 3, falhas: 0, conflitosCursor: 0, quantidadeAmostrada: 2,
         maisAntigaMinutos: 5, falhasConsecutivas: 0, ilegivel: 0,
         amostraLimitada: false, alertaAtivo: false,
         webhookConfigurado: true, erroNotificacao: false,
@@ -71,4 +71,14 @@ test('painel usa endpoint administrativo autenticado, polling e atualização ma
     assert.match(panel, /onClick=\{\(\) => \{ void carregar\(\); \}\}/);
     assert.match(panel, /Amostra/);
     assert.match(dashboard, /<BillingRecoveryPanel \/>/);
+});
+
+
+test('disputa de cursor é visível sem marcar cobrança como falha',()=>{
+    const data=state({conflitosCursor:2, falhas:0});
+    assert.equal(data.conflitosCursor,2);
+    assert.equal(classificarRecuperacao(data,false,now).gravidade,'ok');
+    const panel=fs.readFileSync(path.resolve(__dirname,'../components/admin/BillingRecoveryPanel.tsx'),'utf8');
+    assert.match(panel,/Disputas do cursor GCS/);
+    assert.match(panel,/fmt\(status\?\.conflitosCursor\)/);
 });

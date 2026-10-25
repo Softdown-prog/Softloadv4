@@ -26,6 +26,7 @@ function criarMonitorRecuperacaoCobrancas({
         ultimaRecuperacaoEm: null,
         processadas: 0,
         falhas: 0,
+        conflitosCursor: 0,
         quantidadeAmostrada: 0,
         amostraLimitada: false,
         maisAntigaMinutos: null,
@@ -72,6 +73,7 @@ function criarMonitorRecuperacaoCobrancas({
             const fila = await inspecionar();
             const processadas = Math.max(0, Number(recuperacao?.processadas) || 0);
             const falhas = Math.max(0, Number(recuperacao?.falhas) || 0);
+            const conflitosCursor = Math.max(0, Number(recuperacao?.conflitosCursor) || 0);
             const amostradas = Math.max(0, Number(fila?.quantidadeAmostrada) || 0);
             const idade = Number(fila?.maisAntigaMs);
             const maisAntigaMinutos = fila?.maisAntigaMs != null && Number.isFinite(idade) && idade >= 0 ? Math.floor(idade / 60000) : null;
@@ -80,7 +82,7 @@ function criarMonitorRecuperacaoCobrancas({
                 ...resultado, estado: 'ok',
                 ultimaExecucaoEm: new Date(timestamp).toISOString(),
                 ultimaRecuperacaoEm: new Date(timestamp).toISOString(),
-                processadas, falhas, quantidadeAmostrada: amostradas,
+                processadas, falhas, conflitosCursor, quantidadeAmostrada: amostradas,
                 amostraLimitada: !!fila?.amostraLimitada, maisAntigaMinutos,
                 ilegivel,
             };

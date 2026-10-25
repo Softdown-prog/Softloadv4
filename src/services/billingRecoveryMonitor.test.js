@@ -98,3 +98,21 @@ test('endpoint operacional exige superadmin',()=>{
     assert.match(source,/router\.get\('\/eu\/api\/billing\/recuperacao', exigirSuperAdmin/);
     assert.match(source,/webhookConfigurado: !!process\.env\.BILLING_ALERT_WEBHOOK_URL/);
 });
+
+
+test('conflito CAS é informativo e não dispara falso alerta de débito',async()=>{
+    const avisos=[];
+    const m=criarMonitorRecuperacaoCobrancas({
+        recuperar:async()=>({processadas:1,falhas:0,conflitosCursor:2}),
+        inspecionar:async()=>({quantidadeAmostrada:0,amostraLimitada:false,maisAntigaMs:null,ilegivel:0}),
+        notificar:async x=>avisos.push(x),
+    });
+    for(let i=0;i<4;i++){
+        const s=await m.executar();
+        assert.equal(s.conflitosCursor,2);
+        assert.equal(s.falhas,0);
+        assert.equal(s.alertaAtivo,false);
+        assert.equal(s.estado,'ok');
+    }
+    assert.equal(avisos.length,0);
+});

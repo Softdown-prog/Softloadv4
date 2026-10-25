@@ -116,6 +116,7 @@ export default function BillingRecoveryPanel(): React.JSX.Element {
                     <span><Clock3 size={13} className="me-1" /> Último ciclo: {fmtDate(status?.ultimaExecucaoEm)}</span>
                     <span>Falhas consecutivas: <strong className="text-white">{possuiCiclo ? fmt(status?.falhasConsecutivas) : '—'}</strong></span>
                     <span>Objetos ilegíveis: <strong className="text-white">{possuiCiclo ? fmt(status?.ilegivel) : '—'}</strong></span>
+                    <span>Disputas do cursor GCS: <strong className="text-white">{possuiCiclo ? fmt(status?.conflitosCursor) : '—'}</strong></span>
                     {status?.emExecucao && <span style={{ color: '#38bdf8' }}>Verificação em andamento</span>}
                 </div>
                 <div className="d-flex flex-wrap gap-3 mt-3" style={{ color: 'var(--sl-text-400)', fontSize: '12px' }}>

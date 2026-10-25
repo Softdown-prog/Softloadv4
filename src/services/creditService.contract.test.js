@@ -11,13 +11,14 @@ const KEY = 'clientes_premium/cliente@example.com';
 
 function harness(initial = {}) {
     const docs = new Map(Object.entries(initial).map(([k,v])=>[k,{...v}]));
-    const calls = {transactions:0, writes:[], logs:[], errors:[]};
+    const calls = {transactions:0, writes:[], logs:[], errors:[], info:[]};
     let billingLogError = false;
     let firestoreOffline = false;
     let outboxDeleteFailure = false;
     const objects = new Map();
     const generations = new Map();
     let cursorWriteError = false;
+    let simularDisputaCursor = false;
     let afterCommitTransientFailures = 0;
     let beforeCommitTransientFailures = 0;
     const inc = n => ({increment: n});
@@ -44,7 +45,14 @@ function harness(initial = {}) {
                 const current=generations.get(name) || 0;
                 if (name === 'billing/state/recovery-cursor.json' && cursorWriteError)
                     throw Object.assign(Error('cursor write failure'), {code:503});
-                if (String(match)!==String(current)) throw Object.assign(new Error('precondition'), {code:412});
+                if (name === 'billing/state/recovery-cursor.json' && simularDisputaCursor) {
+                    // Outro contêiner grava seu cursor entre nossa leitura e CAS.
+                    simularDisputaCursor = false;
+                    objects.set(name,JSON.stringify({versao:1,cursor:'billing/pending/zzzz-outro-worker.json'}));
+                    generations.set(name,current+1);
+                }
+                if (String(match)!==String(generations.get(name)||0))
+                    throw Object.assign(new Error('precondition'), {code:412});
                 objects.set(name,content);
                 generations.set(name,current+1);
             },
@@ -107,12 +115,13 @@ function harness(initial = {}) {
             assert.equal(id,'./firebase');
             return {db,admin:{firestore:{FieldValue:fieldValue}},bucket};
         },
-        console:{error:(...args)=>calls.errors.push(args)},
+        console:{error:(...args)=>calls.errors.push(args), info:(...args)=>calls.info.push(args)},
       },{filename:'creditService.js'});
       return mod.exports;
     };
     return {api:createApi(),reboot:createApi,docs,calls,objects,bucket,
         setCursorWriteError:flag=>{cursorWriteError=flag},
+        simularConflitoCursor:()=>{simularDisputaCursor=true},
         setFirestoreOffline:flag=>{firestoreOffline=flag},
         setOutboxDeleteFailure:flag=>{outboxDeleteFailure=flag},
         setBillingError:flag=>{billingLogError=flag},
@@ -430,4 +439,39 @@ test('GCS: cursor inválido interrompe recuperação para alertar operador', asy
     h.objects.set('billing/state/recovery-cursor.json','{"versao":1,"cursor":"../../invalido"}');
     await assert.rejects(h.api.recuperarCobrancasPendentes(1),/Cursor persistido inválido/);
     assert.equal(h.docs.get(KEY).creditos,5);
+});
+
+
+test('GCS: disputa CAS com outro contêiner preserva cursor vencedor e não altera débito',async()=>{
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    const id='cobranca-disputa-cursor-0001';
+    h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+        versao:1,operacaoId:id,email:EMAIL.toLowerCase(),
+        inputTokens:500,outputTokens:0,criadoEm:new Date().toISOString(),
+    }));
+    h.simularConflitoCursor();
+    const result=await h.api.recuperarCobrancasPendentes(1);
+    assert.equal(result.processadas,1);
+    assert.equal(result.falhas,0);
+    assert.equal(result.conflitosCursor,1);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.calls.writes.filter(w=>w.op==='tx.update').length,1);
+    assert.equal(h.calls.info.length,1);
+    assert.equal(JSON.parse(h.objects.get('billing/state/recovery-cursor.json')).cursor,
+        'billing/pending/zzzz-outro-worker.json');
+    const recovery=await h.reboot().recuperarCobrancasPendentes(1);
+    assert.equal(recovery.conflitosCursor,0);
+    assert.equal(h.docs.get(KEY).creditos,4);
+});
+
+test('GCS: execução normal registra zero conflitos de cursor',async()=>{
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    const id='cobranca-cursor-sem-disputa-0001';
+    h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+        versao:1,operacaoId:id,email:EMAIL.toLowerCase(),
+        inputTokens:500,outputTokens:0,criadoEm:new Date().toISOString(),
+    }));
+    const result=await h.api.recuperarCobrancasPendentes(1);
+    assert.equal(result.conflitosCursor,0);
+    assert.equal(result.falhas,0);
 });
