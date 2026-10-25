@@ -1,7 +1,7 @@
 /** Análise visual sob demanda: screenshot isolado -> Gemini Flash -> cobrança.
  * Nunca expõe PNG/Base64 no HTTP público e nunca faz captura implícita no chat.
  */
-import { randomUUID } from 'node:crypto';
+declare function require(name: string): { randomUUID(): string };
 
 interface ScreenshotVisual {
     mimeType: string;
@@ -102,7 +102,7 @@ export function criarHandlerVisual(deps: DependenciasVisual) {
             const tokens = resposta.tokens;
             const input = Number.isSafeInteger(tokens?.input) && tokens.input > 0 ? tokens.input : 16000;
             const output = Number.isSafeInteger(tokens?.output) && tokens.output > 0 ? tokens.output : 1024;
-            await deps.debitarCreditos(email, input, output, randomUUID());
+            await deps.debitarCreditos(email, input, output, require('node:crypto').randomUUID());
             return res.status(200).json({
                 ok: true,
                 analise: resposta.texto.slice(0, 8000),
