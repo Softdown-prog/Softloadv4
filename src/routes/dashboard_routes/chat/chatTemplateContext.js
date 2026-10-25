@@ -31,6 +31,7 @@ async function buscarContextoTemplate(email) {
 function montarContextoTemplate(data) {
     const cor = COLOR_PRESETS[data.colorPreset] || COLOR_PRESETS['tech-blue'];
     return `
+
 ## CONTEXTO DO TEMPLATE ATIVO DO USUÁRIO
 Blog: ${data.siteName || 'sem nome'}
 Paleta: ${data.colorPreset} (${cor.label})
@@ -39,6 +40,7 @@ Paleta: ${data.colorPreset} (${cor.label})
   - Fundo do card: ${cor.cardBg}
   - Texto principal: ${cor.textMain}
   - Rodapé: ${cor.footerBg}
+
 Ao gerar CSS ou JS, use estas cores exatas. Adapte bordas e sombras ao estilo visual do template.`;
 }
 // Detecta se a mensagem pede geração de código ou personalização visual.
