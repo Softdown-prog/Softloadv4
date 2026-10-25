@@ -68,6 +68,9 @@ export default function Solaris(): React.JSX.Element {
     const [githubBusy, setGithubBusy] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const chatFeedRef = useRef<HTMLDivElement | null>(null);
+    // O streaming acompanha a conversa somente enquanto o leitor estiver no fim.
+    const shouldFollowRef = useRef(true);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -144,7 +147,8 @@ export default function Solaris(): React.JSX.Element {
 
     // Rolar até a mensagem mais recente
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const feed = chatFeedRef.current;
+        if (feed && shouldFollowRef.current) feed.scrollTop = feed.scrollHeight;
     }, [messages, statusText, statusHistory]);
 
     const carregarCreditos = async (): Promise<void> => {
@@ -176,6 +180,7 @@ export default function Solaris(): React.JSX.Element {
 
     const iniciarNovaConversa = (): void => {
         if (loading) return;
+        shouldFollowRef.current = true;
         setMessages([]);
         setSessionId(null);
         setStatusHistory([]);
@@ -192,6 +197,7 @@ export default function Solaris(): React.JSX.Element {
                 const data = await res.json() as ChatHistoryResponse;
                 if (data.session) {
                     setSessionId(sessId);
+                    shouldFollowRef.current = true;
                     setMessages(data.session.messages || []);
                                 setStatusHistory([]);
                     setStatusText('');
@@ -358,6 +364,7 @@ export default function Solaris(): React.JSX.Element {
 
         // Adicionar mensagem do usuário
         const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
+        shouldFollowRef.current = true;
         setMessages(updatedHistory);
 
         const requestId = crypto.randomUUID(); // identificador estável deste envio HTTP
@@ -548,7 +555,12 @@ export default function Solaris(): React.JSX.Element {
             </div>
 
             {/* Corpo de Mensagens */}
-            <div className="sl-conversation__feed flex-grow-1 p-3 p-md-4">
+            <div className="sl-conversation__feed flex-grow-1 p-3 p-md-4"
+                ref={chatFeedRef}
+                onScroll={() => {
+                    const feed = chatFeedRef.current;
+                    if (feed) shouldFollowRef.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight <= 120;
+                }}>
                 <div className="sl-conversation__content d-flex flex-column gap-4 pb-4">
                     {messages.length === 0 ? (
                         <div className="sl-conversation__welcome d-flex flex-column align-items-center justify-content-center text-center py-5">
