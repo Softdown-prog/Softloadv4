@@ -8,7 +8,7 @@ import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
     Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, Camera, 
-    ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
+    ArrowRight, ArrowDown, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
 
@@ -69,11 +69,21 @@ export default function Solaris(): React.JSX.Element {
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const chatFeedRef = useRef<HTMLDivElement | null>(null);
+    const [showJumpToLatest, setShowJumpToLatest] = useState(false);
     // O streaming acompanha a conversa somente enquanto o leitor estiver no fim.
     const shouldFollowRef = useRef(true);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     const drawerRef = useRef<HTMLDivElement | null>(null);
+
+    // Retomar a leitura no fim sem alterar a posição enquanto o usuário lê mensagens antigas.
+    const scrollToLatest = (): void => {
+        shouldFollowRef.current = true;
+        setShowJumpToLatest(false);
+        setShowJumpToLatest(false);
+        const feed = chatFeedRef.current;
+        if (feed) feed.scrollTop = feed.scrollHeight;
+    };
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
@@ -181,6 +191,7 @@ export default function Solaris(): React.JSX.Element {
     const iniciarNovaConversa = (): void => {
         if (loading) return;
         shouldFollowRef.current = true;
+        setShowJumpToLatest(false);
         setMessages([]);
         setSessionId(null);
         setStatusHistory([]);
@@ -198,6 +209,7 @@ export default function Solaris(): React.JSX.Element {
                 if (data.session) {
                     setSessionId(sessId);
                     shouldFollowRef.current = true;
+                    setShowJumpToLatest(false);
                     setMessages(data.session.messages || []);
                                 setStatusHistory([]);
                     setStatusText('');
@@ -365,6 +377,7 @@ export default function Solaris(): React.JSX.Element {
         // Adicionar mensagem do usuário
         const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         shouldFollowRef.current = true;
+        setShowJumpToLatest(false);
         setMessages(updatedHistory);
 
         const requestId = crypto.randomUUID(); // identificador estável deste envio HTTP
@@ -555,11 +568,16 @@ export default function Solaris(): React.JSX.Element {
             </div>
 
             {/* Corpo de Mensagens */}
-            <div className="sl-conversation__feed flex-grow-1 p-3 p-md-4"
+            <div className="sl-conversation__feed-shell d-flex flex-column flex-grow-1">
+                <div className="sl-conversation__feed flex-grow-1 p-3 p-md-4"
                 ref={chatFeedRef}
                 onScroll={() => {
                     const feed = chatFeedRef.current;
-                    if (feed) shouldFollowRef.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight <= 120;
+                    if (feed) {
+                        const nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight <= 120;
+                        shouldFollowRef.current = nearBottom;
+                        setShowJumpToLatest(!nearBottom);
+                    }
                 }}>
                 <div className="sl-conversation__content d-flex flex-column gap-4 pb-4">
                     {messages.length === 0 ? (
@@ -583,7 +601,7 @@ export default function Solaris(): React.JSX.Element {
                                 Crie landing pages, analise códigos, estruture layouts modernos de Blogger/XML ou explore ideias inovadoras.
                             </p>
                             
-                            <div className="d-flex flex-column gap-2 w-100" style={{ maxWidth: '420px' }}>
+                            <div className="sl-conversation__suggestions d-grid gap-2 w-100" style={{ maxWidth: '620px' }}>
                                 {suggestions.map((s, idx) => (
                                     <button 
                                         key={idx}
@@ -687,6 +705,18 @@ export default function Solaris(): React.JSX.Element {
                     
                     <div ref={messagesEndRef} />
                 </div>
+                </div>
+                {showJumpToLatest && messages.length > 0 && (
+                    <button
+                        type="button"
+                        className="sl-conversation__jump"
+                        onClick={scrollToLatest}
+                        aria-label="Ir para a mensagem mais recente"
+                    >
+                        <ArrowDown size={16} aria-hidden="true" />
+                        <span>Última mensagem</span>
+                    </button>
+                )}
             </div>
 
             {/* Input e Controles de Chat */}

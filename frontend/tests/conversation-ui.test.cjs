@@ -47,3 +47,23 @@ test('Solaris, Blogger e Workspace mantêm integração SSE e controles acessív
       name+' usa scroll global ao receber chunks');
   }
 });
+
+
+test('retorno à mensagem mais recente aparece ao subir no histórico sem quebrar o streaming',()=>{
+  for(const {name,file} of pages){
+    const source=fs.readFileSync(path.join(root,file),'utf8');
+    for(const term of [
+      'sl-conversation__feed-shell',
+      'showJumpToLatest && messages.length > 0',
+      'setShowJumpToLatest(!nearBottom)',
+      'onClick={scrollToLatest}',
+      'aria-label="Ir para a mensagem mais recente"',
+      'feed.scrollTop = feed.scrollHeight',
+      'setShowJumpToLatest(false)',
+      'sl-conversation__suggestions',
+    ]) assert.ok(source.includes(term),name+' não implementou retorno ou sugestões: '+term);
+  }
+  for(const term of ['.sl-conversation__jump','.sl-conversation__feed-shell','.sl-conversation__suggestions']){
+    assert.ok(css.includes(term),'CSS de melhoria visual ausente: '+term);
+  }
+});
