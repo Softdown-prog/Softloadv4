@@ -54,6 +54,9 @@ on:
       - 'scripts/ragOrganizarRascunhos.js'
       - 'scripts/ragOrganizarRascunhos.test.js'
       - 'tsconfig.json'
+      - 'tsconfig.frontend.json'
+      - 'frontend/**'
+      - 'vite.config.js'
       - 'scripts/typescript-mirror-sources.json'
       - 'scripts/check-typescript-mirrors.js'
       - 'scripts/check-typescript-mirrors.ts'
@@ -138,6 +141,12 @@ jobs:
         run: node --test scripts/fixImplCssVars.test.js
       - name: Testar autoauditoria de espelhos TypeScript (arquivos temporários)
         run: node --test scripts/check-typescript-mirrors.test.js
+      - name: Testar contratos da base React em ambientes simulados
+        run: npm run test:frontend-base
+      - name: Verificar TypeScript do frontend React
+        run: npm run typecheck:frontend
+      - name: Compilar frontend React pelo Vite
+        run: npm run build
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

@@ -138,3 +138,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `npm run typecheck` continua **somente leitura**: acusa divergências ou erros de transpile sem corrigir nada automaticamente. `npm run sync:typescript` mantém `--write` explícito para atualização dos espelhos.
 - `node --test scripts/check-typescript-mirrors.test.js` testa 7 cenários em diretórios temporários (arquivo válido, divergência, ausente, escrita explícita, erro TypeScript e processamento de múltiplas fontes), sem modificar os espelhos da aplicação.
 - Os seis exemplos `src/solaris/code-examples/javascript/*.js` permanecem intencionalmente em JavaScript para os exemplos pedagógicos do Solaris Code.
+
+## Frontend React — etapa 1: serviços, preferências e hooks
+
+- Arquivos `frontend/services/api.js`, `frontend/utils/accessibilityPrefs.js`, `frontend/hooks/useFocusTrap.js` e `frontend/hooks/useHeroEntrance.js` foram **substituídos** pelas fontes `.ts`, sem espelhos CommonJS. Os imports no React continuam sem extensão e o Vite resolve automaticamente `.ts`.
+- `tsconfig.frontend.json` mantém uma checagem `strict` independente do `tsconfig.json` do Node, com bibliotecas DOM, JSX para React e suporte temporário a JS/JSX ainda não migrados. A cada etapa, novas fontes `.tsx`/`.ts` entram neste escopo.
+- `npm run typecheck:frontend` verifica tipos; `npm run build` recompila o frontend no Vite. A build em CI não altera os bundles versionados nem roda o servidor; o deploy continua responsável pelos assets finais.
+- `npm run test:frontend-base` usa mocks e JavaScript compilado em memória para validar GET de configuração, fallback de rede, persistência de preferências, controle de foco/Escape e acessibilidade com redução de movimento, sem navegador externo.
+- Preservada a política de imports dinâmicos para GSAP/ScrollTrigger; nenhuma mudança no contrato de login, dados de usuários, sessão ou cobranças.

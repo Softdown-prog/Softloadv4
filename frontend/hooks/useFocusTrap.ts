@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 const SELETOR_FOCAVEL = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function elementosFocaveis(container) {
-    return Array.from(container.querySelectorAll(SELETOR_FOCAVEL))
+function elementosFocaveis(container: HTMLElement): HTMLElement[] {
+    return Array.from(container.querySelectorAll<HTMLElement>(SELETOR_FOCAVEL))
         .filter(el => el.offsetParent !== null);
 }
 
@@ -11,17 +11,17 @@ function elementosFocaveis(container) {
 // abertos condicionalmente (não usam <dialog> nativo). onClose deve ser
 // estável (useCallback ou função definida fora do render) para não
 // reabrir o efeito a cada render.
-export default function useFocusTrap(containerRef, isOpen, onClose) {
+export default function useFocusTrap(containerRef: RefObject<HTMLElement | null>, isOpen: boolean, onClose: () => void): void {
     useEffect(() => {
         if (!isOpen) return;
         const container = containerRef.current;
         if (!container) return;
 
-        const elementoAnterior = document.activeElement;
+        const elementoAnterior = document.activeElement as HTMLElement | null;
         const focaveis = elementosFocaveis(container);
         (focaveis[0] || container).focus();
 
-        function handleKeyDown(e) {
+        function handleKeyDown(e: KeyboardEvent) {
             if (e.key === 'Escape') {
                 onClose();
                 return;

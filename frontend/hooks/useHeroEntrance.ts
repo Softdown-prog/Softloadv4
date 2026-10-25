@@ -13,7 +13,7 @@ import { useEffect, useRef } from 'react';
 // e só é removida aqui, depois que os nós já existem no DOM e o GSAP já
 // carregou. Isso evita o flash que existiria se a remoção da classe
 // dependesse só do timing do import() dinâmico.
-export default function useHeroEntrance(onEntranceDone) {
+export default function useHeroEntrance(onEntranceDone: () => void): void {
     const disparadoRef = useRef(false);
 
     useEffect(() => {
@@ -39,12 +39,12 @@ export default function useHeroEntrance(onEntranceDone) {
         }
 
         let cancelado = false;
-        let cleanupGsap = null;
+        const cleanupGsap = { current: null as (() => void) | null };
 
         import('gsap').then(async ({ gsap }) => {
             if (cancelado) return;
 
-            let ScrollTrigger = null;
+            let ScrollTrigger: typeof import('gsap/ScrollTrigger').ScrollTrigger | null = null;
             try {
                 const mod = await import('gsap/ScrollTrigger');
                 ScrollTrigger = mod.ScrollTrigger;
@@ -54,9 +54,9 @@ export default function useHeroEntrance(onEntranceDone) {
             }
             if (cancelado) return;
 
-            const linhas = gsap.utils.toArray('[data-hero-line]');
-            const chips = gsap.utils.toArray('[data-hero="chips"] .chip-item');
-            const painel = document.querySelector('[data-hero="panel"]');
+            const linhas = gsap.utils.toArray<HTMLElement>('[data-hero-line]');
+            const chips = gsap.utils.toArray<HTMLElement>('[data-hero="chips"] .chip-item');
+            const painel = document.querySelector<HTMLElement>('[data-hero="panel"]');
 
             gsap.set(linhas, { yPercent: 110 });
             gsap.set('[data-hero="badge"], [data-hero="lead"], [data-hero="cta"], [data-hero="trust"]', { opacity: 0, y: 24 });
@@ -93,7 +93,7 @@ export default function useHeroEntrance(onEntranceDone) {
             }
 
             if (ScrollTrigger) {
-                gsap.utils.toArray('.feat-card').forEach(function (card) {
+                gsap.utils.toArray<HTMLElement>('.feat-card').forEach(function (card) {
                     gsap.from(card, {
                         opacity: 0,
                         y: 60,
@@ -103,7 +103,7 @@ export default function useHeroEntrance(onEntranceDone) {
                 });
             }
 
-            cleanupGsap = () => {
+            cleanupGsap.current = () => {
                 tl.kill();
                 if (ScrollTrigger) ScrollTrigger.getAll().forEach(st => st.kill());
             };
@@ -122,7 +122,7 @@ export default function useHeroEntrance(onEntranceDone) {
             cancelado = true;
             clearTimeout(failsafeRevelar);
             clearTimeout(failsafeDemo);
-            if (cleanupGsap) cleanupGsap();
+            if (cleanupGsap.current) cleanupGsap.current();
         };
     }, [onEntranceDone]);
 }
