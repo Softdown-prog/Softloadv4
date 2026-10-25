@@ -188,7 +188,8 @@
     "scripts/audit-template-fidelity.ts",
     "scripts/generateBlocks.ts",
     "scripts/appendBlocks.ts",
-    "scripts/fixImplCssVars.ts"
+    "scripts/fixImplCssVars.ts",
+    "scripts/check-typescript-mirrors.ts"
   ],
   "exclude": [
     "node_modules",

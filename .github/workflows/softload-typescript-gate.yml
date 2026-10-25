@@ -56,6 +56,8 @@ on:
       - 'tsconfig.json'
       - 'scripts/typescript-mirror-sources.json'
       - 'scripts/check-typescript-mirrors.js'
+      - 'scripts/check-typescript-mirrors.ts'
+      - 'scripts/check-typescript-mirrors.test.js'
       - 'scripts/audit-typescript-migration.js'
       - 'scripts/vendorAssets.ts'
       - 'scripts/vendorAssets.js'
@@ -132,6 +134,8 @@ jobs:
         run: node --test scripts/appendBlocks.test.js
       - name: Testar atualizador CSS Vars sem Gemini real
         run: node --test scripts/fixImplCssVars.test.js
+      - name: Testar autoauditoria de espelhos TypeScript (arquivos temporários)
+        run: node --test scripts/check-typescript-mirrors.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

@@ -130,3 +130,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Por segurança de custos, executar a CLI sem argumentos ou com `--dry-run` **não chama Gemini nem altera o disco**. Para efetivar mudanças, usar `node scripts/fixImplCssVars.js --apply [nicho]`, com custo de API conforme provedor.
 - O fluxo real preserva a extração recursiva de CSS, cardinalidade do retorno, substituições por caminho, backoff contra 429 e a manutenção de campos não-CSS.
 - `node --test scripts/fixImplCssVars.test.js` verifica todos esses contratos com Gemini e FS em memória, sem chaves reais nem alterações em temas.
+
+## Lote — autoverificador de espelhos CommonJS
+
+- `scripts/check-typescript-mirrors.ts` agora é a fonte TypeScript autoritativa do próprio auditor de espelhos. O arquivo `scripts/check-typescript-mirrors.js` é o executável CommonJS produzido por `typescript.transpileModule` e entra no próprio registro auditado.
+- `verificarEspelhos` recebe diretório, lista de fontes, sistema de arquivos e compilador injetáveis para permitir testes independentes; por padrão, mantém a comparação byte a byte com TypeScript ES2022/CommonJS.
+- `npm run typecheck` continua **somente leitura**: acusa divergências ou erros de transpile sem corrigir nada automaticamente. `npm run sync:typescript` mantém `--write` explícito para atualização dos espelhos.
+- `node --test scripts/check-typescript-mirrors.test.js` testa 7 cenários em diretórios temporários (arquivo válido, divergência, ausente, escrita explícita, erro TypeScript e processamento de múltiplas fontes), sem modificar os espelhos da aplicação.
+- Os seis exemplos `src/solaris/code-examples/javascript/*.js` permanecem intencionalmente em JavaScript para os exemplos pedagógicos do Solaris Code.
