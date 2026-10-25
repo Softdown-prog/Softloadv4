@@ -133,6 +133,28 @@ try {
     registry([source, aiSource, solarisSource, vendorSource, knowledgeSource]);
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
+    // Serviços do backend também exigem fonte TS, registro e espelho.
+    const serviceSource = 'src/services/buildInfo.ts';
+    const serviceMirror = 'src/services/buildInfo.js';
+    write(serviceSource, 'export const gitSha: string = "abc";');
+    write(serviceMirror, '"use strict";');
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Fonte TypeScript não registrada: ' + serviceSource)));
+    registry([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource]);
+    config([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource]);
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true, 'src/services deve ser auditado e registrado');
+    assert.equal(report.summary.fontesTypeScript, 6);
+    fs.unlinkSync(path.join(root, serviceMirror));
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Espelho CommonJS ausente: ' + serviceMirror)));
+    write(serviceMirror, '"use strict";');
+    config([source, aiSource, solarisSource, vendorSource, knowledgeSource]);
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Fonte TS fora de tsconfig.include: ' + serviceSource)));
+    config([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource]);
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true);
     console.log('✅ Auditoria TypeScript: registro, tsconfig, espelhos e arquivos legados.');
 } finally {
     fs.rmSync(root, {recursive:true,force:true});

@@ -1424,3 +1424,22 @@ para imutabilidade, coleções e caminhos exclusivos, rejeição de
 configurações duplicadas ou malformadas e bloqueio de intenções genéricas
 Blogger na seleção do corpus de código. O Gate TypeScript continua
 executando as regressões completas de fronteiras entre RAGs.
+
+## Etapa 82 — informações de build do backend em TypeScript
+
+`src/services/buildInfo.ts` é a fonte tipada, com
+`src/services/buildInfo.js` emitido como espelho CommonJS. Mantêm-se
+os três nomes exportados pelos serviços (`gitSha`, `gitDate` e
+`buildTime`): leitura dos arquivos `GIT_SHA`, `GIT_DATE` e
+`BUILD_TIME` gerados no Docker, sem dependência de rede ou APIs.
+
+Em desenvolvimento local ou diante de arquivos ausentes/inacessíveis,
+`gitSha` permanece `dev-local` e os campos de data são `null`.
+`src/services/buildInfo.test.js` valida a leitura e os fallbacks com
+sistema de arquivos simulado, sem alterar arquivos reais.
+
+A auditoria de migração agora inclui também `src/services`:
+fontes TypeScript no diretório requerem entrada no manifesto, inclusão
+no typecheck estrito e espelho JS correspondente. A regressão
+`src/core/typescriptMigrationAudit.test.js` cobre fontes e espelhos
+ausentes nessa nova pasta. O Gate executa os testes sem acessar a VPS.

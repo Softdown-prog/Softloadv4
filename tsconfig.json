@@ -190,7 +190,8 @@
     "scripts/appendBlocks.ts",
     "scripts/fixImplCssVars.ts",
     "scripts/check-typescript-mirrors.ts",
-    "src/knowledge/ragNamespaces.ts"
+    "src/knowledge/ragNamespaces.ts",
+    "src/services/buildInfo.ts"
   ],
   "exclude": [
     "node_modules",
