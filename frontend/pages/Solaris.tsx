@@ -8,7 +8,7 @@ import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
     Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, Camera, 
-    ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, Github, Shapes
+    ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
 
@@ -656,7 +656,7 @@ export default function Solaris(): React.JSX.Element {
                                         aria-pressed={activeTool === 'github'}
                                         disabled={loading || uploading}
                                         onClick={() => { setActiveTool('github'); setToolError(''); }}>
-                                        <Github size={14} className="me-1" /> GitHub
+                                        <GitBranch size={14} className="me-1" /> GitHub
                                     </button>
                                     <button type="button" className={`btn btn-sm ${activeTool === 'none' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'none'}
