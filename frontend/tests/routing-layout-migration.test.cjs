@@ -119,6 +119,7 @@ test('terminal animado preserva acessibilidade, temporizadores e cancelamento', 
   assert.match(demo, /const DEMOS: readonly DemoConversation\[\]/);
   assert.match(demo, /clearAll\(\)/);
   assert.match(demo, /cancelado = true/);
+  assert.match(demo, /if \(!chatArea \|\| !inputEl \|\| !indicators\) return;/);
   assert.match(demo, /addEventListener\('keydown'/);
   assert.match(demo, /e\.key === 'Enter' \|\| e\.key === ' '/);
   assert.match(demo, /role', 'button'/);
