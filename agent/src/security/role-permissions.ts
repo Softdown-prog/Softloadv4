@@ -1,6 +1,3 @@
-import type { Permissions } from "./permissions.js";
-import type { CommandPolicy } from "./command-policy.js";
-
 export interface RoleSecurityPreset {
   permissions: Permissions;
   commandPolicy: CommandPolicy;
