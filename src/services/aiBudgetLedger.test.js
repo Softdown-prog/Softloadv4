@@ -17,11 +17,17 @@ function banco() {
             doc(docId) {return {id:docId,key:prefix+docId};},
             orderBy(field, direction) {
               assert.equal(field,'criadoEm');assert.equal(direction,'desc');
-              return {limit(n) {return {async get() {
-                const found=[...docs.entries()].filter(([k])=>k.startsWith(prefix))
-                  .sort((a,b)=>b[1].criadoEm.localeCompare(a[1].criadoEm)).slice(0,n);
-                return {docs:found.map(([k,v])=>({id:k.slice(prefix.length),data:()=>structuredClone(v)}))};
-              }}}};
+              return {
+                limit(n) {
+                  return {
+                    async get() {
+                      const found = [...docs.entries()].filter(([k]) => k.startsWith(prefix))
+                        .sort((a,b) => b[1].criadoEm.localeCompare(a[1].criadoEm)).slice(0, n);
+                      return { docs: found.map(([k,v]) => ({id:k.slice(prefix.length),data:() => structuredClone(v)})) };
+                    },
+                  };
+                },
+              };
             },
           };
         }};
