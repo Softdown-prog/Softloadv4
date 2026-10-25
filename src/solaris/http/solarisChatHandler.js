@@ -46,7 +46,6 @@ function criarHandlerChatSolaris(deps) {
                 });
             }
         }
-
         res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
         res.setHeader('Cache-Control', 'no-cache, no-transform');
         res.setHeader('X-Accel-Buffering', 'no');
