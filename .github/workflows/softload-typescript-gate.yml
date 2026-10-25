@@ -168,6 +168,8 @@ jobs:
           node --test src/services/aiBudgetGeminiClient.test.js
           node --test src/services/aiBudgetLedger.test.js
           node --test src/services/aiCreditsV2.test.js
+          node --test src/services/aiCreditsV2Mode.test.js
+          node --test src/services/aiCreditsV2Http.test.js
       - name: Testar SMTP Resend e templates sem envio real
         run: node --test src/services/emailService.contract.test.js
       - name: Testar captura e retenção de erros sem listeners reais
