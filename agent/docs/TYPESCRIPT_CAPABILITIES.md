@@ -24,8 +24,10 @@ esses imports nem exige um loader TypeScript em produção.
   repositório raiz, não dependências de produção do Worker.
 - O workflow do Agent executa os testes de runtime **após** essa compilação.
   Assim, ele verifica código JavaScript realmente gerado das fontes TS.
-  O Docker da VPS ainda utiliza os arquivos `.js` existentes até a etapa
-  separada de integração no empacotamento da imagem.
+  Na publicação do Agent, o GitHub Actions recompila os 23 `.ts`,
+  sobrescreve os `.js` **apenas no checkout temporário** e então monta a
+  imagem Docker. A VPS recebe somente a imagem pronta, sem TypeScript nem
+  compilação adicional. A execução permanece em Node 22 ESM.
 
 ## Módulos tipados nesta rodada
 
@@ -87,9 +89,12 @@ npm run build:agent:capabilities  # somente em checkout descartável
 cd agent && npm ci && npm test
 ```
 
-O workflow `Solaris Agent - TypeScript capabilities` executa esse gate
-em todo push que altere capabilities. O workflow principal de deploy
-também roda `npm run typecheck`, que inclui este gate.
+O workflow `Solaris Agent - TypeScript capabilities` executa o gate,
+compila os `.ts` e testa os `.js` gerados. O deploy principal valida o
+TypeScript e, **somente quando o Agent precisa ser reconstruído**, recompila
+os módulos TS no runner do GitHub antes de executar `docker build`:
+assim, o Docker já recebe JavaScript ESM pronto. O container final não
+instala TypeScript ou acorn como dependências de compilação.
 
 Os demais módulos JS permanecem em funcionamento. Migrá-los requer
 contratos explícitos próprios, testes preservados e verificação de AST.

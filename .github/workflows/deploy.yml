@@ -142,6 +142,24 @@ jobs:
       - name: Prepare Agent native source
         if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
         run: node agent/scripts/vendorPowerUp.js
+      # Compilacao acontece no GitHub-hosted runner, NAO na VPS e NAO
+      # dentro da imagem do Worker. A imagem usa apenas ESM JavaScript.
+      - name: Setup Node for Agent TypeScript compilation
+        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Generate Agent runtime JavaScript from TypeScript
+        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          # Usa o lockfile da raiz. O codigo TS do Agent requer apenas
+          # TypeScript e acorn; ignora postinstall durante essa etapa.
+          npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+          npm run typecheck:agent
+          npm run build:agent:capabilities
       - name: Build versioned image
         if: steps.changes.outputs.changed == 'true'
         run: docker build -t softload-${{ matrix.service }}:${{ github.sha }} -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
