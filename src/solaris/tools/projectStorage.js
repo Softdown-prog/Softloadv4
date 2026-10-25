@@ -263,10 +263,9 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
                 versaoAtiva: versao,
             };
             if (oldTracking) {
-                await liberarCota(oldTracking.email, tamanhoAtivoAnterior,
-                    _operacaoCota('replace-credit', uid, sessionId, oldManifest.versao || oldManifest.criadoEm),
-                    { ref: trackingRef, data: updatedTracking });
-            } else {
+                await liberarCota(oldTracking.email, tamanhoAtivoAnterior, _operacaoCota('replace-credit', uid, sessionId, oldManifest.versao || oldManifest.criadoEm), { ref: trackingRef, data: updatedTracking });
+            }
+            else {
                 await trackingRef.set(updatedTracking);
             }
         }
@@ -366,10 +365,9 @@ async function _apagarProjetoComBloqueio(uid, sessionId) {
         const { email, tamanhoBytes } = data;
         if (email && tamanhoBytes) {
             // Firestore transaction commits credit + receipt + tracking deletion.
-            await liberarCota(email, tamanhoBytes,
-                _operacaoCota('delete-credit', uid, sessionId, data.versaoAtiva || data.criadoEm),
-                { ref: trackingRef, data: null });
-        } else {
+            await liberarCota(email, tamanhoBytes, _operacaoCota('delete-credit', uid, sessionId, data.versaoAtiva || data.criadoEm), { ref: trackingRef, data: null });
+        }
+        else {
             await trackingRef.delete();
         }
     }
