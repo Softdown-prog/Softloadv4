@@ -237,6 +237,14 @@ esses imports nem exige um loader TypeScript em produção.
   esgotamento das tentativas; nenhuma política do Validador foi
   ampliada e não são introduzidos comandos novos.
 
+## Delegação tipada de subagentes
+
+- `agent/src/agent-dispatch-capability.ts` declara os contratos
+  `agent.dispatch` e os handlers registrados por papel, preservando
+  a verificação de permissões antes de qualquer dispatch.
+- Os testes verificam rejeição de papéis desconhecidos, passagem do
+  payload e propagação de falhas do subagente ao executor central.
+
 ## Como validar
 
 ```bash

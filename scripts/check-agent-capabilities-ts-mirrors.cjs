@@ -63,6 +63,7 @@ const sources = [
   "agent/src/notifications/webhook-delivery.ts",
   "agent/src/orchestration/git-worktree-pool.ts",
   "agent/src/orchestration/coder-validator-loop.ts",
+  "agent/src/agent-dispatch-capability.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
