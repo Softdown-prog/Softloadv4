@@ -26,7 +26,9 @@
     "frontend/App.tsx",
     "frontend/layouts/DashboardLayout.tsx",
     "frontend/layouts/AdminLayout.tsx",
-    "frontend/layouts/PublicLayout.tsx"
+    "frontend/layouts/PublicLayout.tsx",
+    "frontend/components/Pill.tsx",
+    "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [
     "node_modules",

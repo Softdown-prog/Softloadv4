@@ -54,6 +54,7 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/layouts/PublicLayout.tsx',
     'frontend/layouts/AdminLayout.tsx',
     'frontend/layouts/DashboardLayout.tsx',
+    'frontend/components/Pill.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);

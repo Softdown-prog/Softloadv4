@@ -153,3 +153,9 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - O Vite passa a compilar `frontend/main.tsx` preservando o destino `public/dist`, as rotas existentes e a inicialização das preferências de acessibilidade antes do primeiro render.
 - `DashboardLayout` e `AdminLayout` usam contrato tipado `AppConfig` para a configuração carregada de `/api/app-config`. O menu móvel e os ícones usam props React tipadas, mantendo foco, logout e contexto `Outlet`.
 - As cinco fontes entram em `tsconfig.frontend.json` (checagem `strict`). Testes de rotas e layouts verificam os 18 caminhos, os dois índices, o shell público e o contexto das áreas protegidas; o CI continua executando o build Vite e os testes gerais.
+
+### Ajuste de contratos TSX no CI
+
+- O build estrito identificou dois contratos previamente implícitos no JS: `Pill` recebia `style` como prop opcional, mas a inferência de JS o tratava como obrigatório; `react-dom/client` não possuía declaração de tipos no projeto.
+- `frontend/components/Pill.tsx` preserva o visual e os props atuais, tipando `style?: React.CSSProperties` e `children?: React.ReactNode`. O arquivo `.jsx` antigo é removido.
+- `frontend/types/react-dom-client.d.ts` fornece contrato mínimo para `createRoot`, sem alterar dependências/lockfile. Substituir pela tipagem oficial `@types/react-dom` ao atualizar as dependências no futuro.

@@ -1,6 +1,15 @@
 import React from 'react';
 
-const TONES = {
+export interface PillProps {
+    tone?: string;
+    size?: 'xs' | 'sm' | (string & {});
+    uppercase?: boolean;
+    pill?: boolean;
+    className?: string;
+    style?: React.CSSProperties;
+    children?: React.ReactNode;
+}
+const TONES: Record<string, { bg: string; color: string }> = {
     primary: { bg: 'rgba(14,165,233,.15)', color: 'var(--sl-primary)' },
     indigo: { bg: 'rgba(99,102,241,.15)', color: '#818cf8' },
     muted: { bg: 'rgba(255,255,255,.06)', color: 'var(--sl-text-400)' },
@@ -12,7 +21,7 @@ const TONES = {
 // uppercase numa e não noutra). Não substitui .status-badge/.plan-badge do
 // admin (softload.css) — aquele já é um sistema reutilizável próprio, com
 // mapeamento de cor por plano/status.
-export default function Pill({ tone = 'primary', size = 'xs', uppercase = true, pill = true, className = '', style, children }) {
+export default function Pill({ tone = 'primary', size = 'xs', uppercase = true, pill = true, className = '', style, children }: PillProps): React.JSX.Element {
     const t = TONES[tone] || TONES.primary;
     return (
         <span
