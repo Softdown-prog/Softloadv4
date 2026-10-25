@@ -112,7 +112,7 @@ router.get('/api/ai-credits/v2', exigirLogin, criarHandlerResumoCreditosV2({
     consultarSaldo: (email) => livroOrcamento.consultar(email),
 }));
 router.get('/api/ai-credits/v2/history', exigirLogin, criarHandlerHistoricoCreditosV2({
-    listar: (email) => livroOrcamento.listarExtrato(email),
+    listar: (email, cursor) => livroOrcamento.listarExtratoPagina(email, 20, cursor),
 }));
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {

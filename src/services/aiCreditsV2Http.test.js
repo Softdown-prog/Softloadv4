@@ -103,3 +103,44 @@ test('erro de banco não vaza dados; histórico vazio é válido',async()=>{
   assert.equal(r2.statusCode,200);
   assert.equal(r2.body.itens.length,0);
 });
+
+test('extrato paginado preserva cursor do Firestore e consulta apenas email da sessão',async()=>{
+  const receipt='a'.repeat(64),next='f'.repeat(64),emails=[];
+  const handler=criarHandlerHistoricoCreditosV2({
+    habilitado:()=>true,
+    async listar(email,cursor) {
+      emails.push([email,cursor]);
+      return {itens:[{id:receipt,ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',
+        criadoEm:'2026-10-25T10:00:00.000Z',creditos:3,estimado:false,prompt:'NEVER'}],
+        proximoCursor:next};
+    },
+  });
+  const response=res();
+  await handler({...req('owner@example.test'),query:{cursor:receipt,email:'other@example.test'}},response);
+  assert.equal(response.statusCode,200);
+  assert.deepEqual(emails,[['owner@example.test',receipt]]);
+  assert.equal(response.body.proximoCursor,next);
+  assert.equal(response.body.itens[0].prompt,undefined);
+});
+test('cursor malformado falha antes de consultar o Firestore e nao e refletido',async()=>{
+  let calls=0;
+  const h=criarHandlerHistoricoCreditosV2({
+    habilitado:()=>true,async listar(){calls++;return [];},
+  });
+  for(const cursor of ['../history','',42,{},'A'.repeat(64)]) {
+    const response=res();
+    await h({...req('owner@example.test'),query:{cursor}},response);
+    assert.equal(response.statusCode,400);
+    assert.equal(JSON.stringify(response.body).includes(String(cursor)),false);
+  }
+  assert.equal(calls,0);
+});
+test('cursor de outro ciclo/usuario devolve erro neutro em HTTP 400',async()=>{
+  const h=criarHandlerHistoricoCreditosV2({
+    habilitado:()=>true,async listar(){throw Object.assign(Error('not own data'),{codigo:'CURSOR_INVALIDO'});}
+  });
+  const r=res();
+  await h({...req('owner@example.test'),query:{cursor:'f'.repeat(64)}},r);
+  assert.equal(r.statusCode,400);
+  assert.equal(JSON.stringify(r.body).includes('not own data'),false);
+});

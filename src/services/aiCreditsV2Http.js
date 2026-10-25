@@ -45,8 +45,14 @@ function criarHandlerHistoricoCreditosV2({ listar, habilitado = () => process.en
         }
         if (!habilitado())
             return res.status(404).json({ erro: 'Extrato indisponível.' });
+        const cursor = req.query?.cursor;
+        if (cursor !== undefined && (typeof cursor !== 'string' || !/^[a-f0-9]{64}$/.test(cursor))) {
+            return res.status(400).json({ erro: 'Cursor de consulta inválido.' });
+        }
         try {
-            const registros = await listar(req.session.user.email);
+            const pagina = await listar(req.session.user.email, cursor);
+            const registros = Array.isArray(pagina) ? pagina : pagina.itens;
+            const proximoCursor = Array.isArray(pagina) ? null : pagina.proximoCursor;
             const itens = registros.slice(0, 40).map(r => ({
                 id: r.id,
                 ferramenta: r.ferramenta,
@@ -56,12 +62,15 @@ function criarHandlerHistoricoCreditosV2({ listar, habilitado = () => process.en
                 creditos: r.creditos,
                 estimado: r.estimado,
             }));
-            return res.json({ versao: 2, modo: 'previsualizacao', itens });
+            return res.json({ versao: 2, modo: 'previsualizacao', itens, proximoCursor });
         }
         catch (e) {
             const codigo = e?.codigo;
             if (codigo === 'CICLO_EXPIRADO') {
                 return res.status(402).json({ erro: 'O ciclo de créditos expirou.' });
+            }
+            if (codigo === 'CURSOR_INVALIDO' || codigo === 'CONSULTA_INVALIDA') {
+                return res.status(400).json({ erro: 'Cursor de consulta inválido.' });
             }
             return res.status(503).json({ erro: 'Não foi possível consultar o extrato.' });
         }

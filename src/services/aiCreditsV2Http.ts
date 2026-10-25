@@ -6,6 +6,7 @@ import { converterSaldoEmCreditosV2, type OrcamentoMicroBrl } from './aiCreditsV
 
 export interface RequestCreditosV2 {
     session?: { user?: { email?: string } };
+    query?: { cursor?: unknown };
 }
 export interface ResponseCreditosV2 {
     setHeader(name: string, value: string): unknown;
@@ -66,7 +67,10 @@ export function criarHandlerHistoricoCreditosV2({
     listar,
     habilitado = () => process.env.AI_CREDITS_V2_PREVIEW === 'true',
 }: {
-    listar(email: string): Promise<RegistroPublicoExtratoV2[]>;
+    listar(email: string, cursor?: string): Promise<RegistroPublicoExtratoV2[] | {
+        itens: RegistroPublicoExtratoV2[];
+        proximoCursor: string | null;
+    }>;
     habilitado?: () => boolean;
 }) {
     return async (req: RequestCreditosV2, res: ResponseCreditosV2): Promise<unknown> => {
@@ -75,8 +79,14 @@ export function criarHandlerHistoricoCreditosV2({
             return res.status(401).json({ erro: 'Sessão expirada. Faça login novamente.' });
         }
         if (!habilitado()) return res.status(404).json({ erro: 'Extrato indisponível.' });
+        const cursor = req.query?.cursor;
+        if (cursor !== undefined && (typeof cursor !== 'string' || !/^[a-f0-9]{64}$/.test(cursor))) {
+            return res.status(400).json({ erro: 'Cursor de consulta inválido.' });
+        }
         try {
-            const registros = await listar(req.session.user.email);
+            const pagina = await listar(req.session.user.email, cursor);
+            const registros = Array.isArray(pagina) ? pagina : pagina.itens;
+            const proximoCursor = Array.isArray(pagina) ? null : pagina.proximoCursor;
             const itens = registros.slice(0, 40).map(r => ({
                 id: r.id,
                 ferramenta: r.ferramenta,
@@ -86,11 +96,14 @@ export function criarHandlerHistoricoCreditosV2({
                 creditos: r.creditos,
                 estimado: r.estimado,
             }));
-            return res.json({ versao: 2, modo: 'previsualizacao', itens });
+            return res.json({ versao: 2, modo: 'previsualizacao', itens, proximoCursor });
         } catch (e) {
             const codigo = (e as {codigo?: string} | null)?.codigo;
             if (codigo === 'CICLO_EXPIRADO') {
                 return res.status(402).json({ erro: 'O ciclo de créditos expirou.' });
+            }
+            if (codigo === 'CURSOR_INVALIDO' || codigo === 'CONSULTA_INVALIDA') {
+                return res.status(400).json({ erro: 'Cursor de consulta inválido.' });
             }
             return res.status(503).json({ erro: 'Não foi possível consultar o extrato.' });
         }
