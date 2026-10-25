@@ -33,7 +33,7 @@ const IGNORED_DIRS = new Set(["node_modules", ".git", "vendor", ".artifacts"]);
 
 // Cache do resultado de "rg está disponível?" — checa uma vez por
 // processo, não a cada chamada.
-let ripgrepAvailable = null;
+let ripgrepAvailable: boolean | null = null;
 
 async function isRipgrepAvailable() {
   if (ripgrepAvailable !== null) {
@@ -136,7 +136,7 @@ export class CodeSearchCapability {
       );
     }
 
-    const matches = [];
+    const matches: Array<{ path: string; line: number; text: string }> = [];
 
     for (const line of result.stdout.split("\n")) {
       if (!line.trim()) continue;
@@ -175,7 +175,7 @@ export class CodeSearchCapability {
       throw new Error(`Pattern de busca inválido: ${(error as Error).message}`);
     }
 
-    const matches = [];
+    const matches: Array<{ path: string; line: number; text: string }> = [];
     let truncated = false;
 
     const walk = async (dir: string): Promise<void> => {
