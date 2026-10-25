@@ -21,17 +21,18 @@ let GPT_RAG_FUNDACAO = null; // arquivo de fundação, sempre injetado para GPT
             const keywords = entry.palavras_chave || entry.tags || [];
             GPT_RAG_INDEX.push({ ...entry, _keywords: keywords });
             try {
-                GPT_RAG_CACHE[entry.arquivo] = JSON.parse(
-                    fs.readFileSync(path.join(GPT_RAG_DIR, entry.arquivo), 'utf8')
-                );
-                if (entry.fundacao) GPT_RAG_FUNDACAO = entry.arquivo;
+                GPT_RAG_CACHE[entry.arquivo] = JSON.parse(fs.readFileSync(path.join(GPT_RAG_DIR, entry.arquivo), 'utf8'));
+                if (entry.fundacao)
+                    GPT_RAG_FUNDACAO = entry.arquivo;
                 n++;
-            } catch (e) {
+            }
+            catch (e) {
                 console.warn(`[RAG-GPT] Falha ao carregar ${entry.arquivo}:`, e.message);
             }
         }
         console.log(`[RAG-GPT] gpt-5-4: ${n} ficheiros exclusivos do GPT (fundação: ${GPT_RAG_FUNDACAO || 'nenhuma'})`);
-    } catch (e) {
+    }
+    catch (e) {
         console.warn('[RAG-GPT] pasta gpt-5-4 ausente ou inválida:', e.message);
     }
 })();
@@ -45,7 +46,8 @@ function buscarRagGpt(msg) {
     }
     // Por relevância (exceto a fundação, que já entrou)
     for (const entry of GPT_RAG_INDEX) {
-        if (entry.arquivo === GPT_RAG_FUNDACAO) continue;
+        if (entry.arquivo === GPT_RAG_FUNDACAO)
+            continue;
         const hit = entry._keywords.some(kw => matcher(kw));
         if (hit && GPT_RAG_CACHE[entry.arquivo]) {
             selecionados.push({ arquivo: entry.arquivo, data: GPT_RAG_CACHE[entry.arquivo] });
@@ -56,7 +58,8 @@ function buscarRagGpt(msg) {
 }
 // Formata o conhecimento GPT-exclusivo como contexto do system prompt.
 function montarContextoRagGpt(arquivos) {
-    if (!arquivos.length) return '';
+    if (!arquivos.length)
+        return '';
     const blocos = arquivos.map(({ arquivo, data }) => {
         const label = data.titulo || data.id || arquivo;
         return `\n\n## DIRETRIZ GPT: ${label}\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``;

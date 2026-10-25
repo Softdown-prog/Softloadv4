@@ -21,7 +21,8 @@ async function buscarContextoTemplate(email) {
             siteName: d.siteName || null,
             colorPreset: d.colorPreset || 'tech-blue',
         };
-    } catch (err) {
+    }
+    catch (err) {
         console.warn('[ESPECIALISTA] buscarContextoTemplate err:', err.message);
         return null;
     }
