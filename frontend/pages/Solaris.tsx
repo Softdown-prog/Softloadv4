@@ -7,7 +7,7 @@ import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
-    Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, 
+    Paperclip, History, PlusCircle, Trash2, X, Clipboard, Check, Camera, 
     ArrowRight, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
@@ -27,6 +27,8 @@ interface ChatStreamEvent {
 }
 interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: number }
 interface UploadCandidate { score: number; framework: string; evidencias: string[] }
+interface VisualStatus { enabled: boolean; origins: string[]; maxRequestsPerTenMinutes: number }
+interface VisualResponse { ok?: boolean; analise?: string; error?: string; tokens?: { input: number; output: number } }
 interface UploadResponse {
     ok?: boolean; sessionId?: string; framework?: string; totalArquivos?: number;
     candidatos?: UploadCandidate[]; analiseIA?: string; temProjeto?: boolean; error?: string;
@@ -46,6 +48,11 @@ export default function Solaris(): React.JSX.Element {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [visualOpen, setVisualOpen] = useState(false);
+    const [visualUrl, setVisualUrl] = useState('');
+    const [visualDevice, setVisualDevice] = useState<'desktop' | 'android-mobile'>('desktop');
+    const [visualStatus, setVisualStatus] = useState<VisualStatus | null>(null);
+    const [visualBusy, setVisualBusy] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -66,6 +73,10 @@ export default function Solaris(): React.JSX.Element {
     useEffect(() => {
         carregarCreditos();
         carregarHistorico();
+        fetch('/dashboard/solaris/visual-review/status')
+            .then(async r => r.ok ? await r.json() as VisualStatus : null)
+            .then(status => setVisualStatus(status))
+            .catch(() => setVisualStatus(null));
     }, []);
 
     // Rolar até a mensagem mais recente
@@ -227,10 +238,51 @@ export default function Solaris(): React.JSX.Element {
         }
     };
 
+    const handleVisualReview = async (): Promise<void> => {
+        const url = visualUrl.trim();
+        if (!url || !visualStatus?.enabled || visualBusy || loading || uploading) return;
+        try {
+            const target = new URL(url);
+            if (!['http:', 'https:'].includes(target.protocol)) throw new Error('Endereço inválido');
+        } catch {
+            setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Digite uma URL HTTP ou HTTPS válida para auditar.' }]);
+            return;
+        }
+        setVisualBusy(true);
+        setStatusText('O Solaris está abrindo o site no navegador isolado e analisando o layout...');
+        setMessages(prev => [...prev, { role: 'user', content: `Auditar visualmente ${url} (${visualDevice === 'desktop' ? 'desktop' : 'Android'}).` }]);
+        try {
+            const response = await fetch('/dashboard/solaris/visual-review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, device: visualDevice }),
+            });
+            const data = await response.json() as VisualResponse;
+            if (!response.ok || !data.ok || !data.analise) {
+                const problema = data.error || (response.status === 402 ? 'Saldo insuficiente para análise visual.' : 'A auditoria não pôde ser concluída.');
+                throw new Error(problema);
+            }
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `**Auditoria visual — ${visualDevice === 'desktop' ? 'Desktop' : 'Android'}**\n\n${data.analise}\n\n_Imagem analisada pelo Gemini Flash. O relatório pode ser utilizado nesta conversa para pedir ajustes; nenhum código foi alterado automaticamente._`,
+            }]);
+            setVisualOpen(false);
+            carregarCreditos();
+        } catch (error) {
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `⚠️ A auditoria visual não foi concluída: ${error instanceof Error ? error.message : 'falha de conexão'}`,
+            }]);
+        } finally {
+            setVisualBusy(false);
+            setStatusText('');
+        }
+    };
+
     const handleSend = async (e?: React.FormEvent<HTMLFormElement> | null, textToSend: string | null = null): Promise<void> => {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
-        if (!msg || loading) return;
+        if (!msg || loading || visualBusy) return;
 
         setInput('');
         setLoading(true);
@@ -561,11 +613,65 @@ export default function Solaris(): React.JSX.Element {
             {/* Input e Controles de Chat */}
             <div className="p-3 bg-dark border-top border-secondary flex-shrink-0">
                 <div className="max-w-3xl mx-auto">
+                    <div className="mb-2">
+                        <button
+                            type="button"
+                            className="btn btn-outline-info btn-sm d-flex align-items-center gap-2"
+                            aria-expanded={visualOpen}
+                            onClick={() => setVisualOpen(open => !open)}
+                            disabled={loading || uploading || visualBusy}
+                        >
+                            <Camera size={15} />
+                            Auditar visualmente um site
+                        </button>
+                        {visualOpen && (
+                            <div className="rounded-3 border border-secondary bg-black bg-opacity-50 p-3 mt-2 d-flex flex-column gap-2">
+                                <label htmlFor="solaris-visual-url" className="small text-secondary">URL pública do site ou da prévia</label>
+                                <input
+                                    id="solaris-visual-url"
+                                    type="url"
+                                    maxLength={2048}
+                                    className="form-control bg-dark text-light border-secondary"
+                                    placeholder={visualStatus?.origins?.[0] || 'https://softload.analysepro.com/'}
+                                    value={visualUrl}
+                                    onChange={e => setVisualUrl(e.target.value)}
+                                    disabled={visualBusy}
+                                />
+                                <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                    <select
+                                        aria-label="Dispositivo da captura"
+                                        className="form-select bg-dark text-light border-secondary w-auto"
+                                        value={visualDevice}
+                                        onChange={e => setVisualDevice(e.target.value as 'desktop' | 'android-mobile')}
+                                        disabled={visualBusy}
+                                    >
+                                        <option value="desktop">Desktop</option>
+                                        <option value="android-mobile">Android</option>
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className="btn btn-info btn-sm fw-semibold"
+                                        onClick={handleVisualReview}
+                                        disabled={!visualStatus?.enabled || !visualUrl.trim() || visualBusy || loading || uploading}
+                                    >
+                                        {visualBusy ? 'Analisando...' : 'Auditar agora (usa créditos)'}
+                                    </button>
+                                </div>
+                                <div className="text-secondary" style={{fontSize:'0.7rem'}}>
+                                    {visualStatus === null
+                                        ? 'Consultando disponibilidade do navegador de testes...'
+                                        : !visualStatus.enabled
+                                            ? 'Análise visual indisponível: confira a configuração do sandbox e da chave Gemini no servidor.'
+                                            : `Origens autorizadas: ${visualStatus.origins.join(', ')}. Somente URLs públicas; o relatório não altera os arquivos automaticamente.`}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <form onSubmit={handleSend} className="d-flex gap-2">
                         <button 
                             type="button"
                             onClick={handleUploadClick}
-                            disabled={loading || uploading}
+                            disabled={loading || uploading || visualBusy}
                             className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
                             style={{ width: '46px', height: '46px' }}
                             title="Anexar projeto .zip"
