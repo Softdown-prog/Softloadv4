@@ -21,6 +21,7 @@ const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGemin
 const { modoCreditosSolarisV2, criarGateCreditosSolarisV2, debitoLegadoSolaris } = require('../../services/aiCreditsV2Mode');
 const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = require('../../services/aiCreditsV2Http');
 const { createGithubAppService } = require('../../services/solarisGithubApp');
+const { createGithubOperations, GithubOperationError } = require('../../services/solarisGithubOperations');
 const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
@@ -71,6 +72,7 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 // Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
 const livroOrcamento = criarLivroRazaoIa(db);
 const githubApp = createGithubAppService(db);
+const githubOperations = createGithubOperations(githubApp);
 // A V2, quando explicitamente ativada, consulta o livro-razão antes de enviar
 // ao modelo e não confia no contador legado nem no body HTTP para orçamento.
 const verificarCreditosSolaris = criarGateCreditosSolarisV2({
@@ -173,6 +175,19 @@ router.delete('/dashboard/solaris/github/disconnect', exigirLogin, githubLimiter
     res.set('Cache-Control','no-store, private');
     try { await githubApp.disconnect(req.session.user.uid);return res.json({ok:true}); }
     catch (_) { return res.status(503).json({erro:'Não foi possível desconectar GitHub.'}); }
+});
+
+// Gateway de ferramentas: vinculado ao UID da sessão, nunca aceita token/repo do corpo.
+router.post('/dashboard/solaris/github/action', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try {
+        const result = await githubOperations.execute(req.session.user.uid, req.body);
+        return res.json({ok:true,result});
+    } catch (err) {
+        const status = err instanceof GithubOperationError ? err.status : 503;
+        return res.status(status).json({ok:false,erro:status===503
+            ? 'Serviço GitHub indisponível no momento.' : err.message});
+    }
 });
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {

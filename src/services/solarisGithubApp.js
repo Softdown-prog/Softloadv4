@@ -86,16 +86,26 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
      encrypted:seal(auth.access_token,cfg.key),expires,repository:null,created:new Date().toISOString()});
    return user.login;
   },
+  // Entrega um token somente à função server-side, sem expor para UI ou modelo.
+  async withSelectedRepo(uid,callback){
+   const {record,value}=await token(uid);
+   const repo=normalizarRepositorioGithub(record.repository);
+   if(!repo || repo!==record.repository)throw Error('Vincule um repositório GitHub primeiro.');
+   return callback({repository:repo,accessToken:value});
+  },
   async repoContext(uid,url){
    const repo=normalizarRepositorioGithub(url);
    if(!repo)throw Error('Link GitHub inválido.');
-   const {value}=await token(uid);
-   return contextoRepositorioPublico(repo,{token:value,fetchImpl});
+   return this.withSelectedRepo(uid,async ({repository,accessToken})=>{
+    if(repository.toLowerCase()!==repo.toLowerCase())throw Error('Selecione o repositório vinculado antes de consultar.');
+    return contextoRepositorioPublico(repo,{token:accessToken,fetchImpl});
+   });
   },
   async selectRepo(uid,url){
    const repo=normalizarRepositorioGithub(url);
    if(!repo)throw Error('Informe o link completo do repositório GitHub.');
-   await this.repoContext(uid,repo); // confirma permissão no GitHub antes de salvar
+   const {value}=await token(uid);
+   await contextoRepositorioPublico(repo,{token:value,fetchImpl}); // exige acesso efetivo antes de salvar
    await doc(uid).update({repository:repo});
    return repo;
   },

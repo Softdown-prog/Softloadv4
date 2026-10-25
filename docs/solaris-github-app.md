@@ -1,57 +1,88 @@
-# GitHub App do Solaris — ativação no ambiente
+# GitHub App por usuário — Solaris Code
 
-O menu **Ferramentas > GitHub** usa uma GitHub App **do produto Softload**, nunca a
-conexão GitHub individual de quem desenvolve o produto. Cada cliente da Softload
-autoriza a própria conta, escolhe os repositórios aos quais conceder acesso e
-pode desconectar a integração na interface.
+## Estado
 
-## Cadastro da App
+O botão de Ferramentas > GitHub no Solaris e a autorização OAuth da GitHub App já existiam.
+Esta etapa adiciona o gateway de operações **por conta, por repositório**, sem PAT e
+sem token compartilhado: `src/services/solarisGithubOperations.js`.
+O gateway chama a API REST oficial com o token do usuário, criptografado no Firestore
+pelo serviço `solarisGithubApp.js`. Não há configuração de credenciais no browser.
 
-1. Nas configurações de desenvolvedor do GitHub, criar uma **GitHub App** da Softload.
-2. URL de callback do OAuth (autorização do usuário):
-   `https://softload.analysepro.com/dashboard/solaris/github/callback`.
-3. Setup URL (após instalação): `https://softload.analysepro.com/dashboard/solaris`.
-4. Repository permissions: **Metadata: read**, **Contents: read**.
-   Não conceder Write antes de implementar operações com confirmação.
-5. Habilitar autorização de usuário e, se disponível, tokens de usuário expiráveis.
-6. Configurar na VPS (não no repositório, nem no frontend):
-   - `SOLARIS_GITHUB_APP_CLIENT_ID` — client ID da GitHub App.
-   - `SOLARIS_GITHUB_APP_CLIENT_SECRET` — segredo da GitHub App.
-   - `SOLARIS_GITHUB_APP_SLUG` — slug público da App para instalação no GitHub.
-   - `SOLARIS_GITHUB_ENCRYPTION_KEY` — chave **64 caracteres hexadecimais**
-     gerada aleatoriamente (ex.: `openssl rand -hex 32`), mantida em secret store.
-   - `BASE_URL=https://softload.analysepro.com` — usado para validar origem dos POST/DELETE.
-7. Reiniciar somente a aplicação pelo deploy controlado; validar
-   `GET /dashboard/solaris/github/status` autenticado:
-   `configured: true`. **Nunca expor o client secret ou a chave.**
+**Importante:** criar o GitHub App no GitHub, configurar a instalação e ligar o
+orquestrador de tool-calling do Solaris ao gateway ainda são passos externos/
+posteriores. O chat GitHub, nesta etapa, continua exibindo contexto de leitura.
+Não dizer ao usuário que um commit ocorreu sem que a operação retorne SHA.
 
-## Fluxo no chat
+## Configuração administrativa
 
-- **Criar Assets 2D** ativa as receitas já importadas do A7 Forge 2D. Quando
-  o Gemini solicita execução pelo marcador de geração, o orquestrador valida,
-  renderiza e disponibiliza os arquivos ZIP como já ocorre nos projetos Solaris.
-- **GitHub** permite colocar um link `https://github.com/dono/repo`.
-  Repositório público: a primeira mensagem pode ler nome, descrição, branch,
-  lista limitada da raiz e README, mesmo sem login.
-- Conta GitHub conectada: **Conectar GitHub** inicia OAuth por usuário;
-  **Autorizar repositórios no GitHub** permite instalar a App no repositório
-  desejado; **Vincular repositório** confirma que a API autorizou seu acesso.
-  A seleção fica associada à identidade autenticada no Firestore.
-- A integração GitHub **não publica commits nem PRs nesta fase**. Nunca
-  pedir um token de acesso pessoal no chat. As mensagens e o README são
-  conteúdo externo não confiável; não executar comandos sugeridos por eles.
+1. Em https://github.com/settings/apps crie um GitHub App instalável por qualquer conta.
+2. Callback OAuth: `https://softload.analysepro.com/dashboard/solaris/github/callback`.
+   Não confundir com a URL de instalação do GitHub App.
+3. Permissões do repositório: Metadata read; Contents read/write; Pull requests read/write.
+   Issues e Workflows não são necessárias nesta fase.
+4. Na VPS, defina:
+   - `SOLARIS_GITHUB_APP_CLIENT_ID`
+   - `SOLARIS_GITHUB_APP_CLIENT_SECRET`
+   - `SOLARIS_GITHUB_APP_SLUG`
+   - `SOLARIS_GITHUB_ENCRYPTION_KEY` (32 bytes aleatórios em hexadecimal)
+5. Configure `BASE_URL=https://softload.analysepro.com` para validação de Origin.
+6. Reinicie a aplicação, faça login no Solaris, conecte a conta e instale
+   o GitHub App nos repositórios explicitamente escolhidos.
 
-Segurança: OAuth `state` vinculado à sessão e com prazo, token cifrado AES-256-GCM
-em documento separado por UID, expiração curta, validação de origem mutante,
-acesso limitado à API de GitHub e apenas ao host oficial; o token nunca é
-enviado ao frontend ou ao Gemini. Desconectar elimina a credencial local (para
-revogação definitiva da autorização, o usuário pode fazê-la no GitHub).
-Para criar commits/PRs futuramente: implementar ações explícitas com escopo de
-escrita mínimo, diffs revisáveis e confirmação antes de publicar.
+Segredos: nunca fazer commit dessas variáveis. O OAuth existente armazena
+tokens de usuário com AES-256-GCM no Firestore. Tokens expiram e hoje exigem
+nova autorização; implementação de refresh token é trabalho pendente.
 
-## Testes
+## Contrato HTTP autenticado
 
-`node --test src/services/solarisGithubApp.test.js`
-`node --test src/solaris/http/solarisHttpHandlers.test.js`
-`node --test src/solaris/tools/assetForge.test.js`
-`npm run typecheck:frontend`
+`POST /dashboard/solaris/github/action` (sessão Softload exigida e Origin
+igual ao BASE_URL). Enviar JSON `{ "action": "...", ... }`.
+
+Operações suportadas:
+- `repository_get`: metadados e `canPush` do repositório selecionado.
+- `file_read`: `path`, `branch` opcional. Responde conteúdo de texto e `sha`.
+- `pull_requests_list`: até 20 PRs abertos.
+- `branch_create`: `confirm: true`, `branch: "solaris/minha-tarefa"`,
+  `base` opcional.
+- `file_commit`: `confirm: true`, `path`, `content`, `message`,
+  `branch` opcional; em arquivos existentes exige `expectedSha` retornado
+  por `file_read`. Para escrever na branch principal exige ainda
+  `allowDefaultBranch: true`.
+- `pull_request_create`: `confirm: true`, `head`, `base` opcional,
+  `title`, `body` opcional, `draft` opcional.
+
+Os caminhos são relativos à raiz do repositório vinculado; não existe
+parâmetro para trocar de conta ou de repositório em uma chamada. Arquivos de
+workflows e possíveis chaves/segredos não são alteráveis por este gateway.
+A API aplica limites de 96 KiB para conteúdo de arquivo e tempo de 15 s por
+requisição externa. GitHub pode recusar cada operação conforme as permissões.
+
+Exemplo de leitura (mesmo navegador autenticado):
+```js
+await fetch('/dashboard/solaris/github/action', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ action: 'file_read', path: 'README.md' })
+}).then(r => r.json());
+```
+
+## Pendências para o agente / Codex
+
+- Integrar estas ferramentas ao loop de tool-calling do Solaris/agent com
+  autenticação por usuário, catálogo de ações e confirmação humana de writes.
+  **Não** reutilizar `GITHUB_TOKEN` da VPS nem `MCP_SERVERS_JSON` global
+  para solicitações de clientes diferentes.
+- Se optar pelo GitHub MCP Server oficial, fornecer tokens por sessão no
+  transporte MCP e escopo por usuário/instalação; evitar credenciais estáticas
+  comuns a todos os clientes.
+- Acrescentar UI para diff/preview, aprovação de proposta e exibição de SHA/PR
+  antes de executar commits, sem aceitar `confirm:true` diretamente de texto
+  arbitrário produzido pelo modelo.
+- Melhorar callback de instalação e inventário de repositórios autorizados
+  com paginação; exigir permissão de gravação para cada ação.
+- Implementar refresh/revogação OAuth, expiração de registros no Firestore,
+  testes HTTP autenticados e E2E com GitHub App real (ambiente de teste).
+- Adicionar suporte a commits atômicos de múltiplos arquivos, tratamento
+  de rate limits e reconciliação de conflito de branches.
+
+Execução local dos testes do serviço: `node --test src/services/solarisGithubOperations.test.js`.

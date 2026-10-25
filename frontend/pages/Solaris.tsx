@@ -364,7 +364,7 @@ export default function Solaris(): React.JSX.Element {
         const msg = (textToSend || input).trim();
         if (!msg || loading || visualBusy) return;
         if (activeTool === 'github' && !/^(?:https:\/\/github\.com\/)?[A-Za-z0-9-]{1,39}\/[A-Za-z0-9_.-]{1,100}(?:\.git)?\/?$/.test(githubRepository.trim())) {
-            setToolError('Cole o link do repositório público: https://github.com/dono/repositorio');
+            setToolError('Cole o link do repositório: https://github.com/dono/repositorio');
             return;
         }
         setToolError('');
@@ -735,7 +735,7 @@ export default function Solaris(): React.JSX.Element {
                             </button>
                             {activeTool !== 'none' && (
                                 <span className="badge rounded-pill bg-info bg-opacity-25 text-info">
-                                    {activeTool === 'asset-forge-2d' ? 'Criar Assets 2D ativo' : 'GitHub (público) ativo'}
+                                    {activeTool === 'asset-forge-2d' ? 'Criar Assets 2D ativo' : 'GitHub ativo'}
                                 </span>
                             )}
                         </div>
@@ -771,7 +771,7 @@ export default function Solaris(): React.JSX.Element {
                                 )}
                                 {activeTool === 'github' && (
                                     <div className="d-flex flex-column gap-2">
-                                        <label htmlFor="solaris-github-repo" className="small text-secondary">Link do repositório GitHub público</label>
+                                        <label htmlFor="solaris-github-repo" className="small text-secondary">Link do repositório GitHub</label>
                                         <input id="solaris-github-repo" type="url"
                                             className="form-control form-control-sm bg-dark text-light border-secondary"
                                             placeholder="https://github.com/dono/repositorio"
@@ -814,7 +814,7 @@ export default function Solaris(): React.JSX.Element {
                                         </div>
                                         <p className="small text-secondary mb-0">
                                             {githubStatus?.connected
-                                                ? 'Conta autorizada. Escolha o repositório permitido para receber o contexto no chat. A leitura de privados depende das permissões concedidas à GitHub App; a publicação de commits ainda não está habilitada.'
+                                                ? 'Conta autorizada. Vincule um repositório permitido. O backend já oferece leitura, branches, commits e PRs autenticados, com confirmação de gravação; a execução automática dessas ações pelo chat ainda não está habilitada.'
                                                 : githubStatus?.configured
                                                     ? 'Na primeira conexão, o GitHub pedirá autorização à GitHub App. Depois escolha o repositório. Repositórios públicos também podem ser consultados pelo link sem login.'
                                                     : 'A conexão de contas requer configurar a GitHub App na Softload. Por enquanto, o link de um repositório público funciona para análise em modo somente leitura.'}
