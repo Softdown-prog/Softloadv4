@@ -74,7 +74,7 @@ function criarMonitorRecuperacaoCobrancas({
             const falhas = Math.max(0, Number(recuperacao?.falhas) || 0);
             const amostradas = Math.max(0, Number(fila?.quantidadeAmostrada) || 0);
             const idade = Number(fila?.maisAntigaMs);
-            const maisAntigaMinutos = Number.isFinite(idade) && idade >= 0 ? Math.floor(idade / 60000) : null;
+            const maisAntigaMinutos = fila?.maisAntigaMs != null && Number.isFinite(idade) && idade >= 0 ? Math.floor(idade / 60000) : null;
             const ilegivel = Math.max(0, Number(fila?.ilegivel) || 0);
             resultado = {
                 ...resultado, estado: 'ok',

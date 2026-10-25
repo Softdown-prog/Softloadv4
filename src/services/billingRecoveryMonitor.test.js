@@ -83,3 +83,18 @@ test('não inicia ciclos simultâneos, endpoint administrativo só lê estado',a
     liberar();await running;
     assert.equal(obterStatusRecuperacaoCobrancas().processadas,1);
 });
+
+
+test('fila vazia deixa idade nula',async()=>{
+    const m=criarMonitorRecuperacaoCobrancas({
+        recuperar:async()=>({processadas:0,falhas:0}),
+        inspecionar:async()=>({quantidadeAmostrada:0,amostraLimitada:false,maisAntigaMs:null,ilegivel:0}),
+    });
+    assert.equal((await m.executar()).maisAntigaMinutos,null);
+});
+test('endpoint operacional exige superadmin',()=>{
+    const fs=require('node:fs'),path=require('node:path');
+    const source=fs.readFileSync(path.join(__dirname,'../routes/adminRoutes.js'),'utf8');
+    assert.match(source,/router\.get\('\/eu\/api\/billing\/recuperacao', exigirSuperAdmin/);
+    assert.match(source,/webhookConfigurado: !!process\.env\.BILLING_ALERT_WEBHOOK_URL/);
+});

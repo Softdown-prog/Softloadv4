@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const { exigirSuperAdmin } = require('../middlewares/adminGuard');
 const { db, admin } = require('../services/firebase');
 const { PLAN_CREDITS, concederCreditos, concederCreditosBloggerAi } = require('../services/creditService');
+const { obterStatusRecuperacaoCobrancas } = require('../services/billingRecoveryMonitor');
 const buildInfo = require('../services/buildInfo');
 const { resolverPeca } = require('../core/compilerEngine/pecaOrchestrator');
 const { perguntarAoSol } = require('../ai/solAgent');
@@ -517,6 +518,16 @@ router.get('/eu/api/saude', exigirSuperAdmin, (req, res) => {
             gitDate:   buildInfo.gitDate,
             buildTime: buildInfo.buildTime,
         },
+    });
+});
+
+// ==========================================
+// GET /eu/api/billing/recuperacao — apenas superadmin; não expõe dados de usuário.
+router.get('/eu/api/billing/recuperacao', exigirSuperAdmin, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, private');
+    res.json({
+        ...obterStatusRecuperacaoCobrancas(),
+        webhookConfigurado: !!process.env.BILLING_ALERT_WEBHOOK_URL,
     });
 });
 
