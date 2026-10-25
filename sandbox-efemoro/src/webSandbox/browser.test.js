@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute } from "node:path";
 import { chromium, webkit } from "playwright";
 import { BROWSER_ULIMIT_WRAPPER_PATH, resolveRealExecutablePath } from "./browser.js";
 
@@ -13,8 +15,14 @@ test("resolveRealExecutablePath: resolve pro override de env var quando definido
   // setada externamente (Chromium real, sem acesso ao CDN de browsers do
   // Playwright neste ambiente), então este teste precisa continuar
   // correto nos dois cenários -- variável presente ou ausente.
-  const esperadoChromium = process.env.SANDBOX_CHROMIUM_EXECUTABLE_PATH || chromium.executablePath();
+  const manifest = "/app/.chromium-headless-shell-path";
+  const instalado = existsSync(manifest) ? readFileSync(manifest, "utf8").trim() : null;
+  const esperadoChromium =
+    process.env.SANDBOX_CHROMIUM_EXECUTABLE_PATH || instalado || chromium.executablePath();
   assert.equal(resolveRealExecutablePath("chromium"), esperadoChromium);
+  if (instalado && !process.env.SANDBOX_CHROMIUM_EXECUTABLE_PATH) {
+    assert.ok(isAbsolute(instalado), "o Dockerfile deve gravar um caminho absoluto");
+  }
 
   const esperadoWebkit = process.env.SANDBOX_WEBKIT_EXECUTABLE_PATH || webkit.executablePath();
   assert.equal(resolveRealExecutablePath("webkit"), esperadoWebkit);
