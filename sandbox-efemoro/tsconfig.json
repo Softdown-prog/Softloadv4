@@ -27,7 +27,9 @@
     "src/webSandbox/responsive.ts",
     "src/webSandbox/accessibility.ts",
     "src/webSandbox/index.ts",
-    "src/archive/index.ts"
+    "src/archive/index.ts",
+    "src/webSandbox/network.ts",
+    "src/webSandbox/screenshots.ts"
   ],
   "exclude": [
     "node_modules"

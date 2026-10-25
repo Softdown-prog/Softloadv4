@@ -21,6 +21,8 @@ const sources = [
   "src/webSandbox/accessibility.ts",
   "src/webSandbox/index.ts",
   "src/archive/index.ts",
+  "src/webSandbox/network.ts",
+  "src/webSandbox/screenshots.ts",
 ];
 const ignored = new Set(["start", "end", "loc", "range", "raw"]);
 function semanticAst(input) {
