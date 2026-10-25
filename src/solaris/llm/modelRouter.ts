@@ -92,6 +92,7 @@ export interface SolarisModelRouter {
 // ============================================================
 
 const { GoogleGenAI } = require('@google/genai') as { GoogleGenAI: new (options: { apiKey: string }) => SolarisGeminiClient };
+const { estimarCustoGemini, extrairTokensFaturaveisGemini } = require('../../services/geminiCost') as typeof import('../../services/geminiCost');
 
 export const MODEL_FLASH = process.env.SOLARIS_FLASH_MODEL || 'gemini-2.5-flash';
 export const MODEL_PRO   = process.env.SOLARIS_PRO_MODEL   || 'gemini-2.5-pro';
@@ -102,6 +103,28 @@ export const MODEL_PRO   = process.env.SOLARIS_PRO_MODEL   || 'gemini-2.5-pro';
 // simplesmente falha na chamada). MAX_OUTPUT_TOKENS é um cap deliberado
 // abaixo do teto real, calibrado pelo dono do produto (custo/latência).
 const MAX_OUTPUT_TOKENS = Number(process.env.SOLARIS_MAX_OUTPUT_TOKENS) || 60000;
+
+// Telemetria agregada: custo estimado por operação, sem prompts ou dados pessoais.
+// Não debita créditos, não bloqueia solicitações e nunca substitui a fatura Google.
+function registrarEstimativaSolaris(modelo: string, usageMetadata: unknown, operacao: string): void {
+    try {
+        const tokens = extrairTokensFaturaveisGemini(usageMetadata);
+        if (!tokens) return;
+        const cambio = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20');
+        const custo = estimarCustoGemini({ ...tokens, modelo, cambioBrlPorUsd: cambio });
+        if (!custo) return;
+        console.info('[GEMINI-COST]', JSON.stringify({
+            origem: 'solaris', operacao, modelo,
+            entrada: custo.entrada, saida: custo.saida,
+            entrada_cache: custo.entradaCache,
+            custo_microbrl: custo.custoMicroBrl,
+            cambio_estimado: custo.cambioBrlPorUsd,
+            estimativa: true,
+        }));
+    } catch {
+        // Uma falha de observabilidade não deve derrubar um pedido pago.
+    }
+}
 
 let _genAI: SolarisGeminiClient | null = null;
 
@@ -127,6 +150,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
                 config.responseSchema = responseSchema;
             }
             const response = await clientFactory().models.generateContent({ model: MODEL_FLASH, contents: prompt, config });
+            registrarEstimativaSolaris(MODEL_FLASH, response.usageMetadata, 'triagem');
             return response.text;
         },
 
@@ -166,6 +190,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
                 if (chunk.usageMetadata) lastChunkUsage = chunk.usageMetadata;
             }
 
+            registrarEstimativaSolaris(MODEL_FLASH, lastChunkUsage, 'stream');
             if (tokensRef) {
                 const usage: GeminiUsageMetadata = lastChunkUsage || {};
                 tokensRef.total  = usage.totalTokenCount      ?? 0;
@@ -195,6 +220,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
                 config.thinkingConfig = { thinkingBudget };
             }
             const response = await clientFactory().models.generateContent({ model: MODEL_PRO, contents: prompt, config });
+            registrarEstimativaSolaris(MODEL_PRO, response.usageMetadata, 'arquitetura');
             return response;
         },
 
@@ -242,6 +268,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
                 const response = await chat.sendMessage({ message: mensagemParaEnviar });
 
                 const usage = response.usageMetadata;
+                registrarEstimativaSolaris(MODEL_PRO, usage, 'ferramentas');
                 if (usage) {
                     tokens.total  += usage.totalTokenCount      ?? 0;
                     tokens.input  += usage.promptTokenCount     ?? 0;
