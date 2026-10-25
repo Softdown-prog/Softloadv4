@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const router = express.Router();
-
 // Contract: Provides the React frontend with context previously injected via res.locals
 router.get('/api/app-config', (req, res) => {
     res.json({
@@ -16,5 +15,4 @@ router.get('/api/app-config', (req, res) => {
         }
     });
 });
-
 module.exports = router;

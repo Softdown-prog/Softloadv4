@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard');
-
 // Home do dashboard — antes renderizava 'pages/dashboard' (EJS/Bootstrap
 // antigo, com sua própria sidebar em partials/dashboard-sidebar.ejs).
 // Migrado para o app React (frontend/pages/DashboardHome.jsx), que já
@@ -23,5 +22,4 @@ router.get('/dashboard', exigirLogin, (req, res) => {
         user: req.session.user,
     });
 });
-
 module.exports = router;

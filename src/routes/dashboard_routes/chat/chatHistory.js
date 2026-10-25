@@ -1,6 +1,5 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-
 // ──────────────────────────────────────────────────────────────────────────
 // montarHistoricoSeguro — corta o histórico do cliente pro tamanho aceito
 // pelo modelo e garante que o primeiro turno seja SEMPRE 'user'.
@@ -15,16 +14,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // isso pra qualquer tamanho de corte, não só o caso feliz.
 // ──────────────────────────────────────────────────────────────────────────
 function montarHistoricoSeguro(history, histLen) {
-    if (!Array.isArray(history)) return [];
-
+    if (!Array.isArray(history))
+        return [];
     const cortado = history
         .slice(-histLen)
         .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string');
-
     let inicio = 0;
-    while (inicio < cortado.length && cortado[inicio].role !== 'user') inicio++;
-
+    while (inicio < cortado.length && cortado[inicio].role !== 'user')
+        inicio++;
     return cortado.slice(inicio);
 }
-
 module.exports = { montarHistoricoSeguro };
