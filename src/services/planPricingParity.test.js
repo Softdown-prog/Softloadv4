@@ -28,16 +28,17 @@ test('checkout, UI, aprovação MP e limite V2 correspondem a cada plano barato'
   }
 });
 test('os dois checkouts Mercado Pago usam a mesma tabela de preços',()=>{
-  // A página /dashboard/upgrade chama checkout-create; a API Bricks também
-  // precisa usar os mesmos preços, sem preservar números de planos antigos.
-  assert.match(checkout,/router\\.post\\('\/dashboard\/checkout-create'/);
-  assert.match(checkout,/router\\.post\\('\/dashboard\/payment\/process'/);
+  // A página /dashboard/upgrade usa checkout-create. Bricks não pode cobrar outra tabela.
+  assert.ok(checkout.includes("router.post('/dashboard/checkout-create'"));
+  assert.ok(checkout.includes("router.post('/dashboard/payment/process'"));
   const checkoutBricks=checkout.split("router.post('/dashboard/payment/process'")[1]
     ?.split('// ==========================================')[0];
   assert.ok(checkoutBricks,'rota Bricks não encontrada');
-  assert.match(checkoutBricks,/Object\\.hasOwn\\(PRICES_CENTS, plano\\)/);
-  assert.match(checkoutBricks,/transaction_amount:\\s*PRICES_CENTS\\[plano\\]\\s*\\/\\s*100/);
-  assert.doesNotMatch(checkoutBricks,/49\\.00|119\\.00|249\\.00|PLANOS_VALIDOS/);
+  assert.ok(checkoutBricks.includes('Object.hasOwn(PRICES_CENTS, plano)'));
+  assert.ok(checkoutBricks.includes('transaction_amount: PRICES_CENTS[plano] / 100'));
+  for(const oldValue of ['49.00','119.00','249.00','PLANOS_VALIDOS']) {
+    assert.equal(checkoutBricks.includes(oldValue),false,'preço antigo em Bricks: '+oldValue);
+  }
 });
 test('pior caso de consumo da API + encargos estimados deixa pelo menos R$20 após provisão de R$3',()=>{
   // Conservador: toda a quota V2 usada e 15% de taxas/impostos/estornos
