@@ -45,7 +45,7 @@ async function* gerarChatGptStream(history: readonly GptMessage[], userMessage: 
 
     const messages: GptMessage[] = [
         { role: 'system', content: systemPrompt },
-        ...history.map(m => ({
+        ...history.map((m): GptMessage => ({
             role:    m.role === 'assistant' ? 'assistant' : 'user',
             content: m.content,
         })),
