@@ -20,10 +20,13 @@ function harness(initial = {}) {
         async set(data,options) {calls.writes.push({op:'set',key,data,options});docs.set(key,{...docs.get(key),...data});},
         collection(name) {
             assert.equal(name,'billing_logs');
-            return {add(data) {
-                calls.logs.push({key,data});
-                return billingLogError ? Promise.reject(Error('billing logs unavailable')) : Promise.resolve();
-            }};
+            return {
+                add(data) {
+                    calls.logs.push({key,data});
+                    return billingLogError ? Promise.reject(Error('billing logs unavailable')) : Promise.resolve();
+                },
+                doc(id) {return { ...makeDoc(key + '/billing_logs/' + id), key: key + '/billing_logs/' + id };},
+            };
         },
     });
     const db = {
@@ -39,10 +42,11 @@ function harness(initial = {}) {
                     const data = docs.get(ref.key);
                     return {exists:!!data, data:()=>data && {...data}};
                 },
-                update(ref,changes) {writes.push({ref,changes});},
+                update(ref,changes) {writes.push({op:'tx.update',ref,changes});},
+                set(ref,changes) {writes.push({op:'tx.set',ref,changes});},
             };
             await callback(tx);
-            for (const {ref,changes} of writes) {
+            for (const {ref,changes,op} of writes) {
                 const current = docs.get(ref.key) || {};
                 const next = {...current};
                 for (const [field,value] of Object.entries(changes)) {
@@ -50,7 +54,7 @@ function harness(initial = {}) {
                         ? (current[field]||0)+value.increment : value;
                 }
                 docs.set(ref.key,next);
-                calls.writes.push({op:'tx.update',key:ref.key,changes});
+                calls.writes.push({op,key:ref.key,changes});
             }
         },
     };
@@ -168,4 +172,50 @@ test('GPT legado: ausência de doc/campo/saldo nunca bloqueia a cobrança princi
     assert.equal(h.docs.get(KEY).creditos_gpt,1);
     assert.equal(h.calls.writes.length,1);
     assert.equal(h.calls.logs.length,4);
+});
+
+test('Gemini: cobrança com operacaoId é atômica, repetição não duplica saldo nem log', async () => {
+    const op = 'geracao-servidor-000001';
+    const h = harness({[KEY]:{is_active:false,creditos:10}});
+    assert.equal(await h.api.debitarCreditos(EMAIL,1200,500,op),2);
+    assert.equal(h.docs.get(KEY).creditos,8);
+    const receiptKey = KEY+'/billing_logs/'+op;
+    assert.equal(h.docs.get(receiptKey).credits_debited,2);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.set').length,1);
+    assert.equal(h.calls.logs.length,0);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1200,500,op),2);
+    assert.equal(h.docs.get(KEY).creditos,8);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,1);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.set').length,1);
+});
+
+test('Gemini: mesma chave com tokens diferentes é recusada, sem novo débito', async () => {
+    const op = 'geracao-servidor-000002';
+    const h = harness({[KEY]:{is_active:false,creditos:10}});
+    await h.api.debitarCreditos(EMAIL,1000,50,op);
+    await assert.rejects(h.api.debitarCreditos(EMAIL,2000,50,op),/consumo diferente/);
+    assert.equal(h.docs.get(KEY).creditos,8);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,1);
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1000,50,'../../segredos'),/Identificador de cobrança inválido/);
+});
+
+test('Gemini: erro antes de confirmar transação permite repetição com mesma chave', async () => {
+    const op = 'geracao-servidor-000003';
+    const h = harness({[KEY]:{is_active:false,creditos:4}});
+    // Simula timeout depois do commit: recibo já existe mesmo que o chamador
+    // não tenha recebido a confirmação e possa repetir o mesmo ID.
+    await h.api.debitarCreditos(EMAIL,1200,100,op);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1200,100,op),2);
+    assert.equal(h.docs.get(KEY).creditos,2);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,1);
+});
+
+test('Gemini: saldo insuficiente não registra recibo falso e pode ser retomado após crédito', async () => {
+    const op = 'geracao-servidor-000004';
+    const h = harness({[KEY]:{is_active:false,creditos:0}});
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1100,0,op),/Créditos insuficientes/);
+    assert.equal(h.docs.has(KEY+'/billing_logs/'+op),false);
+    h.docs.set(KEY,{is_active:false,creditos:3});
+    assert.equal(await h.api.debitarCreditos(EMAIL,1100,0,op),2);
+    assert.equal(h.docs.get(KEY).creditos,1);
 });

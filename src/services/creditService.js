@@ -58,17 +58,38 @@ async function concederCreditos(email, plano) {
     });
     return { creditos, expira_em };
 }
-async function debitarCreditos(email, inputTokens, outputTokens) {
+/**
+ * Com operacaoId gerado pelo servidor, o recibo e o saldo são transacionados
+ * juntos no Firestore. Repetir uma cobrança depois de timeout/retry não
+ * desconta novamente e um ID com outro consumo é recusado.
+ * Chamadas legadas sem operacaoId preservam o comportamento anterior.
+ */
+async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
+    if (operacaoId !== undefined && (typeof operacaoId !== 'string' || !/^[a-zA-Z0-9_-]{12,128}$/.test(operacaoId))) {
+        throw new Error('Identificador de cobrança inválido');
+    }
     if (!inputTokens && !outputTokens)
         return 0;
     const creditosADebitar = calcularCreditos(inputTokens, outputTokens);
     const userRef = db.collection('clientes_premium').doc(email.toLowerCase());
+    const reciboRef = operacaoId ? userRef.collection('billing_logs').doc(operacaoId) : null;
     await db.runTransaction(async (tx) => {
+        // Firestore exige todas as leituras antes das escritas. As duas
+        // leituras estão dentro da mesma transação para deduplicar sob concorrência.
         const doc = await tx.get(userRef);
+        const recibo = reciboRef ? await tx.get(reciboRef) : null;
+        if (recibo?.exists) {
+            const anterior = recibo.data();
+            if (anterior.input_tokens !== inputTokens || anterior.output_tokens !== outputTokens
+                || anterior.credits_debited !== creditosADebitar) {
+                throw new Error('Identificador de cobrança reutilizado com consumo diferente');
+            }
+            return;
+        }
         if (!doc.exists)
             throw new Error('Usuário não encontrado');
         const dados = doc.data();
-        // Assinantes ativos: créditos são contadores de analytics — nunca bloqueia por saldo
+        // Assinantes ativos: créditos são contadores de analytics — nunca bloqueia por saldo.
         if (!dados.is_active) {
             const expirado = dados.creditos_expira_em && new Date(dados.creditos_expira_em) < new Date();
             const saldo = expirado ? 0 : (dados.creditos ?? 0);
@@ -76,13 +97,25 @@ async function debitarCreditos(email, inputTokens, outputTokens) {
                 throw new Error('Créditos insuficientes');
         }
         tx.update(userRef, { creditos: FV.increment(-creditosADebitar) });
+        if (reciboRef) {
+            tx.set(reciboRef, {
+                input_tokens: inputTokens,
+                output_tokens: outputTokens,
+                credits_debited: creditosADebitar,
+                criado_em: FV.serverTimestamp(),
+            });
+        }
     });
-    userRef.collection('billing_logs').add({
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        credits_debited: creditosADebitar,
-        criado_em: FV.serverTimestamp(),
-    }).catch(e => console.error('[BILLING] log error:', e.message));
+    // Sem chave, manter o log legado. Com chave, o recibo já foi gravado
+    // atomicamente junto do débito e não se deve gerar um segundo log.
+    if (!reciboRef) {
+        userRef.collection('billing_logs').add({
+            input_tokens: inputTokens,
+            output_tokens: outputTokens,
+            credits_debited: creditosADebitar,
+            criado_em: FV.serverTimestamp(),
+        }).catch(e => console.error('[BILLING] log error:', e.message));
+    }
     return creditosADebitar;
 }
 // ── GPT 5.4 credit functions ──────────────────────────────────────────────
