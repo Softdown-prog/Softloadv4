@@ -40,7 +40,7 @@ jobs:
           sudo env DEBIAN_FRONTEND=noninteractive apt-get \
             -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
             install -y --no-install-recommends ffmpeg fonts-dejavu-core
-          ffmpeg -version | head -n 1
+          ffmpeg -version >/dev/null
       - run: npm test
       - run: npm run test:quality
       - run: npm run build
