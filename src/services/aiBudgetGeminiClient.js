@@ -28,16 +28,19 @@ function custoDaReserva(modelo, payload, tokensOutput, cambio) {
         throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('MODELO_NAO_PRECIFICADO');
     return custo.custoMicroBrl;
 }
-function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }) {
+function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro, ferramenta, projeto, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }) {
     if (!email || !email.includes('@') || !livro || !modeloPro) {
         throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('GUARDA_NAO_CONFIGURADA');
     }
     const outputCap = maximoOutput(maxOutputTokens);
     const deveProteger = (modelo) => modelo === modeloPro
         || (protegerFlash && !!modeloFlash && modelo === modeloFlash);
+    const contexto = (modelo) => ferramenta ? {
+        contexto: { ferramenta, modelo, ...(projeto ? { projeto } : {}) },
+    } : {};
     async function chamadaProtegida(modelo, payload, cap, chamar) {
         const reservaMicroBrl = custoDaReserva(modelo, payload, cap, cambioBrlPorUsd);
-        const reservado = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl });
+        const reservado = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl, ...contexto(modelo) });
         if (reservado.status !== 'reservado') {
             throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
         }
@@ -47,7 +50,7 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
         }
         catch (erro) {
             try {
-                await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl: reservaMicroBrl });
+                await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl: reservaMicroBrl, estimado: true });
             }
             catch (contaErro) {
                 console.error('[IA-BUDGET] reserva retida; acerto pendente:', contaErro.message);
@@ -59,7 +62,7 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
         const custo = tokens && (0, geminiCost_1.estimarCustoGemini)({ ...tokens, modelo, cambioBrlPorUsd });
         const custoRealMicroBrl = custo?.custoMicroBrl ?? reservaMicroBrl;
         try {
-            await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl });
+            await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl, estimado: !custo });
         }
         catch (erro) {
             // A reserva continua retida e a resposta válida deve chegar ao usuário.
@@ -89,7 +92,7 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
                     // Reserva inicia na primeira iteração; stream nunca iterado não gasta API.
                     return (async function* () {
                         const reservaMicroBrl = custoDaReserva(modelo, limitado, cap, cambioBrlPorUsd);
-                        const reserva = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl });
+                        const reserva = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl, ...contexto(modelo) });
                         if (reserva.status !== 'reservado')
                             throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
                         let ultimaUsage = null;
@@ -112,6 +115,7 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
                                 await livro.liquidar({
                                     reciboId: reserva.reciboId,
                                     custoRealMicroBrl: custo?.custoMicroBrl ?? reservaMicroBrl,
+                                    estimado: !custo,
                                 });
                             }
                             catch (erro) {

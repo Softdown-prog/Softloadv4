@@ -66,7 +66,7 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 // A reserva financeira é ativada SOMENTE por opção explícita na VPS.
 // Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
 const livroOrcamento = criarLivroRazaoIa(db);
-function dependenciasPorRequisicao(req) {
+function dependenciasPorRequisicao(req, ferramenta = 'solaris-chat') {
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return { modelRouter, solarisChat, orquestrador };
     }
@@ -83,7 +83,10 @@ function dependenciasPorRequisicao(req) {
         }
         return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     }, {
-        email, livro: livroOrcamento, modeloPro: MODEL_PRO,
+        email, livro: livroOrcamento, modeloPro: MODEL_PRO, ferramenta,
+        // Identificador da sessão, nunca texto do prompt ou conteúdo de arquivo.
+        projeto: typeof req.body?.sessionId === 'string' && /^[A-Za-z0-9_-]{6,80}$/.test(req.body.sessionId)
+            ? req.body.sessionId : undefined,
         modeloFlash: MODEL_FLASH,
         protegerFlash: process.env.SOLARIS_AI_BUDGET_FLASH === 'true',
     });
@@ -264,7 +267,7 @@ router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarSa
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return uploadSolarisSemOrcamento(req, res);
     }
-    const { modelRouter: routerUsuario } = dependenciasPorRequisicao(req);
+    const { modelRouter: routerUsuario } = dependenciasPorRequisicao(req, 'solaris-upload');
     return criarHandlerUploadSolaris({ ...depsUploadSolaris, modelRouter: routerUsuario })(req, res);
 });
 

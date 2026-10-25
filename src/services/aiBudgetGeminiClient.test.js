@@ -187,3 +187,34 @@ test('stream que falha ou não retorna metadados cobra a reserva como estimativa
     assert.equal(h.steps[0][1].reservaMicroBrl,h.steps[2][1].custoRealMicroBrl);
   }
 });
+
+test('contexto do recibo identifica projeto e ferramenta sem copiar prompt da chamada',async()=>{
+  const steps=[];const ledger={
+    async reservar(data){steps.push(['reserva',data]);return {status:'reservado',reciboId:'receipt'};},
+    async liquidar(data){steps.push(['liquida',data]);return 'liquidado';},
+  };
+  const sdk={models:{async generateContent(){return {text:'ok',usageMetadata:{promptTokenCount:200,candidatesTokenCount:100}};}},
+    chats:{create(){throw Error('not used');}}};
+  const client=criarClienteGeminiComOrcamento(()=>sdk,{
+    email:'user@example.test',livro:ledger,modeloPro:'gemini-2.5-pro',
+    ferramenta:'solaris-chat',projeto:'session-abc123',cambioBrlPorUsd:5.2,
+  })();
+  await client.models.generateContent({model:'gemini-2.5-pro',contents:'secret sensitive prompt',config:{temperature:0,maxOutputTokens:1024}});
+  assert.deepEqual(steps[0][1].contexto,{ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',projeto:'session-abc123'});
+  assert.equal(steps[1][1].estimado,false);
+  assert.ok(!JSON.stringify(steps).includes('secret sensitive prompt'));
+});
+test('ausência de usageMetadata sinaliza custo estimado no extrato',async()=>{
+  const steps=[];const ledger={
+    async reservar(data){steps.push(data);return {status:'reservado',reciboId:'receipt'};},
+    async liquidar(data){steps.push(data);}
+  };
+  const sdk={models:{async generateContent(){return {text:'ok'};}},chats:{create(){throw Error('not used');}}};
+  const client=criarClienteGeminiComOrcamento(()=>sdk,{
+    email:'user@example.test',livro:ledger,modeloPro:'gemini-2.5-pro',ferramenta:'solaris-upload',
+    cambioBrlPorUsd:5.2,
+  })();
+  await client.models.generateContent({model:'gemini-2.5-pro',contents:'inspect ZIP',config:{temperature:0,maxOutputTokens:2048}});
+  assert.equal(steps[0].contexto.ferramenta,'solaris-upload');
+  assert.equal(steps[1].estimado,true);
+});

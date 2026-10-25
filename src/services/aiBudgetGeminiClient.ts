@@ -15,6 +15,8 @@ export interface GuardarProOpcoes {
     email: string;
     livro: LivroRazao;
     modeloPro: string;
+    ferramenta?: 'solaris-chat' | 'solaris-upload';
+    projeto?: string;
     modeloFlash?: string;
     protegerFlash?: boolean;
     cambioBrlPorUsd?: number;
@@ -42,7 +44,7 @@ function custoDaReserva(modelo: string, payload: unknown, tokensOutput: number, 
 }
 export function criarClienteGeminiComOrcamento(
     clientFactory: SolarisClientFactory,
-    { email, livro, modeloPro, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }: GuardarProOpcoes,
+    { email, livro, modeloPro, ferramenta, projeto, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }: GuardarProOpcoes,
 ): SolarisClientFactory {
     if (!email || !email.includes('@') || !livro || !modeloPro) {
         throw new OrcamentoIaIndisponivel('GUARDA_NAO_CONFIGURADA');
@@ -50,12 +52,15 @@ export function criarClienteGeminiComOrcamento(
     const outputCap = maximoOutput(maxOutputTokens);
     const deveProteger = (modelo: string): boolean => modelo === modeloPro
         || (protegerFlash && !!modeloFlash && modelo === modeloFlash);
+    const contexto = (modelo: string) => ferramenta ? {
+        contexto: { ferramenta, modelo, ...(projeto ? { projeto } : {}) },
+    } : {};
 
     async function chamadaProtegida(
         modelo: string, payload: unknown, cap: number, chamar: () => Promise<GeminiResponse>,
     ): Promise<GeminiResponse> {
         const reservaMicroBrl = custoDaReserva(modelo, payload, cap, cambioBrlPorUsd);
-        const reservado = await livro.reservar({ email, operacaoId: randomUUID(), reservaMicroBrl });
+        const reservado = await livro.reservar({ email, operacaoId: randomUUID(), reservaMicroBrl, ...contexto(modelo) });
         if (reservado.status !== 'reservado') {
             throw new OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
         }
@@ -64,7 +69,7 @@ export function criarClienteGeminiComOrcamento(
             response = await chamar();
         } catch (erro) {
             try {
-                await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl: reservaMicroBrl });
+                await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl: reservaMicroBrl, estimado: true });
             } catch (contaErro) {
                 console.error('[IA-BUDGET] reserva retida; acerto pendente:', (contaErro as Error).message);
             }
@@ -75,7 +80,7 @@ export function criarClienteGeminiComOrcamento(
         const custo = tokens && estimarCustoGemini({ ...tokens, modelo, cambioBrlPorUsd });
         const custoRealMicroBrl = custo?.custoMicroBrl ?? reservaMicroBrl;
         try {
-            await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl });
+            await livro.liquidar({ reciboId: reservado.reciboId, custoRealMicroBrl, estimado: !custo });
         } catch (erro) {
             // A reserva continua retida e a resposta válida deve chegar ao usuário.
             console.error('[IA-BUDGET] liquidação pendente:', (erro as Error).message);
@@ -102,7 +107,7 @@ export function criarClienteGeminiComOrcamento(
                     // Reserva inicia na primeira iteração; stream nunca iterado não gasta API.
                     return (async function* (): AsyncGenerator<GeminiResponse, void, unknown> {
                         const reservaMicroBrl = custoDaReserva(modelo, limitado, cap, cambioBrlPorUsd);
-                        const reserva = await livro.reservar({ email, operacaoId: randomUUID(), reservaMicroBrl });
+                        const reserva = await livro.reservar({ email, operacaoId: randomUUID(), reservaMicroBrl, ...contexto(modelo) });
                         if (reserva.status !== 'reservado') throw new OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
                         let ultimaUsage: unknown = null;
                         let completo = false;
@@ -122,6 +127,7 @@ export function criarClienteGeminiComOrcamento(
                                 await livro.liquidar({
                                     reciboId: reserva.reciboId,
                                     custoRealMicroBrl: custo?.custoMicroBrl ?? reservaMicroBrl,
+                                    estimado: !custo,
                                 });
                             } catch (erro) {
                                 // O saldo reservado permanece indisponível para novas chamadas.
