@@ -37,8 +37,6 @@ function criarHandlerResumoCreditosV2({ consultarSaldo, habilitado = () => proce
         }
     };
 }
-
-/** Histórico do próprio usuário; nunca devolve custo monetário, prompt ou outro usuário. */
 function criarHandlerHistoricoCreditosV2({ listar, habilitado = () => process.env.AI_CREDITS_V2_PREVIEW === 'true', }) {
     return async (req, res) => {
         res.setHeader('Cache-Control', 'no-store, private');
