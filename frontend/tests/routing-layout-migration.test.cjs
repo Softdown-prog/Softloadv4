@@ -287,7 +287,7 @@ test('chat TSX mantém créditos, sessões, SSE e cancelamento', () => {
   assert.ok(chat.includes("fetch('/api/chat/sessions?type=chat-suporte')"));
   assert.ok(chat.includes("fetch('/dashboard/chat/stream'"));
   assert.ok(chat.includes("model: 'gemini-flash'"));
-  assert.ok(chat.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(chat.includes('parseSseJsonFrame<ChatStreamEvent>(frame)'));
   assert.ok(chat.includes("event.type === 'code_patch'"));
   assert.ok(chat.includes('pendingPatchRef.current = event'));
   assert.ok(chat.includes('useRef<AbortController | null>(null)'));
@@ -315,7 +315,7 @@ test('Solaris TSX preserva importação ZIP, créditos, streaming e downloads', 
   assert.ok(code.includes("formData.append('arquivo', file)"));
   assert.ok(code.includes("fetch('/dashboard/solaris/chat/stream'"));
   assert.ok(code.includes('response.body?.getReader()'));
-  assert.ok(code.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(code.includes('parseSseJsonFrame<ChatStreamEvent>(frame)'));
   assert.ok(code.includes('const assistantMsg: ChatMessage'));
   assert.ok(code.includes('m.zip.base64'));
   assert.ok(code.includes('abortControllerRef.current.abort()'));
@@ -327,9 +327,52 @@ test('WorkspaceChat TSX mantém sessão, preview e refresh sem sobrescrever mens
   assert.ok(code.includes("fetch('/dashboard/workspace/chat/stream'"));
   assert.ok(code.includes("fetch('/api/workspace/set-preview'"));
   assert.ok(code.includes("window.open('/dashboard/preview/session', '_blank')"));
-  assert.ok(code.includes('JSON.parse(dLine[1]) as ChatStreamEvent'));
+  assert.ok(code.includes('parseSseJsonFrame<ChatStreamEvent>(frame)'));
   assert.ok(code.includes('const assistantMsg: ChatMessage'));
   assert.ok(code.includes('pendingPatchRef.current = event'));
   assert.ok(code.includes('atualizarCreditosSnapshot()'));
   assert.ok(code.includes('abortControllerRef.current.abort()'));
+});
+
+test('SSE compartilhado reconhece LF, CRLF, fragmentação, heartbeat e dados multilinha', () => {
+  const vm = require('node:vm');
+  const compiled = ts.transpileModule(source('frontend/utils/sseFrames.ts'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const mod = { exports: {} };
+  vm.runInNewContext(compiled, { exports: mod.exports, module: mod });
+  const { drainSseFrames, parseSseJsonFrame } = mod.exports;
+
+  const prefix = ': ping\r\ndata: {"type":"status","label":"pronto"}\r';
+  const first = drainSseFrames(prefix);
+  assert.equal(first.frames.length, 0);
+  assert.equal(first.remainder, prefix);
+
+  const second = drainSseFrames(first.remainder + '\n\r\n'
+      + 'data: {"type":"chunk",\ndata: "text":"olá"}\n\n'
+      + 'data: {"type":"done"}\n');
+  assert.equal(second.frames.length, 2);
+  assert.equal(second.remainder, 'data: {"type":"done"}\n');
+  assert.equal(parseSseJsonFrame(second.frames[0]).label, 'pronto');
+  assert.equal(parseSseJsonFrame(second.frames[1]).text, 'olá');
+  const final = drainSseFrames(second.remainder + '\n');
+  assert.equal(parseSseJsonFrame(final.frames[0]).type, 'done');
+  assert.equal(parseSseJsonFrame(': heartbeat\nretry: 5000'), null);
+  assert.equal(parseSseJsonFrame('data: [DONE]'), null);
+  assert.equal(parseSseJsonFrame('data: {"wrong":"shape"}'), null);
+});
+
+test('os tres chats deixam o cancelamento terminar antes de habilitar novo envio', () => {
+  for (const path of [
+    'frontend/pages/Chat.tsx',
+    'frontend/pages/Solaris.tsx',
+    'frontend/pages/WorkspaceChat.tsx',
+  ]) {
+    const code = source(path);
+    assert.ok(code.includes('drainSseFrames(buffer)'), path);
+    assert.ok(code.includes('parseSseJsonFrame<ChatStreamEvent>(frame)'), path);
+    assert.ok(code.includes('if (controller.signal.aborted) return;'), path);
+    assert.ok(code.includes('if (abortControllerRef.current === controller) abortControllerRef.current = null;'), path);
+    assert.doesNotMatch(code, /abortControllerRef\.current\.abort\(\);\s*setLoading\(false\);/, path);
+  }
 });

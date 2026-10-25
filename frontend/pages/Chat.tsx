@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import useFocusTrap from '../hooks/useFocusTrap';
+import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     MessageSquare, Send, Cpu, Sparkles, AlertCircle, 
     History, PlusCircle, Trash2, X, Clipboard, Check, 
@@ -164,6 +165,7 @@ export default function Chat(): React.JSX.Element {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
         if (!msg || loading) return;
+        pendingPatchRef.current = null;
 
         setInput('');
         setLoading(true);
@@ -212,20 +214,11 @@ export default function Chat(): React.JSX.Element {
 
                 buffer += decoder.decode(value, { stream: true });
 
-                let idx;
-                while ((idx = buffer.indexOf('\n\n')) !== -1) {
-                    const block = buffer.slice(0, idx);
-                    buffer = buffer.slice(idx + 2);
-
-                    const dLine = block.match(/^data: (.+)$/m);
-                    if (!dLine) continue;
-
-                    let event: ChatStreamEvent;
-                    try {
-                        event = JSON.parse(dLine[1]) as ChatStreamEvent;
-                    } catch (_) {
-                        continue;
-                    }
+                const batch = drainSseFrames(buffer);
+                buffer = batch.remainder;
+                for (const frame of batch.frames) {
+                    const event = parseSseJsonFrame<ChatStreamEvent>(frame);
+                    if (!event) continue;
 
                     if (event.type === 'status') {
                         setStatusText(event.label ?? '');
@@ -279,20 +272,22 @@ export default function Chat(): React.JSX.Element {
             }
 
         } catch (err) {
+            // Cancelar é uma ação normal; não criar bolha de erro para AbortError.
+            if (controller.signal.aborted) return;
             console.error('Streaming error:', err);
             const errMsg = err instanceof Error ? err.message : 'Falha na conexão.';
             setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro: ${errMsg}` }]);
         } finally {
             setLoading(false);
             setStatusText('');
-            abortControllerRef.current = null;
+            if (abortControllerRef.current === controller) abortControllerRef.current = null;
         }
     };
 
     const stopGeneration = (): void => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
-            setLoading(false);
+            // Aguarda o finally do request antes de liberar um novo envio.
             setStatusText('Geração interrompida.');
         }
     };

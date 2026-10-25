@@ -20,6 +20,7 @@
   "include": [
     "frontend/services/api.ts",
     "frontend/utils/accessibilityPrefs.ts",
+    "frontend/utils/sseFrames.ts",
     "frontend/hooks/useFocusTrap.ts",
     "frontend/hooks/useHeroEntrance.ts",
     "frontend/main.tsx",
