@@ -147,5 +147,6 @@
   "src/services/buildInfo.ts",
   "src/services/envBoot.ts",
   "src/services/mpPlanRules.ts",
-  "src/services/creditService.ts"
+  "src/services/creditService.ts",
+  "src/services/geminiCost.ts"
 ]
