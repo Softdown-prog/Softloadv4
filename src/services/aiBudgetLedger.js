@@ -1,13 +1,13 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OrcamentoIaIndisponivel = void 0;
+exports.criarLivroRazaoIa = criarLivroRazaoIa;
 /**
  * Livro razão de orçamento de IA. Sem efeitos de rede fora do Firestore injetado.
  * NÃO é ativado nas rotas até que todos os caminhos do Gemini tenham reserva.
  * Cada ciclo é identificado pelo vencimento de créditos mantido no banco;
  * nunca por um parâmetro controlado pelo cliente.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrcamentoIaIndisponivel = void 0;
-exports.criarLivroRazaoIa = criarLivroRazaoIa;
 const node_crypto_1 = require("node:crypto");
 const geminiCost_1 = require("./geminiCost");
 class OrcamentoIaIndisponivel extends Error {
