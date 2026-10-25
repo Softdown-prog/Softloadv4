@@ -208,6 +208,16 @@ esses imports nem exige um loader TypeScript em produção.
   Worker, e os testes existentes cobrem path traversal, symlinks e
   gravação atômica.
 
+## Webhook assinado tipado
+
+- `agent/src/notifications/webhook-delivery.ts` tipa envio de callbacks,
+  assinaturas HMAC-SHA256, timeouts, resposta HTTP e o verificador
+  de assinatura em tempo constante.
+- Mantidos o bloqueio SSRF, a ausência de redirecionamentos
+  automáticos e os testes unitários e de ponta a ponta existentes.
+- Os shims locais de `node:crypto` e `Buffer` são somente tipos,
+  sem novos pacotes ou mudanças nos containers.
+
 ## Como validar
 
 ```bash

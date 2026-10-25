@@ -6,6 +6,7 @@ on:
     paths:
       - 'agent/src/capabilities/**'
       - 'agent/src/core/**'
+      - 'agent/src/notifications/**'
       - 'agent/src/protocol/**'
       - 'agent/src/security/**'
       - 'agent/src/config/**'
@@ -27,6 +28,7 @@ on:
     paths:
       - 'agent/src/capabilities/**'
       - 'agent/src/core/**'
+      - 'agent/src/notifications/**'
       - 'agent/src/protocol/**'
       - 'agent/src/security/**'
       - 'agent/src/config/**'
