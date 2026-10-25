@@ -33,6 +33,11 @@ esses imports nem exige um loader TypeScript em produção.
 - `test.ts` — detecção de suítes e execução de testes autorizados.
 - `package.ts` — instalação de pacotes, validação de nomes e ecossistemas.
 
+- `code-analysis.ts` — inspeção estática somente leitura, com limites de tamanho,
+  prazo e tipos para estatísticas de código.
+- `project-inspector.ts` — detecção tipada de linguagens, framework, scripts
+  de testes/build e estrutura do projeto, sem execução de comandos.
+
 ## Como validar
 
 ```bash
