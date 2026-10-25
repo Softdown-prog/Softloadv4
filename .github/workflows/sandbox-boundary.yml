@@ -54,6 +54,11 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: npm ci
+      - name: Preparar ferramentas de tipagem e paridade (somente CI)
+        run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Validar fontes TypeScript e espelhos JavaScript
+        working-directory: sandbox-efemoro
+        run: npm run typecheck
       - name: Validar modos de serviço
         working-directory: sandbox-efemoro
         run: node --test src/serviceMode.test.js
