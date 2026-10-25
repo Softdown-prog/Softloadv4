@@ -95,19 +95,40 @@ function criarLivroRazaoIa(db) {
                 return { plano, cicloExpiraEm: ciclo, limiteMicroBrl, gastoMicroBrl, reservadoMicroBrl };
             });
         },
-        /** Extrato do ciclo ativo; apenas operações liquidadas, sem prompts ou custo em BRL. */
+        /** Compatibilidade: a consulta antiga continua retornando a primeira página. */
         async listarExtrato(email, limite = 20) {
-            if (!Number.isSafeInteger(limite) || limite < 1 || limite > 40) {
+            return (await this.listarExtratoPagina(email, limite)).itens;
+        },
+        /**
+         * Paginação estável, vinculada ao usuário e ao ciclo pela subcoleção.
+         * O cursor é apenas o ID do recibo; nunca contém email, conteúdo ou custo.
+         */
+        async listarExtratoPagina(email, limite = 20, apos) {
+            if (!Number.isSafeInteger(limite) || limite < 1 || limite > 40
+                || (apos !== undefined && !idReciboValido(apos))) {
                 throw new OrcamentoIaIndisponivel('CONSULTA_INVALIDA');
             }
             const { cicloExpiraEm } = await this.consultar(email);
-            const usuario = email.trim().toLowerCase();
-            const idCiclo = sha(usuario + '|' + cicloExpiraEm);
-            const snapshot = await orcamentos.doc(idCiclo)
-                .collection('extrato').orderBy('criadoEm', 'desc').limit(limite).get();
-            return snapshot.docs.map(doc => doc.data()).filter((v) => !!v && typeof v.id === 'string' && typeof v.criadoEm === 'string'
+            const idCiclo = sha(email.trim().toLowerCase() + '|' + cicloExpiraEm);
+            const extrato = orcamentos.doc(idCiclo).collection('extrato');
+            let query = extrato.orderBy('criadoEm', 'desc');
+            if (apos) {
+                const anterior = await extrato.doc(apos).get();
+                if (!anterior.exists)
+                    throw new OrcamentoIaIndisponivel('CURSOR_INVALIDO');
+                query = query.startAfter(anterior);
+            }
+            const snapshot = await query.limit(limite + 1).get();
+            const selecionados = snapshot.docs.slice(0, limite);
+            const itens = selecionados.map(doc => doc.data()).filter((v) => !!v && typeof v.id === 'string' && idReciboValido(v.id)
+                && typeof v.criadoEm === 'string' && Number.isFinite(Date.parse(v.criadoEm))
                 && typeof v.creditos === 'number' && microValido(v.creditos)
                 && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload'));
+            return {
+                itens,
+                proximoCursor: snapshot.docs.length > limite && selecionados.length > 0
+                    ? selecionados[selecionados.length - 1].id : null,
+            };
         },
         async reservar({ email, operacaoId, reservaMicroBrl, contexto }) {
             const emailNormalizado = String(email || '').trim().toLowerCase();
