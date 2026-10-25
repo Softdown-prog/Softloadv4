@@ -53,7 +53,7 @@ export async function runCoderValidatorExample({ plan, callLlmForCodeEdits }: Co
     workspace,
     permissions: validatorPreset.permissions,
     commandPolicy: validatorPreset.commandPolicy,
-  });
+  }) as Agent & ValidatorAgent;
 
   const packagerAgent = new Agent({
     role: "packager",
@@ -69,7 +69,7 @@ export async function runCoderValidatorExample({ plan, callLlmForCodeEdits }: Co
   ]);
 
   const loop = new CoderValidatorLoop({
-    validatorAgent: validatorAgent as unknown as ValidatorAgent,
+    validatorAgent,
     testCommand: "npm test",
     maxAttempts: 3,
     timeoutMs: 120000,

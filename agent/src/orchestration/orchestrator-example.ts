@@ -75,7 +75,7 @@ export async function buildAgentEcosystem({
     workspace,
     permissions: validatorPreset.permissions,
     commandPolicy: validatorPreset.commandPolicy,
-  });
+  }) as Agent & ValidatorAgent;
 
   const packagerAgent = new Agent({
     role: "packager",
@@ -96,7 +96,7 @@ export async function buildAgentEcosystem({
   // qualquer mudança do Programador via o Empacotador, caso o
   // limite de tentativas seja esgotado.
   const coderValidatorLoop = new CoderValidatorLoop({
-    validatorAgent: validatorAgent as unknown as ValidatorAgent,
+    validatorAgent,
     testCommand: "npm test",
     maxAttempts: 3,
     timeoutMs: 120000,
@@ -253,7 +253,7 @@ export async function buildAgentEcosystem({
         editedFiles: (payload.edits || []).map((edit: ExampleCodeEdit) => edit.path),
       };
     },
-  };
+  } as unknown as Record<string, AgentDispatchHandler> & Record<string, DispatchHandler>;
 
   const orchestratorAgent = new Agent({
     role: "orchestrator",
@@ -263,7 +263,7 @@ export async function buildAgentEcosystem({
     extraCapabilities: {
       dispatch: new AgentDispatchCapability({
         permissions: orchestratorPreset.permissions,
-        dispatchTargets: dispatchTargets as unknown as Record<string, AgentDispatchHandler>,
+        dispatchTargets,
       }),
 
       // Fan-out de agent.dispatch: roda vários dispatches em
@@ -272,7 +272,7 @@ export async function buildAgentEcosystem({
       // workspace compartilhado -- ver agent-parallel-dispatch.js).
       dispatchParallel: new AgentParallelDispatchCapability({
         permissions: orchestratorPreset.permissions,
-        dispatchTargets: dispatchTargets as unknown as Record<string, DispatchHandler>,
+        dispatchTargets,
         workspace,
         worktreesRoot: process.env.WORKTREES_ROOT,
       }),
