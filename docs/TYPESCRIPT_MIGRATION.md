@@ -1511,3 +1511,19 @@ para testar SMTP, remetente, links, textos de boas-vindas, recuperação de
 senha, plano ativado e falha de entrega. Nenhum email é enviado e
 nenhuma chave externa ou rede é necessária. O Gate TypeScript verifica
 o novo módulo, espelho e cinco regressões.
+
+## Etapa 87 — worker de logs de erro em TypeScript
+
+`src/services/errorLogWorker.ts` é a fonte tipada do
+`src/services/errorLogWorker.js` CommonJS, cuja exportação permanece
+a **instância singleton** já usada pelo servidor. O worker mantém:
+interceptação de `console.error` e `console.warn`, callbacks de
+`uncaughtException` e `unhandledRejection`, supressão de ruído
+operacional e poda de logs com limite de 24h/5.000 entradas.
+
+`src/services/errorLogWorker.contract.test.js` testa importação
+sem efeito colateral, inicialização idempotente, interceptação com
+encaminhamento ao console original, callbacks de falhas, captura de
+stack e truncamento, agregação de estatísticas, filtro temporal e
+poda. Todos os testes usam processo/console/timers simulados e
+não instalam manipuladores no servidor ou no processo do CI.

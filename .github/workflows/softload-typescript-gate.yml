@@ -163,6 +163,23 @@ jobs:
         run: node --test src/services/creditService.contract.test.js
       - name: Testar SMTP Resend e templates sem envio real
         run: node --test src/services/emailService.contract.test.js
+      - name: Testar captura e retenção de erros sem listeners reais
+        run: node --test src/services/errorLogWorker.contract.test.js
+      - name: Capturar espelho TypeScript oficial para sincronização
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const ts = require('typescript');
+          const output = ts.transpileModule(fs.readFileSync('src/services/errorLogWorker.ts', 'utf8'), {
+            fileName: 'src/services/errorLogWorker.ts',
+            compilerOptions: {
+              module: ts.ModuleKind.CommonJS,
+              target: ts.ScriptTarget.ES2022,
+              newLine: ts.NewLineKind.LineFeed
+            }
+          }).outputText;
+          console.log('ERRLOG_MIRROR_BEGIN' + JSON.stringify(output) + 'ERRLOG_MIRROR_END');
+          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

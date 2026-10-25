@@ -196,7 +196,8 @@
     "src/services/mpPlanRules.ts",
     "src/services/creditService.ts",
     "src/services/geminiCost.ts",
-    "src/services/emailService.ts"
+    "src/services/emailService.ts",
+    "src/services/errorLogWorker.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,4 +1,5 @@
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
 // Captura silenciosa de erros em runtime — console.error, console.warn,
 // uncaughtException e unhandledRejection de todos os módulos do processo.
