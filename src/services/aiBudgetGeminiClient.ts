@@ -15,7 +15,7 @@ export interface GuardarProOpcoes {
     email: string;
     livro: LivroRazao;
     modeloPro: string;
-    ferramenta?: 'solaris-chat' | 'solaris-upload';
+    ferramenta?: 'solaris-chat' | 'solaris-upload' | 'solaris-visual';
     projeto?: string;
     modeloFlash?: string;
     protegerFlash?: boolean;
