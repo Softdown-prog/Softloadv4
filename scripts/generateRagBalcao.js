@@ -5,7 +5,6 @@ exports.gerarTextoComRetry = gerarTextoComRetry;
 exports.extrairJSON = extrairJSON;
 exports.gerarEsalvar = gerarEsalvar;
 exports.main = main;
-
 // ============================================================
 // RAG Balcão Generator — Gera os dois arquivos de conhecimento
 // técnico ia-balcao-* via Gemini e salva em ia-de-balcao/.
@@ -13,13 +12,10 @@ exports.main = main;
 // Uso:
 //   node scripts/generateRagBalcao.js
 // ============================================================
-
 require('dotenv').config();
-
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 const { gerarTexto } = require('../src/services/geminiService');
-
 // ──────────────────────────────────────────────────────────────
 // Rate-limit wrapper — reintenta em 429/quota com backoff
 // ──────────────────────────────────────────────────────────────
@@ -27,23 +23,23 @@ async function gerarTextoComRetry(prompt, maxRetries = 3) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             return await gerarTexto(prompt);
-        } catch (err) {
+        }
+        catch (err) {
             const msg = (err.message || '').toLowerCase();
             const is429 = msg.includes('429') || msg.includes('quota') || msg.includes('rate limit');
             if (is429 && attempt < maxRetries) {
                 const waitMs = Math.pow(2, attempt + 1) * 10_000; // 20s, 40s, 80s
                 console.warn(`  ⚠️  429/quota — aguardando ${waitMs / 1000}s (tentativa ${attempt + 1}/${maxRetries})...`);
                 await new Promise(r => setTimeout(r, waitMs));
-            } else {
+            }
+            else {
                 throw err;
             }
         }
     }
     throw new Error('Falha inesperada no limite de tentativas');
 }
-
 const OUT_DIR = path.join(__dirname, '../src/rag/ia-de-balcao');
-
 // ──────────────────────────────────────────────────────────────
 // extrairJSON — idêntico ao de generateBlocks.js
 // ──────────────────────────────────────────────────────────────
@@ -51,12 +47,19 @@ function extrairJSON(texto) {
     let limpo = texto.trim();
     limpo = limpo.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '');
     limpo = limpo.replace(/^```\s*/i, '').replace(/\s*```\s*$/i, '');
-    try { return JSON.parse(limpo); } catch (_) {}
+    try {
+        return JSON.parse(limpo);
+    }
+    catch (_) { }
     const match = limpo.match(/\{[\s\S]*\}/);
-    if (match) { try { return JSON.parse(match[0]); } catch (_) {} }
+    if (match) {
+        try {
+            return JSON.parse(match[0]);
+        }
+        catch (_) { }
+    }
     return null;
 }
-
 // ──────────────────────────────────────────────────────────────
 // PROMPT 1 — Grid col-lg-8 + col-lg-4 com sidebar condicional
 // ──────────────────────────────────────────────────────────────
@@ -100,7 +103,6 @@ REGRAS:
 - Os html_simulado_* devem ser HTML renderizável completo (não templates)
 - Texto em português brasileiro
 - ZERO markdown fora do JSON`;
-
 // ──────────────────────────────────────────────────────────────
 // PROMPT 2 — Imagens responsivas com resizeImage() e JS interceptor
 // ──────────────────────────────────────────────────────────────
@@ -146,7 +148,6 @@ REGRAS:
 - O placeholder_xml deve usar a sintaxe correta do Blogger (data: e expr:)
 - Texto descritivo em português brasileiro
 - ZERO markdown fora do JSON`;
-
 // ──────────────────────────────────────────────────────────────
 // main
 // ──────────────────────────────────────────────────────────────
@@ -155,53 +156,50 @@ async function gerarEsalvar(nome, prompt) {
     let resposta;
     try {
         resposta = await gerarTextoComRetry(prompt);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(`  [erro] Gemini falhou: ${err.message}`);
         return false;
     }
-
     const json = extrairJSON(resposta);
     if (!json) {
         console.error(`  [erro] JSON inválido. Resposta:\n${resposta.substring(0, 300)}`);
         return false;
     }
-
     // Validação mínima
     if (!json.id || !json.categoria) {
         console.error(`  [erro] JSON sem id/categoria. Chaves: ${Object.keys(json).join(', ')}`);
         return false;
     }
-
     const outPath = path.join(OUT_DIR, `${nome}.json`);
     fs.writeFileSync(outPath, JSON.stringify(json, null, 2), 'utf-8');
     console.log(`  → salvo: ${path.relative(process.cwd(), outPath)}`);
     return true;
 }
-
 async function main() {
-    const flags     = process.argv.slice(2).filter(a => a.startsWith('--'));
-    const dryRun    = flags.includes('--dry-run');
+    const flags = process.argv.slice(2).filter(a => a.startsWith('--'));
+    const dryRun = flags.includes('--dry-run');
     const delayFlag = flags.find(f => f.startsWith('--delay='));
-    const pauseMs   = delayFlag ? parseInt(delayFlag.split('=')[1], 10) * 1000 : 10_000;
-
+    const pauseMs = delayFlag ? parseInt(delayFlag.split('=')[1], 10) * 1000 : 10_000;
     console.log('\n🔧 RAG Balcão Generator — 2 arquivos');
     console.log(`   Chamadas Gemini estimadas : 2`);
     console.log(`   Delay entre chamadas      : ${pauseMs / 1000}s`);
-    if (dryRun) console.log(`   [DRY-RUN] Nenhuma chamada real será feita.\n`);
-    else console.log('');
-
+    if (dryRun)
+        console.log(`   [DRY-RUN] Nenhuma chamada real será feita.\n`);
+    else
+        console.log('');
     let r1, r2;
     if (dryRun) {
         console.log('[1/2] [dry-run] ia-balcao-grid-sidebar-condicional ignorado');
         console.log('[2/2] [dry-run] ia-balcao-imagens-responsivas-blogger ignorado');
         r1 = r2 = true;
-    } else {
+    }
+    else {
         r1 = await gerarEsalvar('ia-balcao-grid-sidebar-condicional', PROMPT_GRID_SIDEBAR);
         console.log(`  ⏳ Aguardando ${pauseMs / 1000}s antes da próxima chamada...`);
         await new Promise(r => setTimeout(r, pauseMs));
         r2 = await gerarEsalvar('ia-balcao-imagens-responsivas-blogger', PROMPT_IMAGENS);
     }
-
     console.log(`\n✅ Concluído: ${[r1, r2].filter(Boolean).length}/2 ok`);
     if (r1 && r2) {
         console.log('\n   Próximo passo:');
@@ -209,8 +207,8 @@ async function main() {
         console.log('   git commit -m "feat: add ia-balcao RAG files for grid+sidebar and responsive images"');
     }
 }
-
-if (require.main === module) main().catch(err => {
-    console.error('Erro fatal:', err);
-    process.exit(1);
-});
+if (require.main === module)
+    main().catch((err) => {
+        console.error('Erro fatal:', err);
+        process.exit(1);
+    });
