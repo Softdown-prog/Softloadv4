@@ -2,9 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validarAlvoVisual = validarAlvoVisual;
 exports.criarHandlerVisual = criarHandlerVisual;
-/** Análise visual sob demanda: screenshot isolado -> Gemini Flash -> cobrança.
- * Nunca expõe PNG/Base64 no HTTP público e nunca faz captura implícita no chat.
- */
 const MAX_PNG_BYTES = 512 * 1024;
 function validarAlvoVisual(raw, originsCsv) {
     if (typeof raw !== 'string' || raw.length > 2048 || !raw.trim()) {
