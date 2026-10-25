@@ -33,7 +33,23 @@ function maximoOutput(valor: number | undefined): number {
 function custoDaReserva(modelo: string, payload: unknown, tokensOutput: number, cambio: number): number {
     // Bytes UTF-8 incluem instruções, schemas, tools e functionResponse.
     // É uma aproximação conservadora, NÃO garantia de teto físico de tokens.
-    const bytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+    // Imagem não é texto: Base64 da foto nunca deve ser contado como
+    // tokens de prompt. Reservamos 32 KiB de margem por PNG (conservador
+    // para uma captura limitada) e liquidamos com usageMetadata real.
+    // Rejeitamos anexos arbitrariamente grandes antes de chamar o provedor.
+    const payloadMedicao = JSON.stringify(payload, (key, value) => {
+        if (key === 'inlineData' && value && typeof value === 'object'
+            && value.mimeType === 'image/png' && typeof value.data === 'string') {
+            const bytesImagem = Math.floor(value.data.length * 3 / 4)
+                - (value.data.endsWith('==') ? 2 : value.data.endsWith('=') ? 1 : 0);
+            if (bytesImagem <= 0 || bytesImagem > 512 * 1024) {
+                throw new OrcamentoIaIndisponivel('IMAGEM_FORA_DO_LIMITE');
+            }
+            return { mimeType: value.mimeType, data: 'x'.repeat(32 * 1024) };
+        }
+        return value;
+    });
+    const bytes = Buffer.byteLength(payloadMedicao, 'utf8');
     if (!Number.isSafeInteger(bytes) || bytes > 1_000_000) {
         throw new OrcamentoIaIndisponivel('PROMPT_MUITO_GRANDE');
     }
