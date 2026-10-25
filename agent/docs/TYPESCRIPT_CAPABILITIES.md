@@ -254,6 +254,16 @@ esses imports nem exige um loader TypeScript em produção.
 - Os testes de ponta a ponta continuam compilando e executando o
   binário C++ real, com verificação de hash e de divergências.
 
+## Exemplos de integração TypeScript
+
+- `agent/src/orchestration/example-usage.ts` demonstra o ciclo
+  Programador–Validador com callbacks tipados do modelo e plano.
+- `agent/src/orchestration/orchestrator-example.ts` demonstra
+  delegação por papéis, subagentes em worktrees isolados e registro
+  de progresso, mantendo as mesmas chamadas dos arquivos JavaScript.
+- Ambos são exemplos, não entrypoints do Worker; o gate AST
+  preserva o comportamento antes de habilitar o JS emitido.
+
 ## Como validar
 
 ```bash
