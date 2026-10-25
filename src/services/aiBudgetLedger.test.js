@@ -21,8 +21,8 @@ function banco() {
                 const found=[...docs.entries()].filter(([k])=>k.startsWith(prefix))
                   .sort((a,b)=>b[1].criadoEm.localeCompare(a[1].criadoEm)).slice(0,n);
                 return {docs:found.map(([k,v])=>({id:k.slice(prefix.length),data:()=>structuredClone(v)}))};
-              }}};
-            }},
+              }}}};
+            },
           };
         }};
       }};
