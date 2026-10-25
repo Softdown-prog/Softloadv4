@@ -215,7 +215,10 @@
     "src/routes/dashboard_routes/reactTest.ts",
     "src/routes/dashboard_routes/index.ts",
     "src/routes/api_routes/appConfig.ts",
-    "src/routes/dashboard_routes/chat/chatHistory.ts"
+    "src/routes/dashboard_routes/chat/chatHistory.ts",
+    "src/rag/ragMatcher.ts",
+    "src/rag/design-rules/padroesVisuais.ts",
+    "src/middlewares/security.ts"
   ],
   "exclude": [
     "node_modules",

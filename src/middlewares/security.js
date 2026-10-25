@@ -1,7 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const cors = require('cors');
-
 const isProd = process.env.NODE_ENV === 'production';
-
 // ── Origens permitidas pelo CORS ─────────────────────────────────────────────
 const corsOptions = {
     origin: true,
@@ -10,7 +10,6 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 200,
 };
-
 // ── Security headers manuais (sem Helmet) ────────────────────────────────────
 // same-origin-allow-popups: permite janelas de OAuth e Checkout Pro (Mercado Pago)
 // sem bloquear o contexto de navegação do opener — ao contrário de 'same-origin'.
@@ -24,7 +23,6 @@ function helmetMiddleware(req, res, next) {
         res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
     next();
 }
-
 module.exports = {
     helmetMiddleware,
     corsMiddleware: cors(corsOptions),

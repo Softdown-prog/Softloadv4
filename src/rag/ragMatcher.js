@@ -1,4 +1,5 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ragMatcher — matching de palavras-chave compartilhado por todo o RAG
  * (chatRag, chatRagGpt e ragLoader).
@@ -14,7 +15,6 @@
  *  - Acentos normalizados dos dois lados — "semântica" casa com "semantica".
  *  - Keywords multi-palavra ("dark mode", "html semântico") casam como frase.
  */
-
 // Remove diacríticos e baixa a caixa — aplicado a texto E keyword.
 function normalizar(str) {
     return String(str || '')
@@ -22,9 +22,7 @@ function normalizar(str) {
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
 }
-
 const _cacheRegex = new Map();
-
 function _regexDe(keyword) {
     let re = _cacheRegex.get(keyword);
     if (!re) {
@@ -35,7 +33,6 @@ function _regexDe(keyword) {
     }
     return re;
 }
-
 /**
  * Cria um matcher para uma mensagem: normaliza o texto uma única vez e
  * devolve uma função que testa keywords contra ele.
@@ -46,11 +43,11 @@ function criarMatcher(texto) {
     const textoNorm = normalizar(texto);
     return (keyword) => {
         const kw = normalizar(keyword).trim();
-        if (!kw) return false;
+        if (!kw)
+            return false;
         return _regexDe(kw).test(textoNorm);
     };
 }
-
 /**
  * Pontua uma lista de keywords contra a mensagem. Score favorece
  * especificidade: soma do comprimento das keywords que casaram — uma frase
@@ -60,9 +57,11 @@ function criarMatcher(texto) {
 function pontuarKeywords(matcher, keywords) {
     let hits = 0, score = 0;
     for (const kw of (keywords || [])) {
-        if (matcher(kw)) { hits++; score += normalizar(kw).trim().length; }
+        if (matcher(kw)) {
+            hits++;
+            score += normalizar(kw).trim().length;
+        }
     }
     return { hits, score };
 }
-
 module.exports = { normalizar, criarMatcher, pontuarKeywords };
