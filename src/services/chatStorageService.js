@@ -33,8 +33,9 @@
 // já passam `cota` desde que este comentário foi escrito.
 // ============================================================
 
-const { bucket } = require('./firebase');
-const { reservarCota } = require('./storageService');
+const { bucket, db } = require('./firebase');
+const { reservarCota, reconciliarCotaArquivos } = require('./storageService');
+const { createHash, randomUUID } = require('node:crypto');
 
 function _tamanhoJson(obj) {
     return Buffer.byteLength(JSON.stringify(obj), 'utf8');
@@ -83,6 +84,93 @@ async function writeGcs(filePath, data) {
     );
 }
 
+
+async function readGcsSized(filePath) {
+    try {
+        const [bytes] = await bucket.file(filePath).download();
+        return { value: JSON.parse(bytes.toString('utf8')), bytes: bytes.length };
+    } catch (err) {
+        if (err.code === 404 || err.message?.includes('No such object')) {
+            return { value: null, bytes: 0 };
+        }
+        throw err;
+    }
+}
+
+async function writeGcsVerified(filePath, data) {
+    const content = JSON.stringify(data);
+    try {
+        await bucket.file(filePath).save(content, {
+            metadata: { contentType: 'application/json; charset=utf-8' }
+        });
+    } catch (error) {
+        // A GCS upload can complete and lose its acknowledgement.
+        // Verify the exact bytes before declaring an otherwise committed write failed.
+        try {
+            const [actual] = await bucket.file(filePath).download();
+            if (actual.toString('utf8') === content) return;
+        } catch (readError) {
+            console.error('[CHAT-STORAGE] gravação incerta; exige reconciliação:', filePath, readError);
+        }
+        throw error;
+    }
+}
+
+function lockId(uid, scope) {
+    if (typeof uid !== 'string' || !uid || typeof scope !== 'string' || !scope) {
+        throw new TypeError('Identidade de armazenamento inválida.');
+    }
+    return createHash('sha256').update(JSON.stringify([uid, scope])).digest('hex');
+}
+
+/**
+ * Firestore create() serializes writers across VPS replicas. Do not clear a
+ * lock by age: a slow worker can still be updating shared index/latest files.
+ */
+async function withChatLock(uid, scope, callback) {
+    const ref = db.collection('chat_storage_bloqueios').doc(lockId(uid, scope));
+    const owner = randomUUID();
+    let acquired = false;
+    for (let attempt = 0; attempt < 12; attempt++) {
+        try {
+            await ref.create({ uid, scope, owner, iniciadoEm: new Date().toISOString() });
+            acquired = true;
+            break;
+        } catch (error) {
+            if (![6, 409, 'ALREADY_EXISTS'].includes(error.code)) throw error;
+            if (attempt === 11) {
+                const busy = new Error('O histórico de chat está ocupado. Tente novamente.');
+                busy.code = 'CHAT_STORAGE_BUSY';
+                busy.status = 409;
+                throw busy;
+            }
+            await new Promise(resolve => setTimeout(resolve, Math.min(50 * (attempt + 1), 400)));
+        }
+    }
+    if (!acquired) throw new Error('Não foi possível adquirir o bloqueio de chat.');
+    try {
+        return await callback();
+    } finally {
+        try {
+            const snap = await ref.get();
+            if (snap.exists && snap.data()?.owner === owner) {
+                if (!snap.updateTime) throw new Error('Sem precondição de versão para liberar bloqueio.');
+                await ref.delete({ lastUpdateTime: snap.updateTime });
+            }
+        } catch (error) {
+            // A stale lock blocks future writes instead of risking concurrent loss.
+            console.error('[CHAT-STORAGE] falha ao liberar bloqueio:', error);
+        }
+    }
+}
+
+async function verifyWrites(entries) {
+    // Wait for every write to settle before releasing the cross-process lock.
+    const results = await Promise.allSettled(entries.map(item => writeGcsVerified(item.path, item.value)));
+    const failed = results.find(item => item.status === 'rejected');
+    if (failed) throw failed.reason;
+}
+
 // ── Sessões ───────────────────────────────────────────────────────────────
 
 /**
@@ -98,42 +186,49 @@ async function writeGcs(filePath, data) {
  * @param {object}   [cota]      {email, plano} — opcional, ver comentário de topo.
  */
 async function saveSession(uid, type, sessionId, { messages, tokens, meta = {} }, cota = null) {
-    const now = new Date().toISOString();
-    const session = { sessionId, uid, type, updatedAt: now, messages, tokens, meta };
+    const run = async () => {
+        const now = new Date().toISOString();
+        const session = { sessionId, uid, type, updatedAt: now, messages, tokens, meta };
+        const idxFile = indexPath(uid, type);
+        const sessionFile = sessionPath(uid, type, sessionId);
+        const latestFile = latestRefPath(uid, type);
 
-    // Atualiza o índice de sessões
-    const idxFile = indexPath(uid, type);
-    const existing = await readGcs(idxFile) || [];
-    const entry = {
-        sessionId,
-        firstMessage: messages[0]?.content?.slice(0, 80) || '',
-        updatedAt: now,
-        messageCount: messages.length,
+        // Read the GCS objects under the same distributed lock that protects writes.
+        const current = cota ? await Promise.all([
+            readGcsSized(sessionFile), readGcsSized(latestFile), readGcsSized(idxFile)
+        ]) : null;
+        const existing = (current ? current[2].value : await readGcs(idxFile)) || [];
+        const entry = {
+            sessionId,
+            firstMessage: messages[0]?.content?.slice(0, 80) || '',
+            updatedAt: now,
+            messageCount: messages.length,
+        };
+        const filtered = existing.filter(item => item.sessionId !== sessionId);
+        const newIndex = [entry, ...filtered];
+        const latestRefPayload = { sessionId, updatedAt: now };
+        const entries = [
+            { path: sessionFile, value: session },
+            { path: latestFile, value: latestRefPayload },
+            { path: idxFile, value: newIndex },
+        ];
+
+        if (cota) {
+            const changes = entries.map((item, i) => ({
+                path: item.path, bytesAntes: current[i].bytes, bytesDepois: _tamanhoJson(item.value)
+            }));
+            const increase = Math.max(0, changes.reduce((n, item) =>
+                n + item.bytesDepois - item.bytesAntes, 0));
+            // Preflight before GCS writes; the authoritative check runs in Firestore.
+            if (increase) await reservarCota(cota.email, cota.plano, increase);
+            await verifyWrites(entries);
+            await reconciliarCotaArquivos(cota.email, cota.plano, uid, changes);
+        } else {
+            await verifyWrites(entries);
+        }
+        return session;
     };
-    const filtered = existing.filter(e => e.sessionId !== sessionId);
-    const newIndex = [entry, ...filtered];
-    const latestRefPayload = { sessionId, updatedAt: now };
-
-    // Reserva cota ANTES de gravar (mesmo tamanho serve de estimativa E de
-    // real — ao contrário do ZIP de compilação, JSON não é comprimido, o
-    // byte count é exato de antemão) — lança e NÃO grava nada se estourar.
-    let confirmarUsoDaSessao = async () => {};
-    if (cota) {
-        const tamanhoBytes = _tamanhoJson(session) + _tamanhoJson(latestRefPayload) + _tamanhoJson(newIndex);
-        const { confirmarUso } = await reservarCota(cota.email, cota.plano, tamanhoBytes);
-        confirmarUsoDaSessao = () => confirmarUso(tamanhoBytes);
-    }
-
-    // Sessão + ponteiro latest + índice em paralelo
-    await Promise.all([
-        writeGcs(sessionPath(uid, type, sessionId), session),
-        writeGcs(latestRefPath(uid, type), latestRefPayload),
-        writeGcs(idxFile, newIndex),
-    ]);
-
-    await confirmarUsoDaSessao();
-
-    return session;
+    return cota ? withChatLock(uid, `sessions:${type}`, run) : run();
 }
 
 /**
@@ -213,19 +308,27 @@ async function loadMemory(uid) {
  * @param {object} [cota]  {email, plano} — opcional, ver comentário de topo do arquivo.
  */
 async function saveMemory(uid, patch, cota = null) {
-    const existing = await readGcs(memoryPath(uid)) || {};
-    const updated  = { ...existing, ...patch, uid, updatedAt: new Date().toISOString() };
-
-    if (cota) {
-        const tamanhoBytes = _tamanhoJson(updated);
-        const { confirmarUso } = await reservarCota(cota.email, cota.plano, tamanhoBytes);
-        await writeGcs(memoryPath(uid), updated);
-        await confirmarUso(tamanhoBytes);
-    } else {
-        await writeGcs(memoryPath(uid), updated);
-    }
-
-    return updated;
+    const run = async () => {
+        const location = memoryPath(uid);
+        const previous = cota ? await readGcsSized(location) : null;
+        const existing = (previous ? previous.value : await readGcs(location)) || {};
+        // Accept an internal updater to compute cumulative counters under lock.
+        const changes = typeof patch === 'function' ? patch(existing) : patch;
+        const updated = { ...existing, ...changes, uid, updatedAt: new Date().toISOString() };
+        if (cota) {
+            const bytesDepois = _tamanhoJson(updated);
+            const increase = Math.max(0, bytesDepois - previous.bytes);
+            if (increase) await reservarCota(cota.email, cota.plano, increase);
+            await writeGcsVerified(location, updated);
+            await reconciliarCotaArquivos(cota.email, cota.plano, uid, [
+                { path: location, bytesAntes: previous.bytes, bytesDepois }
+            ]);
+        } else {
+            await writeGcs(location, updated);
+        }
+        return updated;
+    };
+    return cota ? withChatLock(uid, 'memory', run) : run();
 }
 
 /**
@@ -237,29 +340,27 @@ async function saveMemory(uid, patch, cota = null) {
  * @param {object} [cota]   {email, plano} — opcional, repassado pra saveMemory.
  */
 async function updateMemoryFromSession(uid, session, cota = null) {
-    const existing = await readGcs(memoryPath(uid)) || {};
-
-    const patch = {
-        // Acumula tokens de todas as sessões (lifetime)
-        totalTokensUsed: (existing.totalTokensUsed || 0) + (session.tokens?.total || 0),
-        sessionCount:    (existing.sessionCount    || 0) + 1,
-        lastSessionAt:   session.updatedAt,
-        lastSessionType: session.type,
-    };
-
-    // Se a sessão gerou um template, salva as preferências para reusar em futuras sessões
-    if (session.meta?.commandJson) {
-        const cmd = session.meta.commandJson;
-        patch.lastTemplate = {
-            siteName:    cmd.siteName    || null,
-            colorPreset: cmd.colorPreset || null,
-            gridLayout:  cmd.gridLayout  || null,
-            heroSection: cmd.heroSection || null,
-            ts:          session.updatedAt,
+    // The updater executes inside saveMemory's distributed lock, so concurrent
+    // completed sessions cannot overwrite each other's cumulative counters.
+    return saveMemory(uid, existing => {
+        const patch = {
+            totalTokensUsed: (existing.totalTokensUsed || 0) + (session.tokens?.total || 0),
+            sessionCount: (existing.sessionCount || 0) + 1,
+            lastSessionAt: session.updatedAt,
+            lastSessionType: session.type,
         };
-    }
-
-    return saveMemory(uid, patch, cota);
+        if (session.meta?.commandJson) {
+            const cmd = session.meta.commandJson;
+            patch.lastTemplate = {
+                siteName: cmd.siteName || null,
+                colorPreset: cmd.colorPreset || null,
+                gridLayout: cmd.gridLayout || null,
+                heroSection: cmd.heroSection || null,
+                ts: session.updatedAt,
+            };
+        }
+        return patch;
+    }, cota);
 }
 
 /**

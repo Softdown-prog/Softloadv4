@@ -44,3 +44,47 @@ concorrentes. Testar perda de ACK, atualização concorrente, apagamento e
 migração de contagens legadas antes de alterar cota de usuários existentes.
 
 Nenhum teste desta auditoria acessa GCS ou Firestore reais.
+
+
+## Etapa 75 — cobrança incremental de sessões e memória de chat
+
+Os fluxos `saveSession` e `saveMemory` passam a cobrar **somente a variação de
+bytes** em cada arquivo sobrescrito no GCS. Para cada objeto, uma entrada em
+`storage_cota_arquivos` registra o último tamanho contabilizado. A transação
+Firestore atualiza o registro e `clientes_premium.storage_usado_mb` na mesma
+operação. Uma resposta de commit perdida seguida de repetição com os mesmos
+arquivos não aplica a diferença uma segunda vez.
+
+A primeira regravação de arquivo legado sem entrada no registro toma o tamanho
+anterior efetivamente lido do GCS como referência. **Não recalcula nem corrige
+automaticamente o saldo histórico** (que pode conter excesso devido a versões
+anteriores); uma reconciliação global exigiria auditoria de todos os objetos.
+
+O registro das sessões é serializado pela chave `uid + tipoDeChat` na
+coleção `chat_storage_bloqueios`. O da memória usa `uid + memory`.
+`DocumentReference.create()` impede escritores paralelos mesmo entre VPSs.
+O bloqueio é liberado com precondição de versão e dono; bloqueios órfãos não
+são removidos automaticamente. Operações que encontram um lock ativo tentam
+brevemente novamente e depois retornam `CHAT_STORAGE_BUSY`.
+
+As operações de GCS são verificadas por leitura exata quando a confirmação de
+escrita é perdida; para as três peças da sessão, todas as gravações terminam
+antes de liberar o lock. A operação de cota faz pré-verificação e conferência
+transacional posterior. `updateMemoryFromSession` passou a calcular contadores
+dentro do lock para não perder a atualização de duas sessões simultâneas.
+
+### Pendências deliberadas
+
+- `deleteSession` ainda não aceita cota e não credita arquivos excluídos.
+- Entradas e saldos legados anteriormente inflados requerem relatório de
+  reconciliação antes de qualquer correção retroativa.
+- Falhas definitivas entre upload de GCS e transação Firestore podem deixar
+  diferenças pendentes. Não há transação distribuída entre GCS e Firestore.
+- Chamadas legadas sem `cota` preservam comportamento anterior e não participam
+  do bloqueio/contabilização.
+- Rotinas de operação precisam monitorar `chat_storage_bloqueios` órfãos;
+  não habilitar TTL automático para essa coleção sem fencing de escritores.
+
+Os testes simulam regravações, variação negativa de tamanho, sessões distintas,
+atualizações paralelas de memória, perda de ACK e falha do GCS. Nenhum teste toca
+armazenamento ou Firestore reais.

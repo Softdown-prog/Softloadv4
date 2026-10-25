@@ -129,6 +129,58 @@ async function liberarCota(email, tamanhoBytes, operacaoId, trackingMutacao) {
     );
 }
 
+
+/**
+ * Quota do chat: each GCS object has a persisted byte baseline.
+ * The first rewrite of a legacy object credits/debits ONLY its difference,
+ * preserving the existing (possibly inflated) aggregate balance.
+ *
+ * All per-object state and the user's balance commit atomically, so an ACK
+ * lost after commit cannot double-charge a replay of the same objects.
+ * Callers MUST serialize writes to these paths across processes.
+ */
+async function reconciliarCotaArquivos(email, plano, uid, alteracoes) {
+    const emailKey = (email || '').toLowerCase();
+    if (!emailKey || typeof uid !== 'string' || !uid || !Array.isArray(alteracoes) || alteracoes.length === 0) {
+        throw new TypeError('Reconciliacao de quota exige email, uid e arquivos.');
+    }
+    const seen = new Set();
+    const items = alteracoes.map(({ path, bytesAntes, bytesDepois }) => {
+        if (typeof path !== 'string' || !path.startsWith(`users/${uid}/`) ||
+            path.includes('..') || seen.has(path) ||
+            !Number.isSafeInteger(bytesAntes) || bytesAntes < 0 ||
+            !Number.isSafeInteger(bytesDepois) || bytesDepois < 0) {
+            throw new TypeError('Arquivo ou tamanho de quota invalido.');
+        }
+        seen.add(path);
+        const id = createHash('sha256').update(JSON.stringify([emailKey, uid, path])).digest('hex');
+        return { path, bytesAntes, bytesDepois, ref: db.collection('storage_cota_arquivos').doc(id) };
+    });
+    const userRef = db.collection('clientes_premium').doc(emailKey);
+    const limiteMb = STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
+    return db.runTransaction(async tx => {
+        // All reads precede any write, as required by Firestore transactions.
+        const snapshots = await Promise.all(items.map(item => tx.get(item.ref)));
+        const user = await tx.get(userRef);
+        const deltaBytes = items.reduce((sum, item, i) =>
+            sum + item.bytesDepois - (snapshots[i].exists ? snapshots[i].data().bytes : item.bytesAntes), 0);
+        if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Diferenca de armazenamento fora do limite.');
+        const oldMb = user.exists ? (user.data().storage_usado_mb || 0) : 0;
+        if (deltaBytes > 0) verificarCota(oldMb, deltaBytes, limiteMb);
+        if (deltaBytes !== 0) {
+            tx.set(userRef, { storage_usado_mb: Math.max(0, oldMb + deltaBytes / (1024 * 1024)) }, { merge: true });
+        }
+        for (const item of items) {
+            tx.set(item.ref, {
+                uid, path: item.path, bytes: item.bytesDepois,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+        return { deltaBytes };
+    });
+}
+
+
 function readme(slug) {
     return (
         `Softload Engine — Template Compilado\n` +
@@ -218,4 +270,4 @@ async function deletarTodosArquivos(userId) {
     await bucket.deleteFiles({ prefix: `users/${userId}/` });
 }
 
-module.exports = { STORAGE_LIMITS_MB, verificarCota, reservarCota, liberarCota, salvarCompilacao, carregarManifesto, deletarTodosArquivos };
+module.exports = { STORAGE_LIMITS_MB, verificarCota, reservarCota, liberarCota, reconciliarCotaArquivos, salvarCompilacao, carregarManifesto, deletarTodosArquivos };
