@@ -73,3 +73,22 @@ jobs:
           mib="$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')"
           echo "[IMAGE] archive-slim: $bytes bytes ($mib MiB)"
           echo "Sandbox archive-slim: **$mib MiB** ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"
+
+  # Teste da imagem de auditoria web apenas em PR/dispatch. Em push na
+  # main, o deploy já constrói esta imagem e roda o smoke do Dockerfile.
+  browser-headless-shell:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagem com apenas Chromium Headless Shell
+        run: docker build --progress plain -t softload-sandbox:headless-shell -f sandbox-efemoro/Dockerfile sandbox-efemoro
+      - name: Medir imagem headless-shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          bytes="$(docker image inspect --format='{{.Size}}' softload-sandbox:headless-shell)"
+          mib="$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')"
+          echo "[IMAGE] headless-shell: $bytes bytes ($mib MiB)"
+          echo "Sandbox Headless Shell: **$mib MiB** ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"
