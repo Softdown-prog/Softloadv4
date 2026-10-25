@@ -5,7 +5,6 @@ exports.criarHandlerVisual = criarHandlerVisual;
 /** Análise visual sob demanda: screenshot isolado -> Gemini Flash -> cobrança.
  * Nunca expõe PNG/Base64 no HTTP público e nunca faz captura implícita no chat.
  */
-const node_crypto_1 = require("node:crypto");
 const MAX_PNG_BYTES = 512 * 1024;
 function validarAlvoVisual(raw, originsCsv) {
     if (typeof raw !== 'string' || raw.length > 2048 || !raw.trim()) {
@@ -80,7 +79,7 @@ function criarHandlerVisual(deps) {
             const tokens = resposta.tokens;
             const input = Number.isSafeInteger(tokens?.input) && tokens.input > 0 ? tokens.input : 16000;
             const output = Number.isSafeInteger(tokens?.output) && tokens.output > 0 ? tokens.output : 1024;
-            await deps.debitarCreditos(email, input, output, (0, node_crypto_1.randomUUID)());
+            await deps.debitarCreditos(email, input, output, require('node:crypto').randomUUID());
             return res.status(200).json({
                 ok: true,
                 analise: resposta.texto.slice(0, 8000),
