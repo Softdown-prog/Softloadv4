@@ -31,7 +31,8 @@
     "rag:boundaries-test": "node --test src/knowledge/ragNamespaces.test.js src/solaris/rag/codeCorpus.test.js && node src/rag/ragLoader.test.js && node scripts/ragEmbedIndex.test.js",
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
     "typecheck:frontend": "tsc --project tsconfig.frontend.json --noEmit",
-    "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs"
+    "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs",
+    "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",
