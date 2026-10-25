@@ -26,6 +26,7 @@ const NETWORK_IDLE_WAIT_MS = 3000;
  * @param {string} [options.device='desktop']
  * @param {object} [options.viewport]
  * @param {boolean} [options.screenshot=true]
+ * @param {"path"|"inline"} [options.screenshotDelivery="path"]
  * @param {boolean} [options.accessibility=true]
  * @param {string[]} [options.allowedHosts]
  * @param {number} [options.timeout=30000]
@@ -53,6 +54,7 @@ async function runWebSandbox(options) {
     responsive: { horizontalOverflow: false, viewportWarnings: [] },
     accessibility: { violations: [] },
     screenshotPath: null,
+    screenshot: null,
     errors: [],
     security: { blockedRequests: [] },
   };
@@ -69,6 +71,7 @@ async function runWebSandbox(options) {
       device,
       viewport,
       screenshot,
+      screenshotDelivery,
       accessibility,
       allowedHosts,
       timeout,
@@ -107,8 +110,11 @@ async function runWebSandbox(options) {
       .catch(() => {});
 
     if (screenshot) {
-      const screenshotResult = await captureScreenshot(page, browserType, device);
+      const screenshotResult = await captureScreenshot(page, browserType, device, {
+        delivery: screenshotDelivery,
+      });
       result.screenshotPath = screenshotResult.path;
+      result.screenshot = screenshotResult.screenshot || null;
       if (screenshotResult.error) {
         result.errors.push({ message: `Screenshot failed: ${screenshotResult.error}` });
       }
