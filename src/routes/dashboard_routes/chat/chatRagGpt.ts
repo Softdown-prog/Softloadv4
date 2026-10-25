@@ -48,7 +48,7 @@ let   GPT_RAG_FUNDACAO: string | null = null; // arquivo de fundação, sempre i
         }
         console.log(`[RAG-GPT] gpt-5-4: ${n} ficheiros exclusivos do GPT (fundação: ${GPT_RAG_FUNDACAO || 'nenhuma'})`);
     } catch (e) {
-        console.warn('[RAG-GPT] pasta gpt-5-4 ausente ou inválida:', e.message);
+        console.warn('[RAG-GPT] pasta gpt-5-4 ausente ou inválida:', (e as Error).message);
     }
 })();
 
