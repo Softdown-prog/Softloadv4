@@ -25,6 +25,8 @@ const sources = [
   "src/webSandbox/screenshots.ts",
   "src/webSandbox/browser.ts",
   "src/archive/zipExtractWorker.ts",
+  "src/webSandbox/runner.ts",
+  "src/server.ts",
 ];
 const ignored = new Set(["start", "end", "loc", "range", "raw"]);
 function semanticAst(input) {

@@ -31,7 +31,9 @@
     "src/webSandbox/network.ts",
     "src/webSandbox/screenshots.ts",
     "src/webSandbox/browser.ts",
-    "src/archive/zipExtractWorker.ts"
+    "src/archive/zipExtractWorker.ts",
+    "src/webSandbox/runner.ts",
+    "src/server.ts"
   ],
   "exclude": [
     "node_modules"

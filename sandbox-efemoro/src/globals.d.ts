@@ -1,4 +1,4 @@
-declare const process: { env: Record<string, string | undefined>; hrtime: { bigint(): bigint } };
+declare const process: { env: Record<string, string | undefined>; hrtime: { bigint(): bigint }; exit(code: number): never; on(signal: "SIGTERM" | "SIGINT", listener: () => void): void };
 
 // Contrato mínimo Node para imports usados no sandbox tipado.
 declare module "node:fs" {
@@ -36,4 +36,21 @@ declare module "node:worker_threads" {
 }
 declare const Buffer: {
   from(data: ArrayBuffer | Uint8Array): Uint8Array;
+  isBuffer(value: unknown): value is Uint8Array;
+  alloc(size: number): Uint8Array;
 };
+
+declare module "express" {
+  interface SandboxExpress {
+    (): {
+      use(...handlers: unknown[]): void;
+      get(path: string, handler: (...args: any[]) => unknown): void;
+      post(path: string, ...handlers: unknown[]): void;
+      listen(port: string | number, listener: () => void): { close(listener: () => void): void };
+    };
+    json(opts: { limit: string }): unknown;
+    raw(opts: { type: () => boolean; limit: number }): unknown;
+  }
+  const express: SandboxExpress;
+  export default express;
+}
