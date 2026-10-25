@@ -30,11 +30,17 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install Forge test dependencies
-        timeout-minutes: 12
+        timeout-minutes: 15
         run: |
+          set -euo pipefail
           python -m pip install --retries 3 --timeout 30 -r agent/forge/requirements.txt
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y ffmpeg fonts-dejavu-core
+          # Evita instalar pacotes "recomendados" alheios aos testes (como
+          # pocketsphinx-en-us, de 27 MB), que podem travar no espelho Ubuntu.
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            install -y --no-install-recommends ffmpeg fonts-dejavu-core
+          ffmpeg -version | head -n 1
       - run: npm test
       - run: npm run test:quality
       - run: npm run build
