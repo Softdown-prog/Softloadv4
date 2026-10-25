@@ -16,6 +16,8 @@ function harness(initial = {}) {
     let firestoreOffline = false;
     let outboxDeleteFailure = false;
     const objects = new Map();
+    const generations = new Map();
+    let cursorWriteError = false;
     let afterCommitTransientFailures = 0;
     let beforeCommitTransientFailures = 0;
     const inc = n => ({increment: n});
@@ -38,12 +40,20 @@ function harness(initial = {}) {
         file(name) {return {
             name,
             async save(content, options) {
-                assert.equal(options.preconditionOpts.ifGenerationMatch,0);
-                if (objects.has(name)) throw Object.assign(new Error('precondition'), {code:412});
+                const match=options.preconditionOpts.ifGenerationMatch;
+                const current=generations.get(name) || 0;
+                if (name === 'billing/state/recovery-cursor.json' && cursorWriteError)
+                    throw Object.assign(Error('cursor write failure'), {code:503});
+                if (String(match)!==String(current)) throw Object.assign(new Error('precondition'), {code:412});
                 objects.set(name,content);
+                generations.set(name,current+1);
+            },
+            async getMetadata() {
+                if(!objects.has(name)) throw Object.assign(new Error('not found'),{code:404});
+                return [{generation:String(generations.get(name) || 1)}];
             },
             async download() {if(!objects.has(name))throw Error('GCS missing');return [Buffer.from(objects.get(name))];},
-            async delete() {if(outboxDeleteFailure)throw Error('delete failed');objects.delete(name);},
+            async delete() {if(outboxDeleteFailure)throw Error('delete failed');objects.delete(name);generations.delete(name);},
         };},
         async getFiles({prefix,maxResults,startOffset}) {
             // GCS devolve nomes ordenados, startOffset inclusivo.
@@ -89,16 +99,20 @@ function harness(initial = {}) {
             }
         },
     };
-    const mod = {exports:{}};
-    vm.runInNewContext(SOURCE, {
+    const createApi = () => {
+      const mod = {exports:{}};
+      vm.runInNewContext(SOURCE, {
         module:mod, exports:mod.exports, Date, Promise, setTimeout,
         require(id) {
             assert.equal(id,'./firebase');
             return {db,admin:{firestore:{FieldValue:fieldValue}},bucket};
         },
         console:{error:(...args)=>calls.errors.push(args)},
-    },{filename:'creditService.js'});
-    return {api:mod.exports,docs,calls,objects,bucket,
+      },{filename:'creditService.js'});
+      return mod.exports;
+    };
+    return {api:createApi(),reboot:createApi,docs,calls,objects,bucket,
+        setCursorWriteError:flag=>{cursorWriteError=flag},
         setFirestoreOffline:flag=>{firestoreOffline=flag},
         setOutboxDeleteFailure:flag=>{outboxDeleteFailure=flag},
         setBillingError:flag=>{billingLogError=flag},
@@ -297,7 +311,7 @@ test('GCS: pendência sobrevive a falha prolongada do Firestore e é debitada pe
     assert.equal(result.processadas,1);
     assert.equal(result.falhas,0);
     assert.equal(h.docs.get(KEY).creditos,3);
-    assert.equal(h.objects.size,0);
+    assert.equal([...h.objects.keys()].filter(x=>x.startsWith('billing/pending/')).length,0);
     const again=await h.api.recuperarCobrancasPendentes();
     assert.equal(again.processadas,0);
 });
@@ -313,7 +327,7 @@ test('GCS: se exclusão da outbox falha, repetição encontra recibo sem segundo
     assert.equal(result.processadas,1);
     assert.equal(h.docs.get(KEY).creditos,3);
     assert.equal(h.calls.writes.filter(w=>w.op==='tx.update').length,1);
-    assert.equal(h.objects.size,0);
+    assert.equal([...h.objects.keys()].filter(x=>x.startsWith('billing/pending/')).length,0);
 });
 
 test('GCS: outbox recusa arquivo corrompido e não realiza cobrança', async () => {
@@ -370,6 +384,50 @@ test('GCS: cada ciclo mantém o limite e cursor não pula item ao retomar', asyn
     assert.equal((await h.api.recuperarCobrancasPendentes(2)).processadas,2);
     assert.equal((await h.api.recuperarCobrancasPendentes(2)).processadas,1);
     assert.equal(h.docs.get(KEY).creditos,4);
-    assert.equal(h.objects.size,0);
+    assert.equal([...h.objects.keys()].filter(x=>x.startsWith('billing/pending/')).length,0);
     assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,5);
+});
+
+
+test('GCS: após reinicialização, o recuperador retoma o cursor persistido', async () => {
+    const h = harness({[KEY]:{is_active:false,creditos:8}});
+    const ids=['cobranca-reinicio-0001','cobranca-reinicio-0002','cobranca-reinicio-0003'];
+    for(const id of ids) h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+        versao:1,operacaoId:id,email:EMAIL.toLowerCase(),
+        inputTokens:500,outputTokens:0,criadoEm:new Date().toISOString(),
+    }));
+    assert.equal((await h.api.recuperarCobrancasPendentes(1)).processadas,1);
+    assert.equal(JSON.parse(h.objects.get('billing/state/recovery-cursor.json')).cursor,'billing/pending/'+ids[0]+'.json');
+    const aposReinicio = h.reboot();
+    assert.equal((await aposReinicio.recuperarCobrancasPendentes(1)).processadas,1);
+    assert.equal(h.docs.get(KEY).creditos,6);
+    assert.equal(JSON.parse(h.objects.get('billing/state/recovery-cursor.json')).cursor,'billing/pending/'+ids[1]+'.json');
+    assert.equal((await aposReinicio.recuperarCobrancasPendentes(1)).processadas,1);
+    assert.equal(h.docs.get(KEY).creditos,5);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,3);
+});
+
+test('GCS: falha em salvar cursor alerta mas nunca desfaz cobrança confirmada', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    const id='cobranca-cursor-00001';
+    h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+        versao:1,operacaoId:id,email:EMAIL.toLowerCase(),
+        inputTokens:600,outputTokens:0,criadoEm:new Date().toISOString(),
+    }));
+    h.setCursorWriteError(true);
+    const r=await h.api.recuperarCobrancasPendentes(1);
+    assert.equal(r.processadas,1);
+    assert.equal(r.falhas,1);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.objects.has('billing/state/recovery-cursor.json'),false);
+    h.setCursorWriteError(false);
+    assert.equal((await h.reboot().recuperarCobrancasPendentes(1)).processadas,0);
+    assert.equal(h.docs.get(KEY).creditos,4);
+});
+
+test('GCS: cursor inválido interrompe recuperação para alertar operador', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    h.objects.set('billing/state/recovery-cursor.json','{"versao":1,"cursor":"../../invalido"}');
+    await assert.rejects(h.api.recuperarCobrancasPendentes(1),/Cursor persistido inválido/);
+    assert.equal(h.docs.get(KEY).creditos,5);
 });

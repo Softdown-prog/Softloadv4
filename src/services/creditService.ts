@@ -29,8 +29,9 @@ interface CreditDocumentRef {
 }
 interface BillingObject {
   name: string;
-  save(content: string, options: { contentType: string; resumable: boolean; preconditionOpts: { ifGenerationMatch: number } }): Promise<unknown>;
+  save(content: string, options: { contentType: string; resumable: boolean; preconditionOpts: { ifGenerationMatch: number | string } }): Promise<unknown>;
   download(): Promise<[{ toString(encoding: string): string }]>;
+  getMetadata(): Promise<[{ generation: string }]>;
   delete(options: { ignoreNotFound: boolean }): Promise<unknown>;
 }
 interface BillingBucket {
@@ -54,9 +55,41 @@ const FV = admin.firestore.FieldValue;
 const TOKENS_POR_CREDITO = 1000;
 const EXPIRY_DAYS = 30;
 const BILLING_RETRY_PREFIX = 'billing/pending/';
-// Cursor por instância: evita que o mesmo grupo de pendências permanentes
-// bloqueie para sempre operações posteriores. Ao chegar ao fim, reinicia.
-let ultimoPendenteInspecionado: string | null = null;
+const BILLING_CURSOR_OBJECT = 'billing/state/recovery-cursor.json';
+type EstadoCursor = { cursor: string | null; generation: string | number };
+
+/** O estado fica fora de billing/pending/ para não virar uma cobrança falsa.
+ *  GCS 404 indica ausência de cursor (primeira execução). Outros erros
+ *  interrompem a recuperação para não encobrir falhas de armazenamento. */
+async function lerCursorRecuperacao(): Promise<EstadoCursor> {
+  const file = bucket!.file(BILLING_CURSOR_OBJECT);
+  try {
+    const [metadata] = await file.getMetadata();
+    const [bytes] = await file.download();
+    const valor = JSON.parse(bytes.toString('utf8')) as { versao?: number; cursor?: unknown };
+    if (valor?.versao !== 1 || (valor.cursor !== null
+      && (typeof valor.cursor !== 'string' || !valor.cursor.startsWith(BILLING_RETRY_PREFIX)
+        || valor.cursor.length > 260))) {
+      throw new Error('Cursor persistido inválido');
+    }
+    return { cursor: valor.cursor, generation: metadata.generation };
+  } catch (e) {
+    if ((e as { code?: number } | null)?.code === 404) return { cursor: null, generation: 0 };
+    throw e;
+  }
+}
+/** CAS impede uma instância mais lenta de sobrescrever o avanço de outra.
+ *  Um conflito 412 não é erro: a próxima execução lê o cursor atualizado. */
+async function gravarCursorRecuperacao(cursor: string | null, generation: string | number): Promise<void> {
+  try {
+    await bucket!.file(BILLING_CURSOR_OBJECT).save(JSON.stringify({ versao: 1, cursor }), {
+      contentType: 'application/json', resumable: false,
+      preconditionOpts: { ifGenerationMatch: generation },
+    });
+  } catch (e) {
+    if ((e as { code?: number } | null)?.code !== 412) throw e;
+  }
+}
 
 interface CobrancaPendente {
   versao: 1;
@@ -92,14 +125,13 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
     });
     return files.filter(file => !inicio || file.name > inicio).slice(0, limite);
   }
-  let files = await obterLote(ultimoPendenteInspecionado);
-  if (files.length === 0 && ultimoPendenteInspecionado) {
-    // Fim do espaço de nomes: retomar desde o início, sem deixar arquivos
-    // antigos sem nova tentativa de cobrança.
-    ultimoPendenteInspecionado = null;
+  const anterior = await lerCursorRecuperacao();
+  let files = await obterLote(anterior.cursor);
+  if (files.length === 0 && anterior.cursor) {
+    // A lista chegou ao fim; o próximo ciclo deve voltar ao começo.
     files = await obterLote(null);
   }
-  if (files.length) ultimoPendenteInspecionado = files[files.length - 1].name;
+  const proximoCursor = files.length ? files[files.length - 1].name : null;
   let processadas = 0;
   let falhas = 0;
   for (const file of files) {
@@ -114,6 +146,16 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
     } catch (err) {
       falhas++;
       console.error('[BILLING] Recuperação pendente falhou:', file.name, err);
+    }
+  }
+  // Persistir depois de processar: após uma queda, reexecutar o lote
+  // anterior não duplica débitos por causa dos recibos transacionais.
+  if (proximoCursor !== anterior.cursor) {
+    try {
+      await gravarCursorRecuperacao(proximoCursor, anterior.generation);
+    } catch (e) {
+      falhas++;
+      console.error('[BILLING] Falha ao persistir cursor GCS:', e);
     }
   }
   return { processadas, falhas };
