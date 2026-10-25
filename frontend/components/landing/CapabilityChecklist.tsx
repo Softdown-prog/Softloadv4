@@ -3,8 +3,17 @@ import {
     ArrowRightLeft, Settings2, Grid3x3, TrendingUp, FileJson, Radar,
     Menu as MenuIcon, MoonStar, Zap, Smartphone, LayoutGrid, Share2,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-const CAPACIDADES = [
+interface Capacidade {
+    icon: LucideIcon;
+    cor: string;
+    bg: string;
+    titulo: string;
+    desc: string;
+}
+
+const CAPACIDADES: Capacidade[] = [
     { icon: ArrowRightLeft, cor: '#4ade80', bg: 'rgba(74,222,128,.1)', titulo: 'Corrigir XML quebrado', desc: 'Detecta e corrige b:section, b:widget e b:includable' },
     { icon: Settings2, cor: '#38bdf8', bg: 'rgba(56,189,248,.1)', titulo: 'Gerar widgets Blogger nativos', desc: 'Sidebar, header, rodapé e posts relacionados' },
     { icon: Grid3x3, cor: '#818cf8', bg: 'rgba(129,140,248,.1)', titulo: 'Criar homepage completa', desc: 'Grid de posts, destaque e paginação nativa' },
@@ -19,8 +28,8 @@ const CAPACIDADES = [
     { icon: Share2, cor: '#38bdf8', bg: 'rgba(56,189,248,.1)', titulo: 'Open Graph dinâmico', desc: 'og:image via data:post.featuredImage do Blogger' },
 ];
 
-function CapItem({ item, index }) {
-    const ref = useRef(null);
+function CapItem({ item, index }: { item: Capacidade; index: number }): React.JSX.Element {
+    const ref = useRef<HTMLDivElement | null>(null);
     const Icon = item.icon;
 
     useEffect(() => {
@@ -61,7 +70,7 @@ function CapItem({ item, index }) {
     );
 }
 
-export default function CapabilityChecklist() {
+export default function CapabilityChecklist(): React.JSX.Element {
     return (
         <div className="d-flex flex-column gap-2">
             {CAPACIDADES.map((item, i) => (

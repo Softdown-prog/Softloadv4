@@ -7,17 +7,18 @@ const STORAGE_KEY = 'softload_cookie_consent';
 // visitante que já aceitou.
 const CONSENT_VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
 
-function hasConsent() {
+function hasConsent(): boolean {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return false;
     try {
-        return Date.now() < JSON.parse(data).expiry;
+        const stored = JSON.parse(data) as { expiry: number };
+        return Date.now() < stored.expiry;
     } catch {
         return false;
     }
 }
 
-export default function CookieConsent() {
+export default function CookieConsent(): React.JSX.Element | null {
     const [visible, setVisible] = useState(false);
     const [entered, setEntered] = useState(false);
 

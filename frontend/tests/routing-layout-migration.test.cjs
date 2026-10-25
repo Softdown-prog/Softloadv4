@@ -55,10 +55,29 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/layouts/AdminLayout.tsx',
     'frontend/layouts/DashboardLayout.tsx',
     'frontend/components/Pill.tsx',
+    'frontend/components/PublicFooter.tsx',
+    'frontend/components/PublicNavbar.tsx',
+    'frontend/components/CookieConsent.tsx',
+    'frontend/components/landing/CapabilityChecklist.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
     assert.equal(ast.parseDiagnostics.length, 0, relative);
     assert.equal(fs.existsSync(file.replace(/\.tsx$/, '.jsx')), false, relative);
   }
+});
+
+test('Navbar, consentimento e lista de capacidades mantêm contratos públicos', () => {
+  const navbar = source('frontend/components/PublicNavbar.tsx');
+  const consent = source('frontend/components/CookieConsent.tsx');
+  const list = source('frontend/components/landing/CapabilityChecklist.tsx');
+  assert.match(navbar, /fetchAppConfig\(\)/);
+  assert.match(navbar, /config\.user \?\? null/);
+  assert.match(navbar, /aria-expanded={mobileOpen}/);
+  assert.match(navbar, /href="\/logout"/);
+  assert.match(consent, /softload_cookie_consent/);
+  assert.match(consent, /365 \* 24 \* 60 \* 60 \* 1000/);
+  assert.match(consent, /localStorage\.setItem/);
+  assert.match(list, /IntersectionObserver/);
+  assert.match(list, /CAPACIDADES\.map/);
 });

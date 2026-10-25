@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
-import { fetchAppConfig } from '../services/api';
+import { fetchAppConfig, type AppUser } from '../services/api';
 
 const NAV_LINKS = [
     { href: '/', label: 'Radar' },
@@ -8,14 +8,14 @@ const NAV_LINKS = [
     { href: '/contato', label: 'Contato' },
 ];
 
-export default function PublicNavbar() {
-    const [user, setUser] = useState(null);
+export default function PublicNavbar(): React.JSX.Element {
+    const [user, setUser] = useState<AppUser | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
         let mounted = true;
         fetchAppConfig().then((config) => {
-            if (mounted && config) setUser(config.user);
+            if (mounted && config) setUser(config.user ?? null);
         });
         return () => { mounted = false; };
     }, []);

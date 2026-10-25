@@ -32,6 +32,7 @@
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
     "typecheck:frontend": "tsc --project tsconfig.frontend.json --noEmit",
     "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs",
+    "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs",
     "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs"
   },
   "dependencies": {

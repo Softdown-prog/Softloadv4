@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PublicFooter() {
+export default function PublicFooter(): React.JSX.Element {
     return (
         <footer className="sl-footer">
             <div className="container-xl">
