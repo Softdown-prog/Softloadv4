@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // ──────────────────────────────────────────────────────────────────────────
 // RAG EXCLUSIVO DO GPT — pasta gpt-5-4/

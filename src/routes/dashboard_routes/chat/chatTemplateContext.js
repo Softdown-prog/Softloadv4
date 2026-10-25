@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const { db } = require('../../../services/firebase');
 const { COLOR_PRESETS } = require('../../../core/presets');

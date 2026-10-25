@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const { COLOR_PRESETS } = require('../../../core/presets');
 // Constrói contexto rico do template para injeção permanente no system prompt.
