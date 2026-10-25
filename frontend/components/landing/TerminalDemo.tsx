@@ -90,9 +90,11 @@ export default function TerminalDemo({ start }: TerminalDemoProps): React.JSX.El
     useEffect(() => {
         if (!start) return;
 
-        const chatArea = chatAreaRef.current;
-        const inputEl = inputElRef.current;
-        const indicators = indicatorsRef.current;
+        // Os elementos são conferidos logo abaixo; a anotação de não nulo
+        // preserva esses tipos dentro dos callbacks agendados pelo timer.
+        const chatArea = chatAreaRef.current!;
+        const inputEl = inputElRef.current!;
+        const indicators = indicatorsRef.current!;
         if (!chatArea || !inputEl || !indicators) return;
 
         let cancelado = false;
