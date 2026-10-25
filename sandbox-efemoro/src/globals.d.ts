@@ -36,11 +36,13 @@ declare module "node:worker_threads" {
 }
 interface Buffer extends Uint8Array {
   toString(encoding?: string): string;
+  subarray(begin?: number, end?: number): Buffer;
 }
 declare const Buffer: {
   from(data: ArrayBuffer | Uint8Array | string, encoding?: string): Buffer;
   isBuffer(value: unknown): value is Buffer;
   alloc(size: number): Buffer;
+  concat(chunks: readonly Uint8Array[]): Buffer;
 };
 
 declare module "express" {
@@ -56,4 +58,26 @@ declare module "express" {
   }
   const express: SandboxExpress;
   export default express;
+}
+
+declare module "node:child_process" {
+  interface ChildStream { on(event: "data", listener: (chunk: Buffer) => void): void }
+  interface Child {
+    stdout: ChildStream;
+    stderr: ChildStream;
+    on(event: "error", listener: (error: Error & { code?: string }) => void): void;
+    on(event: "close", listener: (code: number | null, signal: string | null) => void): void;
+    kill(signal: string): boolean;
+  }
+  export function spawn(file: string, args: string[], opts: { stdio: string[]; windowsHide: boolean }): Child;
+}
+declare module "node:fs/promises" {
+  const fsp: {
+    mkdtemp(prefix: string): Promise<string>;
+    writeFile(path: string, data: Uint8Array, opts?: { flag?: string }): Promise<void>;
+    rm(path: string, opts: { recursive: boolean; force: boolean }): Promise<void>;
+    readFile(path: string): Promise<Buffer>;
+    statfs(path: string): Promise<{ bavail: number; bsize: number }>;
+  };
+  export default fsp;
 }
