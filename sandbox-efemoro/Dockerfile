@@ -51,7 +51,8 @@ COPY src ./src
 # Usuário não-root: este container renderiza conteúdo NÃO confiável
 # (a app sob teste) dentro de um navegador -- não há motivo para isso
 # rodar como root, e reduz o dano de um eventual escape do Chromium.
-RUN groupadd -r sandbox \
+RUN chmod 0755 /app/src/webSandbox/browserUlimitWrapper.sh \
+    && groupadd -r sandbox \
     && useradd -r -g sandbox -m sandbox \
     && chown -R sandbox:sandbox /app
 USER sandbox
