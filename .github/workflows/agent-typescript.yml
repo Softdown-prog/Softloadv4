@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/scripts/**'
       - 'agent/src/core/**'
       - 'agent/src/notifications/**'
       - 'agent/src/orchestration/**'
@@ -30,6 +31,7 @@ on:
   pull_request:
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/scripts/**'
       - 'agent/src/core/**'
       - 'agent/src/notifications/**'
       - 'agent/src/orchestration/**'

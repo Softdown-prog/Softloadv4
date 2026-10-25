@@ -67,6 +67,7 @@ const sources = [
   "agent/src/utils/diff-patch-engine.ts",
   "agent/src/orchestration/example-usage.ts",
   "agent/src/orchestration/orchestrator-example.ts",
+  "agent/scripts/vendorPowerUp.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

@@ -264,6 +264,19 @@ esses imports nem exige um loader TypeScript em produção.
 - Ambos são exemplos, não entrypoints do Worker; o gate AST
   preserva o comportamento antes de habilitar o JS emitido.
 
+## Preparação do código nativo tipada
+
+- `agent/scripts/vendorPowerUp.ts` contém a fonte TypeScript do
+  preparador do C++ `Power-up/diff_patch_engine.cpp` para o contexto
+  Docker `agent/native/`. O script `.js` adjacente continua executável
+  por Node 22 antes do build; a comparação AST impede mudanças
+  funcionais inadvertidas.
+- `agent/scripts/vendorPowerUp.test.js` valida uma cópia local da
+  estrutura do monorepo, confirmando a cópia fiel do arquivo e a
+  rejeição quando a fonte C++ está ausente.
+- Os tipos de `node:fs` e `node:url` são apenas declarações locais,
+  sem acrescentar dependências ou custo na VPS.
+
 ## Como validar
 
 ```bash
