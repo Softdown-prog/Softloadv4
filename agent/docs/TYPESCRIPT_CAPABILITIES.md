@@ -47,6 +47,9 @@ esses imports nem exige um loader TypeScript em produção.
 - `github.ts` — contratos de issues, PRs e repositórios via Octokit,
   com validações obrigatórias preservadas.
 
+- `code-search.ts` — busca no código com ripgrep/fallback e limites de
+  resultados, sem alterar a execução existente.
+
 ## Como validar
 
 ```bash

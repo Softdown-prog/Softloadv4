@@ -22,7 +22,7 @@ declare module "execa" {
   export function execa(
     executable: string,
     args: string[],
-    options: { cwd: string; reject: false; timeout?: number },
+    options: { cwd?: string; reject: false; timeout?: number },
   ): Promise<{
     exitCode: number | undefined;
     stdout: string;
