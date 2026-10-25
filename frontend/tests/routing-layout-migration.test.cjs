@@ -63,6 +63,8 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/components/settings/AcessibilidadeTab.tsx',
     'frontend/components/CodeBlock.tsx',
     'frontend/components/MermaidBlock.tsx',
+    'frontend/components/MarkdownRenderer.tsx',
+    'frontend/components/landing/TerminalDemo.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -101,4 +103,24 @@ test('componentes TypeScript do painel e chat preservam integrações', () => {
   assert.match(mermaid, /securityLevel: 'strict'/);
   assert.match(mermaid, /containerRef\.current\.innerHTML = svg/);
   assert.match(mermaid, /if \(!cancelado\) setErro\(/);
+});
+
+test('renderizador Markdown preserva blocos de codigo e diagramas Mermaid', () => {
+  const markdown = source('frontend/components/MarkdownRenderer.tsx');
+  assert.match(markdown, /React\.Children\.only\(children\)/);
+  assert.match(markdown, /language-\(\\w\+\)/);
+  assert.match(markdown, /match\[1\] === 'mermaid'/);
+  assert.match(markdown, /<MermaidBlock code={code} \/>/);
+  assert.match(markdown, /<CodeBlock code={code} language={match\?\.\[1\]} \/>/);
+});
+
+test('terminal animado preserva acessibilidade, temporizadores e cancelamento', () => {
+  const demo = source('frontend/components/landing/TerminalDemo.tsx');
+  assert.match(demo, /const DEMOS: readonly DemoConversation\[\]/);
+  assert.match(demo, /clearAll\(\)/);
+  assert.match(demo, /cancelado = true/);
+  assert.match(demo, /addEventListener\('keydown'/);
+  assert.match(demo, /e\.key === 'Enter' \|\| e\.key === ' '/);
+  assert.match(demo, /role', 'button'/);
+  assert.match(demo, /startDemo\(\(idx \+ 1\) % DEMOS\.length\)/);
 });

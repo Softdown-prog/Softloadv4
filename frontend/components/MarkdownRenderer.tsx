@@ -1,5 +1,5 @@
 import React from 'react';
-import Markdown from 'react-markdown';
+import Markdown, { type Components } from 'react-markdown';
 import MermaidBlock from './MermaidBlock';
 import CodeBlock from './CodeBlock';
 
@@ -8,9 +8,9 @@ import CodeBlock from './CodeBlock';
 // (não de <code>, pra não aninhar <div>/pill dentro de <pre>): ```mermaid```
 // vira diagrama SVG via MermaidBlock, qualquer outra linguagem ganha
 // highlight + pill (nome da linguagem + copiar) via CodeBlock.
-const components = {
+const components: Components = {
     pre({ children }) {
-        const child = React.Children.only(children);
+        const child = React.Children.only(children) as React.ReactElement<{ className?: string; children?: React.ReactNode }>;
         const className = child?.props?.className || '';
         const match = /language-(\w+)/.exec(className);
         const code = String(child?.props?.children ?? '').replace(/\n$/, '');
@@ -22,6 +22,10 @@ const components = {
     },
 };
 
-export default function MarkdownRenderer({ children }) {
+export interface MarkdownRendererProps {
+    children: string;
+}
+
+export default function MarkdownRenderer({ children }: MarkdownRendererProps): React.JSX.Element {
     return <Markdown components={components}>{children}</Markdown>;
 }

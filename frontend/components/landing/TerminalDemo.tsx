@@ -8,7 +8,24 @@ import React, { useEffect, useRef } from 'react';
 // forçado pra state React) porque é uma máquina de estados com timers
 // encadeados e precisos — reescrever pra state puro só trocaria uma
 // lógica já testada por uma nova, sem ganho real numa animação decorativa.
-const DEMOS = [
+type DemoLineKind = 'text' | 'warn' | 'ok' | 'code';
+type TerminalMessageKind = 'user' | 'thinking' | DemoLineKind;
+
+interface DemoLine {
+    t: DemoLineKind;
+    c: string;
+}
+
+interface DemoConversation {
+    user: string;
+    lines: readonly DemoLine[];
+}
+
+export interface TerminalDemoProps {
+    start: boolean;
+}
+
+const DEMOS: readonly DemoConversation[] = [
     {
         user: 'Corrija o XML quebrado do meu template',
         lines: [
@@ -61,14 +78,14 @@ const DEMOS = [
     },
 ];
 
-function avatarHtml() {
+function avatarHtml(): string {
     return '<div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#818cf8,#38bdf8);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;font-family:monospace">IA</div>';
 }
 
-export default function TerminalDemo({ start }) {
-    const chatAreaRef = useRef(null);
-    const inputElRef = useRef(null);
-    const indicatorsRef = useRef(null);
+export default function TerminalDemo({ start }: TerminalDemoProps): React.JSX.Element {
+    const chatAreaRef = useRef<HTMLDivElement | null>(null);
+    const inputElRef = useRef<HTMLSpanElement | null>(null);
+    const indicatorsRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (!start) return;
@@ -79,13 +96,13 @@ export default function TerminalDemo({ start }) {
         if (!chatArea || !inputEl || !indicators) return;
 
         let cancelado = false;
-        let timers = [];
-        function sched(fn, ms) { timers.push(setTimeout(fn, ms)); }
-        function clearAll() { timers.forEach(clearTimeout); timers = []; }
+        let timers: ReturnType<typeof setTimeout>[] = [];
+        function sched(fn: () => void, ms: number): void { timers.push(setTimeout(fn, ms)); }
+        function clearAll(): void { timers.forEach(clearTimeout); timers = []; }
 
-        function scrollFim() { chatArea.scrollTop = chatArea.scrollHeight; }
+        function scrollFim(): void { chatArea.scrollTop = chatArea.scrollHeight; }
 
-        function addMsg(type, content) {
+        function addMsg(type: TerminalMessageKind, content: string): HTMLDivElement {
             const el = document.createElement('div');
             el.className = 'term-line mb-2';
             if (type === 'user') {
@@ -119,7 +136,7 @@ export default function TerminalDemo({ start }) {
             return el;
         }
 
-        function typeInInput(text, done) {
+        function typeInInput(text: string, done?: () => void): void {
             let i = 0;
             inputEl.textContent = '';
             function step() {
@@ -131,7 +148,7 @@ export default function TerminalDemo({ start }) {
             step();
         }
 
-        function startDemo(idx) {
+        function startDemo(idx: number): void {
             if (cancelado) return;
             clearAll();
             chatArea.innerHTML = '';

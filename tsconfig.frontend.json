@@ -36,6 +36,8 @@
     "frontend/components/settings/AcessibilidadeTab.tsx",
     "frontend/components/CodeBlock.tsx",
     "frontend/components/MermaidBlock.tsx",
+    "frontend/components/MarkdownRenderer.tsx",
+    "frontend/components/landing/TerminalDemo.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [
