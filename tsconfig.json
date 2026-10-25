@@ -184,7 +184,8 @@
     "scripts/setupAdmin.ts",
     "scripts/generateRagBalcao.ts",
     "scripts/visual/compareTemplates.ts",
-    "scripts/gerar-blocos-rag.ts"
+    "scripts/gerar-blocos-rag.ts",
+    "scripts/audit-template-fidelity.ts"
   ],
   "exclude": [
     "node_modules",

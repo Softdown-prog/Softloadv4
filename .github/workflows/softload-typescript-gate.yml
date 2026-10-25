@@ -9,6 +9,9 @@ on:
       - 'src/solaris/code-examples/**'
       - 'examples/solaris-code/**'
       - 'scripts/codeCorpus/**'
+      - 'scripts/audit-template-fidelity.ts'
+      - 'scripts/audit-template-fidelity.js'
+      - 'scripts/audit-template-fidelity.contract.test.js'
       - 'scripts/visual/renderPreview.ts'
       - 'scripts/visual/compareTemplates.ts'
       - 'scripts/visual/compareTemplates.js'
@@ -112,6 +115,8 @@ jobs:
         run: node --test scripts/generateRagBalcao.test.js
       - name: Testar geração Blogger UI sem créditos de API
         run: node --test scripts/gerar-blocos-rag.test.js
+      - name: Contratos de fidelidade estrutural Blogger (sem navegador)
+        run: node --test scripts/audit-template-fidelity.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

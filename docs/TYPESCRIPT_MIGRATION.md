@@ -1369,3 +1369,19 @@ desktop/mobile, relatório JSON e painel, ignorar nicho sem referência e isolar
 falhas de navegação; verifica fechamento de cada página e do navegador.
 O Gate TypeScript valida a fonte e o espelho exato e executa as regressões
 com mocks em arquivos temporários.
+
+## Etapa 78 — auditoria estrutural Blogger em TypeScript
+
+`scripts/audit-template-fidelity.ts` passa a ser a fonte tipada de
+`audit-template-fidelity.js` (espelho CommonJS mantido). A auditoria
+continua medindo **estrutura**, não aparência: assinatura de seções,
+widgets, includables, Bootstrap CSS/JS, cobertura de seções (75%) e de
+tipos de widget (25%), aliases autorais documentados, e corte mínimo de
+75 pontos. Sem XML autoral, a pontuação estrutural não é inferida.
+
+O comando e os relatórios `fidelity.json` / `fidelity.md` permanecem
+compatíveis. O teste `scripts/audit-template-fidelity.contract.test.js`
+injeta compilador e diagnóstico simulados, verifica pesos, deduplicação,
+referências ausentes, falhas individuais e os arquivos gerados, sem
+requerer navegador nem servidor. O Gate TypeScript inclui o novo teste e
+verifica que o JavaScript coincide com a geração do compilador.
