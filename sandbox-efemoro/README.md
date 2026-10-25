@@ -63,11 +63,56 @@ POST /run              -> 200 com o resultado estruturado (ver runner.js)
     device?: "desktop" | "android-mobile" | "iphone" | "tablet" | "mobile-landscape",
     viewport?: { width: number, height: number },
     screenshot?: boolean,
+    screenshotDelivery?: "path" | "inline",  // default: "path" (legado)
     accessibility?: boolean,
     allowedHosts?: string[],   // "host" ou "host:porta"
     timeout?: number           // ms, 1000-120000
   }
 ```
+
+### Screenshot entre containers (Agent → sandbox)
+
+O sandbox continua aceitando `screenshotDelivery: "path"` (valor padrão)
+para clientes legados: retorna `screenshotPath`, apontando a um arquivo
+**local do próprio sandbox**. O Agent **não deve usar esse caminho**,
+pois roda em outro container.
+
+Para entregar a imagem ao Solaris, a capability TypeScript
+`websandbox.run` envia automaticamente `screenshotDelivery: "inline"`
+quando `screenshot !== false`. A resposta autenticada contém:
+
+```json
+{
+  "success": true,
+  "screenshotPath": null,
+  "screenshot": {
+    "mimeType": "image/png",
+    "dataBase64": "iVBORw0KGgo...",
+    "bytes": 12345,
+    "fullPage": true
+  }
+}
+```
+
+Esse PNG é transportado pelo HTTPS interno da implantação (ou HTTP na
+rede isolada Docker, conforme configuração). `dataBase64` é **conteúdo
+binário codificado**, não uma URL pública. Quem consome a capability
+pode decodificar e encaminhar os pixels a um componente de imagem ou
+persisti-los num armazenamento autorizado; não deve incluir o base64
+nos logs, prompts textuais ou respostas exibidas ao usuário.
+
+O modo inline não grava PNG em `/tmp`, limita o buffer a 4 MiB e
+limita a superfície renderizada a 16 milhões de pixels e 8192 pixels
+de altura. Se uma página exceder esse tamanho, recua para screenshot
+do viewport (campo `fullPage: false`); se ainda exceder 4 MiB,
+retorna `success:false` com mensagem de erro. O modo legado
+continua inalterado.
+
+O agente valida tipo PNG, prefixo, bytes e comprimento antes de
+repassar o resultado. Isto **não** é uma rota de armazenamento nem
+torna imagens automaticamente visíveis ao modelo multimodal: o
+consumidor final deve integrar os bytes ao fluxo de imagens. Não se
+adicionou endpoint de arquivo nem acesso do sandbox ao workspace.
 
 `POST /run` praticamente nunca responde com erro HTTP pela falha da
 auditoria em si (ex: página não carregou) -- isso vira
