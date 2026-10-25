@@ -51,3 +51,11 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Preservadas as regras originais: arquivos inválidos ficam em drafts, candidatos repetidos ficam bloqueados e somente entradas aprovadas entram nas pastas do catálogo Solaris.
 - O comando `npm run rag:organizar` continua tendo efeitos de escrita/movimentação **quando executado manualmente**. No CI executa-se apenas `node scripts/ragOrganizarRascunhos.test.js`, com diretórios temporários isolados.
 - Não há acesso ao RAG Blogger, à coleção vetorial de código, ao Firestore ou a credenciais no teste do organizador.
+
+## Lote — indexador vetorial técnico Solaris
+
+- `scripts/ragEmbedIndex.ts` tipa entradas do catálogo, parâmetros, resultados de embedding, Firestore injetado e o relatório de indexação; `ragEmbedIndex.js` continua sendo o espelho CommonJS do CLI.
+- `npm run rag:embed-index` mantém o comportamento original de indexar o catálogo técnico. **Não executar em CI com credenciais reais.**
+- `removerVetoresOrfaos` atua somente na coleção técnica `solaris_rag_vectors` e não remove vetores quando o catálogo está vazio ou quando `idsFiltro` restringe a indexação.
+- O RAG de receitas `solaris_code_vectors` e o RAG Blogger (`src/rag/`) continuam isolados. `ragEmbedIndex.test.js` usa Firestore falso e embeddings injetáveis.
+- O gatilho de GitHub Actions também cobre mudanças no novo `.ts`, no espelho `.js` e nos testes do indexador.
