@@ -12,7 +12,7 @@ A operação agora se **habilita automaticamente se**:
 - `GEMINI_API_KEY` está no container do app;
 - `SANDBOX_SERVICE_URL` e `SANDBOX_SHARED_SECRET` estão definidos no app (ou os respectivos pares `SANDBOX_BROWSER_SERVICE_URL` e `SANDBOX_BROWSER_SHARED_SECRET`).
 
-O endpoint `GET /dashboard/solaris/visual-review/status` (sessão autenticada) informa disponibilidade e origens liberadas **sem revelar segredos**.
+O endpoint `GET /dashboard/solaris/visual-review/status` (sessão autenticada) informa disponibilidade e origens liberadas **sem revelar segredos**. Ele consulta o `/health` do sandbox, que identifica se a imagem em execução realmente possui a capacidade de navegação Chromium. Se o serviço estiver offline, for um sandbox antigo ou `archive-only`, a interface mostra a auditoria como **indisponível** e não oferece o botão pago. A verificação não abre páginas nem utiliza tokens de IA.
 
 A flag `SOLARIS_VISUAL_REVIEW_ENABLED=false` **desliga** a operação a qualquer momento. Em ausência de configuração de origens, apenas `https://softload.analysepro.com` é liberado por padrão. Para habilitar outros previews públicos legítimos, o operador configura `SOLARIS_VISUAL_PREVIEW_ORIGINS=https://softload.analysepro.com,https://preview.exemplo.com`. Correspondência é exata de protocolo, hostname e porta, sem wildcards; query strings e fragmentos de URL são recusados.
 

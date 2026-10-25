@@ -32,6 +32,7 @@ const { lerProjetoParaPersistir } = require('../../solaris/tools/fileTools');
 const { criarHandlerChatSolaris } = require('../../solaris/http/solarisChatHandler');
 const { criarHandlerUploadSolaris } = require('../../solaris/http/solarisUploadHandler');
 const { criarHandlerVisual } = require('../../solaris/visual/visualReview');
+const { browserSandboxReady } = require('../../solaris/visual/browserReadiness');
 
 // ──────────────────────────────────────────────────────────────────────────
 // CHAT DO SOLARIS CODE — rota + view próprias, motor totalmente separado
@@ -149,9 +150,16 @@ const VISUAL_ENABLED = process.env.SOLARIS_VISUAL_REVIEW_ENABLED !== 'false'
     && Boolean(process.env.GEMINI_API_KEY)
     && Boolean(process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL)
     && Boolean(process.env.SANDBOX_BROWSER_SHARED_SECRET || process.env.SANDBOX_SHARED_SECRET);
-router.get('/dashboard/solaris/visual-review/status', exigirLogin, (_req, res) => {
+router.get('/dashboard/solaris/visual-review/status', exigirLogin, async (_req, res) => {
+    // O fato de haver env vars não garante que o container tenha browser.
+    // Testa /health do destino real, rejeitando sandbox offline, legado
+    // ou archive-only ANTES de liberar o botão no frontend.
+    res.setHeader('Cache-Control', 'no-store, private');
+    const ready = VISUAL_ENABLED && await browserSandboxReady(
+        process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL,
+    );
     res.status(200).json({
-        enabled: VISUAL_ENABLED,
+        enabled: Boolean(ready),
         origins: VISUAL_PREVIEW_ORIGINS.split(',').map(s => s.trim()).filter(Boolean),
         maxRequestsPerTenMinutes: 3,
     });

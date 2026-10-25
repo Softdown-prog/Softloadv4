@@ -105,6 +105,7 @@
   "src/solaris/pipeline/orchestrator.ts",
   "src/solaris/llm/modelRouter.ts",
   "src/solaris/visual/visualReview.ts",
+  "src/solaris/visual/browserReadiness.ts",
   "src/solaris/prompts/systemPrompt.ts",
   "src/solaris/chat/solarisChat.ts",
   "scripts/vendorAssets.ts",

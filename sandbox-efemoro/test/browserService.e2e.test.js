@@ -82,6 +82,17 @@ test("headless-shell API: autenticação, screenshot, auditorias desktop/mobile 
     });
   const targetUrl = `http://127.0.0.1:${fixturePort}/`;
 
+
+  await t.test("health expõe a capacidade browser sem segredos", async () => {
+    const response = await fetch(baseUrl + "/health");
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.status, "ok");
+    assert.equal(data.capabilities.browser, true);
+    assert.equal(data.capabilities.archive, true);
+    assert.equal(JSON.stringify(data).includes(secret), false);
+  });
+
   await t.test("bloqueia requisições sem segredo", async () => {
     const response = await post({ url: targetUrl }, { "x-sandbox-secret": "errado" });
     assert.equal(response.status, 401);
