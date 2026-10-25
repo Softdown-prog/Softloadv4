@@ -1,4 +1,5 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Bloqueio persistente de requests de streaming. Identificador do cliente
  * identifica o envio, mas NUNCA é usado para o débito de créditos.
@@ -10,13 +11,10 @@
  * mensagem, que terá outra chave.
  */
 const { createHash } = require('node:crypto');
-
 const REQUEST_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 function digest(text) {
     return createHash('sha256').update(text).digest('hex');
 }
-
 async function registrarRequisicaoChat(db, uid, produto, requestId, payload) {
     if (typeof uid !== 'string' || !uid || typeof produto !== 'string' || !produto) {
         return 'invalid';
@@ -27,7 +25,7 @@ async function registrarRequisicaoChat(db, uid, produto, requestId, payload) {
     const receiptId = digest(JSON.stringify([uid, produto, requestId]));
     const fingerprint = digest(JSON.stringify(payload));
     const ref = db.collection('chat_stream_requests').doc(receiptId);
-    return db.runTransaction(async tx => {
+    return db.runTransaction(async (tx) => {
         const snap = await tx.get(ref);
         if (snap.exists) {
             return snap.data()?.fingerprint === fingerprint ? 'duplicate' : 'mismatch';
@@ -43,5 +41,4 @@ async function registrarRequisicaoChat(db, uid, produto, requestId, payload) {
         return 'accepted';
     });
 }
-
 module.exports = { registrarRequisicaoChat };

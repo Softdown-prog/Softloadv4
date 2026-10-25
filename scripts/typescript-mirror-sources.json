@@ -174,5 +174,7 @@
   "src/middlewares/security.ts",
   "src/routes/dashboard_routes/chat/chatTemplateContext.ts",
   "src/routes/dashboard_routes/chat/chatWorkspaceContext.ts",
-  "src/routes/dashboard_routes/chat/chatRagGpt.ts"
+  "src/routes/dashboard_routes/chat/chatRagGpt.ts",
+  "src/services/chatRequestGate.ts",
+  "src/solaris/tools/solarisToolModes.ts"
 ]
