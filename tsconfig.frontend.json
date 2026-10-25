@@ -56,7 +56,8 @@
     "frontend/pages/Workspace.tsx",
     "frontend/pages/Solaris.tsx",
     "frontend/pages/WorkspaceChat.tsx",
-    "frontend/types/react-dom-client.d.ts"
+    "frontend/types/react-dom-client.d.ts",
+    "frontend/services/creditsV2.ts"
   ],
   "exclude": [
     "node_modules",

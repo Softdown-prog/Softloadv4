@@ -4,6 +4,7 @@ import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Za
 import { fetchAppConfig, type AppUser } from '../services/api';
 import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
+import { buscarPreviaCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
 
 interface DashboardUser extends AppUser {
     premium_ate?: string | number;
@@ -52,9 +53,13 @@ function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badg
 export default function DashboardHome(): React.JSX.Element {
     const { user } = useOutletContext<{ user: DashboardUser }>();
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [previaV2, setPreviaV2] = useState<ResumoCreditosV2 | null>(null);
 
     useEffect(() => {
         fetch('/api/dashboard/stats').then(res => res.json()).then(setStats);
+        let montado = true;
+        void buscarPreviaCreditosV2().then(preview => { if (montado) setPreviaV2(preview); });
+        return () => { montado = false; };
     }, []);
 
     const firstName = (user?.nome || 'Usuário').split(' ')[0];
@@ -157,6 +162,43 @@ export default function DashboardHome(): React.JSX.Element {
                     </>
                 )}
             </div>
+
+            {previaV2 && (
+                <section className="sl-card mb-5" aria-label="Prévia de créditos de IA V2">
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h2 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>
+                            Prévia de créditos V2
+                        </h2>
+                        <Pill tone="indigo" size="sm">EXPERIMENTAL</Pill>
+                    </div>
+                    <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
+                        Projeção do orçamento de IA por custo de modelo. Não substitui os créditos Gemini do plano atual.
+                    </p>
+                    <div className="row g-3">
+                        <div className="col-6 col-lg-3">
+                            <p className="small mb-1" style={{ color: 'var(--sl-text-400)' }}>Disponíveis</p>
+                            <strong>{previaV2.saldo.creditosDisponiveis.toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <p className="small mb-1" style={{ color: 'var(--sl-text-400)' }}>Consumidos</p>
+                            <strong>{previaV2.saldo.creditosConsumidos.toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <p className="small mb-1" style={{ color: 'var(--sl-text-400)' }}>Reservados</p>
+                            <strong>{previaV2.saldo.creditosReservados.toLocaleString('pt-BR')}</strong>
+                        </div>
+                        <div className="col-6 col-lg-3">
+                            <p className="small mb-1" style={{ color: 'var(--sl-text-400)' }}>Total do ciclo</p>
+                            <strong>{previaV2.saldo.creditosDoCiclo.toLocaleString('pt-BR')}</strong>
+                        </div>
+                    </div>
+                    {previaV2.saldo.creditosExcedentes > 0 && (
+                        <p className="small mb-0 mt-3" role="status" style={{ color: 'var(--bs-warning)' }}>
+                            Excedente contábil: {previaV2.saldo.creditosExcedentes.toLocaleString('pt-BR')} crédito(s).
+                        </p>
+                    )}
+                </section>
+            )}
 
             {/* Acesso Rápido — agrupado nas mesmas duas categorias já usadas na
                 sidebar (Ferramentas / Conta, ver DashboardLayout.jsx), em vez
