@@ -18,6 +18,7 @@ const { buscarConhecimentoMisto } = require('../../../scripts/codeCorpus/codeSea
 const { criarModelRouter, MODEL_PRO, MODEL_FLASH } = require('../../solaris/llm/modelRouter');
 const { criarLivroRazaoIa } = require('../../services/aiBudgetLedger');
 const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGeminiClient');
+const { modoCreditosSolarisV2, criarGateCreditosSolarisV2, debitoLegadoSolaris } = require('../../services/aiCreditsV2Mode');
 const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = require('../../services/aiCreditsV2Http');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
@@ -66,6 +67,15 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 // A reserva financeira é ativada SOMENTE por opção explícita na VPS.
 // Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
 const livroOrcamento = criarLivroRazaoIa(db);
+// A V2, quando explicitamente ativada, consulta o livro-razão antes de enviar
+// ao modelo e não confia no contador legado nem no body HTTP para orçamento.
+const verificarCreditosSolaris = criarGateCreditosSolarisV2({
+    verificarLegado: verificarSaldo,
+    consultar: (email) => livroOrcamento.consultar(email),
+});
+// Só as chamadas do Solaris migram: outros serviços seguem seu próprio gate.
+const debitarSomenteSeLegado = (...args) =>
+    debitoLegadoSolaris(modoCreditosSolarisV2(), debitarCreditos)(...args);
 function dependenciasPorRequisicao(req, ferramenta = 'solaris-chat') {
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return { modelRouter, solarisChat, orquestrador };
@@ -110,9 +120,11 @@ async function getSolarisAgent() {
 // Prévia opt-in: read-only; não substitui /api/dashboard/stats nem debita créditos legados.
 router.get('/api/ai-credits/v2', exigirLogin, criarHandlerResumoCreditosV2({
     consultarSaldo: (email) => livroOrcamento.consultar(email),
+    habilitado: () => process.env.AI_CREDITS_V2_PREVIEW === 'true' || modoCreditosSolarisV2() === 'ativo',
 }));
 router.get('/api/ai-credits/v2/history', exigirLogin, criarHandlerHistoricoCreditosV2({
     listar: (email, cursor) => livroOrcamento.listarExtratoPagina(email, 20, cursor),
+    habilitado: () => process.env.AI_CREDITS_V2_PREVIEW === 'true' || modoCreditosSolarisV2() === 'ativo',
 }));
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {
@@ -186,18 +198,19 @@ const visualHandler = criarHandlerVisual({
             email: req.session.user.email,
             livro: livroOrcamento,
             modeloPro: MODEL_FLASH,
+            ferramenta: 'solaris-visual',
             maxOutputTokens: 1024,
         });
         return criarModelRouter(protegida);
     },
-    debitarCreditos,
+    debitarCreditos: debitarSomenteSeLegado,
 });
 router.post('/dashboard/solaris/visual-review', exigirLogin, (req, res, next) => {
     if (!VISUAL_ENABLED) {
         return res.status(404).json({error:'visual_review_disabled'});
     }
     return next();
-}, visualLimiter, verificarSaldo, visualHandler);
+}, visualLimiter, verificarCreditosSolaris, visualHandler);
 
 // ──────────────────────────────────────────────────────────────────────────
 // POST /dashboard/solaris/chat/stream — mesmo protocolo de eventos SSE
@@ -211,12 +224,14 @@ const depsChatSolaris = {
     criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador,
 };
 const chatSolarisSemOrcamento = criarHandlerChatSolaris(depsChatSolaris);
-router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarSaldo, (req, res) => {
+router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSolaris, (req, res) => {
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return chatSolarisSemOrcamento(req, res);
     }
     const deps = dependenciasPorRequisicao(req);
-    return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps })(req, res);
+    return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps,
+        debitarCreditos: debitarSomenteSeLegado,
+    })(req, res);
 });
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -283,12 +298,14 @@ const depsUploadSolaris = {
     inspecionarProjeto, modelRouter, debitarCreditos, salvarProjeto,
 };
 const uploadSolarisSemOrcamento = criarHandlerUploadSolaris(depsUploadSolaris);
-router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarSaldo, (req, res) => {
+router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarCreditosSolaris, (req, res) => {
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return uploadSolarisSemOrcamento(req, res);
     }
     const { modelRouter: routerUsuario } = dependenciasPorRequisicao(req, 'solaris-upload');
-    return criarHandlerUploadSolaris({ ...depsUploadSolaris, modelRouter: routerUsuario })(req, res);
+    return criarHandlerUploadSolaris({ ...depsUploadSolaris, modelRouter: routerUsuario,
+        debitarCreditos: debitarSomenteSeLegado,
+    })(req, res);
 });
 
 router.SOLARIS_CHAT_SESSION_TYPE = SOLARIS_CHAT_SESSION_TYPE;
