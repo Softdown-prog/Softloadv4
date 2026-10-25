@@ -103,3 +103,87 @@ test('Pro streaming, precificação desconhecida e prompt gigante falham antes d
   const other=criarClienteGeminiComOrcamento(()=>h.client,{email:'user@example.test',livro:{reservar(){throw Error('should not reach')}} ,modeloPro:'gemini-9-pro',cambioBrlPorUsd:5.2})()
   await assert.rejects(other.models.generateContent(h.model('gemini-9-pro')), /MODELO_NAO_PRECIFICADO/);
 });
+
+test('Flash fica sem reserva quando não há opt-in da proteção separada',async()=>{
+  const h=harness();
+  const stream=await h.client.models.generateContentStream(h.model('gemini-2.5-flash'));
+  for await (const chunk of stream) assert.equal(chunk.text,'ok');
+  assert.equal(h.steps.filter(s=>s[0]==='reservar').length,0);
+});
+function flashHarness(streamFactory,options={}) {
+  const steps=[];let calls=0;
+  const sdk={
+    models:{
+      async generateContent(input){calls++;steps.push(['gemini_model',input.config.maxOutputTokens]);
+        return {text:'ok',usageMetadata:{promptTokenCount:900,candidatesTokenCount:100}};
+      },
+      async generateContentStream(input){calls++;steps.push(['gemini_stream',input.config.maxOutputTokens]);return streamFactory();},
+    },
+    chats:{create(){throw Error('not used')}}
+  };
+  const ledger={
+    async reservar(data){steps.push(['reservar',data]);if(options.failReserve)throw Error('budget blocked');return {status:'reservado',reciboId:'fake-id'};},
+    async liquidar(data){steps.push(['liquidar',data]);return 'liquidado';},
+  };
+  const client=criarClienteGeminiComOrcamento(()=>sdk,{
+    email:'user@example.test',livro:ledger,modeloPro:'gemini-2.5-pro',
+    modeloFlash:'gemini-2.5-flash',protegerFlash:true,cambioBrlPorUsd:5.2,maxOutputTokens:4096
+  })();
+  const input={model:'gemini-2.5-flash',contents:'Flash request',config:{temperature:0,maxOutputTokens:60000}};
+  return {client,steps,input,get calls(){return calls}};
+}
+test('Flash não-stream reserva e liquida pelo custo do modelo barato',async()=>{
+  const h=flashHarness(async function*(){yield {text:'unused'}});
+  await h.client.models.generateContent(h.input);
+  assert.deepEqual(h.steps.map(x=>x[0]),['reservar','gemini_model','liquidar']);
+  assert.equal(h.steps[1][1],4096);
+  assert.ok(h.steps[2][1].custoRealMicroBrl < h.steps[0][1].reservaMicroBrl);
+});
+test('Flash stream reserva antes de enviar e liquida conforme metadados do último chunk',async()=>{
+  const h=flashHarness(async function*(){
+    yield {text:'hello'};
+    yield {text:'world',usageMetadata:{promptTokenCount:2000,candidatesTokenCount:500,thoughtsTokenCount:200}};
+  });
+  const stream=await h.client.models.generateContentStream(h.input);
+  assert.equal(h.steps.length,0); // sem iniciar iteração, não envia nem reserva
+  const chunks=[];
+  for await (const c of stream) chunks.push(c.text);
+  assert.deepEqual(chunks,['hello','world']);
+  assert.deepEqual(h.steps.map(x=>x[0]),['reservar','gemini_stream','liquidar']);
+  assert.equal(h.steps[1][1],4096);
+  const expected=Math.ceil(Math.ceil(2000*0.3+700*2.5)*5.2);
+  assert.equal(h.steps[2][1].custoRealMicroBrl,expected);
+  assert.ok(h.steps[0][1].reservaMicroBrl>expected);
+});
+test('Flash stream sem saldo não envia requisição paga',async()=>{
+  const h=flashHarness(async function*(){yield {text:'not reached'}},{failReserve:true});
+  await assert.rejects(async()=>{
+    const stream=await h.client.models.generateContentStream(h.input);
+    for await(const _ of stream){}
+  },/budget blocked/);
+  assert.equal(h.calls,0);
+  assert.deepEqual(h.steps.map(x=>x[0]),['reservar']);
+});
+test('stream interrompido liquida reserva inteira; não presume custo parcial',async()=>{
+  const h=flashHarness(async function*(){
+    yield {text:'part 1',usageMetadata:{promptTokenCount:25,candidatesTokenCount:1}};
+    yield {text:'part 2'};
+  });
+  const stream=await h.client.models.generateContentStream(h.input);
+  for await (const _ of stream) break;
+  assert.deepEqual(h.steps.map(x=>x[0]),['reservar','gemini_stream','liquidar']);
+  assert.equal(h.steps[2][1].custoRealMicroBrl,h.steps[0][1].reservaMicroBrl);
+});
+test('stream que falha ou não retorna metadados cobra a reserva como estimativa',async()=>{
+  for(const factory of [
+    async function*(){yield {text:'ok'};},
+    async function*(){yield {text:'first'};throw Error('network lost');},
+  ]) {
+    const h=flashHarness(factory);
+    const stream=await h.client.models.generateContentStream(h.input);
+    try {for await(const _ of stream){}}
+    catch(e){assert.match(e.message,/network lost/);}
+    assert.deepEqual(h.steps.map(x=>x[0]),['reservar','gemini_stream','liquidar']);
+    assert.equal(h.steps[0][1].reservaMicroBrl,h.steps[2][1].custoRealMicroBrl);
+  }
+});

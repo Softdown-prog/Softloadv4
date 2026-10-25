@@ -15,6 +15,8 @@ export interface GuardarProOpcoes {
     email: string;
     livro: LivroRazao;
     modeloPro: string;
+    modeloFlash?: string;
+    protegerFlash?: boolean;
     cambioBrlPorUsd?: number;
     maxOutputTokens?: number;
 }
@@ -40,12 +42,14 @@ function custoDaReserva(modelo: string, payload: unknown, tokensOutput: number, 
 }
 export function criarClienteGeminiComOrcamento(
     clientFactory: SolarisClientFactory,
-    { email, livro, modeloPro, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }: GuardarProOpcoes,
+    { email, livro, modeloPro, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }: GuardarProOpcoes,
 ): SolarisClientFactory {
     if (!email || !email.includes('@') || !livro || !modeloPro) {
         throw new OrcamentoIaIndisponivel('GUARDA_NAO_CONFIGURADA');
     }
     const outputCap = maximoOutput(maxOutputTokens);
+    const deveProteger = (modelo: string): boolean => modelo === modeloPro
+        || (protegerFlash && !!modeloFlash && modelo === modeloFlash);
 
     async function chamadaProtegida(
         modelo: string, payload: unknown, cap: number, chamar: () => Promise<GeminiResponse>,
@@ -84,14 +88,47 @@ export function criarClienteGeminiComOrcamento(
         return {
             models: {
                 async generateContent(input: GenInput): Promise<GeminiResponse> {
-                    if (input.model !== modeloPro) return cliente.models.generateContent(input);
+                    if (!deveProteger(input.model)) return cliente.models.generateContent(input);
                     const cap = Math.min(input.config.maxOutputTokens, outputCap);
                     const limitado = { ...input, config: { ...input.config, maxOutputTokens: cap } };
                     return chamadaProtegida(input.model, limitado, cap, () => cliente.models.generateContent(limitado));
                 },
                 async generateContentStream(input: GenInput): Promise<AsyncIterable<GeminiResponse>> {
                     if (input.model === modeloPro) throw new OrcamentoIaIndisponivel('STREAM_PRO_NAO_SUPORTADO');
-                    return cliente.models.generateContentStream(input);
+                    if (!deveProteger(input.model)) return cliente.models.generateContentStream(input);
+                    const cap = Math.min(input.config.maxOutputTokens, outputCap);
+                    const limitado = { ...input, config: { ...input.config, maxOutputTokens: cap } };
+                    const modelo = input.model;
+                    // Reserva inicia na primeira iteração; stream nunca iterado não gasta API.
+                    return (async function* (): AsyncGenerator<GeminiResponse, void, unknown> {
+                        const reservaMicroBrl = custoDaReserva(modelo, limitado, cap, cambioBrlPorUsd);
+                        const reserva = await livro.reservar({ email, operacaoId: randomUUID(), reservaMicroBrl });
+                        if (reserva.status !== 'reservado') throw new OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
+                        let ultimaUsage: unknown = null;
+                        let completo = false;
+                        try {
+                            const stream = await cliente.models.generateContentStream(limitado);
+                            for await (const chunk of stream) {
+                                if (chunk.usageMetadata) ultimaUsage = chunk.usageMetadata;
+                                yield chunk;
+                            }
+                            completo = true;
+                        } finally {
+                            // Cancelamento do navegador, desconexão ou erro ambíguo não pode
+                            // liberar reserva parcialmente faturada sem reconciliação.
+                            const tokens = completo ? extrairTokensFaturaveisGemini(ultimaUsage) : null;
+                            const custo = tokens && estimarCustoGemini({ ...tokens, modelo, cambioBrlPorUsd });
+                            try {
+                                await livro.liquidar({
+                                    reciboId: reserva.reciboId,
+                                    custoRealMicroBrl: custo?.custoMicroBrl ?? reservaMicroBrl,
+                                });
+                            } catch (erro) {
+                                // O saldo reservado permanece indisponível para novas chamadas.
+                                console.error('[IA-BUDGET] liquidação de stream pendente:', (erro as Error).message);
+                            }
+                        }
+                    })();
                 },
             },
             chats: {

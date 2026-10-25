@@ -15,7 +15,7 @@ const { criarSolarisChat } = require('../../solaris/chat/solarisChat');
 const { detectarMarcador, removerMarcadorTruncado } = require('../../solaris/chat/solarisGenerationTrigger');
 const { criarOrquestrador } = require('../../solaris/pipeline/orchestrator');
 const { buscarConhecimentoMisto } = require('../../../scripts/codeCorpus/codeSearchService');
-const { criarModelRouter, MODEL_PRO } = require('../../solaris/llm/modelRouter');
+const { criarModelRouter, MODEL_PRO, MODEL_FLASH } = require('../../solaris/llm/modelRouter');
 const { criarLivroRazaoIa } = require('../../services/aiBudgetLedger');
 const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGeminiClient');
 const { criarHandlerResumoCreditosV2 } = require('../../services/aiCreditsV2Http');
@@ -81,7 +81,11 @@ function dependenciasPorRequisicao(req) {
             throw new Error('[SOLARIS-LLM] GEMINI_API_KEY não configurada no ambiente.');
         }
         return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    }, { email, livro: livroOrcamento, modeloPro: MODEL_PRO });
+    }, {
+        email, livro: livroOrcamento, modeloPro: MODEL_PRO,
+        modeloFlash: MODEL_FLASH,
+        protegerFlash: process.env.SOLARIS_AI_BUDGET_FLASH === 'true',
+    });
     const routerUsuario = criarModelRouter(protegida);
     return {
         modelRouter: routerUsuario,

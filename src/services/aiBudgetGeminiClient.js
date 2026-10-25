@@ -28,11 +28,13 @@ function custoDaReserva(modelo, payload, tokensOutput, cambio) {
         throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('MODELO_NAO_PRECIFICADO');
     return custo.custoMicroBrl;
 }
-function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }) {
+function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro, modeloFlash, protegerFlash = false, cambioBrlPorUsd = Number(process.env.GEMINI_USD_BRL_ESTIMATE ?? '5.20'), maxOutputTokens }) {
     if (!email || !email.includes('@') || !livro || !modeloPro) {
         throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('GUARDA_NAO_CONFIGURADA');
     }
     const outputCap = maximoOutput(maxOutputTokens);
+    const deveProteger = (modelo) => modelo === modeloPro
+        || (protegerFlash && !!modeloFlash && modelo === modeloFlash);
     async function chamadaProtegida(modelo, payload, cap, chamar) {
         const reservaMicroBrl = custoDaReserva(modelo, payload, cap, cambioBrlPorUsd);
         const reservado = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl });
@@ -70,7 +72,7 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
         return {
             models: {
                 async generateContent(input) {
-                    if (input.model !== modeloPro)
+                    if (!deveProteger(input.model))
                         return cliente.models.generateContent(input);
                     const cap = Math.min(input.config.maxOutputTokens, outputCap);
                     const limitado = { ...input, config: { ...input.config, maxOutputTokens: cap } };
@@ -79,7 +81,45 @@ function criarClienteGeminiComOrcamento(clientFactory, { email, livro, modeloPro
                 async generateContentStream(input) {
                     if (input.model === modeloPro)
                         throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('STREAM_PRO_NAO_SUPORTADO');
-                    return cliente.models.generateContentStream(input);
+                    if (!deveProteger(input.model))
+                        return cliente.models.generateContentStream(input);
+                    const cap = Math.min(input.config.maxOutputTokens, outputCap);
+                    const limitado = { ...input, config: { ...input.config, maxOutputTokens: cap } };
+                    const modelo = input.model;
+                    // Reserva inicia na primeira iteração; stream nunca iterado não gasta API.
+                    return (async function* () {
+                        const reservaMicroBrl = custoDaReserva(modelo, limitado, cap, cambioBrlPorUsd);
+                        const reserva = await livro.reservar({ email, operacaoId: (0, node_crypto_1.randomUUID)(), reservaMicroBrl });
+                        if (reserva.status !== 'reservado')
+                            throw new aiBudgetLedger_1.OrcamentoIaIndisponivel('OPERACAO_JA_CONCLUIDA');
+                        let ultimaUsage = null;
+                        let completo = false;
+                        try {
+                            const stream = await cliente.models.generateContentStream(limitado);
+                            for await (const chunk of stream) {
+                                if (chunk.usageMetadata)
+                                    ultimaUsage = chunk.usageMetadata;
+                                yield chunk;
+                            }
+                            completo = true;
+                        }
+                        finally {
+                            // Cancelamento do navegador, desconexão ou erro ambíguo não pode
+                            // liberar reserva parcialmente faturada sem reconciliação.
+                            const tokens = completo ? (0, geminiCost_1.extrairTokensFaturaveisGemini)(ultimaUsage) : null;
+                            const custo = tokens && (0, geminiCost_1.estimarCustoGemini)({ ...tokens, modelo, cambioBrlPorUsd });
+                            try {
+                                await livro.liquidar({
+                                    reciboId: reserva.reciboId,
+                                    custoRealMicroBrl: custo?.custoMicroBrl ?? reservaMicroBrl,
+                                });
+                            }
+                            catch (erro) {
+                                // O saldo reservado permanece indisponível para novas chamadas.
+                                console.error('[IA-BUDGET] liquidação de stream pendente:', erro.message);
+                            }
+                        }
+                    })();
                 },
             },
             chats: {
