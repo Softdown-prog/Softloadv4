@@ -199,7 +199,8 @@
     "src/services/emailService.ts",
     "src/services/errorLogWorker.ts",
     "src/services/aiBudgetLedger.ts",
-    "src/services/aiBudgetGeminiClient.ts"
+    "src/services/aiBudgetGeminiClient.ts",
+    "src/services/aiCreditsV2.ts"
   ],
   "exclude": [
     "node_modules",
