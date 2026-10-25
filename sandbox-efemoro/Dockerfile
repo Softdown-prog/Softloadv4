@@ -37,9 +37,9 @@ RUN set -eu; \
       1) \
         npx playwright install --with-deps --only-shell chromium; \
         shell_bin="$(find /app/node_modules/playwright-core/.local-browsers \
-          -type f \\( -name chrome-headless-shell -o -name headless_shell \\) -print -quit)"; \
+          -type f \( -name chrome-headless-shell -o -name headless_shell \) -print -quit)"; \
         test -n "$shell_bin" && test -x "$shell_bin"; \
-        printf '%s\\n' "$shell_bin" > /app/.chromium-headless-shell-path; \
+        printf '%s\n' "$shell_bin" > /app/.chromium-headless-shell-path; \
         echo "[SANDBOX] Chromium Headless Shell instalado em $shell_bin" \
         ;; \
       0) echo "[SANDBOX] Perfil archive-only: Chromium não será instalado" ;; \
@@ -48,13 +48,6 @@ RUN set -eu; \
 
 COPY src ./src
 
-# Smoke de verdade durante o build (já como usuário sandbox):
-# valida lançamento, DOM e screenshot, sem tocar na VPS de produção.
-# Qualquer incompatibilidade com o shell ou o wrapper falha o build.
-RUN if [ "$SANDBOX_CHROMIUM_INSTALLED" = "1" ]; then \
-      node --input-type=module -e 'import { launchBrowser, resolveRealExecutablePath } from "./src/webSandbox/browser.js"; import { accessSync, constants } from "node:fs"; accessSync(resolveRealExecutablePath("chromium"), constants.X_OK); const browser = await launchBrowser("chromium", { timeout: 30000 }); try { const page = await browser.newPage(); await page.setContent("<title>Softload headless smoke</title>"); if (await page.title() !== "Softload headless smoke") throw new Error("DOM smoke failed"); const png = await page.screenshot(); if (png.length < 100) throw new Error("Screenshot smoke failed"); } finally { await browser.close(); }'; \
-    fi
-
 # Usuário não-root: este container renderiza conteúdo NÃO confiável
 # (a app sob teste) dentro de um navegador -- não há motivo para isso
 # rodar como root, e reduz o dano de um eventual escape do Chromium.
@@ -62,6 +55,14 @@ RUN groupadd -r sandbox \
     && useradd -r -g sandbox -m sandbox \
     && chown -R sandbox:sandbox /app
 USER sandbox
+
+# Smoke de verdade durante o build (já como usuário sandbox):
+# valida lançamento, DOM e screenshot, sem tocar na VPS de produção.
+# Qualquer incompatibilidade com o shell ou o wrapper falha o build.
+RUN if [ "$SANDBOX_CHROMIUM_INSTALLED" = "1" ]; then \
+      node --input-type=module -e 'import { launchBrowser, resolveRealExecutablePath } from "./src/webSandbox/browser.js"; import { accessSync, constants } from "node:fs"; accessSync(resolveRealExecutablePath("chromium"), constants.X_OK); const browser = await launchBrowser("chromium", { timeout: 30000 }); try { const page = await browser.newPage(); await page.setContent("<title>Softload headless smoke</title>"); if (await page.title() !== "Softload headless smoke") throw new Error("DOM smoke failed"); const png = await page.screenshot(); if (png.length < 100) throw new Error("Screenshot smoke failed"); } finally { await browser.close(); }'; \
+    fi
+
 
 # Cloud Run injeta a variável PORT em runtime; server.js já usa
 # process.env.PORT com fallback para 8080.
