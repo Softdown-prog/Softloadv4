@@ -177,6 +177,8 @@ jobs:
         run: node --test src/services/emailService.contract.test.js
       - name: Testar captura e retenção de erros sem listeners reais
         run: node --test src/services/errorLogWorker.contract.test.js
+      - name: Verificar guards de acesso e rotas do dashboard migradas (sem rede)
+        run: node --test src/middlewares/backendMigration.contract.test.js src/routes/dashboard_routes/backendMigration.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

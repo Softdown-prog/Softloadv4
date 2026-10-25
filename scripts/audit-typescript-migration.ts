@@ -60,13 +60,13 @@ export function auditarMigracao(root: string): MigrationReport {
     }
     // As fontes tipadas cobrem compilador, IA, Solaris, RAG, serviços e scripts de build.
     // Todas precisam estar no registro, no typecheck e possuir espelho CommonJS.
-    const auditedFiles = [...scanFiles(root, 'src/core'), ...scanFiles(root, 'src/ai'), ...scanFiles(root, 'src/solaris'), ...scanFiles(root, 'src/knowledge'), ...scanFiles(root, 'src/services'), ...scanFiles(root, 'scripts')].sort();
+    const auditedFiles = [...scanFiles(root, 'src/core'), ...scanFiles(root, 'src/ai'), ...scanFiles(root, 'src/solaris'), ...scanFiles(root, 'src/knowledge'), ...scanFiles(root, 'src/services'), ...scanFiles(root, 'src/middlewares'), ...scanFiles(root, 'src/routes'), ...scanFiles(root, 'scripts')].sort();
     const actualTs = auditedFiles.filter(x => x.endsWith('.ts') && !x.endsWith('.d.ts'));
     const allJs = auditedFiles.filter(x => x.endsWith('.js') && !x.endsWith('.test.js'));
     const seen = new Set<string>();
 
     for (const source of sources) {
-        if (typeof source !== 'string' || !/^(?:src\/(?:core|ai|solaris|knowledge|services)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts$/.test(source) || source.includes('..')) {
+        if (typeof source !== 'string' || !/^(?:src\/(?:core|ai|solaris|knowledge|services|middlewares|routes)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts$/.test(source) || source.includes('..')) {
             errors.push('Entrada inválida no registro: ' + JSON.stringify(source));
             continue;
         }

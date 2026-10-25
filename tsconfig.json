@@ -204,7 +204,13 @@
     "src/services/aiBudgetGeminiClient.ts",
     "src/services/aiCreditsV2.ts",
     "src/services/aiCreditsV2Http.ts",
-    "src/services/aiCreditsV2Mode.ts"
+    "src/services/aiCreditsV2Mode.ts",
+    "src/middlewares/adminGuard.ts",
+    "src/middlewares/workerGuard.ts",
+    "src/routes/dashboard_routes/compiler.ts",
+    "src/routes/dashboard_routes/configuracoes.ts",
+    "src/routes/dashboard_routes/upgrade.ts",
+    "src/routes/dashboardRoutes.ts"
   ],
   "exclude": [
     "node_modules",
