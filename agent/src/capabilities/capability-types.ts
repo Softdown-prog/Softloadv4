@@ -28,5 +28,5 @@ export interface WorkspaceRoot {
 }
 
 export interface CommandPolicyGuard {
-  validate(command: string): unknown;
+  validate(command: string): { allowed: boolean; executable: string };
 }

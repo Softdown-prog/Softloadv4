@@ -38,6 +38,11 @@ esses imports nem exige um loader TypeScript em produção.
 - `project-inspector.ts` — detecção tipada de linguagens, framework, scripts
   de testes/build e estrutura do projeto, sem execução de comandos.
 
+- `asset-forge.ts` — contratos de operações de receitas/assets mantendo
+  Forge em CommonJS sem instalar runtime TypeScript.
+- `shell.ts` — execução restrita com validação de comando e argumentos,
+  preservando a política de segurança do Worker.
+
 ## Como validar
 
 ```bash
