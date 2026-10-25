@@ -500,9 +500,9 @@ export default function Solaris(): React.JSX.Element {
     };
 
     return (
-        <div className="d-flex flex-column" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+        <div className="sl-conversation d-flex flex-column">
             {/* Topbar do Chat */}
-            <div className="d-flex align-items-center justify-content-between gap-2 p-3 border-bottom border-secondary bg-dark flex-shrink-0 flex-wrap">
+            <div className="sl-conversation__header d-flex align-items-center justify-content-between gap-2 p-2 p-md-3 border-bottom flex-shrink-0 flex-wrap">
                 <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
                     <div className="d-flex align-items-center justify-content-center rounded-3 bg-opacity-10 bg-primary border border-primary flex-shrink-0" style={{ width: '40px', height: '40px' }}>
                         <Cpu size={20} className="text-info" />
@@ -548,15 +548,15 @@ export default function Solaris(): React.JSX.Element {
             </div>
 
             {/* Corpo de Mensagens */}
-            <div className="flex-grow-1 p-3 p-md-4 bg-dark bg-opacity-20" style={{ overflowY: 'auto' }}>
-                <div className="max-w-3xl mx-auto d-flex flex-column gap-4 pb-4">
+            <div className="sl-conversation__feed flex-grow-1 p-3 p-md-4">
+                <div className="sl-conversation__content d-flex flex-column gap-4 pb-4">
                     {messages.length === 0 ? (
-                        <div className="d-flex flex-column align-items-center justify-content-center text-center py-5">
+                        <div className="sl-conversation__welcome d-flex flex-column align-items-center justify-content-center text-center py-5">
                             <motion.div 
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className="rounded-4 d-flex align-items-center justify-content-center mb-3"
+                                className="sl-conversation__welcome-icon rounded-4 d-flex align-items-center justify-content-center mb-3"
                                 style={{ 
                                     width: '56px', 
                                     height: '56px', 
@@ -576,8 +576,8 @@ export default function Solaris(): React.JSX.Element {
                                     <button 
                                         key={idx}
                                         onClick={() => handleSend(null, s)}
-                                        className="btn btn-outline-secondary btn-sm text-start py-2 px-3 d-flex align-items-center justify-content-between"
-                                        style={{ background: 'rgba(255,255,255,0.01)', borderColor: 'rgba(255,255,255,0.08)' }}
+                                        className="sl-conversation__suggestion btn btn-outline-secondary btn-sm text-start py-2 px-3 d-flex align-items-center justify-content-between"
+                                        style={{ minWidth: 0 }}
                                     >
                                         <span className="small text-truncate">{s}</span>
                                         <ArrowRight size={12} className="text-muted" />
@@ -593,14 +593,12 @@ export default function Solaris(): React.JSX.Element {
                                     key={idx}
                                     initial={{ opacity: 0, y: 8 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className={`d-flex flex-column ${isAssistant ? 'align-items-start' : 'align-items-end'}`}
+                                    className={`sl-conversation__message d-flex flex-column ${isAssistant ? 'align-items-start' : 'align-items-end'}`}
                                 >
-                                    <div className="small text-secondary mb-1 px-1">
-                                        {isAssistant ? 'Solaris Code' : 'Você'}
-                                    </div>
+                                    <div className="sl-conversation__who small mb-2"><span className={isAssistant ? "sl-conversation__avatar sl-conversation__avatar--assistant" : "sl-conversation__avatar sl-conversation__avatar--user"} aria-hidden="true">{isAssistant ? <Cpu size={15} /> : "EU"}</span><span>{isAssistant ? "Solaris Code" : "Você"}</span></div>
                                     <div
-                                        className={isAssistant ? 'text-light w-100' : 'p-3 rounded-3 max-w-full btn-sl-primary text-white'}
-                                        style={isAssistant ? {} : { maxWidth: '90%' }}
+                                        className={`sl-conversation__bubble ${isAssistant ? 'sl-conversation__bubble--assistant' : 'sl-conversation__bubble--user'}`}
+                                        
                                     >
                                         {isAssistant ? (
                                             <div className="markdown-body">
@@ -616,7 +614,7 @@ export default function Solaris(): React.JSX.Element {
                                         <div className="d-flex align-items-center gap-2 mt-1 px-1">
                                             <button
                                                 onClick={() => handleCopy(m.content, idx)}
-                                                className="btn btn-link text-secondary p-0 d-flex align-items-center gap-1"
+                                                className="sl-conversation__copy d-flex align-items-center gap-1"
                                                 style={{ fontSize: '0.68rem', textDecoration: 'none' }}
                                             >
                                                 {copiedId === idx ? (
@@ -669,7 +667,7 @@ export default function Solaris(): React.JSX.Element {
 
                     {/* Loading e Etapas Ativas */}
                     {statusText && (
-                        <div className="d-flex align-items-center gap-2 text-secondary px-2 py-1 self-start small bg-dark rounded border border-secondary">
+                        <div role="status" aria-live="polite" className="sl-conversation__status d-flex align-items-center gap-2 small">
                             <RefreshCw size={13} className="text-info animate-spin" />
                             <span>{statusText}</span>
                         </div>
@@ -680,8 +678,8 @@ export default function Solaris(): React.JSX.Element {
             </div>
 
             {/* Input e Controles de Chat */}
-            <div className="p-3 bg-dark border-top border-secondary flex-shrink-0">
-                <div className="max-w-3xl mx-auto">
+            <div className="sl-conversation__composer p-3 flex-shrink-0">
+                <div className="sl-conversation__composer-inner">
                     <div className="mb-2">
                         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <button
@@ -859,22 +857,23 @@ export default function Solaris(): React.JSX.Element {
 
                         <div className="flex-grow-1 position-relative">
                             <textarea 
-                                className="form-control bg-black text-light border-secondary pe-5 py-2"
+                                className="sl-conversation__input form-control pe-5 py-2"
                                 rows={1}
                                 placeholder="Fale com o Solaris..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
+                                        if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                                         e.preventDefault();
                                         handleSend();
                                     }
                                 }}
                                 style={{
                                     resize: 'none',
-                                    height: '52px',
                                     minHeight: '52px',
-                                    borderRadius: '8px',
+                                    maxHeight: '168px',
+                                    borderRadius: '16px',
                                     lineHeight: '1.5'
                                 }}
                                 disabled={loading}
@@ -883,7 +882,7 @@ export default function Solaris(): React.JSX.Element {
                                 <button 
                                     type="button"
                                     onClick={stopGeneration}
-                                    className="btn btn-link text-danger position-absolute end-0 top-50 translate-middle-y me-2 p-1"
+                                    className="sl-conversation__send sl-conversation__send--stop"
                                     title="Interromper geração"
                                 >
                                     <StopCircle size={18} />
@@ -893,7 +892,7 @@ export default function Solaris(): React.JSX.Element {
                                     type="submit"
                                     disabled={!input.trim()}
                                     aria-label="Enviar mensagem"
-                                    className="btn btn-link text-info position-absolute end-0 top-50 translate-middle-y me-2 p-1"
+                                    className="sl-conversation__send"
                                 >
                                     <Send size={18} />
                                 </button>
