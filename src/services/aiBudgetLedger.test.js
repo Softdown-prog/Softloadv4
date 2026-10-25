@@ -286,3 +286,15 @@ test('paginacao do extrato percorre todas as operacoes sem repetir recibos',asyn
   await codigo(b.livro.listarExtratoPagina(base,20,'abc'),'CONSULTA_INVALIDA');
   await codigo(b.livro.listarExtratoPagina(base,41),'CONSULTA_INVALIDA');
 });
+
+test('auditoria visual usa mesmo ledger V2 e gera recibo com contexto próprio',async()=>{
+  const b=banco();user(b.docs,'alice@example.test','starter');
+  const req={email:'alice@example.test',operacaoId:'visual-1',reservaMicroBrl:10000,
+    contexto:{ferramenta:'solaris-visual',modelo:'gemini-2.5-flash'}};
+  const r=await b.livro.reservar(req);
+  await b.livro.liquidar({reciboId:r.reciboId,custoRealMicroBrl:3800});
+  const itens=await b.livro.listarExtrato('alice@example.test');
+  assert.equal(itens.length,1);
+  assert.equal(itens[0].ferramenta,'solaris-visual');
+  assert.equal(itens[0].creditos,1);
+});

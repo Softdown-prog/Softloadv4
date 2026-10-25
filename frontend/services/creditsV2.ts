@@ -55,7 +55,7 @@ export async function buscarPreviaCreditosV2(fetchImpl: typeof fetch = fetch): P
 
 export interface LancamentoCreditosV2 {
   id: string;
-  ferramenta: 'solaris-chat' | 'solaris-upload';
+  ferramenta: 'solaris-chat' | 'solaris-upload' | 'solaris-visual';
   modelo: string;
   projeto?: string;
   criadoEm: string;
@@ -80,7 +80,7 @@ export function normalizarExtratoCreditosV2(raw: unknown): ExtratoCreditosV2 | n
     if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
     const x=v as Record<string,unknown>;
     if (typeof x.id !== 'string' || !/^[a-f0-9]{64}$/.test(x.id)
-      || (x.ferramenta !== 'solaris-chat' && x.ferramenta !== 'solaris-upload')
+      || (x.ferramenta !== 'solaris-chat' && x.ferramenta !== 'solaris-upload' && x.ferramenta !== 'solaris-visual')
       || typeof x.modelo !== 'string' || !/^gemini-[a-z0-9.-]{3,60}$/.test(x.modelo)
       || typeof x.criadoEm !== 'string' || !Number.isFinite(Date.parse(x.criadoEm))
       || !contador(x.creditos) || typeof x.estimado !== 'boolean'

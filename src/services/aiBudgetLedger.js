@@ -49,7 +49,7 @@ function idReciboValido(id) {
 function validarContexto(ctx) {
     if (ctx === undefined)
         return undefined;
-    if (!ctx || !['solaris-chat', 'solaris-upload'].includes(ctx.ferramenta)
+    if (!ctx || !['solaris-chat', 'solaris-upload', 'solaris-visual'].includes(ctx.ferramenta)
         || typeof ctx.modelo !== 'string' || !/^gemini-[a-z0-9.-]{3,60}$/.test(ctx.modelo)
         || (ctx.projeto !== undefined && (typeof ctx.projeto !== 'string' || !/^[A-Za-z0-9_-]{6,80}$/.test(ctx.projeto)))) {
         throw new OrcamentoIaIndisponivel('CONTEXTO_INVALIDO');
@@ -123,7 +123,7 @@ function criarLivroRazaoIa(db) {
             const itens = selecionados.map(doc => doc.data()).filter((v) => !!v && typeof v.id === 'string' && idReciboValido(v.id)
                 && typeof v.criadoEm === 'string' && Number.isFinite(Date.parse(v.criadoEm))
                 && typeof v.creditos === 'number' && microValido(v.creditos)
-                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload'));
+                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload' || v.ferramenta === 'solaris-visual'));
             return {
                 itens,
                 proximoCursor: snapshot.docs.length > limite && selecionados.length > 0

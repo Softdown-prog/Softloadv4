@@ -125,3 +125,10 @@ test('paginas repetidas nao duplicam chamadas nem credito exibido',()=>{
   assert.equal(merged.proximoCursor,null);
   assert.equal(mod.exports.resumirSessoesCarregadasV2(merged.itens)[0].creditosDasChamadas,4);
 });
+
+test('frontend exibe auditoria visual como ferramenta de IA válida',()=>{
+  const item={id:'a'.repeat(64),ferramenta:'solaris-visual',modelo:'gemini-2.5-flash',
+    criadoEm:'2026-10-25T15:00:00Z',creditos:1,estimado:false};
+  const parsed=mod.exports.normalizarExtratoCreditosV2({versao:2,modo:'previsualizacao',itens:[item]});
+  assert.equal(parsed.itens[0].ferramenta,'solaris-visual');
+});

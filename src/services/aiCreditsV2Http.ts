@@ -56,7 +56,7 @@ export function criarHandlerResumoCreditosV2({
 /** Histórico do próprio usuário; nunca devolve custo monetário, prompt ou outro usuário. */
 export interface RegistroPublicoExtratoV2 {
     id: string;
-    ferramenta: 'solaris-chat' | 'solaris-upload';
+    ferramenta: 'solaris-chat' | 'solaris-upload' | 'solaris-visual';
     modelo: string;
     projeto?: string;
     criadoEm: string;

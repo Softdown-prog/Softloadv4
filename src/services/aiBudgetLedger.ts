@@ -16,7 +16,7 @@ interface DadosOrcamento {
     gastoMicroBrl?: number;
 }
 export interface ContextoExtratoIa {
-    ferramenta: 'solaris-chat' | 'solaris-upload';
+    ferramenta: 'solaris-chat' | 'solaris-upload' | 'solaris-visual';
     modelo: string;
     projeto?: string;
 }
@@ -107,7 +107,7 @@ function idReciboValido(id: string): boolean {
 }
 function validarContexto(ctx: ContextoExtratoIa | undefined): ContextoExtratoIa | undefined {
     if (ctx === undefined) return undefined;
-    if (!ctx || !['solaris-chat', 'solaris-upload'].includes(ctx.ferramenta)
+    if (!ctx || !['solaris-chat', 'solaris-upload', 'solaris-visual'].includes(ctx.ferramenta)
         || typeof ctx.modelo !== 'string' || !/^gemini-[a-z0-9.-]{3,60}$/.test(ctx.modelo)
         || (ctx.projeto !== undefined && (typeof ctx.projeto !== 'string' || !/^[A-Za-z0-9_-]{6,80}$/.test(ctx.projeto)))) {
         throw new OrcamentoIaIndisponivel('CONTEXTO_INVALIDO');
@@ -193,7 +193,7 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
                 !!v && typeof v.id === 'string' && idReciboValido(v.id)
                 && typeof v.criadoEm === 'string' && Number.isFinite(Date.parse(v.criadoEm))
                 && typeof v.creditos === 'number' && microValido(v.creditos)
-                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload'));
+                && (v.ferramenta === 'solaris-chat' || v.ferramenta === 'solaris-upload' || v.ferramenta === 'solaris-visual'));
             return {
                 itens,
                 proximoCursor: snapshot.docs.length > limite && selecionados.length > 0

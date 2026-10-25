@@ -284,6 +284,7 @@ export default function DashboardHome(): React.JSX.Element {
                                     <option value="">Todas as ferramentas</option>
                                     <option value="solaris-chat">Solaris Code</option>
                                     <option value="solaris-upload">Inspeção ZIP</option>
+                                    <option value="solaris-visual">Auditoria visual</option>
                                 </select>
                             </div>
                             {extratoV2.itens.length === 0 ? (
@@ -305,7 +306,7 @@ export default function DashboardHome(): React.JSX.Element {
                                                 <tr key={item.id}>
                                                     <td className="small text-nowrap">{new Date(item.criadoEm).toLocaleString('pt-BR')}</td>
                                                     <td className="small">
-                                                        {item.ferramenta === 'solaris-upload' ? 'Inspeção ZIP' : 'Solaris Code'}
+                                                        {item.ferramenta === 'solaris-upload' ? 'Inspeção ZIP' : item.ferramenta === 'solaris-visual' ? 'Auditoria visual' : 'Solaris Code'}
                                                         {item.projeto && <span className="d-block" style={{ color: 'var(--sl-text-400)' }}>Sessão {item.projeto.slice(0, 16)}</span>}
                                                     </td>
                                                     <td className="small">{item.modelo.replace('gemini-2.5-', '')}</td>
