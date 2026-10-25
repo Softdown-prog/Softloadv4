@@ -83,7 +83,7 @@ test('contexto do Github não permite SSRF e repositório público exige permiss
   return {ok:true,json:async()=>({full_name:'alice/public',private:false,
    default_branch:'main',description:'simulador HTML5'})};
  };
- assert.match(await contextoRepositorioPublico('alice/public',{fetchImpl:get}),/somente leitura/);
+ assert.match(await contextoRepositorioPublico('alice/public',{fetchImpl:get}),/somente de leitura/);
  assert.equal(calls,1);
  await assert.rejects(()=>contextoRepositorioPublico('http://127.0.0.1',{fetchImpl:get}));
  assert.equal(calls,1);
