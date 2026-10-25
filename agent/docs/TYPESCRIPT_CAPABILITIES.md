@@ -218,6 +218,16 @@ esses imports nem exige um loader TypeScript em produção.
 - Os shims locais de `node:crypto` e `Buffer` são somente tipos,
   sem novos pacotes ou mudanças nos containers.
 
+## Isolamento de subagentes via Git worktrees
+
+- `agent/src/orchestration/git-worktree-pool.ts` tipa a criação de
+  worktrees efêmeros em `--detach`, a raiz do repositório e a
+  remoção após o dispatch, mantendo o uso de `execa` sem shell.
+- Um teste real de Git verifica diretórios isolados e remoção segura;
+  o gate AST exige correspondência com o JavaScript existente.
+- A lógica de merge, persistência de commits e políticas de cleanup
+  continua sob controle do executor, sem operações automáticas extras.
+
 ## Como validar
 
 ```bash
