@@ -171,6 +171,8 @@ jobs:
           node --test src/services/aiCreditsV2Mode.test.js
           node --test src/services/aiCreditsV2Http.test.js
           node --test src/services/planPricingParity.test.js
+          node --test src/services/solarisGithubApp.test.js
+          node --test src/solaris/http/solarisHttpHandlers.test.js
       - name: Testar SMTP Resend e templates sem envio real
         run: node --test src/services/emailService.contract.test.js
       - name: Testar captura e retenção de erros sem listeners reais
