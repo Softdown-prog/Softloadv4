@@ -20,6 +20,8 @@ const { criarLivroRazaoIa } = require('../../services/aiBudgetLedger');
 const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGeminiClient');
 const { modoCreditosSolarisV2, criarGateCreditosSolarisV2, debitoLegadoSolaris } = require('../../services/aiCreditsV2Mode');
 const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = require('../../services/aiCreditsV2Http');
+const { createGithubAppService } = require('../../services/solarisGithubApp');
+const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
 const { inspecionarProjeto } = require('../../solaris/pipeline/projectInspector');
@@ -68,6 +70,7 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 // A reserva financeira é ativada SOMENTE por opção explícita na VPS.
 // Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
 const livroOrcamento = criarLivroRazaoIa(db);
+const githubApp = createGithubAppService(db);
 // A V2, quando explicitamente ativada, consulta o livro-razão antes de enviar
 // ao modelo e não confia no contador legado nem no body HTTP para orçamento.
 const verificarCreditosSolaris = criarGateCreditosSolarisV2({
@@ -127,6 +130,45 @@ router.get('/api/ai-credits/v2/history', exigirLogin, criarHandlerHistoricoCredi
     listar: (email, cursor) => livroOrcamento.listarExtratoPagina(email, 20, cursor),
     habilitado: () => process.env.AI_CREDITS_V2_PREVIEW === 'true' || modoCreditosSolarisV2() === 'ativo',
 }));
+
+// GitHub App: autorização individual de cada usuário. Nunca usar token da Softload
+// nem pedir PAT pela UI. A App GitHub precisa ser instalada/autorizada uma vez.
+const githubLimiter = rateLimit({windowMs: 15 * 60 * 1000,max: 20,
+    standardHeaders: 'draft-7',legacyHeaders: false});
+function mesmaOrigemGithub(req, res, next) {
+    const origin = req.get('origin');
+    // Apenas requests do frontend local; POST/DELETE cross-site falham fechados.
+    const esperado = (process.env.BASE_URL || 'https://softload.analysepro.com').replace(/\/$/, '');
+    if (!origin || origin !== esperado) return res.status(403).json({erro:'Origem da requisição inválida.'});
+    next();
+}
+router.get('/dashboard/solaris/github/status', exigirLogin, async (req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { return res.json(await githubApp.status(req.session.user.uid)); }
+    catch (_) { return res.status(503).json({erro:'Não foi possível consultar conexão GitHub.'}); }
+});
+router.get('/dashboard/solaris/github/connect', exigirLogin, githubLimiter, async(req,res)=>{
+    try { return res.redirect(await githubApp.begin(req)); }
+    catch (_) { return res.redirect('/dashboard/solaris?github=setup'); }
+});
+router.get('/dashboard/solaris/github/callback', exigirLogin, githubLimiter, async(req,res)=>{
+    try {
+        if (req.query.error) return res.redirect('/dashboard/solaris?github=denied');
+        await githubApp.finish(req,req.query);
+        return res.redirect('/dashboard/solaris?github=connected');
+    } catch (_) { return res.redirect('/dashboard/solaris?github=error'); }
+});
+router.post('/dashboard/solaris/github/repository', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { const repository = await githubApp.selectRepo(req.session.user.uid,req.body?.repository);
+        return res.json({ok:true,repository}); }
+    catch (_) { return res.status(400).json({erro:'Verifique o repositório e as permissões da GitHub App.'}); }
+});
+router.delete('/dashboard/solaris/github/disconnect', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { await githubApp.disconnect(req.session.user.uid);return res.json({ok:true}); }
+    catch (_) { return res.status(503).json({erro:'Não foi possível desconectar GitHub.'}); }
+});
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {
     res.render('pages/react-test', {
@@ -239,6 +281,12 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
     const deps = dependenciasPorRequisicao(req);
     return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps,
         debitarCreditos: debitarSomenteSeLegado,
+        contextoRepositorioPublico: async (repo) => {
+            const uid = req.session?.user?.uid;
+            if (!uid) throw Error('Sessão expirada.');
+            const status = await githubApp.status(uid);
+            return status.connected ? githubApp.repoContext(uid, repo) : contextoRepositorioPublico(repo);
+        },
     })(req, res);
 });
 
