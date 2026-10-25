@@ -34,10 +34,13 @@ declare module "node:worker_threads" {
   export const workerData: unknown;
   export const parentPort: { postMessage(value: unknown): void } | null;
 }
+interface Buffer extends Uint8Array {
+  toString(encoding?: string): string;
+}
 declare const Buffer: {
-  from(data: ArrayBuffer | Uint8Array): Uint8Array;
-  isBuffer(value: unknown): value is Uint8Array;
-  alloc(size: number): Uint8Array;
+  from(data: ArrayBuffer | Uint8Array | string, encoding?: string): Buffer;
+  isBuffer(value: unknown): value is Buffer;
+  alloc(size: number): Buffer;
 };
 
 declare module "express" {
