@@ -22,7 +22,7 @@ import AdminUsuarios from './pages/admin/Usuarios';
 import AdminSol from './pages/admin/Sol';
 import AdminAnalytics from './pages/admin/Analytics';
 
-function App() {
+function App(): React.JSX.Element {
     return (
         <BrowserRouter>
             <Routes>

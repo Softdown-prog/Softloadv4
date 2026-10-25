@@ -13,11 +13,21 @@ import {
     Menu,
     X
 } from 'lucide-react';
-import { fetchAppConfig } from '../services/api';
+import { fetchAppConfig, type AppConfig, type AppUser } from '../services/api';
+import type { LucideIcon } from 'lucide-react';
 import useFocusTrap from '../hooks/useFocusTrap';
 import Pill from '../components/Pill';
 
-function SidebarItem({ to, icon: Icon, label, badge, badgeColor, active, onNavigate }) {
+interface SidebarItemProps {
+    to: string;
+    icon: LucideIcon;
+    label: string;
+    badge?: string;
+    badgeColor?: 'primary' | 'secondary';
+    active: boolean;
+    onNavigate?: () => void;
+}
+function SidebarItem({ to, icon: Icon, label, badge, badgeColor, active, onNavigate }: SidebarItemProps): React.JSX.Element {
     return (
         <Link to={to} className={`sl-nav-item ${active ? 'active' : ''}`} onClick={onNavigate}>
             <span className="sl-nav-label">
@@ -31,7 +41,13 @@ function SidebarItem({ to, icon: Icon, label, badge, badgeColor, active, onNavig
 
 // Conteúdo da navegação, compartilhado entre a sidebar fixa (desktop) e o
 // drawer (mobile/tablet) — mesma lista de itens, só o container muda.
-function SidebarContent({ user, location, onNavigate, onClose }) {
+interface SidebarContentProps {
+    user: AppUser;
+    location: { pathname: string };
+    onNavigate?: () => void;
+    onClose?: () => void;
+}
+function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentProps): React.JSX.Element {
     const firstLetter = (user.nome || 'U').charAt(0).toUpperCase();
 
     return (
@@ -102,11 +118,11 @@ function SidebarContent({ user, location, onNavigate, onClose }) {
     );
 }
 
-export default function DashboardLayout() {
-    const [config, setConfig] = useState(null);
+export default function DashboardLayout(): React.JSX.Element | null {
+    const [config, setConfig] = useState<AppConfig | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const location = useLocation();
-    const drawerRef = useRef(null);
+    const drawerRef = useRef<HTMLElement | null>(null);
 
     const fecharDrawer = useCallback(() => setDrawerOpen(false), []);
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);

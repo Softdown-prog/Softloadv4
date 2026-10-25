@@ -146,3 +146,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - `npm run typecheck:frontend` verifica tipos; `npm run build` recompila o frontend no Vite. A build em CI não altera os bundles versionados nem roda o servidor; o deploy continua responsável pelos assets finais.
 - `npm run test:frontend-base` usa mocks e JavaScript compilado em memória para validar GET de configuração, fallback de rede, persistência de preferências, controle de foco/Escape e acessibilidade com redução de movimento, sem navegador externo.
 - Preservada a política de imports dinâmicos para GSAP/ScrollTrigger; nenhuma mudança no contrato de login, dados de usuários, sessão ou cobranças.
+
+## Frontend React — etapa 2: entrypoint, roteamento e layouts
+
+- `frontend/main.tsx`, `frontend/App.tsx`, `frontend/layouts/PublicLayout.tsx`, `frontend/layouts/AdminLayout.tsx` e `frontend/layouts/DashboardLayout.tsx` substituem as versões `.jsx` (sem espelhos CommonJS).
+- O Vite passa a compilar `frontend/main.tsx` preservando o destino `public/dist`, as rotas existentes e a inicialização das preferências de acessibilidade antes do primeiro render.
+- `DashboardLayout` e `AdminLayout` usam contrato tipado `AppConfig` para a configuração carregada de `/api/app-config`. O menu móvel e os ícones usam props React tipadas, mantendo foco, logout e contexto `Outlet`.
+- As cinco fontes entram em `tsconfig.frontend.json` (checagem `strict`). Testes de rotas e layouts verificam os 18 caminhos, os dois índices, o shell público e o contexto das áreas protegidas; o CI continua executando o build Vite e os testes gerais.

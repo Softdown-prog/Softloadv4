@@ -4,7 +4,7 @@ import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import CookieConsent from '../components/CookieConsent';
 
-export default function PublicLayout() {
+export default function PublicLayout(): React.JSX.Element {
     return (
         <>
             <PublicNavbar />

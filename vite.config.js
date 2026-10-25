@@ -13,13 +13,13 @@ export default defineConfig({
   // server.js já serve `public/` inteiro via express.static (todo o resto
   // de public/css, public/js, public/favicon.svg chega ao navegador direto
   // dali, nunca passou pelo Vite) — outDir só precisa do bundle JS/CSS que
-  // o próprio Vite gera a partir de frontend/main.jsx.
+  // o próprio Vite gera a partir de frontend/main.tsx.
   publicDir: false,
   build: {
     outDir: path.resolve(__dirname, 'public/dist'),
     emptyOutDir: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'frontend/main.jsx'),
+      input: path.resolve(__dirname, 'frontend/main.tsx'),
       output: {
         entryFileNames: 'assets/[name].js',
         // Chunks recebem hash do conteúdo: com Cache-Control immutable

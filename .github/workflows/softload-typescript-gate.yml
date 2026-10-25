@@ -143,6 +143,8 @@ jobs:
         run: node --test scripts/check-typescript-mirrors.test.js
       - name: Testar contratos da base React em ambientes simulados
         run: npm run test:frontend-base
+      - name: Conferir rotas e layouts React migrados
+        run: npm run test:frontend-layouts
       - name: Verificar TypeScript do frontend React
         run: npm run typecheck:frontend
       - name: Compilar frontend React pelo Vite

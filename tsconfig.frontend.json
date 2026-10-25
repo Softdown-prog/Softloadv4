@@ -21,7 +21,12 @@
     "frontend/services/api.ts",
     "frontend/utils/accessibilityPrefs.ts",
     "frontend/hooks/useFocusTrap.ts",
-    "frontend/hooks/useHeroEntrance.ts"
+    "frontend/hooks/useHeroEntrance.ts",
+    "frontend/main.tsx",
+    "frontend/App.tsx",
+    "frontend/layouts/DashboardLayout.tsx",
+    "frontend/layouts/AdminLayout.tsx",
+    "frontend/layouts/PublicLayout.tsx"
   ],
   "exclude": [
     "node_modules",

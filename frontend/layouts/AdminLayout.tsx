@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Sun, Users, LineChart, LogOut, Home } from 'lucide-react';
-import { fetchAppConfig } from '../services/api';
+import { fetchAppConfig, type AppConfig } from '../services/api';
+import type { LucideIcon } from 'lucide-react';
 
-const NAV = [
+interface AdminNavItem {
+    to: string;
+    label: string;
+    icon: LucideIcon;
+    color?: string;
+    bg?: string;
+    border?: string;
+}
+const NAV: AdminNavItem[] = [
     { to: '/eu', label: 'Dashboard', icon: Home },
     { to: '/eu/sol', label: 'Sol', icon: Sun, color: '#fbbf24', bg: 'rgba(251,191,36,.12)', border: 'rgba(251,191,36,.25)' },
     { to: '/eu/usuarios', label: 'Usuários', icon: Users },
     { to: '/eu/analytics', label: 'Analytics', icon: LineChart, color: '#a78bfa', bg: 'rgba(139,92,246,.15)', border: 'rgba(139,92,246,.25)' },
 ];
 
-export default function AdminLayout() {
-    const [config, setConfig] = useState(null);
+export default function AdminLayout(): React.JSX.Element {
+    const [config, setConfig] = useState<AppConfig | null>(null);
     const location = useLocation();
 
     useEffect(() => {
