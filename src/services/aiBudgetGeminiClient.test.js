@@ -218,3 +218,32 @@ test('ausência de usageMetadata sinaliza custo estimado no extrato',async()=>{
   assert.equal(steps[0].contexto.ferramenta,'solaris-upload');
   assert.equal(steps[1].estimado,true);
 });
+
+test('auditoria multimodal reserva custo por imagem limitado em vez de contar Base64 como texto', async () => {
+    const h=harness();
+    const pngData=Buffer.alloc(400*1024).toString('base64');
+    const params={
+        model:'gemini-2.5-pro',
+        config:{temperature:0,maxOutputTokens:1024},
+        contents:[{role:'user',parts:[
+            {text:'Avalie este layout'},
+            {inlineData:{mimeType:'image/png',data:pngData}},
+        ]}],
+    };
+    const result=await h.client.models.generateContent(params);
+    assert.equal(result.text,'ok');
+    assert.deepEqual(h.steps.map(x=>x[0]),['reservar','enviar_modelo','liquidar']);
+    assert.ok(h.steps[0][1].reservaMicroBrl<200000,
+        'Reserva de foto deve ser conservadora mas não deve cobrar centenas de milhares de tokens Base64');
+});
+test('bloqueia PNG multimodal maior que 512 KiB antes do provedor', async () => {
+    const h=harness();
+    const params={
+        model:'gemini-2.5-pro', config:{temperature:0,maxOutputTokens:1024},
+        contents:[{role:'user',parts:[{inlineData:{
+            mimeType:'image/png',data:Buffer.alloc(513*1024).toString('base64'),
+        }}]}],
+    };
+    await assert.rejects(h.client.models.generateContent(params),/IMAGEM_FORA_DO_LIMITE/);
+    assert.equal(h.calls.model,0);
+});
