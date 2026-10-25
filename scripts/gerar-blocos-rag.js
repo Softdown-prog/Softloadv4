@@ -1,4 +1,9 @@
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BLOCOS = void 0;
+exports.validar = validar;
+exports.gerarBloco = gerarBloco;
+exports.main = main;
 
 require('dotenv').config();
 const fs   = require('fs');
@@ -38,7 +43,7 @@ REGRAS ABSOLUTAS (qualquer violação invalida a resposta):
 Os campos css e js são opcionais por variante. Inclua pelo menos 3 variantes por bloco.`;
 
 // ─── BLOCOS A GERAR ───────────────────────────────────────────────────────────
-const BLOCOS = [
+exports.BLOCOS = [
   {
     id: 'ia-balcao-cards-com-imagem',
     prompt: 'Gere o bloco RAG "ia-balcao-cards-com-imagem" para cards de postagem COM imagem destacada para Blogger Bootstrap 5.3. Inclua: card horizontal (imagem esquerda + texto direita), card vertical padrão com aspect-ratio 16/9 na imagem, card com overlay de categoria sobre a imagem, e card magazine (imagem grande + múltiplos mini-links abaixo). Use img com aspect-ratio no CSS (não height fixo). Sem tags b: ou data:.',
@@ -201,10 +206,10 @@ async function gerarBloco(bloco) {
 }
 
 async function main() {
-  console.log(`Gerando ${BLOCOS.length} blocos RAG via Gemini...\n`);
+  console.log(`Gerando ${exports.BLOCOS.length} blocos RAG via Gemini...\n`);
   const resultados = [];
 
-  for (const bloco of BLOCOS) {
+  for (const bloco of exports.BLOCOS) {
     const r = await gerarBloco(bloco);
     resultados.push(r);
     // Pausa 1s entre chamadas para não estourar quota
@@ -223,4 +228,4 @@ async function main() {
   console.log(`\n  ${ok} gerados, ${skip} pulados, ${fail} falharam`);
 }
 
-main().catch(console.error);
+if (require.main === module) main().catch(console.error);

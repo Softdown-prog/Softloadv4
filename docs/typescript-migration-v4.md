@@ -108,3 +108,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Execução principal foi protegida por `require.main === module`, preservando `node scripts/generateRagBalcao.js` e evitando chamadas de API por simples importação.
 - `scripts/generateRagBalcao.test.js` simula Gemini, sistema de arquivos e temporização. Inclui dry-run sem rede/escrita, extração de JSON, bloqueio de conteúdo incompleto e retry de 429.
 - Nenhum arquivo de RAG real foi criado nem houve chamada real ao serviço de IA; `--dry-run` continua sem custo de API.
+
+## Lote — gerador de 15 blocos de interface do Blogger
+
+- `scripts/gerar-blocos-rag.ts` é a fonte TypeScript tipada para a lista de prompts, os campos das variantes do bloco, o relatório de geração, o serviço de IA e a escrita do JSON no catálogo Blogger.
+- `scripts/gerar-blocos-rag.js` segue como espelho CommonJS executável. Importar a API não chama o modelo; somente executar a CLI diretamente inicia a geração real.
+- Mantido o comportamento de não sobrescrever arquivos existentes, validar identidade/categoria/conceito, exigir ao menos duas variantes HTML, rejeitar tags Blogger dentro de variantes e repetir até três tentativas.
+- `node --test scripts/gerar-blocos-rag.test.js` injeta respostas do Gemini e escrita de arquivo simuladas; nenhum dado real é gravado e nenhuma chamada de IA é feita pelos testes.

@@ -183,7 +183,8 @@
     "src/solaris/tools/projectLockRecovery.ts",
     "scripts/setupAdmin.ts",
     "scripts/generateRagBalcao.ts",
-    "scripts/visual/compareTemplates.ts"
+    "scripts/visual/compareTemplates.ts",
+    "scripts/gerar-blocos-rag.ts"
   ],
   "exclude": [
     "node_modules",
