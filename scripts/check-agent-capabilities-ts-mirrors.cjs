@@ -57,6 +57,7 @@ const sources = [
   "agent/src/utils/parse-command.ts",
   "agent/src/config/solaris-allowed-domains.ts",
   "agent/src/config/sandbox-endpoints.ts",
+  "agent/src/config/mcpServers.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

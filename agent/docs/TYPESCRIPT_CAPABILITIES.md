@@ -179,6 +179,16 @@ esses imports nem exige um loader TypeScript em produção.
 - Ambas passam pelo gate de equivalência ESM; não há modificação nos
   endpoints, chaves ou valores de configuração em produção.
 
+## Configuração MCP tipada
+
+- `agent/src/config/mcpServers.ts` define contratos de ambiente e de
+  servidores MCP, mantendo a validação Zod do JSON, a allowlist de
+  ferramentas e os presets GitHub/Supabase (HTTPS obrigatório).
+- O shim de tipos do Zod inclui `url()` para compilar no checkout raiz,
+  mas a validação em produção continua utilizando a biblioteca real.
+- A comparação AST garante que a configuração, os endpoints e o
+  comportamento dos segredos permaneçam iguais ao JavaScript original.
+
 ## Como validar
 
 ```bash

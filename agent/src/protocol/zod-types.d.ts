@@ -14,6 +14,7 @@ declare module "zod" {
   export interface ZodType<T> {
     strict(): ZodType<T>;
     min(length: number): ZodType<T>;
+    url(): ZodType<T>;
     max(length: number): ZodType<T>;
     int(): ZodType<T>;
     positive(): ZodType<T>;

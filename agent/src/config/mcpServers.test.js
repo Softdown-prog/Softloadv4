@@ -128,3 +128,31 @@ test("loadMcpServersConfig: não aceita preset e servidor JSON com mesmo nome", 
     /Configuração MCP duplicada/,
   );
 });
+
+test("MCP GitHub: rejeita URL HTTP e lista de ferramentas duplicadas", () => {
+  assert.throws(
+    () => loadMcpServersConfig({
+      GITHUB_MCP_TOKEN: "ghp_teste",
+      GITHUB_MCP_URL: "http://github.exemplo.com/mcp",
+    }),
+    /HTTPS/,
+  );
+  assert.throws(
+    () => loadMcpServersConfig({
+      GITHUB_MCP_TOKEN: "ghp_teste",
+      GITHUB_MCP_ALLOWED_TOOLS: "get_issue,get_issue",
+    }),
+    /não pode repetir ferramentas/,
+  );
+});
+
+test("MCP Supabase: read_only inválido falha antes de montar a URL", () => {
+  assert.throws(
+    () => loadMcpServersConfig({
+      SUPABASE_MCP_ACCESS_TOKEN: "sbp_teste",
+      SUPABASE_MCP_PROJECT_REF: "abc123",
+      SUPABASE_MCP_READ_ONLY: "maybe",
+    }),
+    /SUPABASE_MCP_READ_ONLY/,
+  );
+});
