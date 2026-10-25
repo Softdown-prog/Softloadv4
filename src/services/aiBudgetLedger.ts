@@ -87,6 +87,41 @@ export function criarLivroRazaoIa(db: FirestoreOrcamento) {
     const recibos = db.collection('ia_orcamento_recibos');
 
     return {
+        /** Consulta atômica somente leitura do ciclo ativo para o painel de créditos V2. */
+        async consultar(email: string): Promise<{
+            plano: string;
+            cicloExpiraEm: string;
+            limiteMicroBrl: number;
+            gastoMicroBrl: number;
+            reservadoMicroBrl: number;
+        }> {
+            const emailNormalizado = String(email || '').trim().toLowerCase();
+            if (!emailNormalizado.includes('@') || emailNormalizado.length > 254) {
+                throw new OrcamentoIaIndisponivel('CONSULTA_INVALIDA');
+            }
+            return db.runTransaction(async (tx) => {
+                const userSnap = await tx.get(usuarios.doc<DadosUsuario>(emailNormalizado));
+                if (!userSnap.exists) throw new OrcamentoIaIndisponivel('USUARIO_NAO_ENCONTRADO');
+                const dados = userSnap.data() || {};
+                const ciclo = dados.creditos_expira_em;
+                if (!ciclo || !Number.isFinite(Date.parse(ciclo)) || Date.parse(ciclo) <= Date.now()) {
+                    throw new OrcamentoIaIndisponivel('CICLO_EXPIRADO');
+                }
+                const limiteMicroBrl = limitePlano(dados);
+                const orcamentoSnap = await tx.get(orcamentos.doc<DadosOrcamento>(sha(emailNormalizado + '|' + ciclo)));
+                const orcamento = orcamentoSnap.data() || {};
+                const gastoMicroBrl = lerSaldo(orcamento.gastoMicroBrl);
+                const reservadoMicroBrl = lerSaldo(orcamento.reservadoMicroBrl);
+                if (!Number.isSafeInteger(gastoMicroBrl + reservadoMicroBrl)) {
+                    throw new OrcamentoIaIndisponivel('ORCAMENTO_CORROMPIDO');
+                }
+                const plano = dados.is_active === true
+                    ? (dados.plano === 'premium' ? 'pro' : dados.plano === 'start' ? 'starter' : dados.plano || 'free')
+                    : 'free';
+                return { plano, cicloExpiraEm: ciclo, limiteMicroBrl, gastoMicroBrl, reservadoMicroBrl };
+            });
+        },
+
         async reservar({ email, operacaoId, reservaMicroBrl }: ReservaInput): Promise<ReservaResultado> {
             const emailNormalizado = String(email || '').trim().toLowerCase();
             if (!emailNormalizado.includes('@') || emailNormalizado.length > 254

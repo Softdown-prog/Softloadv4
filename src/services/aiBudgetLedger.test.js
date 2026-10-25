@@ -129,3 +129,38 @@ test('nunca persiste email em chaves de recibos ou orçamento',async()=>{
   assert.equal(keys.length,2);
   assert.ok(keys.every(k=>!k.includes('alice@')&&!k.includes('my-op')));
 });
+
+test('consulta V2 reflete saldo reservado e gasto, sem novas escritas',async()=>{
+  const b=banco();user(b.docs,'alice@example.test','pro');
+  const before=await b.livro.consultar('ALICE@EXAMPLE.TEST');
+  assert.deepEqual(before,{
+    plano:'pro',cicloExpiraEm:'2099-12-30T00:00:00.000Z',
+    limiteMicroBrl:5_000_000,gastoMicroBrl:0,reservadoMicroBrl:0,
+  });
+  const r=await b.livro.reservar({email:'alice@example.test',operacaoId:'preview',reservaMicroBrl:300000});
+  const inFlight=await b.livro.consultar('alice@example.test');
+  assert.equal(inFlight.reservadoMicroBrl,300000);
+  await b.livro.liquidar({reciboId:r.reciboId,custoRealMicroBrl:175000});
+  const after=await b.livro.consultar('alice@example.test');
+  assert.equal(after.reservadoMicroBrl,0);
+  assert.equal(after.gastoMicroBrl,175000);
+  assert.equal(b.docs.size,3); // não cria registro por consulta
+});
+
+test('consulta V2 falha fechada para falta de usuário, ciclo e adulteração',async()=>{
+  const b=banco();
+  await codigo(b.livro.consultar(''), 'CONSULTA_INVALIDA');
+  await codigo(b.livro.consultar('alice@example.test'),'USUARIO_NAO_ENCONTRADO');
+  user(b.docs,'alice@example.test','pro',true,'2000-01-01');
+  await codigo(b.livro.consultar('alice@example.test'),'CICLO_EXPIRADO');
+  user(b.docs,'alice@example.test','premium',true);
+  const snap=await b.livro.consultar('alice@example.test');
+  assert.equal(snap.plano,'pro');
+  user(b.docs,'alice@example.test','studio',false);
+  assert.equal((await b.livro.consultar('alice@example.test')).limiteMicroBrl,50000);
+  const b2=banco();user(b2.docs);
+  const r=await b2.livro.reservar({email:'alice@example.test',operacaoId:'corrupt',reservaMicroBrl:1000});
+  const ledgerKey=[...b2.docs.keys()].find(k=>k.startsWith('ia_orcamentos/'));
+  b2.docs.get(ledgerKey).gastoMicroBrl=-5;
+  await codigo(b2.livro.consultar('alice@example.test'),'ORCAMENTO_CORROMPIDO');
+});
