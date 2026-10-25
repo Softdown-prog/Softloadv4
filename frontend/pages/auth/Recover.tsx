@@ -5,7 +5,7 @@ import { KeyRound, Info, AlertTriangle, CheckCircle2, ArrowLeft } from 'lucide-r
 // Formulário nativo (method="POST" action="/recover") — o backend sempre
 // redireciona pra /recover?sucesso=... (mesmo se o e-mail não existir, por
 // design anti-enumeração — ver src/routes/authRoutes.js).
-export default function Recover() {
+export default function Recover(): React.JSX.Element {
     const [searchParams] = useSearchParams();
 
     const erro = searchParams.get('erro');

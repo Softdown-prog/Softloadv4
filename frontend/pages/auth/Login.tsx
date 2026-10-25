@@ -7,9 +7,9 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 // não JSON. Um fetch() teria que reimplementar isso; a submissão nativa do
 // navegador já faz exatamente o que o EJS antigo fazia, sem mudar o contrato
 // de segurança (rate limit, sessão, redirects ?erro=/?sucesso=).
-export default function Login() {
+export default function Login(): React.JSX.Element {
     const [searchParams] = useSearchParams();
-    const [showPwd, setShowPwd] = useState(false);
+    const [showPwd, setShowPwd] = useState<boolean>(false);
 
     const erro = searchParams.get('erro');
     const sucesso = searchParams.get('sucesso');

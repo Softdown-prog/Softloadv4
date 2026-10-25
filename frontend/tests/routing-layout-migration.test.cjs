@@ -65,6 +65,9 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/components/MermaidBlock.tsx',
     'frontend/components/MarkdownRenderer.tsx',
     'frontend/components/landing/TerminalDemo.tsx',
+    'frontend/pages/auth/Login.tsx',
+    'frontend/pages/auth/Register.tsx',
+    'frontend/pages/auth/Recover.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -124,4 +127,36 @@ test('terminal animado preserva acessibilidade, temporizadores e cancelamento', 
   assert.match(demo, /e\.key === 'Enter' \|\| e\.key === ' '/);
   assert.match(demo, /role', 'button'/);
   assert.match(demo, /startDemo\(\(idx \+ 1\) % DEMOS\.length\)/);
+});
+
+test('formulários de autenticação preservam POST nativo e campos esperados pelo backend', () => {
+  const login = source('frontend/pages/auth/Login.tsx');
+  const register = source('frontend/pages/auth/Register.tsx');
+  const recover = source('frontend/pages/auth/Recover.tsx');
+  assert.match(login, /<form action="\/login" method="POST">/);
+  assert.match(login, /name="email" id="email"/);
+  assert.match(login, /name="password" id="password"/);
+  assert.match(login, /autoComplete="current-password"/);
+  assert.match(login, /searchParams\.get\('erro'\)/);
+  assert.match(login, /searchParams\.get\('sucesso'\)/);
+  assert.match(register, /<form action="\/register" method="POST">/);
+  assert.match(register, /name="name" id="name"/);
+  assert.match(register, /name="email" id="email"/);
+  assert.match(register, /name="password" id="password"/);
+  assert.match(register, /required minLength={8}/);
+  assert.match(register, /password\.length >= 8 && password === confirm/);
+  assert.match(register, /disabled={!valido}/);
+  assert.match(register, /<input type="password" id="confirm"/);
+  assert.doesNotMatch(register, /name="confirm"/);
+  assert.match(recover, /<form action="\/recover" method="POST">/);
+  assert.match(recover, /id="recover-email" type="email" name="email"/);
+  assert.match(recover, /searchParams\.get\('sucesso'\)/);
+  assert.match(recover, /searchParams\.get\('erro'\)/);
+});
+
+test('componentes TSX de autenticação expõem retorno React tipado', () => {
+  for (const name of ['Login', 'Register', 'Recover']) {
+    const src = source(`frontend/pages/auth/${name}.tsx`);
+    assert.match(src, new RegExp(`export default function ${name}\\(\\): React\\.JSX\\.Element`));
+  }
 });

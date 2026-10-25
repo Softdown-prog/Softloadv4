@@ -38,6 +38,9 @@
     "frontend/components/MermaidBlock.tsx",
     "frontend/components/MarkdownRenderer.tsx",
     "frontend/components/landing/TerminalDemo.tsx",
+    "frontend/pages/auth/Login.tsx",
+    "frontend/pages/auth/Register.tsx",
+    "frontend/pages/auth/Recover.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [

@@ -3,12 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 
 // Formulário nativo (method="POST" action="/register"), mesmo raciocínio do
-// Login.jsx — o backend espera um POST de formulário HTML clássico, com
+// Login.tsx — o backend espera um POST de formulário HTML clássico, com
 // redirect e rate limit próprios (src/routes/authRoutes.js).
-export default function Register() {
+export default function Register(): React.JSX.Element {
     const [searchParams] = useSearchParams();
-    const [password, setPassword] = useState('');
-    const [confirm, setConfirm] = useState('');
+    const [password, setPassword] = useState<string>('');
+    const [confirm, setConfirm] = useState<string>('');
 
     const erro = searchParams.get('erro');
 
