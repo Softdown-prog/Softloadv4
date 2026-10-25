@@ -58,6 +58,10 @@ test('GitHub App vincula OAuth ao usuário e verifica state de uso único',async
  const state=new URL(href).searchParams.get('state');
  assert.equal(new URL(href).origin,'https://github.com');
  assert.ok(state && /^[a-f0-9]{48}$/.test(state));
+ assert.equal(new URL(href).searchParams.get('code_challenge_method'),'S256');
+ assert.match(new URL(href).searchParams.get('code_challenge'),/^[A-Za-z0-9_-]{43}$/);
+ assert.match(request.session.solarisGithubState.verifier,/^[A-Za-z0-9_-]{43}$/);
+ assert.ok(!href.includes(request.session.solarisGithubState.verifier));
  assert.ok(!href.includes('fake-test-secret'));
  await assert.rejects(()=>service.finish(request,{state:'a'.repeat(48),code:'abcdefgh1234'}));
  assert.equal((await service.status('alice-uid')).connected,false);
