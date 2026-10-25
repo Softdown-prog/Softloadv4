@@ -1,0 +1,171 @@
+'use strict';
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+const SOURCE = fs.readFileSync(path.join(__dirname, 'creditService.js'), 'utf8');
+const EMAIL = 'Cliente@Example.COM';
+const KEY = 'clientes_premium/cliente@example.com';
+
+function harness(initial = {}) {
+    const docs = new Map(Object.entries(initial).map(([k,v])=>[k,{...v}]));
+    const calls = {transactions:0, writes:[], logs:[], errors:[]};
+    let billingLogError = false;
+    const inc = n => ({increment: n});
+    const fieldValue = {increment: inc, serverTimestamp:()=>({serverTimestamp:true})};
+    const makeDoc = key => ({
+        async update(data) {calls.writes.push({op:'update',key,data});docs.set(key,{...docs.get(key),...data});},
+        async set(data,options) {calls.writes.push({op:'set',key,data,options});docs.set(key,{...docs.get(key),...data});},
+        collection(name) {
+            assert.equal(name,'billing_logs');
+            return {add(data) {
+                calls.logs.push({key,data});
+                return billingLogError ? Promise.reject(Error('billing logs unavailable')) : Promise.resolve();
+            }};
+        },
+    });
+    const db = {
+        collection(name) {
+            assert.equal(name,'clientes_premium');
+            return {doc(email) {return {...makeDoc(name+'/'+email),key:name+'/'+email};}};
+        },
+        async runTransaction(callback) {
+            calls.transactions++;
+            const writes = [];
+            const tx = {
+                async get(ref) {
+                    const data = docs.get(ref.key);
+                    return {exists:!!data, data:()=>data && {...data}};
+                },
+                update(ref,changes) {writes.push({ref,changes});},
+            };
+            await callback(tx);
+            for (const {ref,changes} of writes) {
+                const current = docs.get(ref.key) || {};
+                const next = {...current};
+                for (const [field,value] of Object.entries(changes)) {
+                    next[field] = value && typeof value === 'object' && 'increment' in value
+                        ? (current[field]||0)+value.increment : value;
+                }
+                docs.set(ref.key,next);
+                calls.writes.push({op:'tx.update',key:ref.key,changes});
+            }
+        },
+    };
+    const mod = {exports:{}};
+    vm.runInNewContext(SOURCE, {
+        module:mod, exports:mod.exports, Date, Promise,
+        require(id) {
+            assert.equal(id,'./firebase');
+            return {db,admin:{firestore:{FieldValue:fieldValue}}};
+        },
+        console:{error:(...args)=>calls.errors.push(args)},
+    },{filename:'creditService.js'});
+    return {api:mod.exports,docs,calls,setBillingError:flag=>{billingLogError=flag}};
+}
+
+test('planos e cálculo dos créditos permanecem iguais, GPT sem novas cotas', () => {
+    const {api}=harness();
+    assert.deepEqual({...api.PLAN_CREDITS},{free:5,starter:500,pro:2000,studio:5500,premium:2000});
+    assert.deepEqual({...api.BLOGGERAI_PLAN_CREDITS},{free:0,starter:500,premium:2000,pro:2000,studio:5500});
+    assert.deepEqual({...api.GPT_PLAN_CREDITS},{free:0,starter:0,pro:0,studio:0,premium:0});
+    assert.equal(api.calcularCreditos(0,0),0);
+    assert.equal(api.calcularCreditos(999,0),1);
+    assert.equal(api.calcularCreditos(1000,0),1);
+    assert.equal(api.calcularCreditos(1000,1),2);
+});
+
+test('concessão Gemini faz update com email em minúsculas e 30 dias de expiração',async()=>{
+    const h=harness({[KEY]:{creditos:4}});
+    const before=Date.now();
+    const r=await h.api.concederCreditos(EMAIL,'starter');
+    assert.equal(r.creditos,500);
+    assert.equal(h.calls.writes.length,1);
+    assert.equal(h.calls.writes[0].op,'update');
+    assert.equal(h.calls.writes[0].key,KEY);
+    assert.equal(h.calls.writes[0].data.creditos_ciclo_total,500);
+    assert.equal(h.calls.writes[0].data.creditos_expira_em,r.expira_em);
+    assert.ok(Date.parse(r.expira_em)>=before+29*864e5);
+    assert.ok(Date.parse(r.expira_em)<=Date.now()+31*864e5);
+    const fallback=await h.api.concederCreditos(EMAIL,'invalid-plan');
+    assert.equal(fallback.creditos,5);
+});
+
+test('GPT sem orçamento não cria cotas; BloggerAI usa set com merge, gratuito não gera créditos',async()=>{
+    const h=harness();
+    const noop=await h.api.concederCreditosGpt(EMAIL,'studio');
+    assert.deepEqual(JSON.parse(JSON.stringify(noop)),{creditos:0,expira_em:null});
+    assert.equal(h.calls.writes.length,0);
+    const free=await h.api.concederCreditosBloggerAi(EMAIL,'free');
+    assert.equal(free.creditos,0);
+    assert.equal(h.calls.writes.length,0);
+    const paid=await h.api.concederCreditosBloggerAi(EMAIL,'pro');
+    assert.equal(paid.creditos,2000);
+    assert.equal(h.calls.writes[0].op,'set');
+    assert.equal(h.calls.writes[0].options.merge,true);
+    assert.equal(h.calls.writes[0].data.creditos_bloggerai,2000);
+    assert.equal(h.calls.writes[0].key,KEY);
+});
+
+test('Gemini: inativos respeitam saldo e expiração; ativos não bloqueiam; logs são não bloqueantes',async()=>{
+    const h=harness({[KEY]:{is_active:false,creditos:1,creditos_expira_em:'2099-12-31T23:59:59Z'}});
+    assert.equal(await h.api.debitarCreditos(EMAIL,999,0),1);
+    assert.equal(h.docs.get(KEY).creditos,0);
+    assert.equal(h.calls.logs[0].data.credits_debited,1);
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1000,0),/Créditos insuficientes/);
+    assert.equal(h.calls.logs.length,1);
+    h.docs.set(KEY,{is_active:false,creditos:10,creditos_expira_em:'2000-01-01'});
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1000,0),/Créditos insuficientes/);
+    h.docs.set(KEY,{is_active:true,creditos:0});
+    h.setBillingError(true);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1001,0),2);
+    assert.equal(h.docs.get(KEY).creditos,-2);
+    await Promise.resolve();
+    assert.ok(h.calls.errors.some(args=>args[0]==='[BILLING] log error:'));
+    const n=h.calls.transactions;
+    assert.equal(await h.api.debitarCreditos(EMAIL,0,0),0);
+    assert.equal(h.calls.transactions,n);
+});
+
+test('documento ausente causa erro no débito Gemini e BloggerAI, sem mutação',async()=>{
+    const h=harness();
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1,0),/Usuário não encontrado/);
+    await assert.rejects(h.api.debitarCreditosBloggerAi(EMAIL,1,0),/Usuário não encontrado/);
+    assert.equal(h.calls.logs.length,0);
+    assert.equal(h.calls.writes.length,0);
+});
+
+test('BloggerAI mantém saldo independente e registra tipo de consumo',async()=>{
+    const h=harness({[KEY]:{
+        is_active:false,creditos:0,creditos_bloggerai:3,
+        creditos_bloggerai_expira_em:'2099-12-31T23:59:59Z',
+    }});
+    assert.equal(await h.api.debitarCreditosBloggerAi(EMAIL,1200,0),2);
+    assert.equal(h.docs.get(KEY).creditos_bloggerai,1);
+    assert.equal(h.docs.get(KEY).creditos,0);
+    assert.equal(h.calls.logs[0].data.tipo,'bloggerai');
+    await assert.rejects(h.api.debitarCreditosBloggerAi(EMAIL,2000,0),/Créditos BloggerAI insuficientes/);
+    h.docs.set(KEY,{is_active:true,creditos_bloggerai:0});
+    assert.equal(await h.api.debitarCreditosBloggerAi(EMAIL,1000,0),1);
+    assert.equal(h.docs.get(KEY).creditos_bloggerai,-1);
+});
+
+test('GPT legado: ausência de doc/campo/saldo nunca bloqueia a cobrança principal',async()=>{
+    const h=harness();
+    assert.equal(await h.api.debitarCreditosGpt(EMAIL,1000,0),1);
+    assert.equal(h.calls.writes.length,0);
+    assert.equal(h.calls.logs[0].data.modelo,'gpt-5.4-nano');
+    h.docs.set(KEY,{is_active:true});
+    assert.equal(await h.api.debitarCreditosGpt(EMAIL,1000,0),1);
+    assert.equal(h.calls.writes.length,0);
+    h.docs.set(KEY,{creditos_gpt:1,creditos_gpt_expira_em:'2000-01-01'});
+    assert.equal(await h.api.debitarCreditosGpt(EMAIL,1000,0),1);
+    assert.equal(h.calls.writes.length,0);
+    h.docs.set(KEY,{creditos_gpt:3,creditos_gpt_expira_em:'2099-12-31'});
+    assert.equal(await h.api.debitarCreditosGpt(EMAIL,1001,0),2);
+    assert.equal(h.docs.get(KEY).creditos_gpt,1);
+    assert.equal(h.calls.writes.length,1);
+    assert.equal(h.calls.logs.length,4);
+});

@@ -1,3 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BLOGGERAI_PLAN_CREDITS = exports.GPT_PLAN_CREDITS = exports.PLAN_CREDITS = void 0;
+exports.calcularCreditos = calcularCreditos;
+exports.concederCreditos = concederCreditos;
+exports.debitarCreditos = debitarCreditos;
+exports.concederCreditosGpt = concederCreditosGpt;
+exports.debitarCreditosGpt = debitarCreditosGpt;
+exports.concederCreditosBloggerAi = concederCreditosBloggerAi;
+exports.debitarCreditosBloggerAi = debitarCreditosBloggerAi;
 const { db, admin } = require('./firebase');
 const FV = admin.firestore.FieldValue;
 
@@ -5,7 +15,7 @@ const TOKENS_POR_CREDITO = 1000;
 const EXPIRY_DAYS = 30;
 
 // Créditos Gemini por plano por ciclo de 30 dias
-const PLAN_CREDITS = {
+exports.PLAN_CREDITS = {
     free:    5,
     starter: 500,
     pro:     2000,
@@ -15,7 +25,7 @@ const PLAN_CREDITS = {
 
 // Provedor externo temporariamente sem orçamento de API.
 // Manter o contrato para registros legados, mas não conceder novas cotas.
-const GPT_PLAN_CREDITS = {
+exports.GPT_PLAN_CREDITS = {
     free:    0,
     starter: 0,
     pro:     0,
@@ -26,7 +36,7 @@ const GPT_PLAN_CREDITS = {
 // Créditos do Gerador de Templates IA por plano por ciclo de 30 dias
 // Campo Firestore: creditos_bloggerai — mesmo pool do Gemini, contabilizado separado
 // Free = 0 (gerador exige plano pago)
-const BLOGGERAI_PLAN_CREDITS = {
+exports.BLOGGERAI_PLAN_CREDITS = {
     free:    0,
     starter: 500,
     premium: 2000,
@@ -46,7 +56,7 @@ function dataExpiracao() {
 
 // Aloca créditos do plano e define nova expiração (chamado no webhook de pagamento e no cadastro)
 async function concederCreditos(email, plano) {
-    const creditos = PLAN_CREDITS[plano] ?? PLAN_CREDITS.free;
+    const creditos = exports.PLAN_CREDITS[plano] ?? exports.PLAN_CREDITS.free;
     const expira_em = dataExpiracao();
     await db.collection('clientes_premium').doc(email.toLowerCase()).update({
         creditos,
@@ -90,7 +100,7 @@ async function debitarCreditos(email, inputTokens, outputTokens) {
 // ── GPT 5.4 credit functions ──────────────────────────────────────────────
 
 async function concederCreditosGpt(email, plano) {
-    const creditos = GPT_PLAN_CREDITS[plano] ?? 0;
+    const creditos = exports.GPT_PLAN_CREDITS[plano] ?? 0;
     if (creditos === 0) return { creditos: 0, expira_em: null };
     const expira_em = dataExpiracao();
     // set+merge: cria o doc se não existir (.update() lançava NOT_FOUND para usuários novos)
@@ -138,7 +148,7 @@ async function debitarCreditosGpt(email, inputTokens, outputTokens) {
 // ── Gerador de Templates IA credit functions ──────────────────────────────
 
 async function concederCreditosBloggerAi(email, plano) {
-    const creditos = BLOGGERAI_PLAN_CREDITS[plano] ?? 0;
+    const creditos = exports.BLOGGERAI_PLAN_CREDITS[plano] ?? 0;
     if (creditos === 0) return { creditos: 0, expira_em: null };
     const expira_em = dataExpiracao();
     await db.collection('clientes_premium').doc(email.toLowerCase()).set({
@@ -181,15 +191,3 @@ async function debitarCreditosBloggerAi(email, inputTokens, outputTokens) {
     return creditosADebitar;
 }
 
-module.exports = {
-    PLAN_CREDITS,
-    GPT_PLAN_CREDITS,
-    BLOGGERAI_PLAN_CREDITS,
-    calcularCreditos,
-    debitarCreditos,
-    concederCreditos,
-    debitarCreditosGpt,
-    concederCreditosGpt,
-    concederCreditosBloggerAi,
-    debitarCreditosBloggerAi,
-};

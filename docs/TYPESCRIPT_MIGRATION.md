@@ -1476,3 +1476,22 @@ O Gate TypeScript executa `mpPlanRules.test.js` (teste histórico) e
 status/moeda/plano, valores ausentes/não finitos e tolerância numérica).
 São testes **offline**, sem cobrar clientes, enviar requisições
 ao Mercado Pago ou consultar chaves de API.
+
+## Etapa 85 — contadores e provisionamento de créditos em TypeScript
+
+`src/services/creditService.ts` é a fonte autoritativa de
+`src/services/creditService.js` (espelho CommonJS compatível com Node).
+Conserva as cotas Gemini por plano (`free=5`, `starter=500`,
+`pro/premium=2000`, `studio=5500`), o limite de 30 dias, o arredondamento
+de tokens por 1.000, os créditos separados de BloggerAI e a concessão
+GPT legado zerada para todos os planos.
+
+A regra anterior permanece: assinantes ativos usam créditos como
+contadores analíticos, sem bloqueio por saldo, e contas inativas ficam
+sujeitas a saldo e vencimento para Gemini e BloggerAI. Débitos Firestore
+continuam em transação; logs de billing seguem não bloqueantes.
+Nenhum preço ou regra comercial é alterado nesta conversão.
+
+`src/services/creditService.contract.test.js` testa os três contadores,
+concessão, débito, saldo insuficiente, expiração, transações e logs
+com **Firestore simulado**, sem serviços remotos nem custos de API.
