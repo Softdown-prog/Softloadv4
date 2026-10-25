@@ -389,3 +389,57 @@ test('Solaris não perde histórico quando a cobrança falha', async () => {
   assert.equal(calls.saved.length,1);
   assert.match(response.events.at(-1).reply,/não foi possível confirmar a atualização dos créditos/i);
 });
+
+test('ferramenta Asset Forge 2D ativa contexto sem alterar mensagem armazenada', async () => {
+  const { dependencies,calls }=fakeChatDeps();
+  let injectedPrompt='';
+  dependencies.solarisChat.perguntarStream=async function*(message,_history,tokens) {
+    injectedPrompt=message;
+    Object.assign(tokens,{total:2,input:1,output:1});
+    yield 'Posso gerar sprites proceduralmente.';
+  };
+  const response=fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'quero um personagem',tool:'asset-forge-2d'}),response);
+  assert.match(injectedPrompt,/A7 Forge 2D/);
+  assert.match(injectedPrompt,/sprites/);
+  assert.match(injectedPrompt,/Pedido do usuário: quero um personagem/);
+  assert.equal(calls.saved[0][3].messages.at(-2).content,'quero um personagem');
+  assert.equal(response.events.at(-1).type,'done');
+});
+
+test('modo GitHub usa contexto do repositorio validado e preserva o texto original',async()=>{
+  const { dependencies,calls }=fakeChatDeps();
+  let asked='',prompt='';
+  dependencies.contextoRepositorioPublico=async repo=>{
+    asked=repo;
+    return 'GitHub público: Softdown-prog/Softloadv4, branch main (somente leitura)';
+  };
+  dependencies.solarisChat.perguntarStream=async function*(message,_history,tokens) {
+    prompt=message;
+    Object.assign(tokens,{total:2,input:1,output:1});
+    yield 'Repo consultado';
+  };
+  const response=fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'me explique o projeto',tool:'github',
+    githubRepository:'https://github.com/Softdown-prog/Softloadv4.git'}),response);
+  assert.equal(asked,'Softdown-prog/Softloadv4');
+  assert.match(prompt,/branch main/);
+  assert.match(prompt,/Pedido do usuário: me explique o projeto/);
+  assert.equal(calls.saved[0][3].messages.at(-2).content,'me explique o projeto');
+  assert.equal(response.events.at(-1).type,'done');
+});
+
+test('ferramenta desconhecida ou URL GitHub suspeita e rejeitada antes do debit',async()=>{
+  const {dependencies,calls}=fakeChatDeps();
+  for (const body of [
+    {tool:'github',githubRepository:'https://myserver.local/private'},
+    {tool:'github',githubRepository:'https://github.com/owner/repo/tree/main'},
+    {tool:'shell'},
+  ]) {
+    const response=fakeResponse();
+    await criarHandlerChatSolaris(dependencies)(req({message:'teste',...body}),response);
+    assert.equal(response.statusCode,400);
+    assert.equal(response.events.length,0);
+  }
+  assert.equal(calls.debit.length,0);
+});

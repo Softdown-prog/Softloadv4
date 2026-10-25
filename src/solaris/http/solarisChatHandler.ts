@@ -45,6 +45,7 @@ export interface SolarisChatHandlerDependencies {
   admin: { firestore: { FieldValue: { serverTimestamp(): unknown } } };
   debitarCreditos(email: string, input: number, output: number, operacaoId?: string): Promise<unknown>;
   solarisChat: Pick<SolarisChat, 'perguntarStream'>;
+  contextoRepositorioPublico?: (repo: string) => Promise<string>;
   modelRouter: ProjectEditorRouter;
   orquestrador: Pick<OrquestradorSolaris, 'gerarProjeto'>;
   carregarProjeto(uid: string, sessionId: string, destDir: string): Promise<LoadedProject | null>;
@@ -65,6 +66,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo,
     criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado,
     detectarMarcador } = deps;
+  const buscarRepositorio = deps.contextoRepositorioPublico || contextoRepositorioPublico;
   return async (req: SolarisHttpRequest, res: SolarisHttpResponse): Promise<void> => {
 
     const { message, history, sessionId: clientSessionId } = req.body;
@@ -143,7 +145,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
             mensagemModelo = instrucoesForge() + '\n\nPedido do usuário: ' + msg;
         } else if (ferramenta.tool === 'github' && ferramenta.repo) {
             sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });
-            mensagemModelo = await contextoRepositorioPublico(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
+            mensagemModelo = await buscarRepositorio(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
         }
         // Fase 2c/2d: se a sessão tem um projeto anexado (upload anterior
         // persistido no GCS via tools/projectStorage.js), o turno inteiro

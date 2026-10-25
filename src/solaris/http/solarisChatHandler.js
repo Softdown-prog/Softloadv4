@@ -10,6 +10,7 @@ const { validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico } 
 const SOLARIS_CHAT_SESSION_TYPE = 'solaris-chat';
 function criarHandlerChatSolaris(deps) {
     const { chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador, carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo, criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador } = deps;
+    const buscarRepositorio = deps.contextoRepositorioPublico || contextoRepositorioPublico;
     return async (req, res) => {
         const { message, history, sessionId: clientSessionId } = req.body;
         const entrada = validarMensagemSolaris(message);
@@ -83,7 +84,7 @@ function criarHandlerChatSolaris(deps) {
             }
             else if (ferramenta.tool === 'github' && ferramenta.repo) {
                 sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });
-                mensagemModelo = await contextoRepositorioPublico(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
+                mensagemModelo = await buscarRepositorio(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;
             }
             // Fase 2c/2d: se a sessão tem um projeto anexado (upload anterior
             // persistido no GCS via tools/projectStorage.js), o turno inteiro
