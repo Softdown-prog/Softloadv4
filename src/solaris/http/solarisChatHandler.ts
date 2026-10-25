@@ -88,6 +88,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
     let tokensRef: SolarisTokensSse = { total: 0, input: 0, output: 0 };
     let replyFinal   = '';
     let zipInfo: SolarisZipSse | null = null;
+    let doneEvent: Extract<SolarisSseEvent, { type: 'done' }> | null = null;
     let tokensGeracao = { input: 0, output: 0 }; // estimativa — ver comentário abaixo
     // Propostas de mudança de arquivo pendentes de confirmação (Fase 2d,
     // ver pipeline/projectEditor.js) — carregadas do meta da sessão
@@ -261,7 +262,8 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
             }
         }
 
-        sendEvent({ type: 'done', reply: replyFinal, sessionId, tokens: tokensRef, zip: zipInfo });
+        // Confirmar o histórico e o saldo antes de sinalizar fim da geração.
+        doneEvent = { type: 'done', reply: replyFinal, sessionId, tokens: tokensRef, zip: zipInfo };
 
     } catch (err) {
         const erroHttp = err as Error & {status?: number; statusCode?: number};
@@ -294,13 +296,13 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
                    :               `Solaris temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
         });
     } finally {
-        res.end();
-
         // Se algo quebrou antes do marcador ser resolvido, replyFinal pode
         // ainda estar vazio — cai pro fullText bruto (já sem marcador
         // truncado, ver removerMarcadorTruncado acima) pra nunca perder o
         // texto que o usuário efetivamente recebeu via streaming.
         const textoParaSalvar = replyFinal || fullText;
+        let historicoSalvo = false;
+        let debitoConfirmado = true;
 
         if (textoParaSalvar && uid) {
             const ts       = new Date().toISOString();
@@ -315,8 +317,12 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
             // cancela. [] na maioria das sessões (nunca houve projeto
             // anexado, ou não há nada pendente agora).
             const meta: { edicaoProjetoPendente?: PropostaSolaris[] } = propostasPendentes.length ? { edicaoProjetoPendente: propostasPendentes } : {};
-            chatStorage.saveSession(uid, SOLARIS_CHAT_SESSION_TYPE, sessionId, { messages, tokens: tokensRef, meta }, { email, plano: req.session.user?.plano || 'free' })
-                .catch((e: unknown) => console.error(`[CHAT-STORAGE] solaris-chat save err: ${(e as Error).message}`));
+            try {
+                await chatStorage.saveSession(uid, SOLARIS_CHAT_SESSION_TYPE, sessionId, { messages, tokens: tokensRef, meta }, { email, plano: req.session.user?.plano || 'free' });
+                historicoSalvo = true;
+            } catch (e) {
+                console.error(`[CHAT-STORAGE] solaris-chat save err: ${e instanceof Error ? e.message : String(e)}`);
+            }
         }
 
         // Débito separado do save — roda sempre que houver resposta e email
@@ -329,8 +335,25 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         // pra nunca deixar o custo real de geração sem cobrança.
         if (email && textoParaSalvar) {
             const debito = calcularDebitoChatSolaris(msg, textoParaSalvar, tokensRef, tokensGeracao);
-            debitarCreditos(email, debito.input, debito.output)
-                .catch((e) => console.error(`[BILLING] solaris-chat debit err: ${(e as Error).message}`));
+            try {
+                await debitarCreditos(email, debito.input, debito.output);
+            } catch (e) {
+                debitoConfirmado = false;
+                console.error(`[BILLING] solaris-chat debit err: ${e instanceof Error ? e.message : String(e)}`);
+            }
+        }
+        try {
+            if (doneEvent) {
+                if (!historicoSalvo) {
+                    doneEvent.reply += '\n\n⚠️ Não consegui salvar esta conversa no histórico. Copie a resposta antes de sair.';
+                }
+                if (!debitoConfirmado) {
+                    doneEvent.reply += '\n\n⚠️ Não foi possível confirmar a atualização dos créditos.';
+                }
+                sendEvent(doneEvent);
+            }
+        } finally {
+            res.end();
         }
     }
   };

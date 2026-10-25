@@ -331,3 +331,50 @@ test('chat recusa edição desatualizada sem resposta genérica nem confirmaçã
   assert.ok(response.events.every(e=>e.type!=='done'));
   assert.equal(response.ended,true);
 });
+
+test('Solaris aguarda saveSession e debitarCreditos antes do done', async () => {
+  let soltarSave, soltarDebit;
+  const gateSave = new Promise(resolve => { soltarSave = resolve; });
+  const gateDebit = new Promise(resolve => { soltarDebit = resolve; });
+  const { dependencies, calls } = fakeChatDeps();
+  dependencies.chatStorage.saveSession = async (...args) => {
+    await gateSave; calls.saved.push(args);
+  };
+  dependencies.debitarCreditos = async (...args) => {
+    await gateDebit; calls.debit.push(args);
+  };
+  const response = fakeResponse();
+  const pending = criarHandlerChatSolaris(dependencies)(req({message:'teste'}), response);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(response.events.some(e => e.type === 'done'), false);
+  assert.equal(response.ended, false);
+  soltarSave();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(response.events.some(e => e.type === 'done'), false);
+  assert.equal(response.ended, false);
+  soltarDebit();
+  await pending;
+  assert.equal(calls.saved.length, 1);
+  assert.equal(calls.debit.length, 1);
+  assert.equal(response.events.at(-1).type, 'done');
+  assert.equal(response.ended, true);
+});
+
+test('Solaris alerta falta de persistência sem evitar o débito real', async () => {
+  const {dependencies,calls} = fakeChatDeps();
+  dependencies.chatStorage.saveSession = async () => {throw Error('GCS offline');};
+  const response = fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'teste'}),response);
+  assert.equal(calls.debit.length,1);
+  assert.match(response.events.at(-1).reply,/não consegui salvar esta conversa no histórico/i);
+  assert.equal(response.ended,true);
+});
+
+test('Solaris não perde histórico quando a cobrança falha', async () => {
+  const {dependencies,calls} = fakeChatDeps();
+  dependencies.debitarCreditos = async () => {throw Error('Firestore billing');};
+  const response = fakeResponse();
+  await criarHandlerChatSolaris(dependencies)(req({message:'teste'}),response);
+  assert.equal(calls.saved.length,1);
+  assert.match(response.events.at(-1).reply,/não foi possível confirmar a atualização dos créditos/i);
+});
