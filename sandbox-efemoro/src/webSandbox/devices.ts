@@ -88,7 +88,7 @@ function validateViewportOverride(overrideViewport: unknown): ViewportOverride |
       `viewport.height inválido: deve ser um inteiro entre ${MIN_DIMENSION} e ${MAX_DIMENSION}`,
     );
   }
-  return { width: width as number | undefined, height: height as number | undefined };
+  return { width, height } as ViewportOverride;
 }
 
 function getDeviceConfig(deviceName: string, overrideViewport?: unknown): DeviceConfig {
