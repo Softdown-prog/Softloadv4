@@ -45,7 +45,11 @@ function harness(initial = {}) {
             async download() {if(!objects.has(name))throw Error('GCS missing');return [Buffer.from(objects.get(name))];},
             async delete() {if(outboxDeleteFailure)throw Error('delete failed');objects.delete(name);},
         };},
-        async getFiles({prefix,maxResults}) {return [Array.from(objects.keys()).filter(k=>k.startsWith(prefix)).slice(0,maxResults).map(k=>this.file(k))];},
+        async getFiles({prefix,maxResults,startOffset}) {
+            // GCS devolve nomes ordenados, startOffset inclusivo.
+            return [Array.from(objects.keys()).filter(k=>k.startsWith(prefix) && (!startOffset || k >= startOffset))
+                .sort().slice(0,maxResults).map(k=>this.file(k))];
+        },
     };
     const db = {
         collection(name) {
@@ -319,4 +323,53 @@ test('GCS: outbox recusa arquivo corrompido e não realiza cobrança', async () 
     assert.equal(result.processadas,0);
     assert.equal(result.falhas,1);
     assert.equal(h.docs.get(KEY).creditos,5);
+});
+
+
+test('GCS: arquivos irrecuperáveis no início não impedem débito de pendências posteriores', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:6}});
+    h.objects.set('billing/pending/a-corrompido.json','{');
+    h.objects.set('billing/pending/b-corrompido.json','{');
+    const id='cobranca-fila-00000001';
+    h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+        versao:1, operacaoId:id, email:EMAIL.toLowerCase(),
+        inputTokens:1200, outputTokens:100, criadoEm:new Date().toISOString(),
+    }));
+    const first=await h.api.recuperarCobrancasPendentes(2);
+    assert.equal(first.processadas,0);
+    assert.equal(first.falhas,2);
+    assert.equal(h.docs.get(KEY).creditos,6);
+    const second=await h.api.recuperarCobrancasPendentes(2);
+    assert.equal(second.processadas,1);
+    assert.equal(second.falhas,0);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.objects.has('billing/pending/'+id+'.json'),false);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,1);
+});
+
+test('GCS: cursor volta ao começo para tentar pendências antigas novamente', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:6}});
+    const name='billing/pending/a-arquivo-permanente.json';
+    h.objects.set(name,'{');
+    assert.equal((await h.api.recuperarCobrancasPendentes(1)).falhas,1);
+    // Lote após o cursor acaba: novo ciclo recomeça desde o primeiro objeto.
+    assert.equal((await h.api.recuperarCobrancasPendentes(1)).falhas,1);
+    assert.equal(h.objects.has(name),true);
+});
+
+test('GCS: cada ciclo mantém o limite e cursor não pula item ao retomar', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:9}});
+    for(let i=0;i<5;i++){
+        const id='cobranca-sequencial-000'+i;
+        h.objects.set('billing/pending/'+id+'.json',JSON.stringify({
+            versao:1,operacaoId:id,email:EMAIL.toLowerCase(),
+            inputTokens:500,outputTokens:0,criadoEm:new Date().toISOString(),
+        }));
+    }
+    assert.equal((await h.api.recuperarCobrancasPendentes(2)).processadas,2);
+    assert.equal((await h.api.recuperarCobrancasPendentes(2)).processadas,2);
+    assert.equal((await h.api.recuperarCobrancasPendentes(2)).processadas,1);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.objects.size,0);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,5);
 });

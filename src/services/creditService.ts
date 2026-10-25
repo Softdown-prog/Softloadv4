@@ -35,7 +35,7 @@ interface BillingObject {
 }
 interface BillingBucket {
   file(path: string): BillingObject;
-  getFiles(options: { prefix: string; maxResults: number; autoPaginate: false }): Promise<[BillingObject[]]>;
+  getFiles(options: { prefix: string; maxResults: number; autoPaginate: false; startOffset?: string }): Promise<[BillingObject[]]>;
 }
 interface FirestoreCredits {
   collection(name: string): {doc(email: string): CreditDocumentRef};
@@ -54,6 +54,9 @@ const FV = admin.firestore.FieldValue;
 const TOKENS_POR_CREDITO = 1000;
 const EXPIRY_DAYS = 30;
 const BILLING_RETRY_PREFIX = 'billing/pending/';
+// Cursor por instância: evita que o mesmo grupo de pendências permanentes
+// bloqueie para sempre operações posteriores. Ao chegar ao fim, reinicia.
+let ultimoPendenteInspecionado: string | null = null;
 
 interface CobrancaPendente {
   versao: 1;
@@ -80,7 +83,23 @@ function cobrancaPendenteValida(v: CobrancaPendente, nome: string): boolean {
 export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ processadas: number; falhas: number }> {
   if (!bucket) return { processadas: 0, falhas: 0 };
   const limite = Number.isSafeInteger(maxResults) ? Math.max(1, Math.min(maxResults, 100)) : 25;
-  const [files] = await bucket.getFiles({ prefix: BILLING_RETRY_PREFIX, maxResults: limite, autoPaginate: false });
+  async function obterLote(inicio: string | null): Promise<BillingObject[]> {
+    // O startOffset do GCS é inclusivo; buscamos um extra e excluímos
+    // explicitamente o objeto anterior para manter no máximo "limite".
+    const [files] = await bucket!.getFiles({
+      prefix: BILLING_RETRY_PREFIX, maxResults: limite + (inicio ? 1 : 0),
+      autoPaginate: false, ...(inicio ? { startOffset: inicio } : {}),
+    });
+    return files.filter(file => !inicio || file.name > inicio).slice(0, limite);
+  }
+  let files = await obterLote(ultimoPendenteInspecionado);
+  if (files.length === 0 && ultimoPendenteInspecionado) {
+    // Fim do espaço de nomes: retomar desde o início, sem deixar arquivos
+    // antigos sem nova tentativa de cobrança.
+    ultimoPendenteInspecionado = null;
+    files = await obterLote(null);
+  }
+  if (files.length) ultimoPendenteInspecionado = files[files.length - 1].name;
   let processadas = 0;
   let falhas = 0;
   for (const file of files) {
