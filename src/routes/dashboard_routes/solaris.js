@@ -126,6 +126,24 @@ router.get('/dashboard/solaris', exigirLogin, (req, res) => {
 // em modo full e sem conceder acesso à shell). Uma única foto por pedido.
 // Sem SOLARIS_VISUAL_REVIEW_ENABLED e SOLARIS_AI_BUDGET_ENFORCE,
 // a rota é desativada e não provoca gastos automáticos.
+// A auditoria visual tem reserva orçamentária própria (Flash) mesmo
+// quando o enforcement das outras operações está desligado. Habilita
+// apenas se app -> sandbox autenticado e chave de IA existem.
+// Pode desligar imediatamente com SOLARIS_VISUAL_REVIEW_ENABLED=false.
+// Sem lista na VPS, só o domínio público da própria Softload é aceito.
+const VISUAL_PREVIEW_ORIGINS = (process.env.SOLARIS_VISUAL_PREVIEW_ORIGINS || '').trim()
+    || 'https://softload.analysepro.com';
+const VISUAL_ENABLED = process.env.SOLARIS_VISUAL_REVIEW_ENABLED !== 'false'
+    && Boolean(process.env.GEMINI_API_KEY)
+    && Boolean(process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL)
+    && Boolean(process.env.SANDBOX_BROWSER_SHARED_SECRET || process.env.SANDBOX_SHARED_SECRET);
+router.get('/dashboard/solaris/visual-review/status', exigirLogin, (_req, res) => {
+    res.status(200).json({
+        enabled: VISUAL_ENABLED,
+        origins: VISUAL_PREVIEW_ORIGINS.split(',').map(s => s.trim()).filter(Boolean),
+        maxRequestsPerTenMinutes: 3,
+    });
+});
 const visualLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 3,
@@ -156,9 +174,8 @@ async function capturarParaVisual({ url, device }) {
     return JSON.parse(text);
 }
 const visualHandler = criarHandlerVisual({
-    enabled: process.env.SOLARIS_VISUAL_REVIEW_ENABLED === 'true'
-        && process.env.SOLARIS_AI_BUDGET_ENFORCE === 'true',
-    origins: process.env.SOLARIS_VISUAL_PREVIEW_ORIGINS || '',
+    enabled: VISUAL_ENABLED,
+    origins: VISUAL_PREVIEW_ORIGINS,
     capturar: capturarParaVisual,
     criarRouter: req => {
         const protegida = criarClienteGeminiComOrcamento(() => {
@@ -175,8 +192,7 @@ const visualHandler = criarHandlerVisual({
     debitarCreditos,
 });
 router.post('/dashboard/solaris/visual-review', exigirLogin, (req, res, next) => {
-    if (process.env.SOLARIS_VISUAL_REVIEW_ENABLED !== 'true'
-        || process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
+    if (!VISUAL_ENABLED) {
         return res.status(404).json({error:'visual_review_disabled'});
     }
     return next();
