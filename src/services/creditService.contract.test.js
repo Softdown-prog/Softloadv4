@@ -13,6 +13,9 @@ function harness(initial = {}) {
     const docs = new Map(Object.entries(initial).map(([k,v])=>[k,{...v}]));
     const calls = {transactions:0, writes:[], logs:[], errors:[]};
     let billingLogError = false;
+    let firestoreOffline = false;
+    let outboxDeleteFailure = false;
+    const objects = new Map();
     let afterCommitTransientFailures = 0;
     let beforeCommitTransientFailures = 0;
     const inc = n => ({increment: n});
@@ -31,6 +34,19 @@ function harness(initial = {}) {
             };
         },
     });
+    const bucket = {
+        file(name) {return {
+            name,
+            async save(content, options) {
+                assert.equal(options.preconditionOpts.ifGenerationMatch,0);
+                if (objects.has(name)) throw Object.assign(new Error('precondition'), {code:412});
+                objects.set(name,content);
+            },
+            async download() {if(!objects.has(name))throw Error('GCS missing');return [Buffer.from(objects.get(name))];},
+            async delete() {if(outboxDeleteFailure)throw Error('delete failed');objects.delete(name);},
+        };},
+        async getFiles({prefix,maxResults}) {return [Array.from(objects.keys()).filter(k=>k.startsWith(prefix)).slice(0,maxResults).map(k=>this.file(k))];},
+    };
     const db = {
         collection(name) {
             assert.equal(name,'clientes_premium');
@@ -38,6 +54,7 @@ function harness(initial = {}) {
         },
         async runTransaction(callback) {
             calls.transactions++;
+            if (firestoreOffline) throw Object.assign(Error('Firestore unavailable'),{code:14});
             if (beforeCommitTransientFailures > 0) {
                 beforeCommitTransientFailures--;
                 throw Object.assign(new Error('unavailable before transaction'),{code:14});
@@ -73,11 +90,14 @@ function harness(initial = {}) {
         module:mod, exports:mod.exports, Date, Promise, setTimeout,
         require(id) {
             assert.equal(id,'./firebase');
-            return {db,admin:{firestore:{FieldValue:fieldValue}}};
+            return {db,admin:{firestore:{FieldValue:fieldValue}},bucket};
         },
         console:{error:(...args)=>calls.errors.push(args)},
     },{filename:'creditService.js'});
-    return {api:mod.exports,docs,calls,setBillingError:flag=>{billingLogError=flag},
+    return {api:mod.exports,docs,calls,objects,bucket,
+        setFirestoreOffline:flag=>{firestoreOffline=flag},
+        setOutboxDeleteFailure:flag=>{outboxDeleteFailure=flag},
+        setBillingError:flag=>{billingLogError=flag},
         failAfterCommit:n=>{afterCommitTransientFailures=n},failBeforeCommit:n=>{beforeCommitTransientFailures=n}};
 }
 
@@ -259,4 +279,44 @@ test('Gemini: indisponibilidade persistente para após três tentativas sem inve
     assert.equal(h.docs.get(KEY).creditos,6);
     assert.equal(h.docs.has(KEY+'/billing_logs/'+op),false);
     assert.equal(h.calls.transactions,3);
+});
+
+test('GCS: pendência sobrevive a falha prolongada do Firestore e é debitada pelo recuperador', async () => {
+    const id='cobranca-recuperar-0001';
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    h.setFirestoreOffline(true);
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1200,100,id),/Firestore unavailable/);
+    assert.equal(h.docs.get(KEY).creditos,5);
+    assert.equal(h.objects.size,1);
+    h.setFirestoreOffline(false);
+    const result=await h.api.recuperarCobrancasPendentes();
+    assert.equal(result.processadas,1);
+    assert.equal(result.falhas,0);
+    assert.equal(h.docs.get(KEY).creditos,3);
+    assert.equal(h.objects.size,0);
+    const again=await h.api.recuperarCobrancasPendentes();
+    assert.equal(again.processadas,0);
+});
+
+test('GCS: se exclusão da outbox falha, repetição encontra recibo sem segundo débito', async () => {
+    const id='cobranca-recuperar-0002';
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    h.setOutboxDeleteFailure(true);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1001,0,id),2);
+    assert.equal(h.objects.size,1);
+    h.setOutboxDeleteFailure(false);
+    const result=await h.api.recuperarCobrancasPendentes();
+    assert.equal(result.processadas,1);
+    assert.equal(h.docs.get(KEY).creditos,3);
+    assert.equal(h.calls.writes.filter(w=>w.op==='tx.update').length,1);
+    assert.equal(h.objects.size,0);
+});
+
+test('GCS: outbox recusa arquivo corrompido e não realiza cobrança', async () => {
+    const h=harness({[KEY]:{is_active:false,creditos:5}});
+    h.objects.set('billing/pending/cobranca-corrompida.json', '{"email":"attacker","inputTokens":500}');
+    const result=await h.api.recuperarCobrancasPendentes();
+    assert.equal(result.processadas,0);
+    assert.equal(result.falhas,1);
+    assert.equal(h.docs.get(KEY).creditos,5);
 });

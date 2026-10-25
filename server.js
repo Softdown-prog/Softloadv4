@@ -26,6 +26,7 @@ const workersRoutes           = require('./src/routes/workersRoutes');
 const sentinelWorker          = require('./src/services/sentinelWorker');
 const errorLogWorker          = require('./src/services/errorLogWorker');
 const buildInfo               = require('./src/services/buildInfo');
+const { recuperarCobrancasPendentes } = require('./src/services/creditService');
 const { setPublicStaticHeaders } = require('./scripts/vendorCachePolicy');
 
 // Inicia captura de erros silenciosos imediatamente — antes de qualquer require
@@ -213,6 +214,25 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     res.status(err.status || 500).render('pages/404');
 });
 
+// Verificação independente do Firestore: a outbox GCS pode recuperar
+// cobranças após reinícios ou indisponibilidade temporária de créditos.
+let recuperadorCobrancasTimer = null;
+let recuperadorCobrancasAtivo = false;
+async function executarRecuperadorCobrancas() {
+    if (recuperadorCobrancasAtivo) return;
+    recuperadorCobrancasAtivo = true;
+    try {
+        const resultado = await recuperarCobrancasPendentes(25);
+        if (resultado.processadas || resultado.falhas) {
+            console.log('[BILLING] recuperação:', resultado);
+        }
+    } catch (err) {
+        console.error('[BILLING] falha no worker de recuperação:', err);
+    } finally {
+        recuperadorCobrancasAtivo = false;
+    }
+}
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     if (isProd) {
@@ -223,11 +243,15 @@ app.listen(PORT, '0.0.0.0', () => {
 
     // Iniciar Sentinel Worker — monitora saúde da aplicação
     sentinelWorker.start(60000); // Executar a cada 60 segundos
+    void executarRecuperadorCobrancas();
+    recuperadorCobrancasTimer = setInterval(executarRecuperadorCobrancas, 5 * 60 * 1000);
+    recuperadorCobrancasTimer.unref();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('⚠️  SIGTERM recebido — encerrando gracefully');
     sentinelWorker.stop();
+    if (recuperadorCobrancasTimer) clearInterval(recuperadorCobrancasTimer);
     process.exit(0);
 });

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BLOGGERAI_PLAN_CREDITS = exports.GPT_PLAN_CREDITS = exports.PLAN_CREDITS = void 0;
+exports.recuperarCobrancasPendentes = recuperarCobrancasPendentes;
 exports.calcularCreditos = calcularCreditos;
 exports.concederCreditos = concederCreditos;
 exports.debitarCreditos = debitarCreditos;
@@ -8,10 +9,49 @@ exports.concederCreditosGpt = concederCreditosGpt;
 exports.debitarCreditosGpt = debitarCreditosGpt;
 exports.concederCreditosBloggerAi = concederCreditosBloggerAi;
 exports.debitarCreditosBloggerAi = debitarCreditosBloggerAi;
-const { db, admin } = require('./firebase');
+const { db, admin, bucket } = require('./firebase');
 const FV = admin.firestore.FieldValue;
 const TOKENS_POR_CREDITO = 1000;
 const EXPIRY_DAYS = 30;
+const BILLING_RETRY_PREFIX = 'billing/pending/';
+function registroPendenteIgual(v, email, input, output, operacaoId) {
+    return v.versao === 1 && v.email === email && v.inputTokens === input
+        && v.outputTokens === output && v.operacaoId === operacaoId;
+}
+function cobrancaPendenteValida(v, nome) {
+    return !!v && v.versao === 1 && typeof v.email === 'string' && v.email.includes('@')
+        && typeof v.operacaoId === 'string' && /^[a-zA-Z0-9_-]{12,128}$/.test(v.operacaoId)
+        && nome === BILLING_RETRY_PREFIX + v.operacaoId + '.json'
+        && Number.isSafeInteger(v.inputTokens) && v.inputTokens >= 0
+        && Number.isSafeInteger(v.outputTokens) && v.outputTokens >= 0;
+}
+/** Reexecuta débitos registrados antes da falha do Firestore. Cada operação
+ *  possui recibo transacional, então múltiplos workers são seguros. */
+async function recuperarCobrancasPendentes(maxResults = 25) {
+    if (!bucket)
+        return { processadas: 0, falhas: 0 };
+    const limite = Number.isSafeInteger(maxResults) ? Math.max(1, Math.min(maxResults, 100)) : 25;
+    const [files] = await bucket.getFiles({ prefix: BILLING_RETRY_PREFIX, maxResults: limite, autoPaginate: false });
+    let processadas = 0;
+    let falhas = 0;
+    for (const file of files) {
+        try {
+            const [bytes] = await file.download();
+            const cob = JSON.parse(bytes.toString('utf8'));
+            if (!cobrancaPendenteValida(cob, file.name))
+                throw new Error('Pendência inválida');
+            await debitarCreditos(cob.email, cob.inputTokens, cob.outputTokens, cob.operacaoId);
+            // O débito apaga a pendência após a transação; delete tolera corridas.
+            await file.delete({ ignoreNotFound: true });
+            processadas++;
+        }
+        catch (err) {
+            falhas++;
+            console.error('[BILLING] Recuperação pendente falhou:', file.name, err);
+        }
+    }
+    return { processadas, falhas };
+}
 // Créditos Gemini por plano por ciclo de 30 dias
 exports.PLAN_CREDITS = {
     free: 5,
@@ -71,8 +111,40 @@ async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
     if (!inputTokens && !outputTokens)
         return 0;
     const creditosADebitar = calcularCreditos(inputTokens, outputTokens);
-    const userRef = db.collection('clientes_premium').doc(email.toLowerCase());
+    const emailNormalizado = email.toLowerCase();
+    const userRef = db.collection('clientes_premium').doc(emailNormalizado);
     const reciboRef = operacaoId ? userRef.collection('billing_logs').doc(operacaoId) : null;
+    // GCS é uma outbox independente do Firestore. Falha do GCS não impede
+    // tentar o débito normal; se ambos falharem, o handler registra o erro.
+    let arquivoPendente = null;
+    if (operacaoId && bucket) {
+        const file = bucket.file(BILLING_RETRY_PREFIX + operacaoId + '.json');
+        const payload = {
+            versao: 1, operacaoId, email: emailNormalizado, inputTokens, outputTokens,
+            criadoEm: new Date().toISOString(),
+        };
+        try {
+            await file.save(JSON.stringify(payload), {
+                contentType: 'application/json', resumable: false,
+                preconditionOpts: { ifGenerationMatch: 0 },
+            });
+            arquivoPendente = file;
+        }
+        catch (err) {
+            const code = err?.code;
+            if (code === 412) {
+                const [bytes] = await file.download();
+                const anterior = JSON.parse(bytes.toString('utf8'));
+                if (!registroPendenteIgual(anterior, emailNormalizado, inputTokens, outputTokens, operacaoId)) {
+                    throw new Error('Identificador de cobrança pendente com consumo diferente');
+                }
+                arquivoPendente = file;
+            }
+            else {
+                console.error('[BILLING] Não foi possível persistir pendência no GCS:', err);
+            }
+        }
+    }
     const executarTransacao = () => db.runTransaction(async (tx) => {
         // Firestore exige todas as leituras antes das escritas. As duas
         // leituras estão dentro da mesma transação para deduplicar sob concorrência.
@@ -133,6 +205,16 @@ async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
             credits_debited: creditosADebitar,
             criado_em: FV.serverTimestamp(),
         }).catch(e => console.error('[BILLING] log error:', e.message));
+    }
+    // O recibo no Firestore está confirmado. Falhar em remover o arquivo
+    // não duplica o débito: o próximo worker verá o recibo existente.
+    if (arquivoPendente) {
+        try {
+            await arquivoPendente.delete({ ignoreNotFound: true });
+        }
+        catch (err) {
+            console.error('[BILLING] Pendência já liquidada, limpeza GCS falhou:', err);
+        }
     }
     return creditosADebitar;
 }
