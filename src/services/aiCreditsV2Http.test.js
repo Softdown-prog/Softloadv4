@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {criarHandlerResumoCreditosV2}=require('./aiCreditsV2Http');
+const {criarHandlerResumoCreditosV2,criarHandlerHistoricoCreditosV2}=require('./aiCreditsV2Http');
 function res() {
   return {statusCode:200,headers:{},body:null,
     setHeader(key,v){this.headers[key]=v;},
@@ -60,4 +60,46 @@ test('validação financeira corrompida retorna resposta genérica em vez de NaN
   const h=criarHandlerResumoCreditosV2({habilitado:()=>true,async consultarSaldo(){return {...data,reservadoMicroBrl:-5};}});
   const response=res();await h(req('user@example.test'),response);
   assert.equal(response.statusCode,503);
+});
+
+test('extrato usa email autenticado, projeta apenas campos públicos e não vaza custos',async()=>{
+  const emails=[];const handler=criarHandlerHistoricoCreditosV2({
+    habilitado:()=>true,async listar(email) {
+      emails.push(email);
+      return [{id:'receipt-x',ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',projeto:'session-xyz999',
+        criadoEm:'2026-10-25T12:00:00Z',creditos:3,estimado:false,custoRealMicroBrl:25000,
+        prompt:'segredo',email:'outro@example.test'}];
+    },
+  });
+  const response=res();await handler(req('owner@example.test',{email:'hacker@example.test'}),response);
+  assert.deepEqual(emails,['owner@example.test']);
+  assert.equal(response.statusCode,200);
+  assert.equal(response.body.itens[0].creditos,3);
+  assert.equal(response.body.itens[0].projeto,'session-xyz999');
+  assert.equal(response.headers['Cache-Control'],'no-store, private');
+  assert.equal(JSON.stringify(response.body).includes('segredo'),false);
+  assert.equal(JSON.stringify(response.body).includes('MicroBrl'),false);
+  assert.equal(JSON.stringify(response.body).includes('outro@example.test'),false);
+});
+test('extrato recusa usuário não autenticado e flag desabilitada',async()=>{
+  let calls=0;const dados={async listar(){calls++;return [];}};
+  const off=criarHandlerHistoricoCreditosV2({...dados,habilitado:()=>false});
+  const offRes=res();await off(req('owner@example.test'),offRes);
+  assert.equal(offRes.statusCode,404);
+  const on=criarHandlerHistoricoCreditosV2({...dados,habilitado:()=>true});
+  const none=res();await on(req(null),none);
+  assert.equal(none.statusCode,401);
+  assert.equal(calls,0);
+});
+test('erro de banco não vaza dados; histórico vazio é válido',async()=>{
+  const fail=criarHandlerHistoricoCreditosV2({
+    habilitado:()=>true,async listar(){throw new Error('Firestore email@secret.invalid');},
+  });
+  const r1=res();await fail(req('owner@example.test'),r1);
+  assert.equal(r1.statusCode,503);
+  assert.equal(JSON.stringify(r1.body).includes('secret.invalid'),false);
+  const empty=criarHandlerHistoricoCreditosV2({habilitado:()=>true,async listar(){return [];}});
+  const r2=res();await empty(req('owner@example.test'),r2);
+  assert.equal(r2.statusCode,200);
+  assert.equal(r2.body.itens.length,0);
 });

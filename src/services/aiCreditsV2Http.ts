@@ -51,3 +51,48 @@ export function criarHandlerResumoCreditosV2({
         }
     };
 }
+
+/** Histórico do próprio usuário; nunca devolve custo monetário, prompt ou outro usuário. */
+export interface RegistroPublicoExtratoV2 {
+    id: string;
+    ferramenta: 'solaris-chat' | 'solaris-upload';
+    modelo: string;
+    projeto?: string;
+    criadoEm: string;
+    creditos: number;
+    estimado: boolean;
+}
+export function criarHandlerHistoricoCreditosV2({
+    listar,
+    habilitado = () => process.env.AI_CREDITS_V2_PREVIEW === 'true',
+}: {
+    listar(email: string): Promise<RegistroPublicoExtratoV2[]>;
+    habilitado?: () => boolean;
+}) {
+    return async (req: RequestCreditosV2, res: ResponseCreditosV2): Promise<unknown> => {
+        res.setHeader('Cache-Control', 'no-store, private');
+        if (!req.session?.user?.email) {
+            return res.status(401).json({ erro: 'Sessão expirada. Faça login novamente.' });
+        }
+        if (!habilitado()) return res.status(404).json({ erro: 'Extrato indisponível.' });
+        try {
+            const registros = await listar(req.session.user.email);
+            const itens = registros.slice(0, 40).map(r => ({
+                id: r.id,
+                ferramenta: r.ferramenta,
+                modelo: r.modelo,
+                ...(r.projeto ? { projeto: r.projeto } : {}),
+                criadoEm: r.criadoEm,
+                creditos: r.creditos,
+                estimado: r.estimado,
+            }));
+            return res.json({ versao: 2, modo: 'previsualizacao', itens });
+        } catch (e) {
+            const codigo = (e as {codigo?: string} | null)?.codigo;
+            if (codigo === 'CICLO_EXPIRADO') {
+                return res.status(402).json({ erro: 'O ciclo de créditos expirou.' });
+            }
+            return res.status(503).json({ erro: 'Não foi possível consultar o extrato.' });
+        }
+    };
+}

@@ -18,7 +18,7 @@ const { buscarConhecimentoMisto } = require('../../../scripts/codeCorpus/codeSea
 const { criarModelRouter, MODEL_PRO, MODEL_FLASH } = require('../../solaris/llm/modelRouter');
 const { criarLivroRazaoIa } = require('../../services/aiBudgetLedger');
 const { criarClienteGeminiComOrcamento } = require('../../services/aiBudgetGeminiClient');
-const { criarHandlerResumoCreditosV2 } = require('../../services/aiCreditsV2Http');
+const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = require('../../services/aiCreditsV2Http');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
 const { inspecionarProjeto } = require('../../solaris/pipeline/projectInspector');
@@ -110,6 +110,9 @@ async function getSolarisAgent() {
 // Prévia opt-in: read-only; não substitui /api/dashboard/stats nem debita créditos legados.
 router.get('/api/ai-credits/v2', exigirLogin, criarHandlerResumoCreditosV2({
     consultarSaldo: (email) => livroOrcamento.consultar(email),
+}));
+router.get('/api/ai-credits/v2/history', exigirLogin, criarHandlerHistoricoCreditosV2({
+    listar: (email) => livroOrcamento.listarExtrato(email),
 }));
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {
