@@ -62,6 +62,7 @@ async function runWebSandbox(options) {
   let browser = null;
   let context = null;
   let page = null;
+  let screenshotFailed = false;
 
   try {
     const validated = validateOptions(options);
@@ -116,6 +117,7 @@ async function runWebSandbox(options) {
       result.screenshotPath = screenshotResult.path;
       result.screenshot = screenshotResult.screenshot || null;
       if (screenshotResult.error) {
+        screenshotFailed = true;
         result.errors.push({ message: `Screenshot failed: ${screenshotResult.error}` });
       }
     }
@@ -131,7 +133,9 @@ async function runWebSandbox(options) {
     result.network.failedRequests = networkPolicy.failedRequests.slice(0, MAX_LOGGED_ITEMS);
     result.security.blockedRequests = networkPolicy.blockedRequests.slice(0, MAX_LOGGED_ITEMS);
 
-    result.success = true;
+    // Se o solicitante pediu um screenshot e ele não chegou, não
+    // reportar auditoria completa como sucesso silencioso.
+    result.success = !screenshotFailed;
   } catch (error) {
     result.errors.push({
       message: error.message,
