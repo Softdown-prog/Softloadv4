@@ -4,7 +4,7 @@ import { extractInto } from "./extractZip.js";
 interface ZipWorkerPayload {
   baseDir: string;
   zipBuffer: ArrayBuffer | Uint8Array;
-  opts: Record<string, unknown>;
+  opts: { maxFiles: number; maxFileBytes: number; maxTotalBytes: number; maxCompressedBytes: number; maxDepth: number; timeoutMs: number };
 }
 
 
