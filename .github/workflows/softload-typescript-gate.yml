@@ -132,16 +132,6 @@ jobs:
         run: node --test scripts/appendBlocks.test.js
       - name: Testar atualizador CSS Vars sem Gemini real
         run: node --test scripts/fixImplCssVars.test.js
-      - name: Capturar espelho CSS Vars compilado (temporário)
-        run: |
-          node - <<'NODE'
-          const ts = require('typescript');
-          const fs = require('node:fs');
-          const fileName='scripts/fixImplCssVars.ts';
-          const source=fs.readFileSync(fileName,'utf8');
-          const output=ts.transpileModule(source,{fileName,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,newLine:ts.NewLineKind.LineFeed}}).outputText;
-          console.log('CSS_VARS_MIRROR_JSON='+JSON.stringify(output));
-          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
