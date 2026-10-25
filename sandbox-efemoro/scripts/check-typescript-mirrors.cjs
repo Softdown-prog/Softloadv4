@@ -5,8 +5,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
-const ts = require("typescript");
-const acorn = require("acorn");
+const ts = require(require.resolve("typescript", { paths: [path.resolve(__dirname, "../..")] }));
+const acorn = require(require.resolve("acorn", { paths: [path.resolve(__dirname, "../..")] }));
 
 const root = path.resolve(__dirname, "..");
 const sources = [
