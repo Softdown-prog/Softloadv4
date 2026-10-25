@@ -125,6 +125,17 @@ export default function Solaris(): React.JSX.Element {
         carregarCreditos();
         carregarHistorico();
         void carregarGithub();
+        const retornoGithub = new URLSearchParams(window.location.search).get('github');
+        if (retornoGithub === 'connected') {
+            setActiveTool('github');
+            setToolsOpen(true);
+        } else if (retornoGithub === 'denied' || retornoGithub === 'error' || retornoGithub === 'setup') {
+            setActiveTool('github');
+            setToolsOpen(true);
+            setToolError(retornoGithub === 'setup'
+                ? 'A conexão GitHub precisa ser configurada pelo administrador da Softload.'
+                : 'A autorização do GitHub não foi concluída. Você pode tentar novamente.');
+        }
         fetch('/dashboard/solaris/visual-review/status')
             .then(async r => r.ok ? await r.json() as VisualStatus : null)
             .then(status => setVisualStatus(status))
