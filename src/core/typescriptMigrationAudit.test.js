@@ -110,6 +110,29 @@ try {
     write(vendorMirror, '"use strict";');
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
+
+    // O namespace dos três RAGs vive em src/knowledge e também exige mirror.
+    const knowledgeSource = 'src/knowledge/ragNamespaces.ts';
+    const knowledgeMirror = 'src/knowledge/ragNamespaces.js';
+    write(knowledgeSource, 'export const RAG_NAMESPACES = {};');
+    write(knowledgeMirror, '"use strict";');
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Fonte TypeScript não registrada: ' + knowledgeSource)));
+    registry([source, aiSource, solarisSource, vendorSource, knowledgeSource]);
+    config([source, aiSource, solarisSource, vendorSource, knowledgeSource]);
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true, 'src/knowledge deve ser auditado e registrado');
+    assert.equal(report.summary.fontesTypeScript, 5);
+    fs.unlinkSync(path.join(root, knowledgeMirror));
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Espelho CommonJS ausente: ' + knowledgeMirror)));
+    write(knowledgeMirror, '"use strict";');
+    registry([source, aiSource, solarisSource, vendorSource, 'src/knowledge/../escape.ts']);
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Entrada inválida no registro')));
+    registry([source, aiSource, solarisSource, vendorSource, knowledgeSource]);
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true);
     console.log('✅ Auditoria TypeScript: registro, tsconfig, espelhos e arquivos legados.');
 } finally {
     fs.rmSync(root, {recursive:true,force:true});
