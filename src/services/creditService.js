@@ -73,7 +73,7 @@ async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
     const creditosADebitar = calcularCreditos(inputTokens, outputTokens);
     const userRef = db.collection('clientes_premium').doc(email.toLowerCase());
     const reciboRef = operacaoId ? userRef.collection('billing_logs').doc(operacaoId) : null;
-    await db.runTransaction(async (tx) => {
+    const executarTransacao = () => db.runTransaction(async (tx) => {
         // Firestore exige todas as leituras antes das escritas. As duas
         // leituras estão dentro da mesma transação para deduplicar sob concorrência.
         const doc = await tx.get(userRef);
@@ -106,6 +106,24 @@ async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
             });
         }
     });
+    // Em respostas 4/10/14 (deadline/ABORTED/UNAVAILABLE) o commit pode
+    // ter ocorrido antes da perda da confirmação. A mesma chave garante
+    // que repetir a transação não retire créditos pela segunda vez.
+    let tentativas = 0;
+    while (true) {
+        try {
+            await executarTransacao();
+            break;
+        }
+        catch (e) {
+            const codigo = e?.code;
+            if (!reciboRef || tentativas >= 2 || ![4, 10, 14, '4', '10', '14'].includes(codigo)) {
+                throw e;
+            }
+            tentativas++;
+            await new Promise(resolve => setTimeout(resolve, tentativas * 50));
+        }
+    }
     // Sem chave, manter o log legado. Com chave, o recibo já foi gravado
     // atomicamente junto do débito e não se deve gerar um segundo log.
     if (!reciboRef) {

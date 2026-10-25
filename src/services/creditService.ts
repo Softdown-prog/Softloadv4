@@ -37,6 +37,7 @@ interface FieldValueApi {
 }
 declare function require(path: string): unknown;
 declare const console: {error(...args: unknown[]): void};
+declare function setTimeout(callback: () => void, delay: number): unknown;
 const { db, admin } = require('./firebase') as {db: FirestoreCredits; admin: {firestore: {FieldValue: FieldValueApi}}};
 const FV = admin.firestore.FieldValue;
 
@@ -113,7 +114,7 @@ export async function debitarCreditos(
     const userRef = db.collection('clientes_premium').doc(email.toLowerCase());
     const reciboRef = operacaoId ? userRef.collection('billing_logs').doc(operacaoId) : null;
 
-    await db.runTransaction(async (tx) => {
+    const executarTransacao = () => db.runTransaction(async (tx) => {
         // Firestore exige todas as leituras antes das escritas. As duas
         // leituras estão dentro da mesma transação para deduplicar sob concorrência.
         const doc = await tx.get(userRef);
@@ -146,6 +147,24 @@ export async function debitarCreditos(
             });
         }
     });
+
+    // Em respostas 4/10/14 (deadline/ABORTED/UNAVAILABLE) o commit pode
+    // ter ocorrido antes da perda da confirmação. A mesma chave garante
+    // que repetir a transação não retire créditos pela segunda vez.
+    let tentativas = 0;
+    while (true) {
+        try {
+            await executarTransacao();
+            break;
+        } catch (e) {
+            const codigo = (e as {code?: number | string} | null)?.code;
+            if (!reciboRef || tentativas >= 2 || ![4, 10, 14, '4', '10', '14'].includes(codigo as number)) {
+                throw e;
+            }
+            tentativas++;
+            await new Promise<void>(resolve => setTimeout(resolve, tentativas * 50));
+        }
+    }
 
     // Sem chave, manter o log legado. Com chave, o recibo já foi gravado
     // atomicamente junto do débito e não se deve gerar um segundo log.

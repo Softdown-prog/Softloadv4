@@ -13,6 +13,8 @@ function harness(initial = {}) {
     const docs = new Map(Object.entries(initial).map(([k,v])=>[k,{...v}]));
     const calls = {transactions:0, writes:[], logs:[], errors:[]};
     let billingLogError = false;
+    let afterCommitTransientFailures = 0;
+    let beforeCommitTransientFailures = 0;
     const inc = n => ({increment: n});
     const fieldValue = {increment: inc, serverTimestamp:()=>({serverTimestamp:true})};
     const makeDoc = key => ({
@@ -36,6 +38,10 @@ function harness(initial = {}) {
         },
         async runTransaction(callback) {
             calls.transactions++;
+            if (beforeCommitTransientFailures > 0) {
+                beforeCommitTransientFailures--;
+                throw Object.assign(new Error('unavailable before transaction'),{code:14});
+            }
             const writes = [];
             const tx = {
                 async get(ref) {
@@ -56,18 +62,23 @@ function harness(initial = {}) {
                 docs.set(ref.key,next);
                 calls.writes.push({op,key:ref.key,changes});
             }
+            if (afterCommitTransientFailures > 0) {
+                afterCommitTransientFailures--;
+                throw Object.assign(new Error('deadline exceeded after commit'),{code:4});
+            }
         },
     };
     const mod = {exports:{}};
     vm.runInNewContext(SOURCE, {
-        module:mod, exports:mod.exports, Date, Promise,
+        module:mod, exports:mod.exports, Date, Promise, setTimeout,
         require(id) {
             assert.equal(id,'./firebase');
             return {db,admin:{firestore:{FieldValue:fieldValue}}};
         },
         console:{error:(...args)=>calls.errors.push(args)},
     },{filename:'creditService.js'});
-    return {api:mod.exports,docs,calls,setBillingError:flag=>{billingLogError=flag}};
+    return {api:mod.exports,docs,calls,setBillingError:flag=>{billingLogError=flag},
+        failAfterCommit:n=>{afterCommitTransientFailures=n},failBeforeCommit:n=>{beforeCommitTransientFailures=n}};
 }
 
 test('planos e cálculo dos créditos permanecem iguais, GPT sem novas cotas', () => {
@@ -218,4 +229,34 @@ test('Gemini: saldo insuficiente não registra recibo falso e pode ser retomado 
     h.docs.set(KEY,{is_active:false,creditos:3});
     assert.equal(await h.api.debitarCreditos(EMAIL,1100,0,op),2);
     assert.equal(h.docs.get(KEY).creditos,1);
+});
+
+test('Gemini: timeout após commit refaz consulta do recibo sem novo débito', async () => {
+    const op='geracao-servidor-000005';
+    const h=harness({[KEY]:{is_active:false,creditos:6}});
+    h.failAfterCommit(1);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1200,200,op),2);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.update').length,1);
+    assert.equal(h.calls.writes.filter(x=>x.op==='tx.set').length,1);
+    assert.equal(h.calls.transactions,2);
+});
+
+test('Gemini: indisponibilidade antes do commit tenta novamente com a mesma chave', async () => {
+    const op='geracao-servidor-000006';
+    const h=harness({[KEY]:{is_active:false,creditos:6}});
+    h.failBeforeCommit(1);
+    assert.equal(await h.api.debitarCreditos(EMAIL,1200,200,op),2);
+    assert.equal(h.docs.get(KEY).creditos,4);
+    assert.equal(h.calls.transactions,2);
+});
+
+test('Gemini: indisponibilidade persistente para após três tentativas sem inventar débito', async () => {
+    const op='geracao-servidor-000007';
+    const h=harness({[KEY]:{is_active:false,creditos:6}});
+    h.failBeforeCommit(4);
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1200,200,op),/unavailable/);
+    assert.equal(h.docs.get(KEY).creditos,6);
+    assert.equal(h.docs.has(KEY+'/billing_logs/'+op),false);
+    assert.equal(h.calls.transactions,3);
 });
