@@ -58,12 +58,13 @@ export default function Workspace(): React.JSX.Element {
             const res = await fetch('/api/workspace/projetos');
             const data = await res.json() as WorkspaceApiResponse;
             if (res.ok) {
-                setProjetos(data.projetos || []);
-                if (data.projetos?.length > 0) {
+                const projetosRecebidos = data.projetos || [];
+                setProjetos(projetosRecebidos);
+                if (projetosRecebidos.length > 0) {
                     setSelectedProjeto(prev => {
-                        if (!prev) return data.projetos[0];
+                        if (!prev) return projetosRecebidos[0];
                         // Mantém a seleção, mas com os dados atualizados
-                        return data.projetos.find(p => p.id === prev.id) || data.projetos[0];
+                        return projetosRecebidos.find(p => p.id === prev.id) || projetosRecebidos[0];
                     });
                 }
             } else {
