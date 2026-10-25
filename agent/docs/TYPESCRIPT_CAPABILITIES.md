@@ -16,7 +16,7 @@ esses imports nem exige um loader TypeScript em produção.
   desse script. Não contar um módulo como migrado sem entrar no gate.
 - Nenhum npm install novo no Worker, binário de Chromium, nem container
   adicional é necessário.
-- `npm run build:agent:capabilities` recompila os 23 módulos TS para ESM
+- `npm run build:agent:capabilities` recompila os módulos TS listados no gate para ESM
   apenas se **todos** corresponderem semanticamente ao JS já versionado.
   O comando sobrescreve arquivos `.js` no diretório atual: deve rodar em
   um **checkout descartável** de CI, não diretamente em um workspace com
@@ -24,7 +24,7 @@ esses imports nem exige um loader TypeScript em produção.
   repositório raiz, não dependências de produção do Worker.
 - O workflow do Agent executa os testes de runtime **após** essa compilação.
   Assim, ele verifica código JavaScript realmente gerado das fontes TS.
-  Na publicação do Agent, o GitHub Actions recompila os 23 `.ts`,
+  Na publicação do Agent, o GitHub Actions recompila os `.ts` listados no gate,
   sobrescreve os `.js` **apenas no checkout temporário** e então monta a
   imagem Docker. A VPS recebe somente a imagem pronta, sem TypeScript nem
   compilação adicional. A execução permanece em Node 22 ESM.
@@ -79,6 +79,16 @@ esses imports nem exige um loader TypeScript em produção.
   de saída, status e notificações opcionais assinadas.
 - `web-search.ts` — pesquisa Gemini com limites por tarefa, domínio
   permitido, citações e tratamento tipado de quota e timeout.
+
+## Inicialização do Worker em TypeScript
+
+- `agent/src/index.ts` passa a tipar os sinais `SIGINT/SIGTERM`, o
+  encerramento do servidor HTTP e o tratamento de falhas fatais.
+- `agent/src/utils/logger.ts` declara a estrutura de logging com
+  severidade, mensagens e metadados sem modificar o formato JSON.
+- Ambos entram no mesmo gate AST e no build ESM das capabilities. O
+  Docker executa os equivalentes `.js` gerados no runner do GitHub;
+  não há compilação dentro da VPS nem mudança de entrypoint.
 
 ## Como validar
 

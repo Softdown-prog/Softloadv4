@@ -5,12 +5,20 @@ on:
     branches: [main]
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/src/index.ts'
+      - 'agent/src/index.js'
+      - 'agent/src/utils/logger.ts'
+      - 'agent/src/utils/logger.js'
       - 'agent/tsconfig.json'
       - 'scripts/check-agent-capabilities-ts-mirrors.cjs'
       - '.github/workflows/agent-typescript.yml'
   pull_request:
     paths:
       - 'agent/src/capabilities/**'
+      - 'agent/src/index.ts'
+      - 'agent/src/index.js'
+      - 'agent/src/utils/logger.ts'
+      - 'agent/src/utils/logger.js'
       - 'agent/tsconfig.json'
       - 'scripts/check-agent-capabilities-ts-mirrors.cjs'
       - '.github/workflows/agent-typescript.yml'

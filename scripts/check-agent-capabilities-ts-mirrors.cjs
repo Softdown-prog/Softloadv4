@@ -41,6 +41,8 @@ const sources = [
   "agent/src/capabilities/web-fetch.ts",
   "agent/src/capabilities/process.ts",
   "agent/src/capabilities/web-search.ts",
+  "agent/src/utils/logger.ts",
+  "agent/src/index.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
@@ -94,7 +96,7 @@ if (errors) {
   console.error("[AGENT-TS] Corrija o fonte TypeScript ou regenere seu espelho JS antes de publicar.");
   process.exitCode = 1;
 } else if (emitRuntime) {
-  // All 23 modules must pass AST parity BEFORE any runtime JS is overwritten.
+  // All listed modules must pass AST parity BEFORE any runtime JS is overwritten.
   // Intended for disposable GitHub Actions checkouts, never production VPS.
   let changed = 0;
   for (const { pathJs, compiled } of verifiedOutputs) {
