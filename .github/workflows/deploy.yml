@@ -46,6 +46,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
+      current: ${{ steps.latest.outputs.current }}
       agent: ${{ steps.diff.outputs.agent }}
       sandbox: ${{ steps.diff.outputs.sandbox }}
       embeddings: ${{ steps.diff.outputs.embeddings }}
@@ -53,7 +54,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Skip commit superseded on main
+        id: latest
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$latest" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping superseded deploy $GITHUB_SHA; main is $latest"
+          fi
       - name: Configure restricted SSH key
+        if: steps.latest.outputs.current == 'true'
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
         run: |
@@ -64,6 +79,7 @@ jobs:
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
       - name: Compare with running revision
+        if: steps.latest.outputs.current == 'true'
         id: diff
         shell: bash
         env:
@@ -105,6 +121,7 @@ jobs:
           echo "[DEPLOY] Running revision: $base"
   build_and_transfer:
     needs: [verify, plan]
+    if: needs.plan.outputs.current == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
@@ -127,7 +144,21 @@ jobs:
             dockerfile: Embedings-python/Dockerfile
     steps:
       - uses: actions/checkout@v4
+      - name: Skip build if main already advanced
+        id: latest_before_build
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$latest" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping build for superseded commit $GITHUB_SHA; main is $latest"
+          fi
       - name: Determine whether this service changed
+        if: steps.latest_before_build.outputs.current == 'true'
         id: changes
         env:
           AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
@@ -143,18 +174,18 @@ jobs:
           [[ "$changed" == true || "$changed" == false ]]
           echo "changed=$changed" >> "$GITHUB_OUTPUT"
       - name: Prepare Agent native source
-        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_build.outputs.current == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
         run: node agent/scripts/vendorPowerUp.js
       # Compilacao acontece no GitHub-hosted runner, NAO na VPS e NAO
       # dentro da imagem do Worker. A imagem usa apenas ESM JavaScript.
       - name: Setup Node for Agent TypeScript compilation
-        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_build.outputs.current == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - name: Generate Agent runtime JavaScript from TypeScript
-        if: matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_build.outputs.current == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
         timeout-minutes: 15
         run: |
           set -euo pipefail
@@ -164,11 +195,11 @@ jobs:
           npm run typecheck:agent
           npm run build:agent:capabilities
       - name: Build versioned image
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_build.outputs.current == 'true' && steps.changes.outputs.changed == 'true'
         run: docker build -t softload-${{ matrix.service }}:${{ github.sha }} -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
       # Medição real da imagem Docker (não confundir com bytes versionados no Git).
       - name: Report Docker image size
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_build.outputs.current == 'true' && steps.changes.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -180,7 +211,22 @@ jobs:
             echo "### Imagem Docker: ${{ matrix.service }}"
             echo "Tamanho local: **$mib MiB** ($bytes bytes)"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Skip transfer if main advanced during build
+        if: steps.latest_before_build.outputs.current == 'true'
+        id: latest_before_transfer
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$latest" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping image transfer for superseded commit $GITHUB_SHA; main is $latest"
+          fi
       - name: Configure restricted SSH key
+        if: steps.latest_before_transfer.outputs.current == 'true'
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
         run: |
@@ -191,7 +237,7 @@ jobs:
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
       - name: Transfer resumable image to VPS
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.latest_before_transfer.outputs.current == 'true' && steps.changes.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -226,7 +272,7 @@ jobs:
           echo "::error::Falha ao validar e carregar a imagem ${{ matrix.service }}"
           exit 1
       - name: Reuse unchanged VPS image
-        if: steps.changes.outputs.changed == 'false'
+        if: steps.latest_before_transfer.outputs.current == 'true' && steps.changes.outputs.changed == 'false'
         shell: bash
         run: |
           set -euo pipefail
@@ -246,10 +292,31 @@ jobs:
     runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
     timeout-minutes: 20
     steps:
+      - name: Skip superseded revision before activation
+        id: latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          latest="$(curl --fail --silent --show-error --max-time 20 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
+          [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$latest" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping activation of superseded commit $GITHUB_SHA; main is $latest"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.latest.outputs.current == 'true'
         with:
           node-version: '22'
       - name: Configure restricted SSH key
+        if: steps.latest.outputs.current == 'true'
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
         run: |
@@ -260,11 +327,13 @@ jobs:
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$RUNNER_TEMP/softload-ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/softload-ssh/known_hosts"
       - name: Activate only after every image arrives
+        if: steps.latest.outputs.current == 'true'
         run: ssh -i "$RUNNER_TEMP/softload-ssh/deploy_key" -o UserKnownHostsFile="$RUNNER_TEMP/softload-ssh/known_hosts" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes root@164.163.9.7 'deploy:${{ github.sha }}'
 
       # The SSH command can succeed while the public site still serves a
       # previous image. Verify the commit from the application's own /health.
       - name: Confirm public VPS is serving this commit
+        if: steps.latest.outputs.current == 'true'
         shell: bash
         env:
           EXPECTED_SHA: ${{ github.sha }}
@@ -305,6 +374,7 @@ jobs:
       # Além do SHA de /health, confirma que o React compilado no domínio
       # público já não oferece o provedor temporariamente sem orçamento.
       - name: Confirm public React bundle has no disabled provider
+        if: steps.latest.outputs.current == 'true'
         shell: bash
         env:
           EXPECTED_SHA: ${{ github.sha }}

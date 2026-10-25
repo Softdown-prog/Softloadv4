@@ -18,3 +18,10 @@ As imagens da revisão em uso e da revisão anterior são mantidas para reversã
 
 `.github/workflows/reconcile-deploy.yml` compara periodicamente o SHA da
 `main` ao SHA publicado e solicita uma nova tentativa quando necessário.
+
+O grupo de concorrência mantém um deploy em execução e substitui o deploy
+pendente pelo commit mais recente. Cada execução confere novamente a ponta da
+`main` antes de construir, transferir e ativar imagens. Se outro commit já a
+substituiu, a execução antiga termina sem trocar os containers. Assim, uma
+sequência rápida de pushes converge para a versão mais recente sem enviar
+imagens obsoletas à VPS.
