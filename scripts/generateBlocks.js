@@ -9,7 +9,6 @@ exports.validarHero = validarHero;
 exports.gerarBlocosParaNicho = gerarBlocosParaNicho;
 exports.salvarBlocos = salvarBlocos;
 exports.main = main;
-
 // ============================================================
 // BLOCK WORKER — Gera variantes CSS e Hero HTML para cada nicho
 // via Gemini e salva em tema-{nicho}-blocks.json no diretório
@@ -22,17 +21,12 @@ exports.main = main;
 // Output por nicho:
 //   src/rag/rag-ia-compiler/pipeline/temas/tema-{nicho}-blocks.json
 // ============================================================
-
 require('dotenv').config();
-
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
-
 // Importa gerarTexto após o dotenv carregar a key
 const { gerarTexto } = require('../src/services/geminiService');
-
 const TEMAS_DIR = path.join(__dirname, '../src/rag/rag-ia-compiler/pipeline/temas');
-
 exports.TODOS_OS_NICHOS = [
     'gamer-playerone',
     'pop-retro-pixel',
@@ -49,18 +43,15 @@ exports.TODOS_OS_NICHOS = [
     'tecnologia-mag-tech',
     'tecnologia-techwind',
 ];
-
 // Quantas variantes gerar por slot
 exports.CSS_VARIANTS = 5;
 exports.HERO_VARIANTS = 3;
-
 // ──────────────────────────────────────────────────────────────
 // buildPrompt — monta o prompt Gemini para um nicho específico
 // ──────────────────────────────────────────────────────────────
 function buildPrompt(nicho, meta) {
     const descricao = (meta.descricao || nicho).substring(0, 200);
     const nichoLabel = meta.nicho || nicho;
-
     return `Você é um especialista em CSS e Bootstrap 5 para blogs. Gere variantes visuais para um blog do nicho: "${nichoLabel}".
 
 CONTEXTO DO NICHO:
@@ -99,7 +90,6 @@ Retorne SOMENTE JSON válido, sem markdown, sem comentários fora do JSON:
 
 IMPORTANTE: card_css deve ter EXATAMENTE ${exports.CSS_VARIANTS} strings. hero_html deve ter EXATAMENTE ${exports.HERO_VARIANTS} strings.`;
 }
-
 // ──────────────────────────────────────────────────────────────
 // extrairJSON — extrai JSON da resposta (Gemini às vezes retorna
 // com ```json ... ``` ou com texto antes/depois)
@@ -109,47 +99,50 @@ function extrairJSON(texto) {
     let limpo = texto.trim();
     limpo = limpo.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '');
     limpo = limpo.replace(/^```\s*/i, '').replace(/\s*```\s*$/i, '');
-
     // Tenta parsear direto
     try {
         return JSON.parse(limpo);
-    } catch (_) {}
-
+    }
+    catch (_) { }
     // Tenta extrair o primeiro {...} do texto
     const match = limpo.match(/\{[\s\S]*\}/);
     if (match) {
         try {
             return JSON.parse(match[0]);
-        } catch (_) {}
+        }
+        catch (_) { }
     }
-
     return null;
 }
-
 // ──────────────────────────────────────────────────────────────
 // Validadores — mesmos critérios do carregarNichoImpl()
 // ──────────────────────────────────────────────────────────────
 function validarCSS(str) {
-    if (typeof str !== 'string' || str.trim().length < 20) return false;
+    if (typeof str !== 'string' || str.trim().length < 20)
+        return false;
     // Sem sintaxe Blogger
-    if (/\bdata:|b:|expr:/.test(str)) return false;
+    if (/\bdata:|b:|expr:/.test(str))
+        return false;
     // Sem placeholders mock
-    if (/\[[A-Za-z][A-Za-z0-9_ :.-]*\]/.test(str)) return false;
+    if (/\[[A-Za-z][A-Za-z0-9_ :.-]*\]/.test(str))
+        return false;
     // Deve ter pelo menos uma regra CSS (chave abre)
     return str.includes('{') && str.includes('}');
 }
-
 function validarHero(str) {
-    if (typeof str !== 'string' || str.trim().length < 30) return false;
+    if (typeof str !== 'string' || str.trim().length < 30)
+        return false;
     // Deve começar com tag HTML
-    if (!/^[\s\n]*<[a-z]/i.test(str)) return false;
+    if (!/^[\s\n]*<[a-z]/i.test(str))
+        return false;
     // Sem sintaxe Blogger
-    if (/\bdata:|b:|expr:/.test(str)) return false;
+    if (/\bdata:|b:|expr:/.test(str))
+        return false;
     // Sem placeholders mock
-    if (/\[[A-Za-z][A-Za-z0-9_ :.-]*\]/.test(str)) return false;
+    if (/\[[A-Za-z][A-Za-z0-9_ :.-]*\]/.test(str))
+        return false;
     return true;
 }
-
 // ──────────────────────────────────────────────────────────────
 // gerarBlocosParaNicho — gera e valida variantes para 1 nicho
 // ──────────────────────────────────────────────────────────────
@@ -158,46 +151,40 @@ async function gerarBlocosParaNicho(nicho) {
     let meta = {};
     try {
         meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-    } catch (_) {
+    }
+    catch (_) {
         console.warn(`  [aviso] meta.json não encontrado para ${nicho} — usando defaults`);
     }
-
     const prompt = buildPrompt(nicho, meta);
-
     let resposta;
     try {
         resposta = await gerarTexto(prompt);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(`  [erro] Gemini falhou para ${nicho}: ${err.message}`);
         return null;
     }
-
     const json = extrairJSON(resposta);
     if (!json) {
         console.error(`  [erro] JSON inválido para ${nicho}. Resposta:\n${resposta.substring(0, 200)}`);
         return null;
     }
-
-    const cssValidos  = (Array.isArray(json.card_css)  ? json.card_css  : []).filter(validarCSS);
+    const cssValidos = (Array.isArray(json.card_css) ? json.card_css : []).filter(validarCSS);
     const heroValidos = (Array.isArray(json.hero_html) ? json.hero_html : []).filter(validarHero);
-
     console.log(`  css: ${cssValidos.length}/${exports.CSS_VARIANTS} válidas | hero: ${heroValidos.length}/${exports.HERO_VARIANTS} válidas`);
-
     if (cssValidos.length === 0 && heroValidos.length === 0) {
         console.error(`  [erro] Nenhum bloco válido gerado para ${nicho}`);
         return null;
     }
-
     return {
         nicho,
-        gerado_em:  new Date().toISOString(),
-        total_css:  cssValidos.length,
+        gerado_em: new Date().toISOString(),
+        total_css: cssValidos.length,
         total_hero: heroValidos.length,
-        card_css:   cssValidos,
-        hero_html:  heroValidos,
+        card_css: cssValidos,
+        hero_html: heroValidos,
     };
 }
-
 // ──────────────────────────────────────────────────────────────
 // salvarBlocos — escreve o arquivo de blocos no disco
 // ──────────────────────────────────────────────────────────────
@@ -206,7 +193,6 @@ function salvarBlocos(nicho, blocos) {
     fs.writeFileSync(outPath, JSON.stringify(blocos, null, 2), 'utf-8');
     console.log(`  → salvo: ${path.relative(process.cwd(), outPath)}`);
 }
-
 // ──────────────────────────────────────────────────────────────
 // main
 // ──────────────────────────────────────────────────────────────
@@ -214,29 +200,24 @@ async function main() {
     const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
     const nichos = args.length > 0 ? args : exports.TODOS_OS_NICHOS;
     const pauseMs = 2000; // pausa entre chamadas para evitar rate limit
-
     console.log(`\n🔧 Block Worker — ${nichos.length} nicho(s) × ${exports.CSS_VARIANTS} css + ${exports.HERO_VARIANTS} hero\n`);
-
     const resultados = { ok: [], erro: [] };
-
     for (let i = 0; i < nichos.length; i++) {
         const nicho = nichos[i];
         console.log(`[${i + 1}/${nichos.length}] ${nicho}`);
-
         const blocos = await gerarBlocosParaNicho(nicho);
         if (blocos) {
             salvarBlocos(nicho, blocos);
             resultados.ok.push(nicho);
-        } else {
+        }
+        else {
             resultados.erro.push(nicho);
         }
-
         // Pausa entre nichos para não estourar rate limit
         if (i < nichos.length - 1) {
             await new Promise(r => setTimeout(r, pauseMs));
         }
     }
-
     console.log(`\n✅ Concluído: ${resultados.ok.length} ok | ${resultados.erro.length} com erro`);
     if (resultados.erro.length > 0) {
         console.log(`   Erros: ${resultados.erro.join(', ')}`);
@@ -246,8 +227,8 @@ async function main() {
         console.log(`   git commit -m "feat: generated block library"`);
     }
 }
-
-if (require.main === module) main().catch(err => {
-    console.error('Erro fatal:', err);
-    process.exit(1);
-});
+if (require.main === module)
+    main().catch((err) => {
+        console.error('Erro fatal:', err);
+        process.exit(1);
+    });
