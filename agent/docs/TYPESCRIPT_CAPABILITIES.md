@@ -152,8 +152,10 @@ esses imports nem exige um loader TypeScript em produção.
 - `agent/src/security/command-policy.ts` tipa allowlist de comandos,
   prefixos autorizados e regexes de bloqueio. O parse e a execução
   de processos permanecem sem `shell: true`.
-- Ambos participam da checagem estrita de tipos, da comparação AST
-  com `.js` e dos testes do Agent antes de gerar imagens Docker.
+- `agent/src/security/role-permissions.ts` tipa os presets dos
+  seis papéis de subagentes, mantendo as allowlists específicas de cada um.
+- Os arquivos de segurança participam da checagem estrita de tipos,
+  da comparação AST e dos testes de regressão antes da publicação.
 
 ## Como validar
 
