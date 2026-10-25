@@ -7,21 +7,23 @@ import {
     getFontFamily,
     setFontScale,
     setFontFamily,
+    type FontScale,
+    type FontFamily,
 } from '../../utils/accessibilityPrefs';
 
 // Aplicação é instantânea (sem botão "Salvar") -- convenção padrão pra
 // controles de acessibilidade: o usuário precisa ver o efeito assim que
 // escolhe, não depois de confirmar um formulário.
-export default function AcessibilidadeTab() {
+export default function AcessibilidadeTab(): React.JSX.Element {
     const [fontScale, setFontScaleState] = useState(getFontScale);
     const [fontFamily, setFontFamilyState] = useState(getFontFamily);
 
-    const escolherEscala = (value) => {
+    const escolherEscala = (value: FontScale): void => {
         setFontScale(value);
         setFontScaleState(value);
     };
 
-    const escolherFamilia = (value) => {
+    const escolherFamilia = (value: FontFamily): void => {
         setFontFamily(value);
         setFontFamilyState(value);
     };

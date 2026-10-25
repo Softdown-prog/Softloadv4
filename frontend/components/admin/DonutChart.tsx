@@ -1,13 +1,25 @@
 import React, { useEffect, useRef } from 'react';
+import type { Chart as ChartInstance } from 'chart.js';
 
 // Gráfico de rosca de Distribuição de Planos — mesmo mecanismo do EJS antigo
 // (Chart.js via CDN), agora empacotado pelo Vite. `data` é [{ label, value, color, border }].
 // import() dinâmico de propósito: chart.js/auto pesa ~200KB no bundle e só
 // é usado nesta única tela do admin (/eu) — carregar estático inflaria o
 // main.js pago por TODO visitante (landing, login, dashboard do cliente).
-export default function DonutChart({ data }) {
-    const canvasRef = useRef(null);
-    const chartRef = useRef(null);
+export interface DonutChartItem {
+    label: string;
+    value: number;
+    color: string;
+    border: string;
+}
+
+export interface DonutChartProps {
+    data: readonly DonutChartItem[];
+}
+
+export default function DonutChart({ data }: DonutChartProps): React.JSX.Element {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const chartRef = useRef<ChartInstance<'doughnut'> | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -17,7 +29,7 @@ export default function DonutChart({ data }) {
             if (cancelado || !canvasRef.current) return;
 
             if (!chartRef.current) {
-                chartRef.current = new Chart(canvasRef.current, {
+                chartRef.current = new Chart<'doughnut'>(canvasRef.current, {
                     type: 'doughnut',
                     data: {
                         labels: data.map(d => d.label),

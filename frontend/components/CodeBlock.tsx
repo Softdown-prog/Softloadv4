@@ -16,14 +16,19 @@ hljs.registerLanguage('json', json);
 hljs.registerLanguage('bash', bash);
 hljs.registerLanguage('sh', bash);
 
-const APELIDOS = { js: 'JavaScript', html: 'HTML', xml: 'XML', css: 'CSS', json: 'JSON', bash: 'Bash', sh: 'Shell' };
+const APELIDOS: Record<string, string> = { js: 'JavaScript', html: 'HTML', xml: 'XML', css: 'CSS', json: 'JSON', bash: 'Bash', sh: 'Shell' };
 
 // Bloco de código do chat — pill com o nome da linguagem + botão de copiar,
 // e highlight via highlight.js (core + só as linguagens reais do domínio:
 // XML/HTML do Blogger, CSS, JS, JSON, Bash). Mesmo padrão de import estático
 // já usado por MermaidBlock.jsx (o bundle inteiro já é carregado pelas
 // páginas de chat de qualquer forma).
-export default function CodeBlock({ code, language }) {
+export interface CodeBlockProps {
+    code: string;
+    language?: string;
+}
+
+export default function CodeBlock({ code, language }: CodeBlockProps): React.JSX.Element {
     const [copiado, setCopiado] = useState(false);
 
     const { html, langLabel } = useMemo(() => {
@@ -34,7 +39,7 @@ export default function CodeBlock({ code, language }) {
             } catch (_) { /* cai no fallback abaixo */ }
         }
         const auto = hljs.highlightAuto(code);
-        return { html: auto.value, langLabel: APELIDOS[auto.language] || auto.language || 'texto' };
+        return { html: auto.value, langLabel: (auto.language ? (APELIDOS[auto.language] || auto.language) : 'texto') };
     }, [code, language]);
 
     function copiar() {

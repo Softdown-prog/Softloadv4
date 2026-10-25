@@ -32,6 +32,10 @@
     "frontend/components/PublicNavbar.tsx",
     "frontend/components/CookieConsent.tsx",
     "frontend/components/landing/CapabilityChecklist.tsx",
+    "frontend/components/admin/DonutChart.tsx",
+    "frontend/components/settings/AcessibilidadeTab.tsx",
+    "frontend/components/CodeBlock.tsx",
+    "frontend/components/MermaidBlock.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [

@@ -59,6 +59,10 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/components/PublicNavbar.tsx',
     'frontend/components/CookieConsent.tsx',
     'frontend/components/landing/CapabilityChecklist.tsx',
+    'frontend/components/admin/DonutChart.tsx',
+    'frontend/components/settings/AcessibilidadeTab.tsx',
+    'frontend/components/CodeBlock.tsx',
+    'frontend/components/MermaidBlock.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -80,4 +84,21 @@ test('Navbar, consentimento e lista de capacidades mantêm contratos públicos',
   assert.match(consent, /localStorage\.setItem/);
   assert.match(list, /IntersectionObserver/);
   assert.match(list, /CAPACIDADES\.map/);
+});
+
+test('componentes TypeScript do painel e chat preservam integrações', () => {
+  const donut = source('frontend/components/admin/DonutChart.tsx');
+  const accessibility = source('frontend/components/settings/AcessibilidadeTab.tsx');
+  const code = source('frontend/components/CodeBlock.tsx');
+  const mermaid = source('frontend/components/MermaidBlock.tsx');
+  assert.match(donut, /import\('chart\.js\/auto'\)/);
+  assert.match(donut, /chartRef\.current\.destroy\(\)/);
+  assert.match(accessibility, /setFontScale\(value\)/);
+  assert.match(accessibility, /setFontFamily\(value\)/);
+  assert.match(accessibility, /aria-checked={ativo}/);
+  assert.match(code, /registerLanguage\('xml', xml\)/);
+  assert.match(code, /navigator\.clipboard\.writeText\(code\)/);
+  assert.match(mermaid, /securityLevel: 'strict'/);
+  assert.match(mermaid, /containerRef\.current\.innerHTML = svg/);
+  assert.match(mermaid, /if \(!cancelado\) setErro\(/);
 });

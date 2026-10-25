@@ -8,9 +8,13 @@ let contador = 0;
 // chamando mermaid.run() nos nós .mermaid recém-inseridos no DOM. Aqui o
 // mermaid vem empacotado pelo Vite (self-contained, sem depender de CDN
 // externo em runtime) e o render é por instância de componente.
-export default function MermaidBlock({ code }) {
-    const containerRef = useRef(null);
-    const [erro, setErro] = useState(null);
+export interface MermaidBlockProps {
+    code: string;
+}
+
+export default function MermaidBlock({ code }: MermaidBlockProps): React.JSX.Element {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [erro, setErro] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelado = false;
@@ -31,7 +35,7 @@ export default function MermaidBlock({ code }) {
             })
             .catch((err) => {
                 console.error('[mermaid] falha ao renderizar diagrama:', err);
-                if (!cancelado) setErro(err.message || 'Falha ao renderizar diagrama.');
+                if (!cancelado) setErro(err instanceof Error && err.message ? err.message : 'Falha ao renderizar diagrama.');
             });
 
         return () => { cancelado = true; };
