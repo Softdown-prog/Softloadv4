@@ -147,6 +147,8 @@ jobs:
         run: npm run test:frontend-layouts
       - name: Testar prévia isolada de créditos V2 do dashboard
         run: node --test frontend/tests/creditsV2.test.cjs
+      - name: Validar layout e rolagem dos chats React
+        run: node --test frontend/tests/conversation-ui.test.cjs
       - name: Verificar TypeScript do frontend React
         run: npm run typecheck:frontend
       - name: Compilar frontend React pelo Vite
