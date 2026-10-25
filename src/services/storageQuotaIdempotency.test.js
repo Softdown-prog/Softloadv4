@@ -9,7 +9,8 @@ const snap = (key) => ({exists:records.has(key),data:()=>records.get(key)});
 const database = {
     collection(collection) {
         return {doc(key) {
-            return {key:collection+'/'+key};
+            const path=collection+'/'+key;
+            return {key:path,async get(){return snap(path);}};
         }};
     },
     async runTransaction(callback) {
