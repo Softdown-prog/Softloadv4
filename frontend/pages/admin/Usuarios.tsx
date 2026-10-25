@@ -7,9 +7,9 @@ interface AdminToast { msg: string; erro: boolean }
 interface SelectedAccount { email: string }
 
 const PLANO_INFO: Record<PremiumPlan, { gemini: number; label: string }> = {
-    starter: { gemini: 500, label: 'Starter' },
-    pro: { gemini: 2000, label: 'Pro' },
-    studio: { gemini: 5500, label: 'Studio' },
+    starter: { gemini: 150, label: 'Starter' },
+    pro: { gemini: 600, label: 'Pro' },
+    studio: { gemini: 1200, label: 'Studio' },
 };
 
 function planoBadgeClass(plano?: string): string {
@@ -360,9 +360,9 @@ export default function AdminUsuarios(): React.JSX.Element {
                         <label htmlFor="modal-ativar-select" className="form-label fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'var(--sl-text-400)' }}>Plano a ativar</label>
                         <select id="modal-ativar-select" className="form-select mb-3" value={planoEscolhido} onChange={e => setPlanoEscolhido(e.target.value as PremiumPlan)}
                                 style={{ background: 'var(--sl-bg-800)', borderColor: 'var(--sl-bg-700)', color: 'var(--sl-text-300)' }}>
-                            <option value="starter">Starter — 500 créditos Gemini</option>
-                            <option value="pro">Pro — 2.000 créditos Gemini</option>
-                            <option value="studio">Studio — 5.500 créditos Gemini</option>
+                            <option value="starter">Starter — 150 créditos Gemini</option>
+                            <option value="pro">Pro — 600 créditos Gemini</option>
+                            <option value="studio">Studio — 1.200 créditos Gemini</option>
                         </select>
                         <div className="d-flex align-items-start gap-2" style={{ background: 'rgba(30,41,59,0.6)', border: '1px solid var(--sl-bg-700)', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: 'var(--sl-text-400)' }}>
                             <Info size={14} className="flex-shrink-0 mt-1" />
