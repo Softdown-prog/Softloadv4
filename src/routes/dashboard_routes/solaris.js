@@ -128,7 +128,7 @@ async function capturarParaVisual({ url, device }) {
     const serviceUrl = process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL;
     const secret = process.env.SANDBOX_BROWSER_SHARED_SECRET || process.env.SANDBOX_SHARED_SECRET;
     if (!serviceUrl || !secret) throw new Error('Sandbox visual sem URL/segredo configurados.');
-    const response = await fetch(serviceUrl.replace(/\\/+$/, '') + '/run', {
+    const response = await fetch(serviceUrl.replace(/[/]+$/, '') + '/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-sandbox-secret': secret },
         body: JSON.stringify({
