@@ -1,5 +1,7 @@
 import { chromium, webkit } from "playwright";
 import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute } from "node:path";
 import { positiveIntEnvOverride } from "../utils/envInt.js";
 import { DEFAULT_TIMEOUT } from "./security.js";
 
@@ -135,11 +137,26 @@ function pageJsHeapLimitMb() {
   return positiveIntEnvOverride("SANDBOX_PAGE_JS_HEAP_LIMIT_MB", DEFAULT_PAGE_JS_HEAP_LIMIT_MB);
 }
 
+// Gerado pelo Dockerfile apenas no perfil browser. O caminho aponta ao
+// chromium-headless-shell real, pois chromium.executablePath() aponta ao
+// Chromium COMPLETO (ausente na imagem otimizada). Não é fornecido
+// por requisições HTTP; a variável de operador mantém precedência.
+const HEADLESS_SHELL_PATH_MANIFEST = "/app/.chromium-headless-shell-path";
+
 function resolveRealExecutablePath(browserType) {
   if (browserType === "webkit") {
     return WEBKIT_EXECUTABLE_PATH || webkit.executablePath();
   }
-  return CHROMIUM_EXECUTABLE_PATH || chromium.executablePath();
+  if (CHROMIUM_EXECUTABLE_PATH) return CHROMIUM_EXECUTABLE_PATH;
+  if (existsSync(HEADLESS_SHELL_PATH_MANIFEST)) {
+    const browserExecutable = readFileSync(HEADLESS_SHELL_PATH_MANIFEST, "utf8").trim();
+    if (!isAbsolute(browserExecutable)) {
+      throw new Error("Manifesto do Chromium Headless Shell inválido");
+    }
+    return browserExecutable;
+  }
+  // Execuções de desenvolvimento fora do container continuam compatíveis.
+  return chromium.executablePath();
 }
 
 /**
