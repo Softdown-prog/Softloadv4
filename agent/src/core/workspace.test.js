@@ -136,3 +136,27 @@ test("resolve() tolera caminhos que ainda não existem (ex: write novo)", async 
     await fs.rm(base, { recursive: true, force: true });
   }
 });
+
+test("writeAtomic e write bloqueiam symlink de pasta que escapa do workspace", async () => {
+  const { base, root, workspace } = await makeTempWorkspace();
+  try {
+    const outside = path.join(base, "privado");
+    await fs.mkdir(outside, { recursive: true });
+    await fs.symlink(outside, path.join(root, "saida"), "dir");
+
+    await assert.rejects(
+      () => workspace.write("saida/arquivo.txt", "nao autorizado"),
+      /symlink escapa do root/,
+    );
+    await assert.rejects(
+      () => workspace.writeAtomic("saida/arquivo.txt", "nao autorizado"),
+      /symlink escapa do root/,
+    );
+    await assert.rejects(
+      () => fs.access(path.join(outside, "arquivo.txt")),
+      /ENOENT/,
+    );
+  } finally {
+    await fs.rm(base, { recursive: true, force: true });
+  }
+});

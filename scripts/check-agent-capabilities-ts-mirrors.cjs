@@ -59,6 +59,7 @@ const sources = [
   "agent/src/config/sandbox-endpoints.ts",
   "agent/src/config/mcpServers.ts",
   "agent/src/utils/run-command.ts",
+  "agent/src/core/workspace.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

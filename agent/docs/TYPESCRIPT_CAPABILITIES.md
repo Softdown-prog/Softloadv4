@@ -197,6 +197,17 @@ esses imports nem exige um loader TypeScript em produção.
 - O contrato de tipos local de `execa` inclui a opção opcional de
   preservação da quebra de linha; não altera a instalação de produção.
 
+## Workspace isolado tipado
+
+- `agent/src/core/workspace.ts` tipa a resolução de caminhos, leitura,
+  escrita, listagem e gravação atômica; a checagem textual e real
+  (via `realpath`) contra traversal e symlinks continua inalterada.
+- Os contratos locais de `node:fs/promises` e `node:path` suportam
+  o typecheck sem instalar tipos Node adicionais na imagem de produção.
+- A equivalência AST é exigida antes de gerar os arquivos `.js` do
+  Worker, e os testes existentes cobrem path traversal, symlinks e
+  gravação atômica.
+
 ## Como validar
 
 ```bash
