@@ -71,6 +71,9 @@ jobs:
       - name: Regressão das auditorias de console, viewport e acessibilidade
         working-directory: sandbox-efemoro
         run: node --test src/webSandbox/console.test.js src/webSandbox/responsive.test.js src/webSandbox/accessibility.test.js
+      - name: Regressões dos limites do navegador (sem download de Chromium)
+        working-directory: sandbox-efemoro
+        run: node --test src/webSandbox/browser.test.js
       - name: Construir imagem dedicada slim, sem Chromium
         run: docker build --progress plain -t softload-sandbox:archive-slim -f sandbox-efemoro/Dockerfile.archive sandbox-efemoro
       - name: Smoke real de HTTP, segredo, ZIP e browser bloqueado
