@@ -228,6 +228,15 @@ esses imports nem exige um loader TypeScript em produção.
 - A lógica de merge, persistência de commits e políticas de cleanup
   continua sob controle do executor, sem operações automáticas extras.
 
+## Ciclo Programador / Validador tipado
+
+- `agent/src/orchestration/coder-validator-loop.ts` tipa os resultados
+  da validação, o feedback retornado ao Programador, o limite de
+  tentativas e o callback opcional de falha para eventual rollback.
+- Os testes cobrem aprovação imediata, recuperação após erro e
+  esgotamento das tentativas; nenhuma política do Validador foi
+  ampliada e não são introduzidos comandos novos.
+
 ## Como validar
 
 ```bash
