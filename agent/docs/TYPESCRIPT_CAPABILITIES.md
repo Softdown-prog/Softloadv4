@@ -132,6 +132,18 @@ esses imports nem exige um loader TypeScript em produção.
 - O teste HTTP existente garante que erros de input sejam rejeitados
   antes de executar qualquer action.
 
+## Composição central do Worker
+
+- `agent/src/agent.ts` tipa as opções de inicialização, workspace,
+  permissões, políticas de comandos, capabilities externas e o ciclo
+  `start/execute/wait/stop`.
+- A ligação entre TaskRouter e TaskRunner usa as interfaces tipadas
+  existentes, sem alterar a instanciação das ferramentas nem as
+  permissões. A fonte entra no gate AST e na compilação ESM usada
+  pelo Docker após validação no GitHub Actions.
+- Os arquivos `.js` continuam sendo o runtime Node 22; nenhuma
+  instalação ou execução de TypeScript acontece na VPS.
+
 ## Como validar
 
 ```bash

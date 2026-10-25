@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src/capabilities/**/*.ts", "src/core/*.ts", "src/protocol/*.ts", "src/index.ts", "src/server.ts", "src/express-types.d.ts", "src/utils/*.ts"],
+  "include": ["src/capabilities/**/*.ts", "src/core/*.ts", "src/protocol/*.ts", "src/agent.ts", "src/index.ts", "src/server.ts", "src/express-types.d.ts", "src/utils/*.ts"],
   "exclude": ["node_modules"]
 }
