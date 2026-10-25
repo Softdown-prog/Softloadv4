@@ -202,13 +202,14 @@ export class McpClientCapability {
   async callTool(task: McpTask) {
     const config = this._resolveServer(task);
 
-    if (typeof task.tool !== "string" || task.tool.trim() === "") {
+    const toolName = task.tool;
+    if (typeof toolName !== "string" || toolName.trim() === "") {
       throw new Error(
         "mcp.call_tool exige tool (string, nome da ferramenta MCP)",
       );
     }
 
-    if (config.allowedTools && !config.allowedTools.includes(task.tool!)) {
+    if (config.allowedTools && !config.allowedTools.includes(toolName)) {
       throw new Error(
         `Ferramenta MCP não permitida no servidor "${task.server}": "${task.tool}". ` +
           `Permitidas: ${config.allowedTools.join(", ")}`,
@@ -217,7 +218,7 @@ export class McpClientCapability {
 
     const result = await this._withClient(config, (client) =>
       client.callTool(
-        { name: task.tool!, arguments: task.arguments || {} },
+        { name: toolName, arguments: task.arguments || {} },
         undefined,
         { timeout: DEFAULT_REQUEST_TIMEOUT_MS },
       ),
