@@ -93,6 +93,25 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
 
     const safeHistory = montarHistoricoSeguro(history, 10);
 
+    if (req.body.requestId !== undefined) {
+        if (!uid) return res.status(401).json({ error: 'Usuário não autenticado.' });
+        let gateStatus;
+        try {
+            const { registrarRequisicaoChat } = require('../../services/chatRequestGate');
+            gateStatus = await registrarRequisicaoChat(db, uid, 'especialista', req.body.requestId, { message: msg, sessionId: clientSessionId || null, history: safeHistory });
+        } catch (err) {
+            console.error('[CHAT-REQUEST] Falha ao registrar envio:', err);
+            return res.status(503).json({ error: 'Não foi possível iniciar a geração. Tente novamente.' });
+        }
+        if (gateStatus !== 'accepted') {
+            return res.status(gateStatus === 'invalid' ? 400 : 409).json({
+                error: gateStatus === 'duplicate' ? 'Este envio já foi recebido; consulte o histórico antes de tentar novamente.'
+                    : gateStatus === 'mismatch' ? 'Identificador de envio reutilizado com outra mensagem.'
+                    : 'Identificador de envio inválido.',
+            });
+        }
+    }
+
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('X-Accel-Buffering', 'no');

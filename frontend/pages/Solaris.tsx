@@ -241,6 +241,7 @@ export default function Solaris(): React.JSX.Element {
         const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         setMessages(updatedHistory);
 
+        const requestId = crypto.randomUUID(); // identificador estável deste envio HTTP
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
@@ -254,7 +255,8 @@ export default function Solaris(): React.JSX.Element {
                 body: JSON.stringify({
                     message: msg,
                     history: historyToSend,
-                    sessionId: sessionId
+                    sessionId: sessionId,
+                    requestId
                 }),
                 signal: controller.signal
             });

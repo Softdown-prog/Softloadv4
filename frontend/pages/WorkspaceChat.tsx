@@ -248,6 +248,7 @@ export default function WorkspaceChat(): React.JSX.Element {
         const updatedHistory: ChatMessage[] = [...messages, { role: 'user', content: msg }];
         setMessages(updatedHistory);
 
+        const requestId = crypto.randomUUID(); // identificador estável deste envio HTTP
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
@@ -262,7 +263,8 @@ export default function WorkspaceChat(): React.JSX.Element {
                     history: historyToSend,
                     sessionId: sessionId,
                     wsSessionId: wsSessionId,
-                    wsProjetoId: wsProjetoId
+                    wsProjetoId: wsProjetoId,
+                    requestId
                 }),
                 signal: controller.signal
             });

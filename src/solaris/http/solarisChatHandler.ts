@@ -15,7 +15,7 @@ const { normalizarUsoTokensSolaris, calcularDebitoChatSolaris } = require('./sol
 const { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } = require('./solarisHttpProtocol') as typeof import('./solarisHttpProtocol');
 
 export interface SolarisHttpRequest {
-  body: { message?: unknown; history?: unknown; sessionId?: unknown };
+  body: { message?: unknown; history?: unknown; sessionId?: unknown; requestId?: unknown };
   session: { user?: { uid?: string; email?: string; plano?: string } };
   file?: { buffer: Buffer };
 }
@@ -76,6 +76,30 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
 
     const safeHistory: SolarisHistoricoCliente[] = sanitizarHistoricoSolaris(history);
     const historicoSolaris: SolarisHistoricoMotor[] = historicoParaMotorSolaris(safeHistory);
+
+    if (req.body.requestId !== undefined) {
+      if (!uid) return res.status(401).json({ error: 'Usuário não autenticado.' });
+      let gateStatus: 'accepted' | 'duplicate' | 'mismatch' | 'invalid';
+      try {
+        const { registrarRequisicaoChat } = require('../../services/chatRequestGate') as {
+          registrarRequisicaoChat: (db: unknown, uid: string, produto: string, requestId: unknown, payload: unknown) =>
+            Promise<'accepted' | 'duplicate' | 'mismatch' | 'invalid'>;
+        };
+        gateStatus = await registrarRequisicaoChat(db, uid, 'solaris', req.body.requestId, {
+          message: msg, sessionId: sessaoCliente.sessionId, history: safeHistory,
+        });
+      } catch (err) {
+        console.error('[CHAT-REQUEST] Falha ao registrar envio:', err);
+        return res.status(503).json({ error: 'Não foi possível iniciar a geração. Tente novamente.' });
+      }
+      if (gateStatus !== 'accepted') {
+        return res.status(gateStatus === 'invalid' ? 400 : 409).json({
+          error: gateStatus === 'duplicate' ? 'Este envio já foi recebido; consulte o histórico antes de tentar novamente.'
+            : gateStatus === 'mismatch' ? 'Identificador de envio reutilizado com outra mensagem.'
+            : 'Identificador de envio inválido.',
+        });
+      }
+    }
 
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
