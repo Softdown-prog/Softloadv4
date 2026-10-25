@@ -29,6 +29,10 @@ esses imports nem exige um loader TypeScript em produção.
   persistência de arquivos de texto no workspace.
 - `plan-tracker.ts` — contrato de plano, itens e estados de execução.
 
+- `build.ts` — detecção de build e execução limitada à CommandPolicy.
+- `test.ts` — detecção de suítes e execução de testes autorizados.
+- `package.ts` — instalação de pacotes, validação de nomes e ecossistemas.
+
 ## Como validar
 
 ```bash

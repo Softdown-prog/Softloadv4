@@ -21,3 +21,12 @@ export type CapabilityFetch = (
   url: string,
   options: { method: string; headers: Record<string, string>; body: string },
 ) => Promise<CapabilityResponse>;
+
+/** Minimal production-facing contracts, no runtime imports or dependencies. */
+export interface WorkspaceRoot {
+  root: string;
+}
+
+export interface CommandPolicyGuard {
+  validate(command: string): unknown;
+}

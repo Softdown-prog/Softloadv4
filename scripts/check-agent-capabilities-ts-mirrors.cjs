@@ -22,6 +22,9 @@ const sources = [
   "agent/src/capabilities/web-sandbox.ts",
   "agent/src/capabilities/archive.ts",
   "agent/src/capabilities/plan-tracker.ts",
+  "agent/src/capabilities/build.ts",
+  "agent/src/capabilities/test.ts",
+  "agent/src/capabilities/package.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);
