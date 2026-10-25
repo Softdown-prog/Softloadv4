@@ -151,5 +151,6 @@
   "src/services/geminiCost.ts",
   "src/services/emailService.ts",
   "src/services/errorLogWorker.ts",
-  "src/services/aiBudgetLedger.ts"
+  "src/services/aiBudgetLedger.ts",
+  "src/services/aiBudgetGeminiClient.ts"
 ]
