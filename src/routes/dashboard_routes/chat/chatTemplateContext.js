@@ -14,7 +14,8 @@ async function buscarContextoTemplate(email) {
             .orderBy('criadoEm', 'desc')
             .limit(1)
             .get();
-        if (snap.empty) return null;
+        if (snap.empty)
+            return null;
         const d = snap.docs[0].data();
         return {
             siteName: d.siteName || null,

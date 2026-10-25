@@ -10,8 +10,8 @@ const path = require('path');
 const { criarMatcher } = require('../../../rag/ragMatcher');
 const RAG_BASE = path.join(__dirname, '../../../rag');
 const GPT_RAG_DIR = path.join(RAG_BASE, 'gpt-5-4');
-let GPT_RAG_INDEX = [];   // [ { arquivo, _keywords, fundacao } ]
-const GPT_RAG_CACHE = {};   // arquivo → objeto JSON parseado
+let GPT_RAG_INDEX = []; // [ { arquivo, _keywords, fundacao } ]
+const GPT_RAG_CACHE = {}; // arquivo → objeto JSON parseado
 let GPT_RAG_FUNDACAO = null; // arquivo de fundação, sempre injetado para GPT
 (function _carregarRagGpt() {
     try {
