@@ -27,6 +27,18 @@ test('checkout, UI, aprovação MP e limite V2 correspondem a cada plano barato'
     assert.match(quotas, new RegExp(plan+"\\s*:\\s*"+credits+"[,\\n]"));
   }
 });
+test('os dois checkouts Mercado Pago usam a mesma tabela de preços',()=>{
+  // A página /dashboard/upgrade chama checkout-create; a API Bricks também
+  // precisa usar os mesmos preços, sem preservar números de planos antigos.
+  assert.match(checkout,/router\\.post\\('\/dashboard\/checkout-create'/);
+  assert.match(checkout,/router\\.post\\('\/dashboard\/payment\/process'/);
+  const checkoutBricks=checkout.split("router.post('/dashboard/payment/process'")[1]
+    ?.split('// ==========================================')[0];
+  assert.ok(checkoutBricks,'rota Bricks não encontrada');
+  assert.match(checkoutBricks,/Object\\.hasOwn\\(PRICES_CENTS, plano\\)/);
+  assert.match(checkoutBricks,/transaction_amount:\\s*PRICES_CENTS\\[plano\\]\\s*\\/\\s*100/);
+  assert.doesNotMatch(checkoutBricks,/49\\.00|119\\.00|249\\.00|PLANOS_VALIDOS/);
+});
 test('pior caso de consumo da API + encargos estimados deixa pelo menos R$20 após provisão de R$3',()=>{
   // Conservador: toda a quota V2 usada e 15% de taxas/impostos/estornos
   // SIMULADOS (não são alíquotas fiscais verificadas) + R$3 por conta em despesas variáveis.
