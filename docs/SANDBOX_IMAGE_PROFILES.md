@@ -18,14 +18,27 @@ o tamanho da imagem em disco.
 
 ## Perfis disponíveis
 
-**Padrão — completo (produção atual):**
+**Padrão — auditoria web completa usando Chromium Headless Shell (candidato):**
 
 ```bash
 docker build -f sandbox-efemoro/Dockerfile -t softload-sandbox:full sandbox-efemoro
 ```
 
-Mantém `INSTALL_CHROMIUM=1` e todas as funções. O workflow
-`.github/workflows/deploy.yml` **permanece neste perfil por padrão**.
+Mantém `INSTALL_CHROMIUM=1` e todas as funções, mas a imagem em teste
+instala somente `chromium-headless-shell` via `playwright install --with-deps
+--only-shell chromium`. A instalação reduzida é adequada porque o Agent usa
+somente renderização headless, screenshots e testes, não janelas gráficas.
+O wrapper existente de RLIMIT_CPU permanece ativo. O Dockerfile descobre o
+binário do shell instalado e grava um manifesto interno para evitar que
+`chromium.executablePath()` aponte ao Chromium completo que não foi baixado.
+
+O build executa um smoke real como usuário `sandbox` (launch, DOM e screenshot)
+e falha se o navegador reduzido não funcionar. A redução efetiva de tamanho
+ainda **precisa ser medida** no job de validação de PR antes de ativar a
+mudança em produção.
+
+O workflow `.github/workflows/deploy.yml` continua usando esse perfil com
+auditoria web quando a mudança for integrada à `main`.
 A política de isolamento entre Agent e sandbox é preservada.
 
 **Opcional — archive-only (instância dedicada):**
@@ -45,6 +58,22 @@ para a imagem archive-only**.
 > Não substituir o sandbox de produção pelo archive-only sem separar as
 > rotas de auditoria e de extração no Agent e sem validar essas rotas.
 > Isso seria perda de funcionalidade, não otimização transparente.
+
+## Validação do Chromium Headless Shell
+
+O job `browser-headless-shell` de
+`.github/workflows/sandbox-boundary.yml` constrói a imagem completa
+na verificação de pull requests, testa lançamento/DOM/screenshot
+durante o próprio build e registra o tamanho de imagem
+`docker image inspect .Size`. Não instala navegador na VPS e não
+ativa containers de produção. Quando integrada à `main`, o deploy
+existente compila a imagem da mesma forma e só substitui o serviço se
+a cadeia de verificações e transferência passar.
+
+O Shell Headless não é idêntico ao Chromium com GUI em modo headless
+moderno: páginas que dependem de recursos específicos podem se comportar
+de modo diferente. O smoke cobre o caso mínimo, mas auditorias reais
+do Solaris devem ser verificadas antes da troca definitiva.
 
 ## Onde ver números reais
 
