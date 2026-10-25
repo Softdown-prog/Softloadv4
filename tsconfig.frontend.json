@@ -41,6 +41,9 @@
     "frontend/pages/auth/Login.tsx",
     "frontend/pages/auth/Register.tsx",
     "frontend/pages/auth/Recover.tsx",
+    "frontend/pages/DashboardHome.tsx",
+    "frontend/pages/Historico.tsx",
+    "frontend/pages/Upgrade.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [

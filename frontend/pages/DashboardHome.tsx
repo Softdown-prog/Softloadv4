@@ -1,10 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Zap, HardDrive, MessageCircle, Settings } from 'lucide-react';
-import { fetchAppConfig } from '../services/api';
+import { fetchAppConfig, type AppUser } from '../services/api';
+import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
 
-function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badgeTone, desc }) {
+interface DashboardUser extends AppUser {
+    premium_ate?: string | number;
+}
+
+interface DashboardStats {
+    tentativasCompilacao: number;
+    storageUsadoMb: number;
+    storageLimitMb: number;
+    creditos: number;
+    creditosCicloTotal: number;
+    creditosExpiraEm?: string | number | null;
+    totalProjetos: number;
+}
+
+interface QuickAccessCardProps {
+    to: string;
+    icon: LucideIcon;
+    iconBg: string;
+    iconColor: string;
+    title: string;
+    badge?: string;
+    badgeTone?: string;
+    desc: string;
+}
+
+function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badgeTone, desc }: QuickAccessCardProps): React.JSX.Element {
     return (
         <div className="col-12 col-md-6">
             <Link to={to} className="sl-card h-100 mb-0 text-decoration-none d-block sl-hover-lift">
@@ -23,9 +49,9 @@ function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badg
     );
 }
 
-export default function DashboardHome() {
-    const { user } = useOutletContext();
-    const [stats, setStats] = useState(null);
+export default function DashboardHome(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: DashboardUser }>();
+    const [stats, setStats] = useState<DashboardStats | null>(null);
 
     useEffect(() => {
         fetch('/api/dashboard/stats').then(res => res.json()).then(setStats);

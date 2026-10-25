@@ -1,22 +1,46 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { History, Download, Cpu, HardDrive, FileCode, Eye, Trash2, RefreshCw, Search, FolderSymlink, Check } from 'lucide-react';
+import type { AppUser } from '../services/api';
 
-export default function Historico() {
-    const { user } = useOutletContext();
-    const [data, setData] = useState({ compilacoes: [], totalIA: 0, storageLimitMb: 5 });
+type CompilationId = string;
+
+interface Compilation {
+    id: CompilationId;
+    siteName?: string;
+    arquivo?: string;
+    colorHex?: string;
+    colorLabel?: string;
+    tamanhoBytes?: number;
+    criadoEm?: string;
+    xmlPath?: string | null;
+}
+
+interface HistoryData {
+    compilacoes: Compilation[];
+    totalIA: number;
+    storageLimitMb: number;
+}
+
+interface HistoryUser extends AppUser {
+    storage_usado_mb?: number;
+}
+
+export default function Historico(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: HistoryUser }>();
+    const [data, setData] = useState<HistoryData>({ compilacoes: [], totalIA: 0, storageLimitMb: 5 });
     const [loading, setLoading] = useState(true);
     const [busca, setBusca] = useState('');
-    const [excluindoId, setExcluindoId] = useState(null);
+    const [excluindoId, setExcluindoId] = useState<CompilationId | null>(null);
     const [erro, setErro] = useState('');
-    const [importandoId, setImportandoId] = useState(null);
-    const [importadosIds, setImportadosIds] = useState(() => new Set());
+    const [importandoId, setImportandoId] = useState<CompilationId | null>(null);
+    const [importadosIds, setImportadosIds] = useState<Set<CompilationId>>(() => new Set<CompilationId>());
 
     const carregarHistorico = async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/historico');
-            const json = await res.json();
+            const json = await res.json() as HistoryData;
             if (res.ok) {
                 setData(json);
             }
@@ -42,7 +66,7 @@ export default function Historico() {
         ? Math.min((storageUsadoMb / data.storageLimitMb) * 100, 100)
         : 0;
 
-    async function excluirCompilacao(id) {
+    async function excluirCompilacao(id: CompilationId): Promise<void> {
         if (!window.confirm('Excluir este template permanentemente? O arquivo ZIP e o XML serão removidos do armazenamento.')) return;
 
         setExcluindoId(id);
@@ -61,13 +85,13 @@ export default function Historico() {
                 compilacoes: prev.compilacoes.filter(c => c.id !== id),
             }));
         } catch (e) {
-            setErro(e.message || 'Falha ao excluir. Tente novamente.');
+            setErro(e instanceof Error ? e.message : 'Falha ao excluir. Tente novamente.');
         } finally {
             setExcluindoId(null);
         }
     }
 
-    async function importarParaWorkspace(id) {
+    async function importarParaWorkspace(id: CompilationId): Promise<void> {
         setImportandoId(id);
         setErro('');
         try {
@@ -82,7 +106,7 @@ export default function Historico() {
             }
             setImportadosIds(prev => new Set(prev).add(id));
         } catch (e) {
-            setErro(e.message || 'Falha ao importar para o Workspace. Tente novamente.');
+            setErro(e instanceof Error ? e.message : 'Falha ao importar para o Workspace. Tente novamente.');
         } finally {
             setImportandoId(null);
         }
@@ -188,7 +212,7 @@ export default function Historico() {
                 <>
                     {/* Mobile-first: abaixo de xl (1200px), a tabela vira lista de
                         cards -- achado real (auditado com Chromium de verdade,
-                        simulando a sidebar fixa de 260px que DashboardLayout.jsx
+                        simulando a sidebar fixa de 260px que DashboardLayout.tsx
                         só mostra a partir de lg): a <table> de 5 colunas + 4
                         botões de ação tem ~1030px de largura própria, mas a área
                         de conteúdo real (viewport - sidebar) só chega a essa

@@ -2,8 +2,40 @@ import React, { useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { Check, X, Clock, CheckCircle2 } from 'lucide-react';
 import Pill from '../components/Pill';
+import type { AppUser } from '../services/api';
+import type { LucideIcon } from 'lucide-react';
 
-const PLANOS = [
+type PlanId = 'free' | 'starter' | 'pro' | 'studio';
+type PaymentStatus = 'success' | 'pending' | 'failure';
+
+interface PlanResource {
+    texto: string;
+    ok: boolean;
+    forte?: boolean;
+}
+interface Plan {
+    id: PlanId;
+    nome: string;
+    preco: string;
+    periodo: string;
+    creditos: string;
+    cor: string;
+    destaque?: boolean;
+    recursos: PlanResource[];
+}
+interface PaymentFeedback {
+    icon: LucideIcon;
+    cor: string;
+    bg: string;
+    titulo: string;
+    texto: string;
+}
+interface CheckoutResponse {
+    checkoutUrl?: string;
+    erro?: string;
+}
+
+const PLANOS: Plan[] = [
     {
         id: 'free',
         nome: 'Gratuito',
@@ -63,7 +95,7 @@ const PLANOS = [
     },
 ];
 
-const STATUS_FEEDBACK = {
+const STATUS_FEEDBACK: Record<PaymentStatus, PaymentFeedback> = {
     success: {
         icon: CheckCircle2,
         cor: '#4ade80',
@@ -87,17 +119,19 @@ const STATUS_FEEDBACK = {
     },
 };
 
-export default function Upgrade() {
-    const { user } = useOutletContext();
+export default function Upgrade(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: AppUser }>();
     const [searchParams] = useSearchParams();
-    const [carregandoPlano, setCarregandoPlano] = useState(null);
+    const [carregandoPlano, setCarregandoPlano] = useState<PlanId | null>(null);
     const [erro, setErro] = useState('');
 
     const planoAtual = user?.is_active ? (user?.plano || 'pro') : 'free';
     const status = searchParams.get('status');
-    const feedback = status && STATUS_FEEDBACK[status];
+    const feedback = status && Object.prototype.hasOwnProperty.call(STATUS_FEEDBACK, status)
+        ? STATUS_FEEDBACK[status as PaymentStatus]
+        : null;
 
-    async function selecionarPlano(planoId) {
+    async function selecionarPlano(planoId: PlanId): Promise<void> {
         setErro('');
         setCarregandoPlano(planoId);
         try {
@@ -106,14 +140,14 @@ export default function Upgrade() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ plano: planoId }),
             });
-            const data = await res.json().catch(() => ({}));
+            const data = await res.json().catch(() => ({})) as CheckoutResponse;
             if (data.checkoutUrl) {
                 window.location.href = data.checkoutUrl;
                 return;
             }
             throw new Error(data.erro || 'Erro ao gerar link de pagamento. Tente novamente.');
         } catch (e) {
-            setErro(e.message || 'Não foi possível conectar ao servidor. Tente novamente.');
+            setErro(e instanceof Error ? e.message : 'Não foi possível conectar ao servidor. Tente novamente.');
         } finally {
             setCarregandoPlano(null);
         }

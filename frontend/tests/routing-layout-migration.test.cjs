@@ -68,6 +68,9 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/auth/Login.tsx',
     'frontend/pages/auth/Register.tsx',
     'frontend/pages/auth/Recover.tsx',
+    'frontend/pages/DashboardHome.tsx',
+    'frontend/pages/Historico.tsx',
+    'frontend/pages/Upgrade.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -159,4 +162,33 @@ test('componentes TSX de autenticação expõem retorno React tipado', () => {
     const src = source(`frontend/pages/auth/${name}.tsx`);
     assert.match(src, new RegExp(`export default function ${name}\\(\\): React\\.JSX\\.Element`));
   }
+});
+
+test('dashboard TypeScript preserva carregamento de indicadores e atalhos', () => {
+  const home = source('frontend/pages/DashboardHome.tsx');
+  assert.ok(home.includes("fetch('/api/dashboard/stats')"));
+  assert.ok(home.includes('useState<DashboardStats | null>(null)'));
+  assert.ok(home.includes('useOutletContext<{ user: DashboardUser }>()'));
+  assert.ok(home.includes('/dashboard/workspace'));
+  assert.ok(home.includes('/dashboard/historico'));
+});
+
+test('historico TypeScript preserva exclusao, importacao e exibicao mobile', () => {
+  const history = source('frontend/pages/Historico.tsx');
+  assert.ok(history.includes("fetch('/api/historico')"));
+  assert.ok(history.includes("method: 'DELETE'"));
+  assert.ok(history.includes("fetch('/api/workspace/importar'"));
+  assert.ok(history.includes('compilacaoId: id'));
+  assert.ok(history.includes('useState<Set<CompilationId>>'));
+  assert.ok(history.includes('d-xl-none'));
+  assert.ok(history.includes('d-none d-xl-block'));
+});
+
+test('upgrade TypeScript preserva checkout e feedback de pagamento', () => {
+  const upgrade = source('frontend/pages/Upgrade.tsx');
+  assert.ok(upgrade.includes("fetch('/dashboard/checkout-create'"));
+  assert.ok(upgrade.includes("method: 'POST'"));
+  assert.ok(upgrade.includes('body: JSON.stringify({ plano: planoId })'));
+  assert.ok(upgrade.includes('window.location.href = data.checkoutUrl'));
+  assert.ok(upgrade.includes('STATUS_FEEDBACK[status as PaymentStatus]'));
 });
