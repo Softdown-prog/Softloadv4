@@ -9,7 +9,7 @@ export interface CreditosV2Disponiveis {
 }
 export interface ResumoCreditosV2 {
   versao: 2;
-  modo: 'previsualizacao';
+  modo: 'previsualizacao' | 'ativo';
   cicloExpiraEm: string;
   saldo: CreditosV2Disponiveis;
 }
@@ -19,7 +19,7 @@ function contador(v: unknown): v is number {
 export function normalizarResumoCreditosV2(raw: unknown): ResumoCreditosV2 | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const r = raw as Record<string, unknown>;
-  if (r.versao !== 2 || r.modo !== 'previsualizacao'
+  if (r.versao !== 2 || (r.modo !== 'previsualizacao' && r.modo !== 'ativo')
     || typeof r.cicloExpiraEm !== 'string' || !Number.isFinite(Date.parse(r.cicloExpiraEm))
     || !r.saldo || typeof r.saldo !== 'object' || Array.isArray(r.saldo)) return null;
   const s = r.saldo as Record<string, unknown>;
@@ -28,7 +28,7 @@ export function normalizarResumoCreditosV2(raw: unknown): ResumoCreditosV2 | nul
   // API do orçamento usa créditos inteiros; dados inválidos não chegam à tela.
   if ((s.creditosDisponiveis as number) > (s.creditosDoCiclo as number)) return null;
   return {
-    versao: 2, modo: 'previsualizacao', cicloExpiraEm: r.cicloExpiraEm,
+    versao: 2, modo: r.modo as 'previsualizacao' | 'ativo', cicloExpiraEm: r.cicloExpiraEm,
     saldo: {
       creditosDoCiclo: s.creditosDoCiclo as number,
       creditosDisponiveis: s.creditosDisponiveis as number,
@@ -64,7 +64,7 @@ export interface LancamentoCreditosV2 {
 }
 export interface ExtratoCreditosV2 {
   versao: 2;
-  modo: 'previsualizacao';
+  modo: 'previsualizacao' | 'ativo';
   itens: LancamentoCreditosV2[];
   proximoCursor: string | null;
 }
@@ -72,7 +72,7 @@ export interface ExtratoCreditosV2 {
 export function normalizarExtratoCreditosV2(raw: unknown): ExtratoCreditosV2 | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const r=raw as Record<string,unknown>;
-  if (r.versao !== 2 || r.modo !== 'previsualizacao' || !Array.isArray(r.itens) || r.itens.length > 40) return null;
+  if (r.versao !== 2 || (r.modo !== 'previsualizacao' && r.modo !== 'ativo') || !Array.isArray(r.itens) || r.itens.length > 40) return null;
   const proximoCursor = r.proximoCursor === undefined ? null : r.proximoCursor;
   if (proximoCursor !== null && (typeof proximoCursor !== 'string' || !/^[a-f0-9]{64}$/.test(proximoCursor))) return null;
   const itens: LancamentoCreditosV2[]=[];
@@ -88,7 +88,7 @@ export function normalizarExtratoCreditosV2(raw: unknown): ExtratoCreditosV2 | n
     itens.push({id:x.id,ferramenta:x.ferramenta,modelo:x.modelo,criadoEm:x.criadoEm,
       ...(x.projeto ? {projeto:x.projeto as string} : {}),creditos:x.creditos,estimado:x.estimado});
   }
-  return {versao:2,modo:'previsualizacao',itens,proximoCursor};
+  return {versao:2,modo:r.modo as 'previsualizacao' | 'ativo',itens,proximoCursor};
 }
 export async function buscarExtratoCreditosV2(
   fetchImpl: typeof fetch = fetch,
@@ -138,7 +138,7 @@ export function juntarPaginasExtratoV2(
 ): ExtratoCreditosV2 {
   const conhecidos=new Set(atual.itens.map(item=>item.id));
   return {
-    versao:2,modo:'previsualizacao',
+    versao:2,modo:proxima.modo,
     itens:[...atual.itens,...proxima.itens.filter(item=>{
       if (conhecidos.has(item.id)) return false;
       conhecidos.add(item.id);

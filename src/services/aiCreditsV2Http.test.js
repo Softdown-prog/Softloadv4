@@ -148,3 +148,21 @@ test('cursor de outro ciclo/usuario devolve erro neutro em HTTP 400',async()=>{
   assert.equal(r.statusCode,400);
   assert.equal(JSON.stringify(r.body).includes('not own data'),false);
 });
+
+test('modo ativo exige configuracao completa dos dois modelos',async()=>{
+  const fields=['SOLARIS_AI_CREDITS_V2','SOLARIS_AI_BUDGET_ENFORCE','SOLARIS_AI_BUDGET_FLASH'];
+  const previous=Object.fromEntries(fields.map(k=>[k,process.env[k]]));
+  for (const k of fields) process.env[k]='true';
+  try {
+    const h=criarHandlerResumoCreditosV2({habilitado:()=>true,async consultarSaldo(){return data;}});
+    const resA=res();await h(req('user@example.test'),resA);
+    assert.equal(resA.statusCode,200);assert.equal(resA.body.modo,'ativo');
+    const handler=criarHandlerHistoricoCreditosV2({habilitado:()=>true,async listar(){return [];}});
+    const resB=res();await handler(req('user@example.test'),resB);
+    assert.equal(resB.body.modo,'ativo');
+  } finally {
+    for(const [k,v] of Object.entries(previous)) {
+      if(v===undefined)delete process.env[k];else process.env[k]=v;
+    }
+  }
+});

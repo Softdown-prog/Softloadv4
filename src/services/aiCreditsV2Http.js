@@ -7,6 +7,7 @@ exports.criarHandlerHistoricoCreditosV2 = criarHandlerHistoricoCreditosV2;
  * Nunca aplica debito no legado nem revela custo/margem em reais.
  */
 const aiCreditsV2_1 = require("./aiCreditsV2");
+const aiCreditsV2Mode_1 = require("./aiCreditsV2Mode");
 function criarHandlerResumoCreditosV2({ consultarSaldo, habilitado = () => process.env.AI_CREDITS_V2_PREVIEW === 'true', }) {
     return async (req, res) => {
         res.setHeader('Cache-Control', 'no-store, private');
@@ -22,7 +23,7 @@ function criarHandlerResumoCreditosV2({ consultarSaldo, habilitado = () => proce
             const saldo = (0, aiCreditsV2_1.converterSaldoEmCreditosV2)(valores);
             if (!saldo)
                 return res.status(503).json({ erro: 'Saldo de créditos indisponível.' });
-            return res.json({ versao: 2, modo: 'previsualizacao', plano, cicloExpiraEm, saldo });
+            return res.json({ versao: 2, modo: (0, aiCreditsV2Mode_1.modoCreditosSolarisV2)() === 'ativo' ? 'ativo' : 'previsualizacao', plano, cicloExpiraEm, saldo });
         }
         catch (err) {
             const codigo = err?.codigo;
@@ -62,7 +63,7 @@ function criarHandlerHistoricoCreditosV2({ listar, habilitado = () => process.en
                 creditos: r.creditos,
                 estimado: r.estimado,
             }));
-            return res.json({ versao: 2, modo: 'previsualizacao', itens, proximoCursor });
+            return res.json({ versao: 2, modo: (0, aiCreditsV2Mode_1.modoCreditosSolarisV2)() === 'ativo' ? 'ativo' : 'previsualizacao', itens, proximoCursor });
         }
         catch (e) {
             const codigo = e?.codigo;

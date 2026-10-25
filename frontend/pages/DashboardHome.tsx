@@ -165,7 +165,7 @@ export default function DashboardHome(): React.JSX.Element {
                             <div className="sl-card h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <Cpu size={18} style={{ color: 'var(--sl-primary)' }} />
-                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Créditos Gemini</span>
+                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>{previaV2?.modo === 'ativo' ? 'Créditos Gemini (outras ferramentas)' : 'Créditos Gemini'}</span>
                                 </div>
                                 <p className="fw-bolder mb-1" style={{ fontSize: '1.1rem' }}>
                                     {stats.creditos} <span style={{ color: 'var(--sl-text-400)', fontSize: '0.8rem', fontWeight: 500 }}>/ {stats.creditosCicloTotal}</span>
@@ -198,12 +198,14 @@ export default function DashboardHome(): React.JSX.Element {
                 <section className="sl-card mb-5" aria-label="Prévia de créditos de IA V2">
                     <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <h2 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>
-                            Prévia de créditos V2
+                            {previaV2.modo === 'ativo' ? 'Créditos de IA — Solaris' : 'Prévia de créditos V2'}
                         </h2>
-                        <Pill tone="indigo" size="sm">EXPERIMENTAL</Pill>
+                        {previaV2.modo !== 'ativo' && <Pill tone="indigo" size="sm">EXPERIMENTAL</Pill>}
                     </div>
                     <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
-                        Projeção do orçamento de IA por custo de modelo. Não substitui os créditos Gemini do plano atual.
+                        {previaV2.modo === 'ativo'
+                            ? 'Créditos disponíveis e consumidos pelas chamadas do Solaris. Outras ferramentas ainda podem usar seus saldos próprios.'
+                            : 'Projeção do orçamento de IA por custo de modelo. Não substitui os créditos Gemini do plano atual.'}
                     </p>
                     <div className="row g-3">
                         <div className="col-6 col-lg-3">
@@ -237,7 +239,7 @@ export default function DashboardHome(): React.JSX.Element {
                                 </span>
                             </div>
                             <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
-                                Extrato experimental do ciclo atual. Os totais por sessão incluem apenas as operações carregadas;
+                                Extrato do Solaris no ciclo atual. Os totais por sessão incluem apenas as operações carregadas;
                                 cada linha corresponde a uma chamada ao modelo, não ao projeto inteiro.
                             </p>
                             {gruposV2.length > 0 && (

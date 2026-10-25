@@ -3,6 +3,7 @@
  * Nunca aplica debito no legado nem revela custo/margem em reais.
  */
 import { converterSaldoEmCreditosV2, type OrcamentoMicroBrl } from './aiCreditsV2';
+import { modoCreditosSolarisV2 } from './aiCreditsV2Mode';
 
 export interface RequestCreditosV2 {
     session?: { user?: { email?: string } };
@@ -38,7 +39,7 @@ export function criarHandlerResumoCreditosV2({
             const { plano, cicloExpiraEm, ...valores } = await consultarSaldo(req.session.user.email);
             const saldo = converterSaldoEmCreditosV2(valores);
             if (!saldo) return res.status(503).json({ erro: 'Saldo de créditos indisponível.' });
-            return res.json({ versao: 2, modo: 'previsualizacao', plano, cicloExpiraEm, saldo });
+            return res.json({ versao: 2, modo: modoCreditosSolarisV2() === 'ativo' ? 'ativo' : 'previsualizacao', plano, cicloExpiraEm, saldo });
         } catch (err) {
             const codigo = (err as {codigo?: string} | null)?.codigo;
             if (codigo === 'CICLO_EXPIRADO') {
@@ -96,7 +97,7 @@ export function criarHandlerHistoricoCreditosV2({
                 creditos: r.creditos,
                 estimado: r.estimado,
             }));
-            return res.json({ versao: 2, modo: 'previsualizacao', itens, proximoCursor });
+            return res.json({ versao: 2, modo: modoCreditosSolarisV2() === 'ativo' ? 'ativo' : 'previsualizacao', itens, proximoCursor });
         } catch (e) {
             const codigo = (e as {codigo?: string} | null)?.codigo;
             if (codigo === 'CICLO_EXPIRADO') {

@@ -132,3 +132,15 @@ test('frontend exibe auditoria visual como ferramenta de IA válida',()=>{
   const parsed=mod.exports.normalizarExtratoCreditosV2({versao:2,modo:'previsualizacao',itens:[item]});
   assert.equal(parsed.itens[0].ferramenta,'solaris-visual');
 });
+
+test('estado ativo do saldo e extrato usa mesmo formato V2',()=>{
+  const balance=mod.exports.normalizarResumoCreditosV2({...valid,modo:'ativo'});
+  assert.equal(balance.modo,'ativo');
+  const sample={id:'a'.repeat(64),ferramenta:'solaris-chat',modelo:'gemini-2.5-pro',
+    criadoEm:'2026-10-25T12:00:00Z',creditos:2,estimado:false};
+  const statement=mod.exports.normalizarExtratoCreditosV2({versao:2,modo:'ativo',itens:[sample]});
+  assert.equal(statement.modo,'ativo');
+  assert.equal(mod.exports.juntarPaginasExtratoV2({
+    versao:2,modo:'previsualizacao',itens:[],proximoCursor:sample.id
+  },statement).modo,'ativo');
+});
