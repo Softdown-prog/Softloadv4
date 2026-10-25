@@ -1,50 +1,37 @@
-# Solaris Code — auditoria visual de screenshots (Flash)
+# Solaris Code — auditoria visual com Gemini Flash
 
-A nova rota **somente sob demanda** `POST /dashboard/solaris/visual-review` captura uma página numa instância isolada de Chromium Headless Shell, envia o PNG via bloco de imagem multimodal ao Gemini Flash e devolve **somente a análise textual** de hierarquia, contraste, legibilidade, espaçamento e responsividade.
+## Já integrado
 
-## Portas de segurança (desligado por padrão)
+O chat do Solaris apresenta **Auditar visualmente um site** para fazer uma captura de uma prévia pública no sandbox Chromium, em desktop ou Android. O screenshot segue do **backend** ao Gemini Flash como `inlineData` PNG e só o diagnóstico textual é devolvido ao chat. O usuário não recebe nem opera um navegador remoto; o agente usa o navegador isolado.
 
-Para habilitar **depois de validar a VPS**, configurar no container **app**:
+A análise **só roda após um clique explícito** em "Auditar agora (usa créditos)"; nunca em todo deploy, chamada de chat ou screenshot de rotina.
 
-- `SOLARIS_VISUAL_REVIEW_ENABLED=true`
-- `SOLARIS_AI_BUDGET_ENFORCE=true` (**obrigatório**): reserva a chamada Flash no livro razão antes de chamar o Gemini; sem orçamento, não chama a API.
-- `SOLARIS_VISUAL_PREVIEW_ORIGINS=https://preview.seu-dominio.tld` (uma ou mais origens exatas, separadas por vírgula; sem wildcard). URL do usuário só pode apontar para essas origens — não permite credenciais, parâmetros de query ou hash.
-- `SANDBOX_BROWSER_SERVICE_URL` e `SANDBOX_BROWSER_SHARED_SECRET`, ou as variáveis legadas `SANDBOX_SERVICE_URL`/`SANDBOX_SHARED_SECRET`.
-- `GEMINI_API_KEY` configurada no app, já usada pelo Solaris.
+## Ativação
 
-O código não habilita nenhuma dessas flags sozinho. **Não dê à API do sandbox acesso direto à Internet ou à VPS fora do isolamento existente**. Mantenha o segredo no backend, nunca no navegador do usuário. O modelo receberá a imagem de uma página web: certifique-se de que o usuário está autorizado a enviar essa imagem ao provedor e de que páginas de prévia não mostram dados sensíveis.
+A operação agora se **habilita automaticamente se**:
+- `GEMINI_API_KEY` está no container do app;
+- `SANDBOX_SERVICE_URL` e `SANDBOX_SHARED_SECRET` estão definidos no app (ou os respectivos pares `SANDBOX_BROWSER_SERVICE_URL` e `SANDBOX_BROWSER_SHARED_SECRET`).
 
-## Exemplo de chamada (sessão autenticada do dashboard)
+O endpoint `GET /dashboard/solaris/visual-review/status` (sessão autenticada) informa disponibilidade e origens liberadas **sem revelar segredos**.
 
-```http
-POST /dashboard/solaris/visual-review
-Content-Type: application/json
+A flag `SOLARIS_VISUAL_REVIEW_ENABLED=false` **desliga** a operação a qualquer momento. Em ausência de configuração de origens, apenas `https://softload.analysepro.com` é liberado por padrão. Para habilitar outros previews públicos legítimos, o operador configura `SOLARIS_VISUAL_PREVIEW_ORIGINS=https://softload.analysepro.com,https://preview.exemplo.com`. Correspondência é exata de protocolo, hostname e porta, sem wildcards; query strings e fragmentos de URL são recusados.
 
-{"url":"https://preview.seu-dominio.tld/index.html","device":"android-mobile"}
-```
+**Não é necessário ativar `SOLARIS_AI_BUDGET_ENFORCE` para a auditoria visual.** Ela sempre utiliza `criarClienteGeminiComOrcamento` antes de enviar o PNG ao Gemini. A flag global continua controlando apenas as outras operações. O saldo/orçamento por ciclo deve existir no Firestore; caso contrário, a análise falha fechada com erro 402.
 
-Resposta:
+## Segurança e custos
 
-```json
-{
-  "ok": true,
-  "analise": "Há pouco contraste na navegação e o texto de apoio fica pequeno...",
-  "device": "android-mobile",
-  "screenshot": { "fullPage": false, "bytes": 45817 },
-  "tokens": { "input": 1100, "output": 205 }
-}
-```
+- Requer sessão autenticada e saldo de créditos; limite de 3 pedidos a cada 10 minutos por conta.
+- O sandbox só pode navegar na URL autorizada (no host/porta alvo), bloqueia demais requisições; os limites de isolamento do container seguem fundamentais, inclusive porque WebSockets não são cobertos pela interceptação Playwright.
+- O modo visual pede screenshot do **viewport**, enquanto os clientes antigos do sandbox continuam em modo de página inteira. Teto de 512 KiB do PNG para a análise; qualquer PNG acima do limite é rejeitado sem chamar Gemini.
+- O custo estimado da reserva trata o PNG como **imagem**, substituindo Base64 por uma margem conservadora de entrada para calcular orçamento. A reserva precede a chamada. A liquidação considera `usageMetadata` real do provedor, com reserva integral mantida se a confirmação de custo falhar.
+- Gemini Flash usa `maxOutputTokens:1024`. A operação debita também créditos legados pela contagem de tokens retornada, preservando a contabilização anterior do produto.
+- Não há navegação autenticada em sites de terceiros, nem provisionamento automático de ambientes de preview nesta etapa.
+- O screenshot nunca é exposto ao frontend, histórico ou log pela rota; o relatório textual aparece na conversa local da aba para o usuário solicitar alterações em seguida. **O relatório visual não é salvo automaticamente no histórico persistente do chat.**
 
-Nenhum byte de PNG/Base64 é enviado ao frontend ou salvo no histórico pelo handler de auditoria. O texto de análise não altera arquivos automaticamente, não faz commits e não certifica visualmente tudo que não está presente no screenshot.
+## Uso
 
-## Limites e preço
+No chat Solaris, abrir **Auditar visualmente um site**, informar uma URL de uma das origens autorizadas, escolher Desktop ou Android e clicar em **Auditar agora (usa créditos)**. O backend chama `POST /dashboard/solaris/visual-review` e retorna `{ ok:true, analise, device, screenshot:{fullPage:false, bytes}, tokens }`.
 
-- 3 avaliações a cada 10 minutos por usuário autenticado.
-- Screenshot PNG até 512 KiB; o sandbox mantém seu teto original de 4 MiB e faz fallback para viewport em páginas grandes. Se o PNG ainda exceder o limite menor desta operação, a análise retorna erro sem chamada ao modelo.
-- Gemini Flash com `maxOutputTokens:1024`. Usamos `criarClienteGeminiComOrcamento` protegido para **Flash** apenas nesta operação; as chamadas normais de chat mantêm o roteamento e o controle de custo anteriores. O livro razão usa `usageMetadata` para liquidação, com fallback conservador da reserva quando o provedor não informa uso.
-- Débito de créditos legado continua separado do orçamento em reais. Falhas de débito retornam erro, não uma resposta falsa de sucesso.
-- Não há auditoria automática a cada print, deploy ou alteração; o endpoint é explícito.
+## Limitações verificáveis
 
-## Estado da entrega
-
-Há implementação do backend e testes sem chamada paga, **mas a UI do chat ainda não exibe um botão dedicado**. A ativação na VPS requer configurar as flags, autorizar origens de prévia e verificar conectividade de app → sandbox. Não confundir a passagem de PNG ao Gemini com um sistema de visão autônomo ou aprovação automática de layouts.
+O navegador é usado pelo **serviço de IA**, não pelo usuário. Ainda assim, um único screenshot não substitui testes de interação, login, cliques, navegação por várias rotas ou verificação humana da aparência. A confirmação de ativação **na VPS** depende do deploy ter passado e das variáveis necessárias já estarem instaladas: editar código no GitHub não cria segredos de ambiente. O status autenticado revela se o backend está pronto; o primeiro teste real requer uma conta válida e orçamento disponível.
