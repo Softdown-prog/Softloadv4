@@ -159,14 +159,17 @@ router.get('/api/workspace/chat/info', exigirLogin, exigirPlanoStudio, async (re
             }
         } catch (_) {}
 
-        // Obter mensagens antigas se houver
+        // A sessão é gravada pelo chatStorageService no GCS. Ler a mesma
+        // fonte evita restaurar [] de uma coleção Firestore que não recebe
+        // essas mensagens e quebrar o histórico depois do reload.
         let messages = [];
-        if (sessaoData.chatSessionId) {
+        if (sessaoData.chatSessionId && req.session.user?.uid) {
             try {
-                const chatDoc = await db.collection('clientes_premium').doc(email)
-                    .collection('chats').doc(sessaoData.chatSessionId).get();
-                if (chatDoc.exists) {
-                    messages = chatDoc.data().messages || [];
+                const chatDoc = await chatStorage.loadSession(
+                    req.session.user.uid, WORKSPACE_CHAT_SESSION_TYPE, sessaoData.chatSessionId
+                );
+                if (Array.isArray(chatDoc?.messages)) {
+                    messages = chatDoc.messages;
                 }
             } catch (err) {
                 console.warn('[WORKSPACE-CHAT] carregar mensagens persistidas err:', err.message);
@@ -233,6 +236,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
     let tokensRef    = { total: 0, input: 0, output: 0 };
     let novoSnapshot = null;
     let debitoManual = false; // true no modo edição — chatEditFlow já cuida do billing
+    let doneEvent = null; // emitido só após salvar a sessão e contabilizar os créditos
 
     let wsSnapshot     = null;
     let edicaoPendente = null;
@@ -333,13 +337,13 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
         // "chat só promete e diz que mudou"): sem isso, a única confirmação
         // de uma edição aplicada era texto — nenhuma forma de ver o resultado
         // sem sair do chat e caçar a aba Histórico de Versões manualmente.
-        sendEvent({
+        doneEvent = {
             type:      'done',
             reply:     fullText,
             sessionId,
             tokens:    tokensRef,
             preview,
-        });
+        };
 
     } catch (err) {
         const detalhe  = err.cause?.message ? ` | causa: ${err.cause.message}` : '';
@@ -373,53 +377,81 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
                    :               `Assistente temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
         });
     } finally {
-        res.end();
-
+        // O frontend consulta créditos e histórico ao receber `done`.
+        // Confirmar as operações aqui (ANTES de `done` e res.end) evita
+        // respostas visíveis cuja sessão ainda não existe no GCS ou cujos
+        // créditos ainda não foram debitados.
+        let historicoSalvo = false;
+        let vinculoSalvo = false;
         if (fullText && uid) {
-            const ts       = new Date().toISOString();
+            const ts = new Date().toISOString();
             const messages = [
                 ...safeHistory,
-                { role: 'user',      content: msg,      ts },
-                { role: 'assistant', content: fullText,  ts, tokens: tokensRef },
+                { role: 'user', content: msg, ts },
+                { role: 'assistant', content: fullText, ts, tokens: tokensRef },
             ];
-            // meta.commandJson alimenta a memória persistente (lastTemplate,
-            // ver chatStorageService.updateMemoryFromSession) — só presente
-            // quando esta resposta gerou um template novo (modo geração).
             const meta = novoSnapshot
                 ? { commandJson: {
-                    siteName:    novoSnapshot.siteName,
+                    siteName: novoSnapshot.siteName,
                     colorPreset: novoSnapshot.colorPreset,
-                    gridLayout:  novoSnapshot.gridLayout,
+                    gridLayout: novoSnapshot.gridLayout,
                     heroSection: novoSnapshot.manifesto?.heroSection || null,
                 } }
                 : {};
             const cotaChat = { email, plano: req.session.user?.plano || 'free' };
-            chatStorage.saveSession(uid, WORKSPACE_CHAT_SESSION_TYPE, sessionId, {
-                messages,
-                tokens: tokensRef,
-                meta,
-            }, cotaChat)
-            .then(session => chatStorage.updateMemoryFromSession(uid, session, cotaChat))
-            .catch(e => console.error(`[CHAT-STORAGE] workspace-chat save err: ${e.message}`));
+            try {
+                const session = await chatStorage.saveSession(
+                    uid, WORKSPACE_CHAT_SESSION_TYPE, sessionId,
+                    { messages, tokens: tokensRef, meta }, cotaChat
+                );
+                historicoSalvo = true;
+                try {
+                    await chatStorage.updateMemoryFromSession(uid, session, cotaChat);
+                } catch (e) {
+                    console.error(`[CHAT-STORAGE] workspace-chat memory err: ${e.message}`);
+                }
+            } catch (e) {
+                console.error(`[CHAT-STORAGE] workspace-chat save err: ${e.message}`);
+            }
         }
 
-        // Vincula sessão de chat ao workspace + atualiza snapshot quando um
-        // template novo foi gerado nesta resposta (modo geração).
+        // Vincular a sessão apenas se os dados existirem no GCS. Se houve
+        // geração, o novo snapshot ainda precisa ser salvo separadamente.
         if (fullText && email) {
-            const updateData = { chatSessionId: sessionId };
+            const updateData = {};
+            if (historicoSalvo) updateData.chatSessionId = sessionId;
             if (novoSnapshot) updateData.snapshot = novoSnapshot;
-            sessaoRef.update(updateData)
-                .catch(e => console.error(`[CHAT-STORAGE] ws chatSessionId update err: ${e.message}`));
+            if (Object.keys(updateData).length) {
+                try {
+                    await sessaoRef.update(updateData);
+                    vinculoSalvo = historicoSalvo;
+                } catch (e) {
+                    console.error(`[CHAT-STORAGE] ws chatSessionId update err: ${e.message}`);
+                }
+            }
         }
 
-        // Débito separado do save — pulado no modo edição (debitoManual),
-        // que já debita dentro de chatEditFlow.js com base nos tokens reais
-        // do agente (modelo diferente do selecionado no chat).
+        // O modo edição faz seu débito no fluxo do agente. Para geração,
+        // aguardar a transação de créditos antes de atualizar o painel.
         if (email && fullText && !debitoManual) {
-            const inputToks  = tokensRef.input  > 0 ? tokensRef.input  : Math.ceil(msg.length / 3.5);
+            const inputToks = tokensRef.input > 0 ? tokensRef.input : Math.ceil(msg.length / 3.5);
             const outputToks = tokensRef.output > 0 ? tokensRef.output : Math.ceil(fullText.length / 3.5);
-            debitarCreditos(email, inputToks, outputToks)
-                .catch(e => console.error(`[BILLING] workspace-chat debit err: ${e.message}`));
+            try {
+                await debitarCreditos(email, inputToks, outputToks);
+            } catch (e) {
+                console.error(`[BILLING] workspace-chat debit err: ${e.message}`);
+            }
+        }
+
+        try {
+            if (doneEvent && !res.destroyed) {
+                if (!historicoSalvo || !vinculoSalvo) {
+                    doneEvent.reply += '\n\n⚠️ Não consegui salvar esta conversa no histórico. Copie a resposta antes de sair da página.';
+                }
+                sendEvent(doneEvent);
+            }
+        } finally {
+            res.end();
         }
     }
 });

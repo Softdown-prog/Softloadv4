@@ -54,8 +54,11 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
 
     if (tokens && (tokens.input || tokens.output)) {
-        debitarCreditos(user.email, tokens.input, tokens.output)
-            .catch(e => console.error(`[BILLING] chat-edicao-agente debit err: ${e.message}`));
+        try {
+            await debitarCreditos(user.email, tokens.input, tokens.output);
+        } catch (e) {
+            console.error(`[BILLING] chat-edicao-agente debit err: ${e.message}`);
+        }
     }
 
     // Persiste o estado final do turno no Firestore — 1 único write, decidido
