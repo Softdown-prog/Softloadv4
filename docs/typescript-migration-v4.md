@@ -101,3 +101,10 @@ Para novos scripts: usar os arquivos já convertidos como referência, executar 
 - Novo `scripts/setupAdmin.test.js` verifica normalização de email, campo gravado, conta ausente e falta de argumento somente com Firestore simulado; não concede permissões reais.
 - Corrigidos os testes de segurança do bloqueio Solaris para testar os bytes reais de contrabarra e NUL, evitando escapes indevidos nas fixtures.
 
+
+## Lote — gerador Blogger RAG Balcão
+
+- `scripts/generateRagBalcao.ts` é fonte TypeScript para os dois prompts existentes de grid/sidebar e imagens responsivas, com contratos de serviço Gemini, extração/validação de JSON e escrita local. O `.js` continua como espelho CommonJS para a CLI.
+- Execução principal foi protegida por `require.main === module`, preservando `node scripts/generateRagBalcao.js` e evitando chamadas de API por simples importação.
+- `scripts/generateRagBalcao.test.js` simula Gemini, sistema de arquivos e temporização. Inclui dry-run sem rede/escrita, extração de JSON, bloqueio de conteúdo incompleto e retry de 429.
+- Nenhum arquivo de RAG real foi criado nem houve chamada real ao serviço de IA; `--dry-run` continua sem custo de API.

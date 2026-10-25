@@ -27,6 +27,9 @@ on:
       - 'scripts/setupAdmin.ts'
       - 'scripts/setupAdmin.js'
       - 'scripts/setupAdmin.test.js'
+      - 'scripts/generateRagBalcao.ts'
+      - 'scripts/generateRagBalcao.js'
+      - 'scripts/generateRagBalcao.test.js'
       - 'scripts/ragCodeCollect.ts'
       - 'scripts/ragCodeCollect.js'
       - 'scripts/ragOrganizarRascunhos.ts'
@@ -97,6 +100,8 @@ jobs:
         run: node --test scripts/solarisProjectLockRecovery.test.js
       - name: Testar utilitário de administrador sem acesso ao Firestore real
         run: node --test scripts/setupAdmin.test.js
+      - name: Testar gerador Blogger Balcão sem chamadas ao Gemini
+        run: node --test scripts/generateRagBalcao.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

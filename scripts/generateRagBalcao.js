@@ -1,5 +1,10 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.gerarTextoComRetry = gerarTextoComRetry;
+exports.extrairJSON = extrairJSON;
+exports.gerarEsalvar = gerarEsalvar;
+exports.main = main;
 
 // ============================================================
 // RAG Balcão Generator — Gera os dois arquivos de conhecimento
@@ -34,6 +39,7 @@ async function gerarTextoComRetry(prompt, maxRetries = 3) {
             }
         }
     }
+    throw new Error('Falha inesperada no limite de tentativas');
 }
 
 const OUT_DIR = path.join(__dirname, '../src/rag/ia-de-balcao');
@@ -204,7 +210,7 @@ async function main() {
     }
 }
 
-main().catch(err => {
+if (require.main === module) main().catch(err => {
     console.error('Erro fatal:', err);
     process.exit(1);
 });

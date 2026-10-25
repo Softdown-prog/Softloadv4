@@ -181,7 +181,8 @@
     "scripts/solarisProjectLockRecovery.ts",
     "src/solaris/rag/__testUtils__/fakeFirestore.ts",
     "src/solaris/tools/projectLockRecovery.ts",
-    "scripts/setupAdmin.ts"
+    "scripts/setupAdmin.ts",
+    "scripts/generateRagBalcao.ts"
   ],
   "exclude": [
     "node_modules",
