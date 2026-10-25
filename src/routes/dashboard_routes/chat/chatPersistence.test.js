@@ -19,6 +19,7 @@ function createHarness({saveGate=null,debitGate=null,failSave=false,failDebit=fa
     async updateMemoryFromSession(){calls.push(['memory']);},
   };
   const mocks={
+    'node:crypto': {randomUUID:()=> '2f071443-bd75-4fc3-98d8-d2aacbb626c8'},
     express:{Router:()=>router},
     '../../middlewares/authGuard':{exigirLogin(){},verificarSaldo(){}},
     '../../services/chatStorageService':storage,

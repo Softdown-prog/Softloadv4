@@ -59,6 +59,7 @@ function createHarness({ failSave = false, delaySave = null, delayDebit = null }
         async updateMemoryFromSession() { calls.push(['memory']); },
     };
     const mockRequire = (id) => {
+        if (id === 'node:crypto') return { randomUUID: () => '2f071443-bd75-4fc3-98d8-d2aacbb626c8' };
         if (id === 'express') return { Router: () => router };
         if (id.endsWith('middlewares/authGuard')) {
             return { exigirLogin() {}, exigirPlanoStudio() {}, verificarSaldo() {} };
