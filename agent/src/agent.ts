@@ -1,4 +1,5 @@
 import type { AgentTask, AgentCapability } from "./core/task-router.js";
+import type { CommandPolicyGuard } from "./capabilities/capability-types.js";
 
 /**
  * Opções de composição do Worker: interfaces estruturais dos serviços
@@ -9,7 +10,7 @@ export interface AgentOptions {
   workspace?: Workspace;
   workspaceRoot?: string;
   permissions?: Permissions;
-  commandPolicy?: CommandPolicy;
+  commandPolicy?: CommandPolicyGuard;
   extraCapabilities?: Record<string, unknown>;
 }
 declare const process: { env: Record<string, string | undefined> };
@@ -58,7 +59,7 @@ export class Agent {
   declare logger: ReturnType<typeof createLogger>;
   declare workspace: Workspace;
   declare permissions: Permissions;
-  declare commandPolicy: CommandPolicy;
+  declare commandPolicy: CommandPolicyGuard;
   declare capabilities: Record<string, unknown>;
   declare taskRouter: TaskRouter;
   declare taskRunner: TaskRunner;
@@ -98,7 +99,7 @@ export class Agent {
       new Permissions({
         mode: process.env.AGENT_PERMISSION_MODE || "restricted",
         role: this.role,
-      });
+      } as ConstructorParameters<typeof Permissions>[0]);
 
     // CommandPolicy: regras específicas de validação/bloqueio de
     // comandos de shell. Aceita uma instância customizada via
@@ -106,7 +107,10 @@ export class Agent {
     // teste para o papel Validador) — se não vier, usa a política
     // padrão (allowlist genérica de desenvolvimento).
     this.commandPolicy =
-      options.commandPolicy || new CommandPolicy();
+      options.commandPolicy ||
+      // The JS-only CommandPolicy's inferred pop() return includes undefined;
+      // validate() rejects empty commands before returning executable.
+      (new CommandPolicy() as unknown as CommandPolicyGuard);
 
     // Capabilities: cada uma encapsula uma área de atuação do agent
     // (arquivos, shell, git, github, storage, artifacts, build,
@@ -224,7 +228,9 @@ export class Agent {
       // verdade ao mesmo serviço isolado sandbox-efemoro/ -- ver
       // capabilities/archive.js.
       archive: new ArchiveCapability({
-        workspace: this.workspace,
+        // Workspace.read(path, null) yields Buffer at runtime. The JS
+        // inference assumes UTF-8 because it only sees the default arg.
+        workspace: this.workspace as unknown as ConstructorParameters<typeof ArchiveCapability>[0]["workspace"],
         permissions: this.permissions,
       }),
 
