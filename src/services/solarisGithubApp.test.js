@@ -79,6 +79,7 @@ test('GitHub App vincula OAuth ao usuário e verifica state de uso único',async
 test('contexto do Github não permite SSRF e repositório público exige permissão real',async()=>{
  let calls=0;
  const get=async(url)=>{
+  if(url.endsWith('/contents')||url.endsWith('/readme'))return {ok:false,status:404};
   calls++;assert.equal(url,'https://api.github.com/repos/alice/public');
   return {ok:true,json:async()=>({full_name:'alice/public',private:false,
    default_branch:'main',description:'simulador HTML5'})};
