@@ -1,0 +1,41 @@
+name: Solaris Agent - TypeScript capabilities
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'agent/src/capabilities/**'
+      - 'agent/tsconfig.json'
+      - 'scripts/check-agent-capabilities-ts-mirrors.cjs'
+      - '.github/workflows/agent-typescript.yml'
+  pull_request:
+    paths:
+      - 'agent/src/capabilities/**'
+      - 'agent/tsconfig.json'
+      - 'scripts/check-agent-capabilities-ts-mirrors.cjs'
+      - '.github/workflows/agent-typescript.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capability-typescript:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar TypeScript e analisador JS do repositorio
+        run: npm ci --legacy-peer-deps
+      - name: Conferir tipos e runtime equivalente
+        run: npm run typecheck:agent
+      - name: Instalar Worker Agent
+        working-directory: agent
+        run: npm ci
+      - name: Testar Worker Agent e contratos de capabilities
+        working-directory: agent
+        run: npm test
