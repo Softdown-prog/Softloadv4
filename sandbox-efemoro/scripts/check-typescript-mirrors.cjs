@@ -12,6 +12,10 @@ const root = path.resolve(__dirname, "..");
 const sources = [
   "src/utils/envInt.ts",
   "src/utils/logger.ts",
+  "src/serviceMode.ts",
+  "src/webSandbox/devices.ts",
+  "src/webSandbox/security.ts",
+  "src/archive/security.ts",
 ];
 const ignored = new Set(["start", "end", "loc", "range", "raw"]);
 function semanticAst(input) {

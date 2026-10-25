@@ -62,6 +62,9 @@ jobs:
       - name: Validar modos de serviço
         working-directory: sandbox-efemoro
         run: node --test src/serviceMode.test.js
+      - name: Regressão das regras de segurança e viewport (sem navegador)
+        working-directory: sandbox-efemoro
+        run: node --test src/utils/envInt.test.js src/serviceMode.test.js src/webSandbox/devices.test.js src/webSandbox/security.test.js src/archive/security.test.js
       - name: Validar contrato de PNG inline e limites (sem Chromium)
         working-directory: sandbox-efemoro
         run: node --test src/webSandbox/screenshots.test.js src/webSandbox/security.test.js

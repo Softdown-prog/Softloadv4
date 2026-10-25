@@ -18,7 +18,11 @@
   "include": [
     "src/utils/envInt.ts",
     "src/utils/logger.ts",
-    "src/globals.d.ts"
+    "src/globals.d.ts",
+    "src/serviceMode.ts",
+    "src/webSandbox/devices.ts",
+    "src/webSandbox/security.ts",
+    "src/archive/security.ts"
   ],
   "exclude": [
     "node_modules"
