@@ -201,7 +201,8 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
     // Keep the previous quota accounted for until its GCS objects are deleted.
     const { confirmarUso } = await reservarCota(email, plano, tamanhoBytes);
     let quotaConfirmada = false;
-    let trackingAtualizado = false;
+    let trackingWriteStarted = false;
+    let manifestWriteStarted = false;
     try {
         // Stage all files in an isolated prefix. Never overwrite active files.
         // Sequential writes avoid racing cleanup with pending writes on failure.
@@ -216,42 +217,60 @@ async function _salvarProjetoComBloqueio({ uid, email, plano, sessionId, framewo
         await confirmarUso(tamanhoBytes);
         quotaConfirmada = true;
         // Both generations are counted while the prior one remains stored.
+        trackingWriteStarted = true;
         await trackingRef.set({
             uid, sessionId, email: (email || '').toLowerCase(),
             criadoEm: manifesto.criadoEm,
             tamanhoBytes: tamanhoAnterior + tamanhoBytes,
             activeTamanhoBytes: tamanhoBytes,
         });
-        trackingAtualizado = true;
-
         // This single manifest write publishes the new generation last.
+        manifestWriteStarted = true;
         await bucket.file(_manifestoPath(uid, sessionId)).save(manifestoBuf, {
             metadata: { contentType: 'application/json; charset=utf-8' },
             resumable: false,
         });
     } catch (error) {
-        // No published pointer changed: the old project remains fully readable.
-        // Attempt all rollback operations even when one rollback fails.
-        if (trackingAtualizado) {
+        let published = false;
+        if (manifestWriteStarted) {
             try {
-                if (oldTracking) await trackingRef.set(oldTracking);
-                else await trackingRef.delete();
-            } catch (rollbackError) {
-                console.error('[SOLARIS-STORAGE] falha restaurando rastreamento após gravação rejeitada:', rollbackError);
+                const [currentBytes] = await bucket.file(_manifestoPath(uid, sessionId)).download();
+                published = (JSON.parse(currentBytes.toString('utf-8')) as ProjectManifest).versao === versao;
+            } catch (verificationError) {
+                const err = verificationError as { code?: number; message?: string };
+                if (err.code !== 404 && !err.message?.includes('No such object')) {
+                    // Unknown outcome: never destroy a possibly active GCS generation.
+                    console.error('[SOLARIS-STORAGE] publicação incerta; arquivos preservados para reconciliação:', verificationError);
+                    throw error;
+                }
             }
         }
-        let cleaned = false;
-        try {
-            await bucket.deleteFiles({ prefix: `${_prefixo(uid, sessionId)}/versions/${versao}/`, force: true });
-            cleaned = true;
-        } catch (cleanupError) {
-            console.error('[SOLARIS-STORAGE] falha removendo versão incompleta:', cleanupError);
+        if (!published) {
+            // Roll back only when the newly written manifest is not active.
+            if (trackingWriteStarted) {
+                try {
+                    if (oldTracking) await trackingRef.set(oldTracking);
+                    else await trackingRef.delete();
+                } catch (rollbackError) {
+                    console.error('[SOLARIS-STORAGE] falha restaurando rastreamento após gravação rejeitada:', rollbackError);
+                    throw error;
+                }
+            }
+            let cleaned = false;
+            try {
+                await bucket.deleteFiles({ prefix: `${_prefixo(uid, sessionId)}/versions/${versao}/`, force: true });
+                cleaned = true;
+            } catch (cleanupError) {
+                console.error('[SOLARIS-STORAGE] falha removendo versão incompleta:', cleanupError);
+            }
+            if (quotaConfirmada && cleaned) {
+                try { await liberarCota(email, tamanhoBytes); }
+                catch (quotaError) { console.error('[SOLARIS-STORAGE] falha liberando cota da versão incompleta:', quotaError); }
+            }
+            throw error;
         }
-        if (quotaConfirmada && cleaned) {
-            try { await liberarCota(email, tamanhoBytes); }
-            catch (quotaError) { console.error('[SOLARIS-STORAGE] falha liberando cota da versão incompleta:', quotaError); }
-        }
-        throw error;
+        // GCS may commit the manifest even if the response was lost.
+        else console.warn('[SOLARIS-STORAGE] manifesto confirmado após falha de resposta do GCS');
     }
 
     if (oldManifest) {
@@ -364,7 +383,7 @@ async function _apagarProjetoComBloqueio(uid: string, sessionId: string): Promis
 
     if (trackingSnap && trackingSnap.exists) {
         const { email, tamanhoBytes } = trackingSnap.data();
-        await trackingRef.delete().catch(() => {});
+        await trackingRef.delete();
         if (email && tamanhoBytes) await liberarCota(email, tamanhoBytes);
     }
 }

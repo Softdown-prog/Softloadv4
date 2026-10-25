@@ -15,6 +15,9 @@ let beforeDownload = null;
 const quota = { used: 0, released: 0, confirmed: 0, failReserve: false };
 let failSave = null;
 let failDelete = null;
+let failSaveAfterWrite = null;
+let failTrackingSetAfterWrite = false;
+let failTrackingDelete = false;
 const deleteHistory = [];
 const bucket = {
   file(key) {
@@ -23,6 +26,7 @@ const bucket = {
         if (beforeSave) await beforeSave(key);
         if (failSave && failSave(key)) throw Error('GCS write denied');
         objects.set(key, Buffer.from(data));
+        if (failSaveAfterWrite && failSaveAfterWrite(key)) throw Error('GCS acknowledgement lost');
       },
       async download() {
         if (beforeDownload) await beforeDownload(key);
@@ -57,8 +61,17 @@ const db = {
         const data = tracking.get(id);
         return { exists: Boolean(data), data() { return {...data}; } };
       },
-      async set(data) { tracking.set(id, {...data}); },
-      async delete() { tracking.delete(id); },
+      async set(data) {
+        tracking.set(id, {...data});
+        if (failTrackingSetAfterWrite) {
+          failTrackingSetAfterWrite=false;
+          throw Error('Firestore acknowledgement lost');
+        }
+      },
+      async delete() {
+        if (failTrackingDelete) throw Error('Firestore delete denied');
+        tracking.delete(id);
+      },
     }; },
     async get() { return { docs: [...tracking.entries()].map(([id, value]) => ({
       id, data: () => ({...value}),
@@ -91,7 +104,8 @@ const config=arquivos=>({uid,sessionId,email,plano:'free',framework:'html5',arqu
 function reset() {
   objects.clear();tracking.clear();locks.clear();deleteHistory.length=0;
   quota.used=0;quota.released=0;quota.confirmed=0;quota.failReserve=false;
-  failSave=null;failDelete=null;failLockCreate=null;beforeSave=null;beforeDownload=null;
+  failSave=null;failDelete=null;failSaveAfterWrite=null;failTrackingSetAfterWrite=false;failTrackingDelete=false;
+  failLockCreate=null;beforeSave=null;beforeDownload=null;
 }
 async function readProject() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'solaris-storage-test-'));
@@ -506,4 +520,61 @@ test('manifesto removido entre snapshots retorna null e não escreve arquivos', 
     assert.equal(project,null);
     assert.deepEqual(fs.readdirSync(root),[]);
   } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('manifesto gravado mas ACK perdido mantém versão publicada e crédito correto',async()=>{
+  reset(); await initial();
+  const former=JSON.parse(objects.get(manifestKey));
+  failSaveAfterWrite=key=>key===manifestKey;
+  const saved=await salvarProjeto(config([{caminho:'accepted.txt',conteudo:'confirmed'}]));
+  assert.equal(saved.ok,true);
+  const current=JSON.parse(objects.get(manifestKey));
+  assert.notEqual(current.versao,former.versao);
+  assert.deepEqual((await readProject()).files,[['accepted.txt','confirmed']]);
+  assert.equal(quota.used,saved.tamanhoBytes);
+  assert.equal(tracking.get(trackedId).tamanhoBytes,saved.tamanhoBytes);
+  assert.equal([...objects.keys()].some(k=>k.includes(former.versao+'/')),false);
+});
+
+test('ACK do Firestore perdido após escrita reverte rastreamento e cota',async()=>{
+  reset();await initial();
+  const previous=Buffer.from(objects.get(manifestKey));
+  const record={...tracking.get(trackedId)};
+  const charged=quota.used;
+  failTrackingSetAfterWrite=true;
+  await assert.rejects(salvarProjeto(config([{caminho:'unpublished.txt',conteudo:'pending'}])),/Firestore acknowledgement lost/);
+  assert.deepEqual(objects.get(manifestKey),previous);
+  assert.deepEqual(tracking.get(trackedId),record);
+  assert.equal(quota.used,charged);
+  assert.equal([...objects.keys()].filter(k=>k.includes('/versions/')).length,1);
+});
+
+test('falha verificando publicação incerta preserva arquivos e cota',async()=>{
+  reset();await initial();
+  let verification=false;
+  failSaveAfterWrite=key=>{if(key===manifestKey){verification=true;return true;}return false;};
+  beforeDownload=async key=>{
+    if(verification && key===manifestKey) throw Object.assign(Error('GCS read unavailable'),{code:503});
+  };
+  const priorVersion=JSON.parse(objects.get(manifestKey)).versao;
+  await assert.rejects(salvarProjeto(config([{caminho:'possible.txt',conteudo:'must survive'}])),/GCS acknowledgement lost/);
+  beforeDownload=null;
+  const published=JSON.parse(objects.get(manifestKey));
+  assert.notEqual(published.versao,priorVersion);
+  assert.deepEqual((await readProject()).files,[['possible.txt','must survive']]);
+  assert.equal(quota.used,tracking.get(trackedId).tamanhoBytes);
+  assert.equal(locks.size,0);
+});
+
+test('falha no delete de rastreamento não libera cota e permite retry',async()=>{
+  reset();await initial();const charged=quota.used;
+  failTrackingDelete=true;
+  await assert.rejects(apagarProjeto(uid,sessionId),/Firestore delete denied/);
+  assert.equal(quota.used,charged);
+  assert.equal(tracking.size,1);
+  assert.equal(objects.size,0);
+  failTrackingDelete=false;
+  await apagarProjeto(uid,sessionId);
+  assert.equal(quota.used,0);
+  assert.equal(tracking.size,0);
 });
