@@ -225,7 +225,9 @@
     "src/services/chatRequestGate.ts",
     "src/solaris/tools/solarisToolModes.ts",
     "src/services/agentBridge.ts",
-    "src/services/firebase.ts"
+    "src/services/firebase.ts",
+    "src/routes/dashboard_routes/chat/chatCodeValidator.ts",
+    "src/services/openaiService.ts"
   ],
   "exclude": [
     "node_modules",
