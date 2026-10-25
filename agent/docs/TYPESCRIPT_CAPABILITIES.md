@@ -125,6 +125,10 @@ esses imports nem exige um loader TypeScript em produção.
   resultados de `safeParse` e o contrato das requisicoes validas.
 - Os schemas Zod e os limites de tamanho/quantidade continuam
   inalterados, e o gate exige AST identica ao `.js` existente.
+- `agent/src/protocol/zod-types.d.ts` descreve somente os metodos Zod
+  usados pelo protocolo para o compilador do checkout raiz. O Worker
+  continua usando a biblioteca `zod` real de `agent/package.json`
+  no runtime, sem nova dependencia no deploy.
 - O teste HTTP existente garante que erros de input sejam rejeitados
   antes de executar qualquer action.
 
