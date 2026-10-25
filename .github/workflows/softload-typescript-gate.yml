@@ -161,17 +161,6 @@ jobs:
           node --test src/services/mpPlanRules.contract.test.js
       - name: Testar ciclo de créditos com Firestore simulado
         run: node --test src/services/creditService.contract.test.js
-      - name: Diagnosticar espelho do serviço de créditos (remover após sincronizar)
-        run: |
-          node - <<'NODE'
-          const fs = require('node:fs');
-          const ts = require('typescript');
-          const output = ts.transpileModule(fs.readFileSync('src/services/creditService.ts', 'utf8'), {
-            fileName: 'src/services/creditService.ts',
-            compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, newLine: ts.NewLineKind.LineFeed},
-          }).outputText;
-          console.log('CREDIT_MIRROR_BEGIN' + JSON.stringify(output) + 'CREDIT_MIRROR_END');
-          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
