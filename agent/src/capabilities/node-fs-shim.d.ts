@@ -12,6 +12,7 @@ declare module "node:fs/promises" {
     readFile(path: string, encoding: "utf8"): Promise<string>;
     readdir(path: string, options: { withFileTypes: true }): Promise<MinimalDirent[]>;
     stat(path: string): Promise<{ size: number }>;
+    rm(path: string, options: { recursive: boolean; force: boolean }): Promise<void>;
   };
   export default fs;
 }

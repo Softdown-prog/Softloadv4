@@ -55,6 +55,9 @@ esses imports nem exige um loader TypeScript em produção.
 - `agent-parallel-dispatch.ts` — contratos de subagentes e worktrees
   isolados, incluindo limites de concorrência e erros estruturados.
 
+- `filesystem.ts` — contratos de leitura, escrita, edição, diff, patch,
+  listagem e busca de arquivos, preservando as verificações do workspace.
+
 ## Como validar
 
 ```bash
