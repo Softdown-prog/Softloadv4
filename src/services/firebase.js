@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 
