@@ -54,7 +54,7 @@ const TICKER_ITENS = [
     '💼 E-commerce BR', '📱 Minimal Blog', '🔬 Science Daily', '💰 Finance Pro',
 ];
 
-function AccountDeletedToast() {
+function AccountDeletedToast(): React.JSX.Element | null {
     const [searchParams] = useSearchParams();
     const [visivel, setVisivel] = useState(searchParams.get('conta') === 'apagada');
 
@@ -83,8 +83,8 @@ function AccountDeletedToast() {
     );
 }
 
-export default function Landing() {
-    const [demoStart, setDemoStart] = useState(false);
+export default function Landing(): React.JSX.Element {
+    const [demoStart, setDemoStart] = useState<boolean>(false);
     useHeroEntrance(useCallback(() => setDemoStart(true), []));
 
     return (

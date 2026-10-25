@@ -5,14 +5,37 @@ import {
     Clipboard, ClipboardCheck, ExternalLink, Inbox
 } from 'lucide-react';
 
+interface PlanCreditMetrics {
+    total_creditos_debitados: number;
+    total_interacoes: number;
+    usuarios_ativos: number;
+    total_tokens: number;
+    media_creditos_por_interacao: number;
+    media_tokens_por_interacao: number;
+    media_creditos_por_usuario: number;
+    creditos_ciclo: number;
+    pct_uso_ciclo: number;
+}
+interface CreditAnalytics {
+    periodo_dias: number;
+    por_plano: Record<string, PlanCreditMetrics>;
+    gerado_em: string;
+    semIndice?: boolean;
+}
+interface EfficiencyStatus {
+    status: string;
+    cor: string;
+    msg: string;
+}
+
 const ORDEM_PLANOS = ['studio', 'pro', 'premium', 'starter', 'free'];
 const DEPLOY_CMD = 'firebase deploy --only firestore:indexes --project loyal-road-395203';
 
-function fmt(n) {
+function fmt(n: number | null | undefined): string {
     return Number(n || 0).toLocaleString('pt-BR');
 }
 
-function ordenarPlanos(porPlano) {
+function ordenarPlanos(porPlano: CreditAnalytics['por_plano']): string[] {
     const chaves = Object.keys(porPlano);
     return [
         ...ORDEM_PLANOS.filter(p => chaves.includes(p)),
@@ -20,7 +43,7 @@ function ordenarPlanos(porPlano) {
     ];
 }
 
-function statusEficiencia(pct) {
+function statusEficiencia(pct: number): EfficiencyStatus {
     if (pct === 0) return { status: 'Sem dados', cor: 'var(--sl-text-500)', msg: 'Nenhum consumo neste período.' };
     if (pct < 20) return { status: 'Subutilizado', cor: '#34d399', msg: 'Usuários usam pouco — podem estar churning ou ainda explorando.' };
     if (pct < 60) return { status: 'Saudável', cor: '#38bdf8', msg: 'Consumo equilibrado. Ciclo bem dimensionado.' };
@@ -28,25 +51,25 @@ function statusEficiencia(pct) {
     return { status: 'Crítico', cor: '#f87171', msg: 'Usuários consumindo >85% do ciclo. Considere aumentar cota.' };
 }
 
-const thStyle = {
+const thStyle: React.CSSProperties = {
     fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em',
     color: 'var(--sl-text-500)', padding: '0.75rem 1rem', borderBottom: '1px solid var(--sl-bg-800)',
     whiteSpace: 'nowrap',
 };
-const tdStyle = { padding: '0.85rem 1rem', verticalAlign: 'middle', fontSize: '0.83rem', fontWeight: 600 };
+const tdStyle: React.CSSProperties = { padding: '0.85rem 1rem', verticalAlign: 'middle', fontSize: '0.83rem', fontWeight: 600 };
 
-export default function AdminAnalytics() {
+export default function AdminAnalytics(): React.JSX.Element | null {
     const [searchParams, setSearchParams] = useSearchParams();
-    const dias = parseInt(searchParams.get('dias')) || 30;
+    const dias = parseInt(searchParams.get('dias') ?? '') || 30;
 
-    const [analytics, setAnalytics] = useState(null);
+    const [analytics, setAnalytics] = useState<CreditAnalytics | null>(null);
     const [semIndice, setSemIndice] = useState(false);
     const [copiado, setCopiado] = useState(false);
 
-    const carregar = useCallback(async (diasAtuais) => {
+    const carregar = useCallback(async (diasAtuais: number): Promise<void> => {
         try {
             const res = await fetch(`/eu/api/analytics/creditos?dias=${diasAtuais}`);
-            const data = await res.json();
+            const data = await res.json() as CreditAnalytics;
             setAnalytics(data);
             setSemIndice(!!data.semIndice);
         } catch (_) {

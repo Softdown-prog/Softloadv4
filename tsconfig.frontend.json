@@ -44,6 +44,9 @@
     "frontend/pages/DashboardHome.tsx",
     "frontend/pages/Historico.tsx",
     "frontend/pages/Upgrade.tsx",
+    "frontend/pages/Configuracoes.tsx",
+    "frontend/pages/Landing.tsx",
+    "frontend/pages/admin/Analytics.tsx",
     "frontend/types/react-dom-client.d.ts"
   ],
   "exclude": [

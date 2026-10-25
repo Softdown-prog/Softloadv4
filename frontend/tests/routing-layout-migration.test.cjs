@@ -71,6 +71,9 @@ test('Vite aponta para main.tsx e fontes TSX passam pelo parser TypeScript', () 
     'frontend/pages/DashboardHome.tsx',
     'frontend/pages/Historico.tsx',
     'frontend/pages/Upgrade.tsx',
+    'frontend/pages/Configuracoes.tsx',
+    'frontend/pages/Landing.tsx',
+    'frontend/pages/admin/Analytics.tsx',
   ]) {
     const file = path.join(root, relative);
     const ast = ts.createSourceFile(file, source(relative), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
@@ -191,4 +194,35 @@ test('upgrade TypeScript preserva checkout e feedback de pagamento', () => {
   assert.ok(upgrade.includes('body: JSON.stringify({ plano: planoId })'));
   assert.ok(upgrade.includes('window.location.href = data.checkoutUrl'));
   assert.ok(upgrade.includes('STATUS_FEEDBACK[status as PaymentStatus]'));
+});
+
+test('configurações TypeScript preservam abas, foco e exclusão nativa protegida', () => {
+  const settings = source('frontend/pages/Configuracoes.tsx');
+  assert.ok(settings.includes('useFocusTrap(modalRef, showExcluirModal, fecharModal)'));
+  assert.ok(settings.includes("next.set('tab', value)"));
+  assert.ok(settings.includes("next.delete('erro')"));
+  assert.ok(settings.includes("confirmacao !== 'EXCLUIR'"));
+  assert.ok(settings.includes('excluirFormRef.current?.submit()'));
+  assert.ok(settings.includes('method="POST" action="/dashboard/conta/excluir"'));
+  assert.ok(settings.includes('name="confirmacao"'));
+  assert.ok(settings.includes('<AcessibilidadeTab />'));
+});
+
+test('landing TypeScript mantém animações, toast e início da demo', () => {
+  const landing = source('frontend/pages/Landing.tsx');
+  assert.ok(landing.includes("searchParams.get('conta') === 'apagada'"));
+  assert.ok(landing.includes('setTimeout(() => setVisivel(false), 6000)'));
+  assert.ok(landing.includes('useHeroEntrance(useCallback(() => setDemoStart(true), []))'));
+  assert.ok(landing.includes('<TerminalDemo start={demoStart} />'));
+  assert.ok(landing.includes('<CapabilityChecklist />'));
+});
+
+test('analytics TypeScript preserva filtro, atualização periódica e diagnóstico Firestore', () => {
+  const analytics = source('frontend/pages/admin/Analytics.tsx');
+  assert.ok(analytics.includes("fetch(`/eu/api/analytics/creditos?dias=${diasAtuais}`)"));
+  assert.ok(analytics.includes('setInterval(() => carregar(dias), 60000)'));
+  assert.ok(analytics.includes('clearInterval(interval)'));
+  assert.ok(analytics.includes("searchParams.get('dias') ?? ''"));
+  assert.ok(analytics.includes('setSemIndice(!!data.semIndice)'));
+  assert.ok(analytics.includes('navigator.clipboard.writeText(DEPLOY_CMD)'));
 });

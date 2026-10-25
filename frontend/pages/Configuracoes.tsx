@@ -3,23 +3,35 @@ import { useOutletContext, Link, useSearchParams } from 'react-router-dom';
 import { Mail, User, Check, AlertTriangle, UserCircle, CreditCard, Accessibility } from 'lucide-react';
 import useFocusTrap from '../hooks/useFocusTrap';
 import AcessibilidadeTab from '../components/settings/AcessibilidadeTab';
+import type { AppUser } from '../services/api';
+import type { LucideIcon } from 'lucide-react';
 
-const TABS = [
+type SettingsTabId = 'conta' | 'plano' | 'acessibilidade' | 'perigo';
+interface SettingsTab {
+    value: SettingsTabId;
+    label: string;
+    icon: LucideIcon;
+}
+interface SettingsUser extends AppUser {
+    email?: string;
+}
+
+const TABS: readonly SettingsTab[] = [
     { value: 'conta', label: 'Conta', icon: UserCircle },
     { value: 'plano', label: 'Plano', icon: CreditCard },
     { value: 'acessibilidade', label: 'Acessibilidade', icon: Accessibility },
     { value: 'perigo', label: 'Zona de Perigo', icon: AlertTriangle },
 ];
 
-export default function Configuracoes() {
-    const { user } = useOutletContext();
+export default function Configuracoes(): React.JSX.Element {
+    const { user } = useOutletContext<{ user: SettingsUser }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const [nome, setNome] = useState(user?.nome || '');
     const [saved, setSaved] = useState(false);
     const [showExcluirModal, setShowExcluirModal] = useState(false);
     const [confirmacao, setConfirmacao] = useState('');
-    const excluirFormRef = useRef(null);
-    const modalRef = useRef(null);
+    const excluirFormRef = useRef<HTMLFormElement | null>(null);
+    const modalRef = useRef<HTMLDivElement | null>(null);
 
     const fecharModal = useCallback(() => setShowExcluirModal(false), []);
     useFocusTrap(modalRef, showExcluirModal, fecharModal);
@@ -31,7 +43,7 @@ export default function Configuracoes() {
     const tabParam = searchParams.get('tab');
     const abaAtiva = TABS.some((t) => t.value === tabParam) ? tabParam : (erroExclusao ? 'perigo' : 'conta');
 
-    const irParaAba = (value) => {
+    const irParaAba = (value: SettingsTabId): void => {
         setSearchParams((prev) => {
             const next = new URLSearchParams(prev);
             next.set('tab', value);
@@ -40,16 +52,16 @@ export default function Configuracoes() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
 
-    const handleExcluirConta = (e) => {
+    const handleExcluirConta = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         if (confirmacao !== 'EXCLUIR') return;
-        excluirFormRef.current.submit();
+        excluirFormRef.current?.submit();
     };
 
     return (
