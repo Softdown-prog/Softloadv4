@@ -201,8 +201,9 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         const { formData, plano } = req.body || {};
         const user = req.session.user;
 
-        const PLANOS_VALIDOS = { starter: 49.00, pro: 119.00, studio: 249.00 };
-        if (!plano || !PLANOS_VALIDOS[plano]) {
+        // Fonte única de preços, compartilhada com checkout-create e webhook.
+        // Object.hasOwn impede aceitar chaves herdadas (constructor, toString etc.).
+        if (typeof plano !== 'string' || !Object.hasOwn(PRICES_CENTS, plano)) {
             return res.status(400).json({ erro: 'Plano inválido.' });
         }
         if (!formData || typeof formData !== 'object') {
@@ -218,7 +219,7 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
 
         const paymentBody = {
             ...formData,
-            transaction_amount: PLANOS_VALIDOS[plano],
+            transaction_amount: PRICES_CENTS[plano] / 100,
             description:        `Softload Engine — Plano ${plano.charAt(0).toUpperCase() + plano.slice(1)}`,
             external_reference: user.email.toLowerCase(),
         };
