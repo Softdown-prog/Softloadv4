@@ -217,7 +217,7 @@ export class McpClientCapability {
 
     const result = await this._withClient(config, (client) =>
       client.callTool(
-        { name: task.tool, arguments: task.arguments || {} },
+        { name: task.tool!, arguments: task.arguments || {} },
         undefined,
         { timeout: DEFAULT_REQUEST_TIMEOUT_MS },
       ),

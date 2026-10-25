@@ -37,6 +37,8 @@ const sources = [
   "agent/src/capabilities/filesystem.ts",
   "agent/src/capabilities/mcp-client.ts",
   "agent/src/capabilities/web-fetch.ts",
+  "agent/src/capabilities/process.ts",
+  "agent/src/capabilities/web-search.ts",
 ];
 
 const ignoredAstKeys = new Set(["start", "end", "loc", "range", "raw"]);

@@ -19,16 +19,22 @@ declare module "*.cjs" {
 }
 
 declare module "execa" {
-  export function execa(
-    executable: string,
-    args: string[],
-    options: { cwd?: string; reject: false; timeout?: number },
-  ): Promise<{
+  export interface AgentExecaProcess extends Promise<{
     exitCode: number | undefined;
     stdout: string;
     stderr: string;
     failed: boolean;
-  }>;
+    timedOut?: boolean;
+  }> {
+    stdout?: { on(event: "data", listener: (chunk: { toString(): string }) => void): void };
+    stderr?: { on(event: "data", listener: (chunk: { toString(): string }) => void): void };
+    kill(signal: string): void;
+  }
+  export function execa(
+    executable: string,
+    args: string[],
+    options: { cwd?: string; reject: false; timeout?: number },
+  ): AgentExecaProcess;
 }
 
 /** Subconjunto tipado do Octokit exigido pelas operações do Agent. */
@@ -60,5 +66,19 @@ declare module "@modelcontextprotocol/sdk/client/index.js" {
 declare module "@modelcontextprotocol/sdk/client/streamableHttp.js" {
   export class StreamableHTTPClientTransport {
     constructor(url: URL, options: { fetch: typeof fetch; requestInit?: { headers: Record<string, string> } });
+  }
+}
+
+/** Somente formato mínimo usado por Gemini Search Grounding. */
+declare module "@google/genai" {
+  export class GoogleGenAI {
+    constructor(options: { apiKey: string | undefined });
+    models: {
+      generateContent(request: {
+        model: string;
+        contents: string;
+        config: { temperature: number; maxOutputTokens: number; tools: Array<{ googleSearch: Record<string, never> }> };
+      }): Promise<import("./web-search.js").GeminiSearchResponse>;
+    };
   }
 }

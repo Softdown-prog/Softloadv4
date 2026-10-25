@@ -63,6 +63,11 @@ esses imports nem exige um loader TypeScript em produção.
 - `web-fetch.ts` — busca HTTP textual com validação SSRF em todos os
   redirecionamentos, timeout e limites de leitura em streaming.
 
+- `process.ts` — controle de processos com encerramento, captura limitada
+  de saída, status e notificações opcionais assinadas.
+- `web-search.ts` — pesquisa Gemini com limites por tarefa, domínio
+  permitido, citações e tratamento tipado de quota e timeout.
+
 ## Como validar
 
 ```bash
