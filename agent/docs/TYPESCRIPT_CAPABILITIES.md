@@ -25,6 +25,9 @@ esses imports nem exige um loader TypeScript em produção.
   validação de entrada.
 - `web-sandbox.ts` — contrato de auditoria web, transporte HTTP e
   encaminhamento opcional de parâmetros sem alterar defaults.
+- `archive.ts` — validação de caminhos, parâmetros de extração e
+  persistência de arquivos de texto no workspace.
+- `plan-tracker.ts` — contrato de plano, itens e estados de execução.
 
 ## Como validar
 
