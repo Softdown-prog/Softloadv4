@@ -26,7 +26,7 @@ export function normalizarResumoCreditosV2(raw: unknown): ResumoCreditosV2 | nul
   const keys = ['creditosDoCiclo','creditosDisponiveis','creditosConsumidos','creditosReservados','creditosExcedentes'] as const;
   if (!keys.every(k => contador(s[k])) || s.preliminar !== true) return null;
   // API do orçamento usa créditos inteiros; dados inválidos não chegam à tela.
-  if (s.creditosDisponiveis > s.creditosDoCiclo) return null;
+  if ((s.creditosDisponiveis as number) > (s.creditosDoCiclo as number)) return null;
   return {
     versao: 2, modo: 'previsualizacao', cicloExpiraEm: r.cicloExpiraEm,
     saldo: {
