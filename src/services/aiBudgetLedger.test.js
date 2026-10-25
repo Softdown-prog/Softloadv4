@@ -24,21 +24,29 @@ function banco() {
             orderBy(field,direction) {
               assert.equal(field,'criadoEm'); assert.equal(direction,'desc');
               let after=null;
-              const query={
-                startAfter(snap) {after=snap.id;return query;},
-                limit(n) {return {async get() {
-                  let rows=[...docs.entries()].filter(([k])=>k.startsWith(prefix))
-                    .sort((a,b)=>b[1].criadoEm.localeCompare(a[1].criadoEm) ||
-                      b[0].localeCompare(a[0]));
-                  if(after) {
-                    const at=rows.findIndex(([k])=>k===prefix+after);
-                    rows=at<0?[]:rows.slice(at+1);
-                  }
-                  return {docs:rows.slice(0,n).map(([k,v])=>({
-                    id:k.slice(prefix.length),data:()=>structuredClone(v)
-                  }))};
-                }}};
-              };return query;
+              const query = {
+                startAfter(snap) {
+                  after = snap.id;
+                  return query;
+                },
+                limit(n) {
+                  return {
+                    async get() {
+                      let rows = [...docs.entries()].filter(([k]) => k.startsWith(prefix))
+                        .sort((a, b) => b[1].criadoEm.localeCompare(a[1].criadoEm)
+                          || b[0].localeCompare(a[0]));
+                      if (after) {
+                        const at = rows.findIndex(([k]) => k === prefix + after);
+                        rows = at < 0 ? [] : rows.slice(at + 1);
+                      }
+                      return {docs: rows.slice(0, n).map(([k,v]) => ({
+                        id: k.slice(prefix.length), data: () => structuredClone(v),
+                      }))};
+                    },
+                  };
+                },
+              };
+              return query;
             },
           };
         }};
