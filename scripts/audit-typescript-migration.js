@@ -35,7 +35,7 @@ function auditarMigracao(root) {
     const allJs = auditedFiles.filter(x => x.endsWith('.js') && !x.endsWith('.test.js'));
     const seen = new Set();
     for (const source of sources) {
-        if (typeof source !== 'string' || !/^(?:src\/(?:core|ai|solaris|knowledge|services|middlewares|routes|rag)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts$/.test(source) || source.includes('..')) {
+        if (typeof source !== 'string' || !/^(?:src\/(?:core|ai|solaris|knowledge|lib|workers|services|middlewares|routes|rag)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts$/.test(source) || source.includes('..')) {
             errors.push('Entrada inválida no registro: ' + JSON.stringify(source));
             continue;
         }

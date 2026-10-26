@@ -155,6 +155,25 @@ try {
     config([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource]);
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
+    // Bibliotecas de preview e workers precisam participar da mesma auditoria,
+    // senão o CI aprova a compilação mas rejeita a fonte TS no registro.
+    const libSource = 'src/lib/bloggerTemplateRenderer.ts';
+    const workerSource = 'src/workers/xmlPatchWorker.ts';
+    write(libSource, 'export const render = () => true;');
+    write('src/lib/bloggerTemplateRenderer.js', '"use strict";');
+    write(workerSource, 'export const worker = () => true;');
+    write('src/workers/xmlPatchWorker.js', '"use strict";');
+    registry([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource, libSource, workerSource]);
+    config([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource, libSource, workerSource]);
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true, 'src/lib e src/workers devem aceitar fontes TS registradas');
+    assert.equal(report.summary.fontesTypeScript, 8);
+    fs.unlinkSync(path.join(root, 'src/workers/xmlPatchWorker.js'));
+    report = auditarMigracao(root);
+    assert.ok(report.errors.some(e => e.includes('Espelho CommonJS ausente: src/workers/xmlPatchWorker.js')));
+    write('src/workers/xmlPatchWorker.js', '"use strict";');
+    report = auditarMigracao(root);
+    assert.equal(report.ok, true);
     console.log('✅ Auditoria TypeScript: registro, tsconfig, espelhos e arquivos legados.');
 } finally {
     fs.rmSync(root, {recursive:true,force:true});
