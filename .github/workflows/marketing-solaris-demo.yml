@@ -1,0 +1,59 @@
+name: Marketing - Video Solaris Code
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/marketing/record-solaris-demo.mjs'
+      - 'scripts/marketing/record-solaris-demo.test.cjs'
+      - '.github/workflows/marketing-solaris-demo.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  gravar-demo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Verificar roteiro e compilar frontend
+        run: |
+          node --check scripts/marketing/record-solaris-demo.mjs
+          node --test scripts/marketing/record-solaris-demo.test.cjs
+          npm run typecheck:frontend
+          npm run build
+      - name: Instalar Chromium de teste
+        run: |
+          npm install --no-save --no-package-lock --legacy-peer-deps --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Capturar conversa demonstrativa em MP4
+        run: |
+          node scripts/marketing/record-solaris-demo.mjs out/solaris-demo
+          ffmpeg -hide_banner -loglevel error -y -i out/solaris-demo/solaris-demo-real-ui.webm \
+            -an -c:v libx264 -pix_fmt yuv420p -preset veryfast -crf 22 \
+            -movflags +faststart out/solaris-demo/solaris-demo.mp4
+          test -s out/solaris-demo/solaris-demo.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 out/solaris-demo/solaris-demo.mp4
+      - name: Salvar video e evidencias para revisao
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-v4-solaris-demo-revisao
+          path: |
+            out/solaris-demo/solaris-demo.mp4
+            out/solaris-demo/solaris-demo-final.png
+            out/solaris-demo/demo-manifest.json
+          retention-days: 14
+          if-no-files-found: warn
