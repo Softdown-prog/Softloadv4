@@ -239,6 +239,7 @@
     "src/routes/contatoRoutes.ts",
     "src/solaris/http/solarisProUsage.ts",
     "src/routes/workersRoutes.ts",
+    "src/services/billingRecoveryMonitor.ts",
     "src/routes/dashboard_routes/conta.ts"
   ],
   "exclude": [
