@@ -38,3 +38,7 @@ OAuth já existente usa tokens com expiração e pode pedir reconexão.
 O editor GitHub não roda testes de CI na VPS; o PR rascunho deve ser revisado
 antes de merge. Arquivos maiores, alterações de workflow e commits multi-arquivo
 atômicos são propositalmente bloqueados nesta fase.
+
+## Vinculação e autorização tipadas
+
+`src/services/solarisGithubReadiness.ts` valida a sessão antes de cada operação. Uma conta conectada sem repositório vinculado, um vínculo divergente ou uma autorização expirada não fazem fallback silencioso para leitura pública. As mensagens no frontend acompanham esses estados.

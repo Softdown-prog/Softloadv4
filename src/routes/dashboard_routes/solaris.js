@@ -23,6 +23,7 @@ const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = requir
 const { createGithubAppService } = require('../../services/solarisGithubApp');
 const { createGithubOperations, GithubOperationError } = require('../../services/solarisGithubOperations');
 const { createSolarisGithubAgent } = require('../../services/solarisGithubAgent');
+const { resolveGithubChatAccess } = require('../../services/solarisGithubReadiness');
 const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
@@ -330,7 +331,8 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
             const uid = req.session?.user?.uid;
             if (!uid) throw Error('Sessão expirada.');
             const status = await githubApp.status(uid);
-            if (!status.connected) {
+            const access = resolveGithubChatAccess(status, req.body.githubRepository);
+            if (access.mode === 'public-readonly') {
                 yield* deps.solarisChat.perguntarStream(contextAndMessage, history, tokensRef);
                 return;
             }
@@ -350,7 +352,8 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
             const uid = req.session?.user?.uid;
             if (!uid) throw Error('Sessão expirada.');
             const status = await githubApp.status(uid);
-            return status.connected ? githubApp.repoContext(uid, repo) : contextoRepositorioPublico(repo);
+            const access = resolveGithubChatAccess(status, repo);
+            return access.mode === 'agent' ? githubApp.repoContext(uid, access.repository) : contextoRepositorioPublico(repo);
         },
     })(req, res);
 });

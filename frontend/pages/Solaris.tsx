@@ -444,6 +444,28 @@ export default function Solaris(): React.JSX.Element {
             setToolError('Cole o link do repositório: https://github.com/dono/repositorio');
             return;
         }
+        if (activeTool === 'github' && githubStatus) {
+            const solicitado = githubRepository.trim()
+                .replace(/^https:\/\/github\.com\//i, '').replace(/\.git\/?$/, '').replace(/\/$/, '');
+            if (githubStatus.connected && !githubStatus.repository) {
+                setToolError('Conta conectada. Primeiro clique em Vincular repositório.');
+                setQuickMenuOpen(true);
+                setToolsOpen(true);
+                return;
+            }
+            if (githubStatus.connected && githubStatus.repository?.toLowerCase() !== solicitado.toLowerCase()) {
+                setToolError('Vincule o repositório informado antes de enviar a tarefa.');
+                setQuickMenuOpen(true);
+                setToolsOpen(true);
+                return;
+            }
+            if (!githubStatus.connected && githubStatus.account) {
+                setToolError('Sua autorização GitHub expirou. Conecte novamente.');
+                setQuickMenuOpen(true);
+                setToolsOpen(true);
+                return;
+            }
+        }
         setToolError('');
         setInput('');
         setLoading(true);
@@ -927,7 +949,11 @@ export default function Solaris(): React.JSX.Element {
                                         </div>
                                         <p className="small text-secondary mb-0">
                                             {githubStatus?.connected
-                                                ? 'Conta autorizada. Vincule um repositório permitido. O Solaris pode ler arquivos e preparar mudanças pelo chat. Confira a proposta abaixo e aprove a criação da branch e do PR rascunho.'
+                                                ? githubStatus.repository
+                                                    ? 'Repositório vinculado: ' + githubStatus.repository + '. Peça alterações no chat: o Solaris lê os arquivos e prepara uma proposta. Somente você pode aprovar a branch e o PR rascunho.'
+                                                    : 'Conta autorizada, mas nenhum repositório foi vinculado. Cole o link acima e clique em Vincular repositório antes de dar comandos ao agente.'
+                                                : githubStatus?.account
+                                                    ? 'A autorização anterior expirou. Clique em Conectar GitHub para autorizar novamente a conta.'
                                                 : githubStatus?.configured
                                                     ? 'Na primeira conexão, o GitHub pedirá autorização à GitHub App. Depois escolha o repositório. Repositórios públicos também podem ser consultados pelo link sem login.'
                                                     : 'A conexão de contas requer configurar a GitHub App na Softload. Por enquanto, o link de um repositório público funciona para análise em modo somente leitura.'}
