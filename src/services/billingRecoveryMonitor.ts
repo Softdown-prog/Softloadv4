@@ -178,3 +178,6 @@ module.exports = {
     obterStatusRecuperacaoCobrancas,
 };
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { obterStatusRecuperacaoCobrancas: typeof obterStatusRecuperacaoCobrancas };

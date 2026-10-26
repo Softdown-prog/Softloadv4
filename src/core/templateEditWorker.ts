@@ -173,3 +173,6 @@ async function reverterParaVersao(
 const publicApi: TemplateEditWorkerApi = { mergeManifesto, aplicarEdicao, reverterParaVersao, _resumirManifesto };
 module.exports = publicApi;
 export { mergeManifesto, aplicarEdicao, reverterParaVersao, _resumirManifesto };
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { reverterParaVersao: typeof reverterParaVersao };

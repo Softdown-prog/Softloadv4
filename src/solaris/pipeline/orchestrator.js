@@ -117,7 +117,7 @@ function criarOrquestrador({ modelRouter, buscarConhecimento = null }) {
             const resposta = await modelRouter.executarTarefaArquitetura({
                 prompt: _promptArquivo(manifesto, arquivo, assets, contextoSemantico),
             });
-            const conteudo = resposta.text;
+            const conteudo = resposta.text || '';
             let resultado;
             if (!worker) {
                 resultado = { ok: true, caminho: arquivo.caminho, conteudo, diagnostico: null, avisoSemWorker: `sem Worker de validação pro tipo "${arquivo.tipo}" ainda (Fase 0 só cobre html/css/js).` };

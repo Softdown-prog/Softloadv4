@@ -54,6 +54,7 @@ interface NicheModuleDefaults {
 }
 interface ChatManifesto {
     siteName: string;
+    heroSection?: string | null;
     nichoTema?: string | null;
     colorPreset?: string;
     typography?: string;
@@ -66,7 +67,7 @@ interface CompilationProgress { type: string; label: string }
 type SendCompilerEvent = (event: CompilationProgress) => void;
 interface CompileOutput { downloadUrl: string; xmlPath?: string | null; gcPath?: string | null }
 interface CriticReport { correcoes: string[]; criticas: string[]; erros: string[] }
-interface TemplateSnapshot {
+interface TemplateSnapshot extends Record<string, unknown> {
     compilacaoId: string | null;
     siteName: string | null;
     colorPreset: string;
@@ -316,3 +317,6 @@ module.exports = {
 };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { _snapshotDeManifesto: typeof _snapshotDeManifesto };

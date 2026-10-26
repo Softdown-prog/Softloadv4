@@ -2,6 +2,18 @@
 
 Estado atual: inventário fechado da issue [#17](https://github.com/Softdown-prog/Softloadv4/issues/17), em 26/10/2026.
 
+## Fechamento das seis rotas — 6 → 0 pendências de runtime
+
+As fontes `adminRoutes.ts`, `apiRoutes.ts`, `chat.ts`, `solaris.ts`, `workspace.ts` e `workspaceChat.ts` entram no TypeScript estrito, no registro de espelhos e no gate. `node scripts/check-typescript-remaining.cjs` passa a informar **runtime=0**, sem alterar o inventário-base congelado. Os quatro utilitários CJS de suporte permanecem executáveis fora desse saldo.
+
+As rotas compartilham contratos HTTP e de documentos persistidos. As superfícies CommonJS dos serviços são exportadas apenas como tipos, mantendo os objetos usados pelo Node. Os contratos de snapshots, propostas Solaris, tokens e resultados do Gemini agora se conectam entre as camadas. Quando o Gemini não retorna texto de arquivo, o orquestrador entrega string vazia ao worker, que rejeita a geração; a resposta sem texto também não é aceita como manifesto.
+
+Regressões cobrem HMAC em produção, confirmação do valor de pagamento, recibo e três saldos na mesma transação, retry sem renovação duplicada, autorização superadmin, concessão de créditos, bloqueio de escrita direta no GitHub e aprovação vinculada ao UID da sessão. Os testes existentes verificam persistência antes do evento SSE `done`, liquidação/reserva e acesso ao Workspace. As dependências externas são simuladas, sem pagamentos, geração paga ou alteração de dados reais.
+
+Validação local: **185 testes de regressão aprovados**, typechecks do backend, agente, frontend, workers e Forge aprovados, espelhos e inventário aprovados, e build Vite concluído.
+
+O fechamento do código não substitui a validação operacional final: a issue #17 permanece aberta até comprovar o deploy saudável e a fumaça autenticada das três interfaces na VPS. Não reiniciar a contagem com espelhos JS, exemplos ou testes.
+
 ## Fechamento das entradas e módulos periféricos — 11 → 6 pendências
 
 Inventário confirmado na main `dc605e43`: 11 itens, sendo 6 rotas e 5 periféricos. Este lote resolve os cinco periféricos:

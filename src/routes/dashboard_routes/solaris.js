@@ -1,15 +1,15 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
-const router  = express.Router();
-const fs      = require('fs');
-const os      = require('os');
-const path    = require('path');
-const multer  = require('multer');
+const router = express.Router();
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const multer = require('multer');
 const rateLimit = require('express-rate-limit');
-
 const { exigirLogin, verificarSaldo } = require('../../middlewares/authGuard');
-const chatStorage       = require('../../services/chatStorageService');
-const { db, admin }     = require('../../services/firebase');
+const chatStorage = require('../../services/chatStorageService');
+const { db, admin } = require('../../services/firebase');
 const { debitarCreditos, PLAN_CREDITS } = require('../../services/creditService');
 const { criarSolarisChat } = require('../../solaris/chat/solarisChat');
 const { detectarMarcador, removerMarcadorTruncado } = require('../../solaris/chat/solarisGenerationTrigger');
@@ -27,7 +27,7 @@ const { createSolarisGithubMcp } = require('../../services/solarisGithubMcp');
 const { resolveGithubChatAccess } = require('../../services/solarisGithubReadiness');
 const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
-const { getAgent }          = require('../../services/agentBridge');
+const { getAgent } = require('../../services/agentBridge');
 const { inspecionarProjeto } = require('../../solaris/pipeline/projectInspector');
 const { responderOuEditarProjeto } = require('../../solaris/pipeline/projectEditor');
 const { criarZip, criarArquivo, deletarArquivo, listarProjeto, lerArquivo } = require('../../solaris/tools/fileTools');
@@ -40,7 +40,6 @@ const { criarOrquestradorComMedicao } = require('../../solaris/http/solarisProUs
 const { criarHandlerUploadSolaris } = require('../../solaris/http/solarisUploadHandler');
 const { criarHandlerVisual } = require('../../solaris/visual/visualReview');
 const { browserSandboxReady } = require('../../solaris/visual/browserReadiness');
-
 // ──────────────────────────────────────────────────────────────────────────
 // CHAT DO SOLARIS CODE — rota + view próprias, motor totalmente separado
 // do Blogger Engine (ver src/solaris/README.md). Mesma separação
@@ -63,15 +62,13 @@ const { browserSandboxReady } = require('../../solaris/visual/browserReadiness')
 // o texto da conversa, mesmo escopo documentado em src/solaris/README.md.
 // ──────────────────────────────────────────────────────────────────────────
 const SOLARIS_CHAT_SESSION_TYPE = 'solaris-chat';
-
 // Sem URL do serviço de embeddings, o RAG por palavras-chave continua sozinho.
 const buscarConhecimento = process.env.EMBEDDINGS_SERVICE_URL
     ? ({ query, topK }) => buscarConhecimentoMisto({ query, topK, db, codeSearchEnabled: process.env.SOLARIS_CODE_SEARCH_ENABLED === 'true' })
     : null;
 const solarisChat = criarSolarisChat({ buscarConhecimento });
-const modelRouter  = criarModelRouter();
+const modelRouter = criarModelRouter();
 const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
-
 // A reserva financeira é ativada SOMENTE por opção explícita na VPS.
 // Enquanto desligada, o fluxo usa os mesmos objetos singleton de antes.
 const livroOrcamento = criarLivroRazaoIa(db);
@@ -86,8 +83,7 @@ const verificarCreditosSolaris = criarGateCreditosSolarisV2({
     consultar: (email) => livroOrcamento.consultar(email),
 });
 // Só as chamadas do Solaris migram: outros serviços seguem seu próprio gate.
-const debitarSomenteSeLegado = (...args) =>
-    debitoLegadoSolaris(modoCreditosSolarisV2(), debitarCreditos)(...args);
+const debitarSomenteSeLegado = (...args) => debitoLegadoSolaris(modoCreditosSolarisV2(), debitarCreditos)(...args);
 function dependenciasPorRequisicao(req, ferramenta = 'solaris-chat') {
     if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
         return { modelRouter, solarisChat, orquestrador };
@@ -119,7 +115,6 @@ function dependenciasPorRequisicao(req, ferramenta = 'solaris-chat') {
         orquestrador: criarOrquestrador({ modelRouter: routerUsuario, buscarConhecimento }),
     };
 }
-
 let solarisAgent = null;
 async function getSolarisAgent() {
     if (!solarisAgent) {
@@ -128,7 +123,6 @@ async function getSolarisAgent() {
     }
     return solarisAgent;
 }
-
 // Prévia opt-in: read-only; não substitui /api/dashboard/stats nem debita créditos legados.
 router.get('/api/ai-credits/v2', exigirLogin, criarHandlerResumoCreditosV2({
     consultarSaldo: (email) => livroOrcamento.consultar(email),
@@ -138,99 +132,144 @@ router.get('/api/ai-credits/v2/history', exigirLogin, criarHandlerHistoricoCredi
     listar: (email, cursor) => livroOrcamento.listarExtratoPagina(email, 20, cursor),
     habilitado: () => process.env.AI_CREDITS_V2_PREVIEW === 'true' || modoCreditosSolarisV2() === 'ativo',
 }));
-
 // GitHub App: autorização individual de cada usuário. Nunca usar token da Softload
 // nem pedir PAT pela UI. A App GitHub precisa ser instalada/autorizada uma vez.
-const githubLimiter = rateLimit({windowMs: 15 * 60 * 1000,max: 20,
-    standardHeaders: 'draft-7',legacyHeaders: false});
+const githubLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20,
+    standardHeaders: 'draft-7', legacyHeaders: false });
 function mesmaOrigemGithub(req, res, next) {
     const origin = req.get('origin');
     // Apenas requests do frontend local; POST/DELETE cross-site falham fechados.
     const esperado = (process.env.BASE_URL || 'https://softload.analysepro.com').replace(/\/$/, '');
-    if (!origin || origin !== esperado) return res.status(403).json({erro:'Origem da requisição inválida.'});
+    if (!origin || origin !== esperado)
+        return res.status(403).json({ erro: 'Origem da requisição inválida.' });
     next();
 }
-router.get('/dashboard/solaris/github/status', exigirLogin, async (req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { return res.json(await githubApp.status(req.session.user.uid)); }
-    catch (_) { return res.status(503).json({erro:'Não foi possível consultar conexão GitHub.'}); }
+router.get('/dashboard/solaris/github/status', exigirLogin, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        return res.json(await githubApp.status(req.session.user.uid));
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(503).json({ erro: 'Não foi possível consultar conexão GitHub.' });
+    }
 });
-router.get('/dashboard/solaris/github/connect', exigirLogin, githubLimiter, async(req,res)=>{
-    try { return res.redirect(await githubApp.begin(req)); }
-    catch (_) { return res.redirect('/dashboard/solaris?github=setup'); }
+router.get('/dashboard/solaris/github/connect', exigirLogin, githubLimiter, async (req, res) => {
+    try {
+        return res.redirect(await githubApp.begin(req));
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.redirect('/dashboard/solaris?github=setup');
+    }
 });
-router.get('/dashboard/solaris/github/install', exigirLogin, githubLimiter, (req,res)=>{
+router.get('/dashboard/solaris/github/install', exigirLogin, githubLimiter, (req, res) => {
     const url = githubApp.installUrl();
-    if (!url) return res.redirect('/dashboard/solaris?github=setup');
+    if (!url)
+        return res.redirect('/dashboard/solaris?github=setup');
     return res.redirect(url);
 });
-router.get('/dashboard/solaris/github/callback', exigirLogin, githubLimiter, async(req,res)=>{
+router.get('/dashboard/solaris/github/callback', exigirLogin, githubLimiter, async (req, res) => {
     try {
-        if (req.query.error) return res.redirect('/dashboard/solaris?github=denied');
-        await githubApp.finish(req,req.query);
+        if (req.query.error)
+            return res.redirect('/dashboard/solaris?github=denied');
+        await githubApp.finish(req, req.query);
         return res.redirect('/dashboard/solaris?github=connected');
-    } catch (_) { return res.redirect('/dashboard/solaris?github=error'); }
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.redirect('/dashboard/solaris?github=error');
+    }
 });
-router.get('/dashboard/solaris/github/repositories', exigirLogin, githubLimiter, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { return res.json(await githubApp.listRepos(req.session.user.uid)); }
-    catch (_) { return res.status(503).json({erro:'Não foi possível listar os repositórios autorizados da GitHub App.'}); }
+router.get('/dashboard/solaris/github/repositories', exigirLogin, githubLimiter, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        return res.json(await githubApp.listRepos(req.session.user.uid));
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(503).json({ erro: 'Não foi possível listar os repositórios autorizados da GitHub App.' });
+    }
 });
-router.post('/dashboard/solaris/github/repository', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { const repository = await githubApp.selectRepo(req.session.user.uid,req.body?.repository);
-        return res.json({ok:true,repository}); }
-    catch (_) { return res.status(400).json({erro:'Verifique o repositório e as permissões da GitHub App.'}); }
+router.post('/dashboard/solaris/github/repository', exigirLogin, githubLimiter, mesmaOrigemGithub, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        const repository = await githubApp.selectRepo(req.session.user.uid, req.body?.repository);
+        return res.json({ ok: true, repository });
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(400).json({ erro: 'Verifique o repositório e as permissões da GitHub App.' });
+    }
 });
-router.delete('/dashboard/solaris/github/disconnect', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { await githubApp.disconnect(req.session.user.uid);return res.json({ok:true}); }
-    catch (_) { return res.status(503).json({erro:'Não foi possível desconectar GitHub.'}); }
+router.delete('/dashboard/solaris/github/disconnect', exigirLogin, githubLimiter, mesmaOrigemGithub, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        await githubApp.disconnect(req.session.user.uid);
+        return res.json({ ok: true });
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(503).json({ erro: 'Não foi possível desconectar GitHub.' });
+    }
 });
-
 // Gateway de ferramentas: vinculado ao UID da sessão, nunca aceita token/repo do corpo.
-router.post('/dashboard/solaris/github/action', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
+router.post('/dashboard/solaris/github/action', exigirLogin, githubLimiter, mesmaOrigemGithub, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
     try {
         // Ações de escrita só pelo endpoint de aprovação humana da proposta
         // armazenada no Firestore. Nunca confie em confirm:true no body do cliente.
-        if (!['repository_get','file_read','pull_requests_list'].includes(req.body?.action))
-            return res.status(403).json({ok:false,erro:'Gravações exigem aprovação de proposta no painel.'});
+        if (!['repository_get', 'file_read', 'pull_requests_list'].includes(req.body?.action))
+            return res.status(403).json({ ok: false, erro: 'Gravações exigem aprovação de proposta no painel.' });
         const result = await githubOperations.execute(req.session.user.uid, req.body);
-        return res.json({ok:true,result});
-    } catch (err) {
+        return res.json({ ok: true, result });
+    }
+    catch (errCaught) {
+        const err = errCaught;
         const status = err instanceof GithubOperationError ? err.status : 503;
-        return res.status(status).json({ok:false,erro:status===503
-            ? 'Serviço GitHub indisponível no momento.' : err.message});
+        return res.status(status).json({ ok: false, erro: status === 503
+                ? 'Serviço GitHub indisponível no momento.' : err.message });
     }
 });
-
 // Aprovação isolada do modelo: nunca aceita conteúdo/caminho/branch do browser.
-router.get('/dashboard/solaris/github/pending', exigirLogin, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { return res.json(await githubAgent.pending(req.session.user.uid)); }
-    catch (_) { return res.status(503).json({erro:'Não foi possível carregar a proposta GitHub.'}); }
+router.get('/dashboard/solaris/github/pending', exigirLogin, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        return res.json(await githubAgent.pending(req.session.user.uid));
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(503).json({ erro: 'Não foi possível carregar a proposta GitHub.' });
+    }
 });
-router.post('/dashboard/solaris/github/approve', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { return res.json(await githubAgent.approve(req.session.user.uid)); }
-    catch (err) { const status = err instanceof GithubOperationError ? err.status : 503;
-        return res.status(status).json({erro:status===503
-            ? 'Falha ao publicar. Verifique a branch de trabalho antes de tentar novamente.' : err.message}); }
+router.post('/dashboard/solaris/github/approve', exigirLogin, githubLimiter, mesmaOrigemGithub, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        return res.json(await githubAgent.approve(req.session.user.uid));
+    }
+    catch (errCaught) {
+        const err = errCaught;
+        const status = err instanceof GithubOperationError ? err.status : 503;
+        return res.status(status).json({ erro: status === 503
+                ? 'Falha ao publicar. Verifique a branch de trabalho antes de tentar novamente.' : err.message });
+    }
 });
-router.delete('/dashboard/solaris/github/pending', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
-    res.set('Cache-Control','no-store, private');
-    try { return res.json(await githubAgent.reject(req.session.user.uid)); }
-    catch (_) { return res.status(503).json({erro:'Não foi possível cancelar a proposta.'}); }
+router.delete('/dashboard/solaris/github/pending', exigirLogin, githubLimiter, mesmaOrigemGithub, async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    try {
+        return res.json(await githubAgent.reject(req.session.user.uid));
+    }
+    catch (_Caught) {
+        const _ = _Caught;
+        return res.status(503).json({ erro: 'Não foi possível cancelar a proposta.' });
+    }
 });
-
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {
     res.render('pages/react-test', {
         activePage: 'solaris',
         user: req.session.user
     });
 });
-
 // Análise de layout OPT-IN: chama o sandbox isolado (sem usar o Agent
 // em modo full e sem conceder acesso à shell). Uma única foto por pedido.
 // Sem SOLARIS_VISUAL_REVIEW_ENABLED e SOLARIS_AI_BUDGET_ENFORCE,
@@ -251,9 +290,7 @@ router.get('/dashboard/solaris/visual-review/status', exigirLogin, async (_req, 
     // Testa /health do destino real, rejeitando sandbox offline, legado
     // ou archive-only ANTES de liberar o botão no frontend.
     res.setHeader('Cache-Control', 'no-store, private');
-    const ready = VISUAL_ENABLED && await browserSandboxReady(
-        process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL,
-    );
+    const ready = VISUAL_ENABLED && await browserSandboxReady(process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL);
     res.status(200).json({
         enabled: Boolean(ready),
         origins: VISUAL_PREVIEW_ORIGINS.split(',').map(s => s.trim()).filter(Boolean),
@@ -266,12 +303,13 @@ const visualLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: req => req.session?.user?.uid || req.ip,
-    handler: (_req, res) => res.status(429).json({error:'Limite de auditorias visuais atingido. Tente mais tarde.'}),
+    handler: (_req, res) => res.status(429).json({ error: 'Limite de auditorias visuais atingido. Tente mais tarde.' }),
 });
 async function capturarParaVisual({ url, device }) {
     const serviceUrl = process.env.SANDBOX_BROWSER_SERVICE_URL || process.env.SANDBOX_SERVICE_URL;
     const secret = process.env.SANDBOX_BROWSER_SHARED_SECRET || process.env.SANDBOX_SHARED_SECRET;
-    if (!serviceUrl || !secret) throw new Error('Sandbox visual sem URL/segredo configurados.');
+    if (!serviceUrl || !secret)
+        throw new Error('Sandbox visual sem URL/segredo configurados.');
     const response = await fetch(serviceUrl.replace(/[/]+$/, '') + '/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-sandbox-secret': secret },
@@ -284,10 +322,13 @@ async function capturarParaVisual({ url, device }) {
     });
     // A fronteira HTTP pode conter imagem em base64: limite antes de parsear.
     const sizeHeader = Number(response.headers.get('content-length'));
-    if (sizeHeader > 900000) throw new Error('Resposta do sandbox excedeu limite visual.');
-    if (!response.ok) throw new Error('Captura no sandbox falhou.');
+    if (sizeHeader > 900000)
+        throw new Error('Resposta do sandbox excedeu limite visual.');
+    if (!response.ok)
+        throw new Error('Captura no sandbox falhou.');
     const text = await response.text();
-    if (text.length > 900000) throw new Error('Resposta do sandbox excedeu limite visual.');
+    if (text.length > 900000)
+        throw new Error('Resposta do sandbox excedeu limite visual.');
     return JSON.parse(text);
 }
 const visualHandler = criarHandlerVisual({
@@ -296,7 +337,8 @@ const visualHandler = criarHandlerVisual({
     capturar: capturarParaVisual,
     criarRouter: req => {
         const protegida = criarClienteGeminiComOrcamento(() => {
-            if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY ausente.');
+            if (!process.env.GEMINI_API_KEY)
+                throw new Error('GEMINI_API_KEY ausente.');
             return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         }, {
             email: req.session.user.email,
@@ -311,11 +353,10 @@ const visualHandler = criarHandlerVisual({
 });
 router.post('/dashboard/solaris/visual-review', exigirLogin, (req, res, next) => {
     if (!VISUAL_ENABLED) {
-        return res.status(404).json({error:'visual_review_disabled'});
+        return res.status(404).json({ error: 'visual_review_disabled' });
     }
     return next();
 }, visualLimiter, verificarCreditosSolaris, visualHandler);
-
 // ──────────────────────────────────────────────────────────────────────────
 // POST /dashboard/solaris/chat/stream — mesmo protocolo de eventos SSE
 // genérico usado em todo o projeto (status/chunk/done/error). Streaming
@@ -342,7 +383,8 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
     const githubChat = ghMode ? {
         async *perguntarStream(contextAndMessage, history, tokensRef) {
             const uid = req.session?.user?.uid;
-            if (!uid) throw Error('Sessão expirada.');
+            if (!uid)
+                throw Error('Sessão expirada.');
             const status = await githubApp.status(uid);
             const access = resolveGithubChatAccess(status, req.body.githubRepository);
             if (access.mode === 'public-readonly') {
@@ -350,8 +392,8 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
                 return;
             }
             const result = await githubAgent.prepare({
-                uid, repository:req.body.githubRepository, message:req.body.message,
-                history,context:contextAndMessage,modelRouter:deps.modelRouter
+                uid, repository: req.body.githubRepository, message: req.body.message,
+                history, context: contextAndMessage, modelRouter: deps.modelRouter
             });
             Object.assign(tokensRef, result.tokens);
             yield result.text;
@@ -365,14 +407,14 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
             ? debitarSomenteSeLegado : debitarCreditos,
         contextoRepositorioPublico: async (repo) => {
             const uid = req.session?.user?.uid;
-            if (!uid) throw Error('Sessão expirada.');
+            if (!uid)
+                throw Error('Sessão expirada.');
             const status = await githubApp.status(uid);
             const access = resolveGithubChatAccess(status, repo);
             return access.mode === 'agent' ? githubApp.repoContext(uid, access.repository) : contextoRepositorioPublico(repo);
         },
     })(req, res);
 });
-
 // ──────────────────────────────────────────────────────────────────────────
 // POST /dashboard/solaris/upload — detector de framework a partir de
 // upload (ver src/solaris/README.md). Princípio de segurança: todo
@@ -408,7 +450,6 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
 // a resposta — a detecção de framework é sempre determinística.
 // ──────────────────────────────────────────────────────────────────────────
 const UPLOAD_MAX_BYTES = 15 * 1024 * 1024; // 15MB no arquivo .zip em si (compactado)
-
 const uploadLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 5,
@@ -416,7 +457,6 @@ const uploadLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res) => res.status(429).json({ error: 'Muitos envios. Aguarde alguns minutos antes de tentar de novo.' }),
 });
-
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: UPLOAD_MAX_BYTES, files: 1 },
@@ -431,7 +471,6 @@ const upload = multer({
         cb(null, true);
     },
 });
-
 const depsUploadSolaris = {
     upload, chatStorage, extrairZipViaSandbox, criarArquivo, listarProjeto, lerArquivo, detectarFramework,
     inspecionarProjeto, modelRouter, debitarCreditos, salvarProjeto,
@@ -446,7 +485,5 @@ router.post('/dashboard/solaris/upload', exigirLogin, uploadLimiter, verificarCr
         debitarCreditos: debitarSomenteSeLegado,
     })(req, res);
 });
-
 router.SOLARIS_CHAT_SESSION_TYPE = SOLARIS_CHAT_SESSION_TYPE;
 module.exports = router;
-

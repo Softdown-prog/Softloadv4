@@ -263,6 +263,16 @@ jobs:
         run: |
           node --test scripts/serverEntrypoint.test.cjs scripts/rootCli.test.cjs scripts/browserSentinel.test.cjs
           npm run typecheck:forge-index
+      - name: Regressões das seis rotas finais sem APIs externas
+        run: >-
+          node --test src/routes/finalRoutes.contract.test.cjs
+          src/routes/dashboard_routes/chat/chatPersistence.test.js
+          src/routes/dashboard_routes/workspaceChat.persistence.test.js
+          src/routes/dashboard_routes/workspace.access.test.js
+          src/services/mpPlanRules.test.js src/services/workspaceCreditReservations.test.js
+          src/services/solarisGithubAgent.test.js src/services/solarisGithubApp.test.js
+          src/services/solarisGithubOperations.test.js
+          src/solaris/http/solarisProUsage.test.js src/solaris/http/solarisProUsage.boundaries.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

@@ -1,13 +1,13 @@
 'use strict';
 interface UsageMetadata { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number; cachedContentTokenCount?: number }
-interface ArchitectureOptions { prompt?: unknown; [field: string]: unknown }
-interface ArchitectureAnswer { text?: unknown; usageMetadata?: UsageMetadata; [field: string]: unknown }
+type ArchitectureOptions = {prompt: string; responseSchema?: Record<string, unknown>};
+type ArchitectureAnswer = import('../llm/modelRouter').GeminiResponse;
 interface ArchitectureRouter { executarTarefaArquitetura(options: ArchitectureOptions): Promise<ArchitectureAnswer> }
 interface UsageCount { input: number; output: number; chamadas: number; estimadas: number }
 interface OrchestratorSetup<T> {
   modelRouter: ArchitectureRouter;
-  buscarConhecimento: unknown;
-  criarOrquestrador(args: { modelRouter: ArchitectureRouter; buscarConhecimento: unknown }): T;
+  buscarConhecimento: import('../pipeline/orchestrator').OrquestradorOptions['buscarConhecimento'];
+  criarOrquestrador(args: { modelRouter: ArchitectureRouter; buscarConhecimento: import('../pipeline/orchestrator').OrquestradorOptions['buscarConhecimento'] }): T;
 }
 declare const require: (id: string) => unknown;
 declare const module: { exports: unknown };
@@ -19,7 +19,7 @@ declare const module: { exports: unknown };
  * O ledger V2 (quando ativado) continua responsável pela cobrança monetária
  * por chamada; esta agregação atende auditoria e débito do modo legado.
  */
-const {extrairTokensFaturaveisGemini}=require('../../services/geminiCost') as { extrairTokensFaturaveisGemini(usage: UsageMetadata | undefined): { entrada: number; saida: number } | null };
+const {extrairTokensFaturaveisGemini}=require('../../services/geminiCost') as { extrairTokensFaturaveisGemini(usage: UsageMetadata | null | undefined): { entrada: number; saida: number } | null };
 
 function criarOrquestradorComMedicao<T>({modelRouter,buscarConhecimento,criarOrquestrador}: OrchestratorSetup<T>): {orquestrador:T;contagem:UsageCount} {
   if(!modelRouter || typeof modelRouter.executarTarefaArquitetura!=='function'
@@ -47,3 +47,6 @@ function criarOrquestradorComMedicao<T>({modelRouter,buscarConhecimento,criarOrq
 module.exports={criarOrquestradorComMedicao};
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { criarOrquestradorComMedicao: typeof criarOrquestradorComMedicao };

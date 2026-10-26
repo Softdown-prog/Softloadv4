@@ -46,3 +46,6 @@ function criarGateCreditosWorkspace({db, clock=()=>Date.now()}: GateOptions) {
 }
 module.exports={criarGateCreditosWorkspace};
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { criarGateCreditosWorkspace: typeof criarGateCreditosWorkspace };

@@ -6,7 +6,7 @@ interface GenerationValidation { checked: number; ok: boolean; retried: boolean;
 interface GenerationResult {
     fullText: string;
     downloadUrl: string | null;
-    novoSnapshot: unknown | null;
+    novoSnapshot: ReturnType<import('./chatTemplateCompiler').RouteExports['_snapshotDeManifesto']> | null;
     codeValidation: GenerationValidation | null;
 }
 interface GenerationOptions {
@@ -44,7 +44,7 @@ const { _validarECorrigir } = require('./chatCodeValidator') as {
     _validarECorrigir(text: string, message: string, isGpt: boolean, tokens: GenerationTokens, send: GenerationOptions['sendEvent']): Promise<{ finalText: string; validation: GenerationValidation }>;
 };
 const { _compilarParaChat } = require('./chatTemplateCompiler') as {
-    _compilarParaChat(blueprint: unknown, user: unknown, send: GenerationOptions['sendEvent'], options: { wsProjetoId: string | null; wsSessionId: string | null }): Promise<{ downloadUrl: string | null; snapshot: unknown | null }>;
+    _compilarParaChat(blueprint: unknown, user: unknown, send: GenerationOptions['sendEvent'], options: { wsProjetoId: string | null; wsSessionId: string | null }): Promise<{ downloadUrl: string | null; snapshot: ReturnType<import('./chatTemplateCompiler').RouteExports['_snapshotDeManifesto']> | null }>;
 };
 const { buscarRagRelevante, montarContextoRag } = require('./chatRag') as {
     buscarRagRelevante(msg: string): unknown[];
@@ -107,7 +107,7 @@ async function gerarComPossivelTemplate({
 }: GenerationOptions): Promise<GenerationResult> {
     let fullText     = '';
     let downloadUrl: string | null = null;
-    let novoSnapshot: unknown | null = null;
+    let novoSnapshot: ReturnType<import('./chatTemplateCompiler').RouteExports['_snapshotDeManifesto']> | null = null;
 
     let sistemaFinal = permitirGeracao ? SISTEMA_GERACAO : SISTEMA_SUPORTE;
 
@@ -290,3 +290,6 @@ async function gerarComPossivelTemplate({
 module.exports = { gerarComPossivelTemplate, TEMPLATE_MARKER_RE };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { gerarComPossivelTemplate: typeof gerarComPossivelTemplate };

@@ -12,9 +12,9 @@ export interface ToolDeclaration { name: string; description: string; parameters
 export interface ToolGroup { functionDeclarations: ToolDeclaration[] }
 export interface EditorState { propostas: Map<string, PropostaSolaris>; criadasNesteTurno: Set<string>; mudancasAplicadas: MudancaSolaris[] }
 export type PersistirMudancas = (mudancas: MudancaSolaris[]) => Promise<unknown>;
-export interface ModelRouter { executarTarefaComFerramentas(opcoes: { prompt: string; systemInstruction: string; tools: ToolGroup[]; executorFerramenta(nome: string, args: ToolArgs): unknown | Promise<unknown>; maxToolCalls: number; onProgress?: ((evento: unknown) => void) | undefined }): Promise<{ texto?: string; iteracoes: number; tokens: Record<string, unknown> }> }
+export interface ModelRouter { executarTarefaComFerramentas(opcoes: { prompt: string; systemInstruction: string; tools: ToolGroup[]; executorFerramenta(nome: string, args: ToolArgs): unknown | Promise<unknown>; maxToolCalls: number; onProgress?: ((evento: unknown) => void) | undefined }): Promise<{ texto?: string; iteracoes: number; tokens: {input?: number; output?: number; total?: number} }> }
 export interface ProjectEditorOptions { baseDir?: string; framework?: string | null; arquivos?: string[]; mensagem?: string; historico?: HistoricoSolaris[]; propostasPendentes?: PropostaSolaris[]; modelRouter?: ModelRouter; aplicarMudancasReal?: PersistirMudancas; onProgress?: (evento: unknown) => void }
-export type ProjectEditorResult = { ok: false; motivo: string } | { ok: true; resposta: string; propostasFinais: PropostaSolaris[]; mudancasAplicadas: MudancaSolaris[]; iteracoes: number; tokens: Record<string, unknown> };
+export type ProjectEditorResult = { ok: false; motivo: string } | { ok: true; resposta: string; propostasFinais: PropostaSolaris[]; mudancasAplicadas: MudancaSolaris[]; iteracoes: number; tokens: {input?: number; output?: number; total?: number} };
 
 // ============================================================
 // SOLARIS PROJECT EDITOR (Fase 2d)

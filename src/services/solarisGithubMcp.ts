@@ -105,3 +105,6 @@ function createSolarisGithubMcp(githubApp: GithubApp, { fetchImpl = fetch }: { f
 module.exports = { createSolarisGithubMcp, parseMcpPayload, safePath };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { createSolarisGithubMcp: typeof createSolarisGithubMcp };

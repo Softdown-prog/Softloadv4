@@ -258,6 +258,16 @@ async function run() {
         } finally { console.warn = oldWarn; }
     }
 
+    // N. SDK pode retornar resposta sem texto: mantém diagnóstico, sem conteúdo undefined.
+    {
+        const orq = criarOrquestrador({ modelRouter: fakeModelRouter() });
+        const manifesto = await orq.gerarManifesto({ objetivo: 'x', framework: 'html5' });
+        assert('resposta sem texto não vira manifesto válido', manifesto.ok === false);
+        const arquivo = await orq.gerarArquivo({ manifesto: MANIFESTO_OK, arquivo: MANIFESTO_OK.arquivos[0] });
+        assert('arquivo sem texto é normalizado para string vazia', arquivo.conteudo === '');
+        assert('worker rejeita arquivo sem texto', arquivo.ok === false);
+    }
+
 }
 
 run().then(() => {

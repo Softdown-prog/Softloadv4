@@ -1,6 +1,6 @@
 'use strict';
 interface EdicaoUsuario { email: string; [key: string]: unknown }
-interface ManifestoEdicao { siteName?: string; colorPreset?: string; nichoTema?: string; [key: string]: unknown }
+interface ManifestoEdicao { siteName?: string; colorPreset?: string; nichoTema?: string | null; [key: string]: unknown }
 interface PropostaEdicao { campos: unknown; resumo: string }
 interface RespostaAgente {
     resposta: string;
@@ -147,3 +147,6 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
 module.exports = { processarEdicaoDeTemplate };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { processarEdicaoDeTemplate: typeof processarEdicaoDeTemplate };

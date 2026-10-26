@@ -2,8 +2,8 @@ import type { Bucket } from '@google-cloud/storage';
 import type { Firestore } from 'firebase-admin/firestore';
 export interface ChatStorageQuota { email: string; plano: string }
 export interface ChatStoredTokens { total?: number; input?: number; output?: number }
-export interface ChatStoredMessage { role?: string; content?: string; ts?: string | number; [key: string]: unknown }
-export interface ChatSessionMeta { commandJson?: { siteName?: string | null; colorPreset?: string | null; gridLayout?: string | null; heroSection?: string | null }; templateGenerated?: boolean; [key: string]: unknown }
+export interface ChatStoredMessage { role?: string; content?: string; ts?: string | number; tokens?: ChatStoredTokens }
+export interface ChatSessionMeta { edicaoProjetoPendente?: import('../solaris/pipeline/projectEditor').PropostaSolaris[]; commandJson?: { siteName?: string | null; colorPreset?: string | null; gridLayout?: string | null; heroSection?: string | null }; templateGenerated?: boolean; [key: string]: unknown }
 export interface ChatSessionPayload { messages: ChatStoredMessage[]; tokens?: ChatStoredTokens; meta?: ChatSessionMeta }
 export interface ChatStoredSession extends ChatSessionPayload { sessionId: string; uid: string; type: string; updatedAt: string; meta: ChatSessionMeta }
 export interface ChatSessionIndexEntry { sessionId: string; firstMessage: string; updatedAt: string; messageCount: number }

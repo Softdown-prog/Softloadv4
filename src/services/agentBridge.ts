@@ -117,3 +117,6 @@ module.exports = {
 };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { getAgent: (role?: string) => Promise<RemoteAgent> };

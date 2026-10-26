@@ -55,6 +55,10 @@ export function detectarMarcador(textoCompleto: unknown): SolarisGenerationMarke
     return { textoVisivel, objetivo, framework, erro: null };
 }
 
+export function removerMarcadorTruncado(texto: string): string;
+export function removerMarcadorTruncado(texto: null | undefined): null | undefined;
+export function removerMarcadorTruncado(texto: string | null | undefined): string | null | undefined;
+
 /**
  * Remove um marcador TRUNCADO (sem "]]" de fechamento) do texto — caso
  * o streaming seja interrompido no meio da emissão do marcador (usuário

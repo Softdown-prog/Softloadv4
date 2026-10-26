@@ -80,3 +80,6 @@ async function contextoRepositorioPublico(repo: string, {fetchImpl=fetch,token=n
 module.exports={normalizarRepositorioGithub,validarFerramentaSolaris,instrucoesForge,contextoRepositorioPublico};
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { contextoRepositorioPublico: typeof contextoRepositorioPublico };

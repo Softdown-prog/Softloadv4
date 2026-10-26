@@ -263,7 +263,13 @@
     "src/routes/dashboard_routes/historico.ts",
     "src/routes/authRoutes.ts",
     "server.ts",
-    "cli.ts"
+    "cli.ts",
+    "src/routes/adminRoutes.ts",
+    "src/routes/apiRoutes.ts",
+    "src/routes/dashboard_routes/chat.ts",
+    "src/routes/dashboard_routes/solaris.ts",
+    "src/routes/dashboard_routes/workspace.ts",
+    "src/routes/dashboard_routes/workspaceChat.ts"
   ],
   "exclude": [
     "node_modules",

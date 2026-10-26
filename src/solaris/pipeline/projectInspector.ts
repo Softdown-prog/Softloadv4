@@ -14,7 +14,7 @@ export interface InspectionToolSchema {
 export interface InspectionRouterResponse {
     texto?: string;
     iteracoes: number;
-    tokens: Record<string, unknown>;
+    tokens: { input?: number; output?: number; total?: number };
 }
 export interface InspectionModelRouter {
     executarTarefaComFerramentas(options: {
@@ -38,7 +38,7 @@ interface ReadOnlyLoopOptions {
     modelRouter: InspectionModelRouter;
 }
 export type ProjectInspectionResult =
-    | { ok: true; resumo: string; iteracoes: number; tokens: Record<string, unknown> }
+    | { ok: true; resumo: string; iteracoes: number; tokens: { input?: number; output?: number; total?: number } }
     | { ok: false; motivo: string };
 declare function require(name: string): unknown;
 

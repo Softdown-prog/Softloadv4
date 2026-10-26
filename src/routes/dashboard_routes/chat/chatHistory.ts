@@ -29,3 +29,6 @@ function montarHistoricoSeguro(history: unknown, histLen: number): ChatHistoryMe
 }
 
 module.exports = { montarHistoricoSeguro };
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { montarHistoricoSeguro: typeof montarHistoricoSeguro };

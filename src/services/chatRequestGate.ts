@@ -62,3 +62,6 @@ async function registrarRequisicaoChat(db: ChatGateDb, uid: unknown, produto: un
 module.exports = { registrarRequisicaoChat };
 
 export {};
+
+/** Exact CommonJS dependency surface consumed by the HTTP routes. */
+export type RouteExports = { registrarRequisicaoChat: typeof registrarRequisicaoChat };

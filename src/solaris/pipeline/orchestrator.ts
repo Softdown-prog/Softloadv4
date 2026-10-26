@@ -14,7 +14,7 @@ export interface GerarManifestoOptions { objetivo: string; framework: string; co
 export interface GerarArquivoOptions { manifesto: ManifestoSolaris; arquivo: ArquivoManifestoSolaris; baseDir?: string | null; assets?: AssetForgeGerado[]; contextoSemantico?: string }
 export interface GerarProjetoOptions { objetivo: string; framework: string; baseDir?: string | null }
 export type BuscarConhecimentoSolaris = (input: { query: string; topK: number }) => Promise<RagContextSearchResponse>;
-export interface ArquiteturaRouterSolaris { executarTarefaArquitetura(args: { prompt: string; responseSchema?: Record<string, unknown> }): Promise<{ text: string }> }
+export interface ArquiteturaRouterSolaris { executarTarefaArquitetura(args: { prompt: string; responseSchema?: Record<string, unknown> }): Promise<{ text?: string }> }
 export interface OrquestradorOptions { modelRouter: ArquiteturaRouterSolaris; buscarConhecimento?: BuscarConhecimentoSolaris | null }
 export interface OrquestradorSolaris {
     gerarManifesto(options: GerarManifestoOptions): Promise<ValidacaoManifestoSolaris>;
@@ -130,7 +130,7 @@ export function criarOrquestrador({ modelRouter, buscarConhecimento = null }: Or
 
             let bruto: unknown;
             try {
-                bruto = JSON.parse(textoJson);
+                bruto = JSON.parse(textoJson as string);
             } catch (_) {
                 return { ok: false, erros: ['resposta do modelo não é JSON válido.'], avisos: [], manifesto: null };
             }
@@ -144,7 +144,7 @@ export function criarOrquestrador({ modelRouter, buscarConhecimento = null }: Or
             const resposta = await modelRouter.executarTarefaArquitetura({
                 prompt: _promptArquivo(manifesto, arquivo, assets, contextoSemantico),
             });
-            const conteudo = resposta.text;
+            const conteudo = resposta.text || '';
 
             let resultado: ArquivoGeradoSolaris;
             if (!worker) {
