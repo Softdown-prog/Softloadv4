@@ -44,7 +44,7 @@ router.post('/contato', contatoLimiter, async (req, res) => {
             return res.redirect('/contato?erro=E-mail inválido. Verifique o endereço digitado.');
         }
         if (!REGEX_MENSAGEM.test(mensagem)) {
-            return res.redirect('/contato?erro=A mensagem contém caracteres não permitidos. Apenas letras, números e "?" são aceitos.');
+            return res.redirect('/contato?erro=A mensagem contém caracteres não permitidos. Use texto e pontuação comum, sem código HTML.');
         }
         if (contarPalavras(mensagem) > 100) {
             return res.redirect('/contato?erro=A mensagem deve ter no máximo 100 palavras.');

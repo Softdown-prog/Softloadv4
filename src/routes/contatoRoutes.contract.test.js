@@ -75,3 +75,15 @@ test('envia mensagem válida com destinatário esperado e não vaza falha SMTP',
     await down.post.handler({body:{nome:'Maria Silva',email:'maria@example.test',mensagem:'Olá pessoal!'}},failed);
     assert.match(failed.result.url,/Falha ao enviar/);
 });
+
+test('aceita pontuação comum no contato e orienta sem mensagem enganosa',async()=>{
+    const f=fixture(),res=f.res();
+    await f.post.handler({body:{nome:'Ana Silva',email:'ana@example.test',
+        mensagem:'Olá, tudo bem? Preciso de ajuda com CSS: color #fff; e widgets (Blogger).'}},res);
+    assert.equal(f.mail.length,1);
+    assert.match(res.result.url,/sucesso=/);
+    const rejected=f.res();
+    await f.post.handler({body:{nome:'Ana Silva',email:'ana@example.test',
+        mensagem:'<script>alert(1)</script>'}},rejected);
+    assert.match(rejected.result.url,/sem código HTML/);
+});

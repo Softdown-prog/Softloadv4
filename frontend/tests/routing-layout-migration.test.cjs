@@ -482,3 +482,17 @@ test('templates EJS das páginas externas compilam', () => {
     assert.doesNotThrow(()=>ejs.compile(fs.readFileSync(file,'utf8'),{filename:file}),name);
   }
 });
+
+test('documentos legais descrevem Solaris, GitHub, conteúdo e limites reais de créditos',()=>{
+  const terms=source('views/pages/termos-de-uso.ejs');
+  const privacy=source('views/pages/privacidade.ejs');
+  assert.match(terms,/Solaris Code/);
+  assert.match(terms,/GitHub/);
+  assert.match(terms,/saldo de créditos e limites de uso/);
+  assert.doesNotMatch(terms,/Créditos funcionam como contadores de uso analítico/);
+  for(const required of ['Conteúdo das ferramentas','Inteligência artificial e arquivos',
+                         'Integração com GitHub','Google Gemini','Acesso, correção e exclusão']){
+    assert.ok(privacy.includes(required),required);
+  }
+  assert.match(privacy,/pageCanonical: '\/privacidade'/);
+});

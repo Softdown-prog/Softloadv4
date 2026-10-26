@@ -69,7 +69,7 @@ router.post('/contato', contatoLimiter, async (req, res) => {
         }
 
         if (!REGEX_MENSAGEM.test(mensagem)) {
-            return res.redirect('/contato?erro=A mensagem contém caracteres não permitidos. Apenas letras, números e "?" são aceitos.');
+            return res.redirect('/contato?erro=A mensagem contém caracteres não permitidos. Use texto e pontuação comum, sem código HTML.');
         }
 
         if (contarPalavras(mensagem) > 100) {
