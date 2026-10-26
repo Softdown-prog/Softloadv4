@@ -7,12 +7,12 @@ const { NICHO_PAGE_TYPE_MAP, PAGE_TYPES_SEM_SIDEBAR } = require('../../../core/b
 const { modulosPadraoDoNicho } = require('../../../core/nichoModuleDefaults');
 // Nomes técnicos que nunca devem ser usados como siteName
 const NOMES_TECNICOS_PROIBIDOS = new Set([
-    'saas-nexus','viral-magazine','noticias-mag-news','tecnologia-mag-tech',
-    'tecnologia-techwind','gamer-playerone','culinaria-boutique-gourmet',
-    'natureza-bulma-vegan','elearning-academy','pop-retro-pixel',
-    'portfolio-minimalista','biolink-social','brutalista-appcraft',
-    'appstore-bulma-mobile','base','blog','magazine','saas','portfolio',
-    'biolink','meu blog','meu site','teste','template','softload',
+    'saas-nexus', 'viral-magazine', 'noticias-mag-news', 'tecnologia-mag-tech',
+    'tecnologia-techwind', 'gamer-playerone', 'culinaria-boutique-gourmet',
+    'natureza-bulma-vegan', 'elearning-academy', 'pop-retro-pixel',
+    'portfolio-minimalista', 'biolink-social', 'brutalista-appcraft',
+    'appstore-bulma-mobile', 'base', 'blog', 'magazine', 'saas', 'portfolio',
+    'biolink', 'meu blog', 'meu site', 'teste', 'template', 'softload',
 ]);
 // Defaults de módulos por nicho vêm de nichoModuleDefaults.js — fonte única
 // de verdade compartilhada com compilerWorker.js (fluxo determinístico do
@@ -25,7 +25,7 @@ const NOMES_TECNICOS_PROIBIDOS = new Set([
  */
 function _blueprintParaManifesto(bp) {
     const cf = Array.isArray(bp.coreFeatures) ? bp.coreFeatures : [];
-    const pm = Array.isArray(bp.postModules)  ? bp.postModules  : [];
+    const pm = Array.isArray(bp.postModules) ? bp.postModules : [];
     // Rejeita siteName técnico — se a IA não perguntou o nome real, não compila
     const siteNameRaw = String(bp.siteName || '').trim();
     if (!siteNameRaw || NOMES_TECNICOS_PROIBIDOS.has(siteNameRaw.toLowerCase())) {
@@ -58,24 +58,24 @@ function _blueprintParaManifesto(bp) {
     const manifesto = {
         siteName: siteNameRaw,
         description: descriptionRaw || null,
-        nichoTema: bp.nichoTema      || null,
-        colorPreset: bp.colorPreset    || 'tech-blue',
-        buttonStyle: bp.buttonStyle    || 'default',
-        typography: bp.typography     || 'inter',
-        gridLayout: bp.gridLayout     || 'revista',
-        footerStyle: bp.footerStyle     || 'advanced-3-cols',
+        nichoTema: bp.nichoTema || null,
+        colorPreset: bp.colorPreset || 'tech-blue',
+        buttonStyle: bp.buttonStyle || 'default',
+        typography: bp.typography || 'inter',
+        gridLayout: bp.gridLayout || 'revista',
+        footerStyle: bp.footerStyle || 'advanced-3-cols',
         // designVoice: 'auto' é resolvido pelo compilerWorker via NICHO_DESIGN_VOICE_MAP
-        designVoice: bp.designVoice    || 'auto',
+        designVoice: bp.designVoice || 'auto',
         // landing-page, biolink e catalogo-produtos não têm sidebar de feed
         sidebarPosition: semSidebar ? 'none' : (bp.sidebarPosition || 'right'),
-        heroTitle: bp.heroTitle       || null,
-        heroSubtitle: bp.heroSubtitle    || null,
+        heroTitle: bp.heroTitle || null,
+        heroSubtitle: bp.heroSubtitle || null,
         enableSeo: cf.includes('seo-premium'),
         lazyLoad: cf.includes('lazy-load'),
         categoryBadges: (() => {
             if (!Array.isArray(bp.categoryBadges))
                 return [];
-            const PALETA = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
+            const PALETA = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
             return bp.categoryBadges.slice(0, 8).map((b, i) => {
                 if (b && typeof b === 'object' && b.nome)
                     return b;
@@ -85,37 +85,37 @@ function _blueprintParaManifesto(bp) {
         })(),
         modules: {
             darkMode: bp.darkMode === 'toggle-btn' || bp.darkMode === 'auto-system',
-            backToTop: nichoDefaults.backToTop       || false,
-            shareButtons: pm.includes('floating-share') || nichoDefaults.shareButtons    || false,
-            readingTime: pm.includes('reading-time')   || nichoDefaults.readingTime     || false,
-            readingProgress: pm.includes('reading-time')   || nichoDefaults.readingProgress || false,
-            toc: pm.includes('toc')            || nichoDefaults.toc             || false,
-            error404: pm.includes('error-404')      || nichoDefaults.error404        || false,
-            error404Theme: nichoDefaults.error404Theme    || '',
-            cookieBanner: pm.includes('cookie-banner')  || nichoDefaults.cookieBanner    || false,
-            dropcap: nichoDefaults.dropcap         || false,
-            reviewEngine: nichoDefaults.reviewEngine    || false,
-            sliderJson: comOverride('sliderJson',   nichoDefaults.sliderJson   || false),
+            backToTop: nichoDefaults.backToTop || false,
+            shareButtons: pm.includes('floating-share') || nichoDefaults.shareButtons || false,
+            readingTime: pm.includes('reading-time') || nichoDefaults.readingTime || false,
+            readingProgress: pm.includes('reading-time') || nichoDefaults.readingProgress || false,
+            toc: pm.includes('toc') || nichoDefaults.toc || false,
+            error404: pm.includes('error-404') || nichoDefaults.error404 || false,
+            error404Theme: nichoDefaults.error404Theme || '',
+            cookieBanner: pm.includes('cookie-banner') || nichoDefaults.cookieBanner || false,
+            dropcap: nichoDefaults.dropcap || false,
+            reviewEngine: nichoDefaults.reviewEngine || false,
+            sliderJson: comOverride('sliderJson', nichoDefaults.sliderJson || false),
             relatedPosts: comOverride('relatedPosts', nichoDefaults.relatedPosts || false),
             contactForm: comOverride('contactForm', nichoDefaults.contactForm || false),
             contactFormTitle: nichoDefaults.contactFormTitle || '',
             popularPostsRanking: comOverride('popularPostsRanking', nichoDefaults.popularPostsRanking || false),
             popularPostsRankingTitle: nichoDefaults.popularPostsRankingTitle || '',
-            appDownloadCta: nichoDefaults.appDownloadCta   || false,
+            appDownloadCta: nichoDefaults.appDownloadCta || false,
             menuDropdownPrefixo: nichoDefaults.menuDropdownPrefixo || false,
             slotBefore: pm.includes('ad-slot-before') || false,
-            slotAfter: pm.includes('ad-slot-after')  || false,
+            slotAfter: pm.includes('ad-slot-after') || false,
             // Mobília nativa (sidebar/rodapé, ver modules.js) — sem
             // moduleOverrides, cada uma cai no default do nicho, igual
             // seria se este campo nem existisse aqui (compilerWorker.js
             // aplicaria o mesmo default de qualquer forma). Explícitas
             // aqui só pra moduleOverrides ter algo pra sobrescrever.
-            statsWidget: comOverride('statsWidget',        nichoDefaults.statsWidget        || false),
-            blogArchiveWidget: comOverride('blogArchiveWidget',  nichoDefaults.blogArchiveWidget  || false),
-            translateWidget: comOverride('translateWidget',    nichoDefaults.translateWidget    || false),
+            statsWidget: comOverride('statsWidget', nichoDefaults.statsWidget || false),
+            blogArchiveWidget: comOverride('blogArchiveWidget', nichoDefaults.blogArchiveWidget || false),
+            translateWidget: comOverride('translateWidget', nichoDefaults.translateWidget || false),
             featuredPostWidget: comOverride('featuredPostWidget', nichoDefaults.featuredPostWidget || false),
-            labelCloudWidget: comOverride('labelCloudWidget',   nichoDefaults.labelCloudWidget   || false),
-            socialLinksWidget: comOverride('socialLinksWidget',  nichoDefaults.socialLinksWidget  || false),
+            labelCloudWidget: comOverride('labelCloudWidget', nichoDefaults.labelCloudWidget || false),
+            socialLinksWidget: comOverride('socialLinksWidget', nichoDefaults.socialLinksWidget || false),
             mobileMenuType: (() => {
                 // Explicit AI choice wins — 'offcanvas-right'/'hamburger-svg'/
                 // 'hamburger-icons' já usam o mesmo nome nos dois lados (ver
@@ -141,9 +141,12 @@ function _blueprintParaManifesto(bp) {
     // Campos de design package — opcionais, passados diretamente ao compilador
     if (bp.darkTheme === true || bp.darkTheme === 'true')
         manifesto.darkTheme = true;
-    if (typeof bp.customCss    === 'string' && bp.customCss.trim())    manifesto.customCss    = bp.customCss;
-    if (typeof bp.svgLogo      === 'string' && bp.svgLogo.trim())      manifesto.svgLogo      = bp.svgLogo;
-    if (typeof bp.heroHtml     === 'string' && bp.heroHtml.trim())     manifesto.heroHtml     = bp.heroHtml;
+    if (typeof bp.customCss === 'string' && bp.customCss.trim())
+        manifesto.customCss = bp.customCss;
+    if (typeof bp.svgLogo === 'string' && bp.svgLogo.trim())
+        manifesto.svgLogo = bp.svgLogo;
+    if (typeof bp.heroHtml === 'string' && bp.heroHtml.trim())
+        manifesto.heroHtml = bp.heroHtml;
     if (typeof bp.staticSections === 'string' && bp.staticSections.trim())
         manifesto.staticSections = bp.staticSections;
     return manifesto;
@@ -157,14 +160,14 @@ function _snapshotDeManifesto(downloadUrl, manifesto, xmlPath = null, gcPath = n
     const compilacaoIdMatch = downloadUrl.match(/\/compilacao\/([^/]+)\/download/);
     return {
         compilacaoId: compilacaoIdMatch ? compilacaoIdMatch[1] : null,
-        siteName: manifesto.siteName    || null,
+        siteName: manifesto.siteName || null,
         colorPreset: manifesto.colorPreset || 'tech-blue',
-        typography: manifesto.typography  || 'inter',
-        gridLayout: manifesto.gridLayout  || 'mural',
-        nichoTema: manifesto.nichoTema   || null,
+        typography: manifesto.typography || 'inter',
+        gridLayout: manifesto.gridLayout || 'mural',
+        nichoTema: manifesto.nichoTema || null,
         xmlPath: xmlPath || null,
-        gcPath: gcPath  || null,
-        manifesto,                          // registro completo — usado pelo worker de edição
+        gcPath: gcPath || null,
+        manifesto, // registro completo — usado pelo worker de edição
         snapshotEm: admin.firestore.FieldValue.serverTimestamp(),
     };
 }
@@ -202,13 +205,13 @@ async function _compilarParaChat(blueprint, user, sendEvent, wsIds = {}) {
     const manifesto = _blueprintParaManifesto(blueprintFinal);
     // Pipeline multi-stage: enriquece → compila → verifica → empacota → persiste
     // sendEvent é usado como callback de status para cada stage
-    const onStatus = label => sendEvent({ type: 'status', label });
+    const onStatus = (label) => sendEvent({ type: 'status', label });
     const { downloadUrl, xmlPath, gcPath } = await compilarComPipeline(blueprintFinal, manifesto, user, onStatus, wsIds);
     // Atualiza contador de compilações (storage e compilacoes já tratados no pipeline)
     await db.collection('clientes_premium')
         .doc(user.email.toLowerCase())
         .update({ tentativas_compilacao: require('firebase-admin').firestore.FieldValue.increment(1) })
-        .catch(() => {});
+        .catch(() => { });
     // Snapshot fresco desta compilação — usado para atualizar a sessão de
     // workspace vinculada (se houver), evitando que o chat continue injetando
     // no system prompt os dados do template ANTERIOR depois de gerar um novo.
