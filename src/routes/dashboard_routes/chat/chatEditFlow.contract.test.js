@@ -88,7 +88,8 @@ test('erro de persistência ou de débito não transforma resposta em sucesso fa
     const proposal={resposta:'Proposta preparada',propostaFinal:{campos:{},resumo:'nova'},tokens:{input:5,output:6}};
     const a=setup(proposal,{persistThrows:true,billingThrows:true});
     const out=await a.run();
-    assert.equal(out.fullText,'Proposta preparada');
+    assert.match(out.fullText,/Proposta preparada/);
+    assert.match(out.fullText,/Não foi possível confirmar o débito/);
     assert.equal(a.calls.log.length,2);
     assert.equal(a.calls.writes.length,0);
 });
