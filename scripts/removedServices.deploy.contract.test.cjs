@@ -52,3 +52,17 @@ test('inspeção manual do receptor é estritamente read-only e usa segredo SSH'
   assert.match(inspector, /softload\.analysepro\.com\/health/);
   assert.doesNotMatch(inspector, /'(?:finish|reuse|deploy):|docker\s+(?:rm|rmi|system\s+prune)|sudo\s+/);
 });
+
+test('inventário do receptor usa apenas comandos de leitura e sintaxe shell válida', () => {
+  const { execFileSync } = require('node:child_process');
+  const inventoryPath = path.join(root, 'scripts/vps/inspect-receiver-readonly.sh');
+  execFileSync('bash', ['-n', inventoryPath], { stdio: 'pipe' });
+  const content = fs.readFileSync(inventoryPath, 'utf8');
+  assert.match(content, /authorized_keys/);
+  assert.match(content, /forced_command_path=/);
+  assert.match(content, /docker ps -a --format/);
+  assert.match(content, /docker system df/);
+  assert.match(content, /root_authorized_keys=\[not readable by current user\]/);
+  assert.doesNotMatch(content, /docker (?:rm|rmi|system prune|volume rm)|sudo\s|chmod\s|chown\s|ssh-keygen\s/);
+  assert.doesNotMatch(content, /cat\s+\/root\/\.ssh\/authorized_keys|docker inspect.*Env/);
+});
