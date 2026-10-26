@@ -30,9 +30,9 @@ imagens obsoletas à VPS.
 
 O GitHub Actions faz `npm ci`, testes e build no runner hospedado. A VPS **não**
 reinstala automaticamente dependências npm ou Chromium após cada push:
-ela recebe imagens Docker já construídas. O deploy identifica mudanças dos
-serviços `agent`, `sandbox` (Chromium) e `embeddings` e reutiliza a
-imagem instalada quando seus insumos não foram alterados.
+ela recebe imagens Docker já construídas. O deploy passa a construir e transferir somente `app` e `agent`.
+A desativação efetiva dos serviços `sandbox` e `embeddings` na VPS depende
+da atualização coordenada do receptor de deploy; ver `SERVICE_RETIREMENT.md`.
 
 A imagem `app` ainda é reconstruída e enviada em toda revisão publicada,
 pois o SHA exposto por `/health` precisa corresponder ao commit ativo.
