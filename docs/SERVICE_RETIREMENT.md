@@ -54,3 +54,11 @@ O workflow `.github/workflows/receiver-v2-readonly.yml` só possui `workflow_dis
 A sequência segura continua: inventário da versão real do receptor → backup → atualização e validação fora de produção → handshake v2 confirmado → checks da PR → implantação app/agent com rollback → validação externa → desativação e remoção seletiva das imagens antigas. O handshake é verificado uma vez antes do upload e novamente imediatamente antes da ativação.
 
 **Importante:** como o workflow manual novo ainda só está nesta branch, a interface de `workflow_dispatch` pode não disponibilizá-lo até o arquivo existir na branch padrão. A validação **antes de mesclar** deve ser feita por um operador que já possua a chave SSH restrita, consultando `ssh ... 'contract:v2'` e `ssh ... 'current'`, sem executar `deploy`/`finish`/`reuse`. Após o merge, o workflow manual oferece uma segunda conferência independente. Não criar um commit isolado na `main` apenas para habilitar a UI, porque isso aciona o deploy automático existente.
+
+## Descoberta do receptor real (sem alterar a VPS)
+
+Novo roteiro: `scripts/vps/inspect-receiver-readonly.sh`. É uma auditoria **somente leitura** para ser executada por um operador autorizado na VPS, sob o usuário que tem acesso à configuração SSH. Mostra usuário, disco, caminhos prováveis do receptor, nome/imagem/estado dos containers e tamanho geral Docker. O script **não mostra chaves, conteúdo de arquivos sensíveis, variáveis de ambiente ou mounts**.
+
+O runner `softloadrunner` não tem sudo nem acesso ao Docker e poderá mostrar "not readable"; isso **não prova** que não exista receptor. Para investigar a configuração de `root`, o operador precisa entrar por seu acesso administrativo próprio. Não ampliar privilégios do runner para contornar a restrição.
+
+Depois da auditoria, localizar o arquivo real usado por `authorized_keys` ou `ForceCommand`; revisar seu formato e escrever uma alteração pontual com backup e rollback. **Não aplicar um script receptor genérico ou sobrescrever `authorized_keys` sem examinar o atual.** A PR só será mesclada quando o receptor real passar `contract:v2` e os testes de deploy de apenas dois serviços.
