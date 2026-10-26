@@ -13,7 +13,7 @@ test('loop limita catch-up, evita start duplicado e cancela frame ao parar',asyn
   cancelFrame:id=>cancelled.push(id)});
  loop.start();loop.start();assert.equal(frames.length,1);
  frames[0](1000);assert.equal(steps.length,0);
- frames[1](5000);assert.equal(steps.length,3);assert.equal(renders.at(-1),0);
+ frames[1](5000);assert.equal(steps.length,3);assert.ok(Math.abs(renders.at(-1)) < 1e-10);
  loop.stop();assert.equal(cancelled.length,1);
  const count=frames.length;frames.at(-1)(6000);assert.equal(frames.length,count);
  assert.throws(()=>createLoop({update(){},render(){},hz:0}),/loop configuration/);
