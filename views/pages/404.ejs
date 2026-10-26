@@ -1,4 +1,4 @@
-<%- include('../partials/header') %>
+<%- include('../partials/header', { pageTitle: 'Página não encontrada | Softload V4', pageDescription: 'A página solicitada não foi encontrada.', pageNoindex: true }) %>
 
 <main class="d-flex align-items-center justify-content-center px-4 sl-pt-nav"
       style="min-height:70vh;background:var(--sl-bg-950)">
@@ -8,9 +8,9 @@
             404
         </div>
         <div class="position-relative" style="z-index:1">
-            <h2 class="fw-black text-white text-uppercase mb-2" style="letter-spacing:-0.03em">Sinal Perdido</h2>
+            <h2 class="fw-black text-white text-uppercase mb-2" style="letter-spacing:-0.03em">Página não encontrada</h2>
             <p class="mb-4" style="color:var(--sl-text-500)">A página solicitada parece não existir.</p>
-            <a href="/" class="btn btn-sl-primary px-4">Voltar ao Radar</a>
+            <a href="/" class="btn btn-sl-primary px-4">Voltar ao início</a>
         </div>
     </div>
 </main>

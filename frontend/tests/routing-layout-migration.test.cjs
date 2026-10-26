@@ -444,3 +444,41 @@ test('arquivos aprovados do vídeo Solaris são MP4 e PNG válidos e leves', () 
   assert.ok(poster.length > 10_000 && poster.length < 1024 * 1024, 'Capa PNG fora dos limites');
   assert.equal(poster.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'Assinatura PNG ausente');
 });
+
+// Regressão de identidade e responsividade nas páginas EJS fora do React Router.
+test('navegação EJS é responsiva e usa os mesmos links e marca da landing React', () => {
+  const header=source('views/partials/header.ejs');
+  const footer=source('views/partials/footer.ejs');
+  const navbar=source('frontend/components/PublicNavbar.tsx');
+  for(const label of ['Início','Ferramentas','Demonstração','Contato']){
+    assert.ok(header.includes('>'+label+'</a>'),label);
+    assert.ok(navbar.includes("label: '"+label+"'"),label);
+  }
+  assert.match(header,/navbar-expand-md/);
+  assert.match(header,/data-bs-toggle="collapse"/);
+  assert.match(header,/aria-controls="sl-nav-collapse"/);
+  assert.match(header,/SOFTLOAD<span class="sl-accent"> V4<\/span>/);
+  assert.match(footer,/SOFTLOAD<span class="sl-accent"> V4<\/span>/);
+  assert.doesNotMatch(header+footer,/Softload Engine v3|>ENGINE<\/span>/);
+});
+
+test('contato não altera pontuação inserida e valida o limite de 100 palavras', () => {
+  const contact=source('views/pages/contato.ejs');
+  assert.match(contact,/Pontuação comum é aceita/);
+  assert.match(contact,/mensagemInput\.addEventListener\('input', atualizarContador\)/);
+  assert.doesNotMatch(contact,/mensagemInput\.value\.replace/);
+  assert.match(contact,/REGEX_OK\.test\(mensagem\)/);
+  assert.match(contact,/MAX_PALAVRAS\s+= 100/);
+});
+
+test('templates EJS das páginas externas compilam', () => {
+  const ejs=require('ejs');
+  for(const name of ['contato','privacidade','termos-de-uso','404']){
+    const file=path.join(root,'views/pages',name+'.ejs');
+    assert.doesNotThrow(()=>ejs.compile(fs.readFileSync(file,'utf8'),{filename:file}),name);
+  }
+  for(const name of ['header','footer']){
+    const file=path.join(root,'views/partials',name+'.ejs');
+    assert.doesNotThrow(()=>ejs.compile(fs.readFileSync(file,'utf8'),{filename:file}),name);
+  }
+});

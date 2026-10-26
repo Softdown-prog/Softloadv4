@@ -1,4 +1,4 @@
-<%- include('../partials/header') %>
+<%- include('../partials/header', { pageTitle: 'Contato | Softload V4', pageDescription: 'Suporte da Softload V4 para Solaris Code, Blogger e Workspace.', pageCanonical: '/contato' }) %>
 
 <main class="min-vh-100 sl-pt-nav pb-5" style="background:var(--sl-bg-900)">
     <div class="container py-5">
@@ -7,7 +7,7 @@
             <!-- Cabeçalho -->
             <div class="text-center mb-4">
                 <h1 class="fw-bold text-white" style="letter-spacing:-0.02em">Suporte Técnico</h1>
-                <p class="mb-0 small" style="color:var(--sl-text-400)">Envie sua mensagem para a equipe Softload. Respondemos em até 48h.</p>
+                <p class="mb-0 small" style="color:var(--sl-text-400)">Entre em contato sobre Solaris Code, Blogger, Workspace ou sua conta. Responderemos assim que possível.</p>
             </div>
 
             <!-- Alertas -->
@@ -76,7 +76,7 @@
                             class="form-control"
                             style="background:var(--sl-bg-950);border-color:var(--sl-bg-800);color:var(--sl-text-300);resize:none"
                         ></textarea>
-                        <div class="form-text" style="color:var(--sl-text-500)">Caracteres permitidos: letras, números e "?" &mdash; máx. 100 palavras</div>
+                        <div class="form-text" style="color:var(--sl-text-500)">Até 100 palavras. Pontuação comum é aceita; não envie código HTML.</div>
                     </div>
 
                     <button type="submit" id="submitBtn" class="btn btn-sl-primary w-100">
@@ -101,7 +101,7 @@
     const mensagemInput = document.getElementById('mensagemInput');
     const wordCountEl   = document.getElementById('wordCount');
     const form          = document.getElementById('contatoForm');
-    const REGEX_OK      = /^[a-zA-ZÀ-ÿ0-9\s?]*$/;
+    const REGEX_OK      = /^[a-zA-ZÀ-ÿ0-9\s.,!?()@\-":;/+&%#'\n\r]*$/;
     const MAX_PALAVRAS  = 100;
 
     function contarPalavras(texto) {
@@ -118,20 +118,8 @@
         }
     }
 
-    // Bloquear caracteres especiais em tempo real (exceto "?")
-    mensagemInput.addEventListener('input', function () {
-        if (!REGEX_OK.test(this.value)) {
-            this.value = this.value.replace(/[^a-zA-ZÀ-ÿ0-9\s?]/g, '');
-        }
-
-        // Truncar no limite de 100 palavras enquanto digita
-        const palavras = this.value.trim().split(/\s+/).filter(p => p.length > 0);
-        if (palavras.length > MAX_PALAVRAS) {
-            this.value = palavras.slice(0, MAX_PALAVRAS).join(' ');
-        }
-
-        atualizarContador();
-    });
+    // Mantém o conteúdo digitado, sem cortar pontuação ou truncar a mensagem.
+    mensagemInput.addEventListener('input', atualizarContador);
 
     // Validação final antes de enviar
     form.addEventListener('submit', function (e) {

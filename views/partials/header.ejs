@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Softload Engine v3.2.1 | Engenharia de Alta Performance</title>
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Softload V4 | Ferramentas de desenvolvimento com IA' %></title>
+    <meta name="description" content="<%= typeof pageDescription !== 'undefined' ? pageDescription : 'Solaris Code, Especialista Blogger e Workspace para desenvolvimento com IA.' %>">
+    <meta name="robots" content="<%= typeof pageNoindex !== 'undefined' && pageNoindex ? 'noindex, follow' : 'index, follow' %>">
+    <% if (typeof pageCanonical !== 'undefined' && pageCanonical) { %>
+    <link rel="canonical" href="https://softload.analysepro.com<%= pageCanonical %>">
+    <% } %>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <%# Bootstrap 5.3.3 — vendorizado localmente (não vem mais de CDN externo:
@@ -40,19 +45,20 @@
 %>
 
 <%# ── NAVBAR ── Bootstrap Navbar — sem Alpine.js, sem unsafe-eval %>
-<nav class="navbar sl-navbar fixed-top">
+<nav class="navbar navbar-expand-md sl-navbar fixed-top" aria-label="Navegação principal">
     <div class="container-xl">
 
         <a href="/" class="navbar-brand sl-brand fw-black text-white text-decoration-none me-4">
-            SOFTLOAD<span class="sl-accent">ENGINE</span>
+            SOFTLOAD<span class="sl-accent"> V4</span>
         </a>
 
         <%# Links centrais — apenas em páginas públicas, desktop %>
         <% if (!onDashboard) { %>
-        <div class="collapse navbar-collapse" id="sl-nav-collapse">
+        <div class="collapse navbar-collapse order-3 order-md-2" id="sl-nav-collapse">
             <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a href="/" class="nav-link">Radar</a></li>
-                <li class="nav-item"><a href="/#features" class="nav-link">A Arquitetura</a></li>
+                <li class="nav-item"><a href="/" class="nav-link">Início</a></li>
+                <li class="nav-item"><a href="/#solucoes" class="nav-link">Ferramentas</a></li>
+                <li class="nav-item"><a href="/#demo-solaris" class="nav-link">Demonstração</a></li>
                 <li class="nav-item"><a href="/contato" class="nav-link">Contato</a></li>
             </ul>
 
@@ -69,7 +75,7 @@
         </div>
         <% } %>
 
-        <div class="d-flex align-items-center gap-2 ms-auto">
+        <div class="d-flex align-items-center gap-2 ms-auto order-2 order-md-3">
             <%# Botões de auth %>
             <% if (loggedIn) { %>
                 <% if (!onDashboard) { %>
@@ -89,7 +95,7 @@
                     data-bs-target="#sl-nav-collapse"
                     aria-controls="sl-nav-collapse"
                     aria-expanded="false"
-                    aria-label="Menu">
+                    aria-label="Abrir menu">
                 <%- include('./icon', { name: 'menu', cls: 'fs-3 text-white' }) %>
             </button>
             <% } %>
