@@ -78,6 +78,6 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.2",
     "typescript": "5.9.3",
-    "vite": "^8.2.1"
+    "vite": "^8.3.5"
   }
 }
