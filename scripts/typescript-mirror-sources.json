@@ -191,5 +191,6 @@
   "src/routes/dashboard_routes/chat/chatTemplateCompiler.ts",
   "src/routes/contatoRoutes.ts",
   "src/solaris/http/solarisProUsage.ts",
+  "src/routes/workersRoutes.ts",
   "src/routes/dashboard_routes/conta.ts"
 ]
