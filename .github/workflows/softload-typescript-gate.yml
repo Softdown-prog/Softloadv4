@@ -18,6 +18,7 @@ on:
       - 'tsconfig.workers.json'
       - 'tsconfig.forge-html5.json'
       - 'tsconfig.forge-catalog.json'
+      - 'tsconfig.vite.json'
       - 'src/**/*.ts'
       - 'src/**/*.js'
       - 'src/solaris/code-examples/**'
@@ -157,6 +158,8 @@ jobs:
         run: |
           node --test scripts/check-typescript-remaining.test.cjs
           node scripts/check-typescript-remaining.cjs
+      - name: Typecheck da configuração Vite e equivalência do bundle
+        run: npm run typecheck:vite
       - name: Verificar catálogo tipado do Asset Forge e espelho CommonJS
         run: npm run typecheck:forge-catalog
       - name: Verificar runtime procedural Forge HTML5 e espelho ESM

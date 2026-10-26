@@ -35,7 +35,8 @@
     "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs frontend/tests/billingRecovery.test.cjs",
     "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs",
     "typecheck:forge-html5": "tsc --project tsconfig.forge-html5.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/html5/procedural.test.cjs",
-    "typecheck:forge-catalog": "tsc --project tsconfig.forge-catalog.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/catalog.test.cjs"
+    "typecheck:forge-catalog": "tsc --project tsconfig.forge-catalog.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/catalog.test.cjs",
+    "typecheck:vite": "tsc --project tsconfig.vite.json --noEmit && node scripts/check-typescript-remaining.cjs && npm run build"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",
