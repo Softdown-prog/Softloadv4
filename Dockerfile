@@ -1,15 +1,12 @@
 # ── Stage: build-info ─────────────────────────────────────────────────────
-# Captura SHA curto + data do commit a partir do .git do contexto de build.
-# Fica num stage descartado — nunca entra na imagem final (só os 2 arquivos
-# de texto, via COPY --from). Qualquer falha aqui (git ausente, .git ausente,
-# apt-get offline) degrada para "unknown" e NUNCA derruba o build da imagem
-# final — ver src/services/buildInfo.js para o fallback de leitura.
+# Pass immutable source metadata from the GitHub Actions checkout. We no longer
+# need to install git or send the entire .git history into the Docker context.
+# For manual/local builds, unknown is explicit rather than a misleading SHA.
 FROM node:20-slim AS build-info
-RUN apt-get update && apt-get install -y --no-install-recommends git || true
-WORKDIR /src
-COPY . .
-RUN git rev-parse --short HEAD > /GIT_SHA 2>/dev/null || echo "unknown" > /GIT_SHA
-RUN git log -1 --format=%cI > /GIT_DATE 2>/dev/null || echo "unknown" > /GIT_DATE
+ARG SOURCE_GIT_SHA=unknown
+ARG SOURCE_GIT_DATE=unknown
+RUN printf '%s\n' "$SOURCE_GIT_SHA" > /GIT_SHA \
+    && printf '%s\n' "$SOURCE_GIT_DATE" > /GIT_DATE
 
 # ── Stage: frontend-build ─────────────────────────────────────────────────
 # Achado real: a imagem final sempre instalou só `--only=production`

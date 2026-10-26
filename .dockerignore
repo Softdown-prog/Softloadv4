@@ -6,11 +6,9 @@ node_modules
 npm-debug.log*
 *.local
 
-# .git NÃO está ignorado de propósito — o stage "build-info" do Dockerfile
-# lê o SHA/data do commit dali para expor em /health e /eu (ver
-# src/services/buildInfo.js). Só existe no stage descartado; nunca vai
-# parar na imagem final (stage final não faz COPY do .git, só dos 2
-# arquivos de texto gerados a partir dele).
+# Git history does not belong in Docker build context or runtime image.
+# The Actions builder injects the exact commit SHA/date as Docker build arguments.
+.git
 
 # A imagem de produção recompila o React no stage frontend-build.
 # Não reenviar ao contexto Docker o bundle versionado (public/dist):
