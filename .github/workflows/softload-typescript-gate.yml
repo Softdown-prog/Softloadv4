@@ -178,6 +178,8 @@ jobs:
         run: |
           node src/services/mpPlanRules.test.js
           node --test src/services/mpPlanRules.contract.test.js
+      - name: Testar monitor tipado de recuperação financeira
+        run: node --test src/services/billingRecoveryMonitor.test.js
       - name: Testar ciclo de créditos com Firestore simulado
         run: |
           node --test src/services/creditService.contract.test.js
