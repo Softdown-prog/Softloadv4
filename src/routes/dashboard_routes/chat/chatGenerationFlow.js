@@ -207,7 +207,7 @@ async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, e
             // a tentar de novo — mesmo canal 'done'/reply que já funciona
             // sem mudança de frontend nos dois chats.
             fullText = 'Consegui montar o plano do seu template, mas a compilação falhou (erro técnico registrado). '
-        + 'Pode pedir de novo — se persistir, me diga exatamente o que você quer que eu tento de um jeito diferente.';
+                + 'Pode pedir de novo — se persistir, me diga exatamente o que você quer que eu tento de um jeito diferente.';
         }
     }
     // Fallback: remove marcador truncado (sem ]] de fechamento) para nunca vazar ao usuário
