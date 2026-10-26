@@ -1,18 +1,16 @@
 'use strict';
-const { gerarChatStream }                     = require('../../../services/geminiService');
-const { gerarChatGptStream }                  = require('../../../services/openaiService');
-const { loadForGeminiSync, rotearPergunta }   = require('../../../rag/ragLoader');
-const chatStorage                             = require('../../../services/chatStorageService');
-
-const { _validarECorrigir }                                       = require('./chatCodeValidator');
-const { _compilarParaChat }                                       = require('./chatTemplateCompiler');
-const { buscarRagRelevante, montarContextoRag }                   = require('./chatRag');
-const { buscarRagGpt, montarContextoRagGpt }                      = require('./chatRagGpt');
-const { buscarContextoTemplate, montarContextoTemplate,
-        precisaContextoTemplate }                                 = require('./chatTemplateContext');
-const { montarContextoWorkspace }                                 = require('./chatWorkspaceContext');
-const { SISTEMA_GERACAO, SISTEMA_SUPORTE }                        = require('./chatSystemPrompt');
-
+Object.defineProperty(exports, "__esModule", { value: true });
+const { gerarChatStream } = require('../../../services/geminiService');
+const { gerarChatGptStream } = require('../../../services/openaiService');
+const { loadForGeminiSync, rotearPergunta } = require('../../../rag/ragLoader');
+const chatStorage = require('../../../services/chatStorageService');
+const { _validarECorrigir } = require('./chatCodeValidator');
+const { _compilarParaChat } = require('./chatTemplateCompiler');
+const { buscarRagRelevante, montarContextoRag } = require('./chatRag');
+const { buscarRagGpt, montarContextoRagGpt } = require('./chatRagGpt');
+const { buscarContextoTemplate, montarContextoTemplate, precisaContextoTemplate } = require('./chatTemplateContext');
+const { montarContextoWorkspace } = require('./chatWorkspaceContext');
+const { SISTEMA_GERACAO, SISTEMA_SUPORTE } = require('./chatSystemPrompt');
 // ──────────────────────────────────────────────────────────────────────────
 // FLUXO DE GERAÇÃO DE TEMPLATE VIA CHAT — marcador embutido na resposta
 // do modelo. Formato: [[TEMPLATE:{...json...}]]. O backend detecta,
@@ -24,7 +22,6 @@ const { SISTEMA_GERACAO, SISTEMA_SUPORTE }                        = require('./c
 // vira ferramenta de agente, continua exatamente como já era.
 // ──────────────────────────────────────────────────────────────────────────
 const TEMPLATE_MARKER_RE = /\[\[TEMPLATE:([\s\S]+?)\]\]/;
-
 /**
  * @param {object} opcoes
  * @param {string}  opcoes.msg           — mensagem já trimada do usuário
@@ -50,12 +47,10 @@ async function gerarComPossivelTemplate({
     msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef,
     wsProjetoId = null, wsSessionId = null, permitirGeracao = false,
 }) {
-    let fullText     = '';
-    let downloadUrl  = null;
+    let fullText = '';
+    let downloadUrl = null;
     let novoSnapshot = null;
-
     let sistemaFinal = permitirGeracao ? SISTEMA_GERACAO : SISTEMA_SUPORTE;
-
     // Memória persistente entre conversas (lifetime do usuário, não só da
     // sessão atual) — injeta preferências/últimos templates acumulados via
     // chatStorage.updateMemoryFromSession. Falha de leitura nunca derruba o
@@ -64,12 +59,13 @@ async function gerarComPossivelTemplate({
         try {
             const memoria = await chatStorage.loadMemory(uid);
             const contextoMemoria = chatStorage.formatMemoryForPrompt(memoria);
-            if (contextoMemoria) sistemaFinal = sistemaFinal + contextoMemoria;
-        } catch (memErr) {
+            if (contextoMemoria)
+                sistemaFinal = sistemaFinal + contextoMemoria;
+        }
+        catch (memErr) {
             console.warn('[CHAT-MEMORY] loadMemory err:', memErr.message);
         }
     }
-
     // Chamado a partir do chat dedicado do Workspace (sempre tem os dois
     // IDs — a rota exige — diferente do Especialista, que nunca os passa).
     // Nesse contexto não existe botão de download avulso na bolha do chat
@@ -84,7 +80,6 @@ async function gerarComPossivelTemplate({
             `\n\n---\n## SOBRESCREVE A INSTRUÇÃO DE MENSAGEM PÓS-MARCADOR\n` +
             `Esta conversa é do chat dedicado do Workspace, que tem histórico de versões próprio. Quando emitir o marcador [[TEMPLATE:{...}]], IGNORE a instrução anterior de dizer "seu download aparecerá aqui em instantes" — em vez disso, diga algo como "Pronto! Seu template foi gerado e já está salvo como a primeira versão do seu projeto — você pode baixá-lo quando quiser na aba Histórico de Versões." Nunca prometa ou mencione um botão de download na própria mensagem; ele não existe aqui, o download já fica disponível automaticamente no histórico.`;
     }
-
     // Workspace context: injetado SEMPRE no system prompt (não gateado por palavra-chave)
     // Acumula sobre o que já foi montado (memória, override acima) — reatribuir
     // a partir de SISTEMA aqui descartaria os dois silenciosamente.
@@ -92,7 +87,6 @@ async function gerarComPossivelTemplate({
         sendEvent({ type: 'status', label: 'Revisando seu projeto...' });
         sistemaFinal = sistemaFinal + montarContextoWorkspace(wsSnapshot);
     }
-
     // Injeta conhecimento técnico RAG relevante à mensagem (suporte, widgets, engenharia)
     const ragArquivos = buscarRagRelevante(msg);
     if (ragArquivos.length) {
@@ -100,7 +94,6 @@ async function gerarComPossivelTemplate({
         const ragParaUsar = isGpt ? ragArquivos.slice(0, 1) : ragArquivos;
         sistemaFinal = sistemaFinal + montarContextoRag(ragParaUsar);
     }
-
     // Para geração de templates: injeta instrucoes + tema do nicho do pipeline RAG.
     // O ramo de pipeline só roda quando permitirGeracao (Workspace) — o
     // Especialista (chat.js) nunca precisa desse contexto, já que não emite
@@ -135,7 +128,6 @@ async function gerarComPossivelTemplate({
             }
         }
     }
-
     // GPT EXCLUSIVO: injeta os padrões de alto nível da pasta gpt-5-4/
     // (conduta sênior, escrita de código, tutoriais, artigos, parceria).
     // A fundação entra sempre; até 2 ficheiros temáticos por palavra-chave.
@@ -146,7 +138,6 @@ async function gerarComPossivelTemplate({
             sistemaFinal = sistemaFinal + montarContextoRagGpt(gptRag);
         }
     }
-
     // Injeta contexto do último template quando não há contexto de workspace
     // e a mensagem pede código/personalização visual
     if (!wsSnapshot && precisaContextoTemplate(msg) && email) {
@@ -157,20 +148,16 @@ async function gerarComPossivelTemplate({
             sistemaFinal = sistemaFinal + montarContextoTemplate(templateData);
         }
     }
-
     // GPT: 2048 tokens de output é suficiente para suporte/snippets
     // Gemini Flash: mantém 8192 (modelo barato, respostas longas são OK)
     const maxOutput = isGpt ? 2048 : 8192;
-
     const streamSource = isGpt
         ? gerarChatGptStream(safeHistory, msg, sistemaFinal, { maxOutputTokens: maxOutput, tokensRef })
         : gerarChatStream(safeHistory, msg, sistemaFinal, { maxOutputTokens: maxOutput, tokensRef });
-
     for await (const chunk of streamSource) {
         fullText += chunk;
         sendEvent({ type: 'chunk', text: chunk });
     }
-
     // ── Validação de sintaxe dos blocos de código ────────────────────────
     // Roda após o stream completo; não bloqueia respostas sem código.
     // Se encontrar erro: 1 retry focado → substitui o bloco na resposta.
@@ -178,15 +165,15 @@ async function gerarComPossivelTemplate({
     let codeValidation = null;
     try {
         const cvResult = await _validarECorrigir(fullText, msg, isGpt, tokensRef, sendEvent);
-        fullText       = cvResult.finalText;
+        fullText = cvResult.finalText;
         codeValidation = cvResult.validation;
         if (codeValidation.checked > 0) {
             console.log(`[CODE-VALIDATOR] ${codeValidation.checked} bloco(s) | ok=${codeValidation.ok} | retried=${codeValidation.retried} | fixApplied=${codeValidation.fixApplied}`);
         }
-    } catch (cvErr) {
+    }
+    catch (cvErr) {
         console.warn('[CODE-VALIDATOR] erro inesperado:', cvErr.message);
     }
-
     // ── Detecta marcador [[TEMPLATE:{...}]] embutido pelo Gemini ────────
     // Se encontrado: extrai blueprint, remove marcador do texto visível,
     // compila o template e devolve downloadUrl no evento "done".
@@ -208,10 +195,11 @@ async function gerarComPossivelTemplate({
         try {
             const blueprint = JSON.parse(markerMatch[1]);
             const resultado = await _compilarParaChat(blueprint, user, sendEvent, { wsProjetoId, wsSessionId });
-            downloadUrl  = resultado.downloadUrl;
+            downloadUrl = resultado.downloadUrl;
             novoSnapshot = resultado.snapshot;
             console.log(`[CHAT-TEMPLATE] OK | ${email} | ${blueprint.siteName || '?'} | ${downloadUrl}`);
-        } catch (tplErr) {
+        }
+        catch (tplErr) {
             console.error('[CHAT-TEMPLATE] Falha ao compilar marcador:', tplErr.message);
             // fullText, neste ponto, já teve o marcador removido mas ainda
             // carrega a promessa de download que o modelo escreveu antes de
@@ -221,15 +209,13 @@ async function gerarComPossivelTemplate({
             // a tentar de novo — mesmo canal 'done'/reply que já funciona
             // sem mudança de frontend nos dois chats.
             fullText = 'Consegui montar o plano do seu template, mas a compilação falhou (erro técnico registrado). '
-                     + 'Pode pedir de novo — se persistir, me diga exatamente o que você quer que eu tento de um jeito diferente.';
+        + 'Pode pedir de novo — se persistir, me diga exatamente o que você quer que eu tento de um jeito diferente.';
         }
     }
     // Fallback: remove marcador truncado (sem ]] de fechamento) para nunca vazar ao usuário
     if (fullText.includes('[[TEMPLATE:')) {
         fullText = fullText.replace(/\[\[TEMPLATE:[\s\S]*/g, '').trim();
     }
-
     return { fullText, downloadUrl, novoSnapshot, codeValidation };
 }
-
 module.exports = { gerarComPossivelTemplate, TEMPLATE_MARKER_RE };

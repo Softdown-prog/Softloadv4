@@ -198,6 +198,8 @@ jobs:
         run: node --test src/routes/dashboard_routes/chat/chatCodeValidator.retry.contract.test.js src/services/openaiService.contract.test.js && node src/routes/dashboard_routes/chat/chatCodeValidator.test.js
       - name: Validar edição agentica e persistência do Workspace sem rede
         run: node --test src/routes/dashboard_routes/chat/chatEditFlow.contract.test.js
+      - name: Garantir gate de geração Workspace e tratamento de falhas com mocks
+        run: node --test src/routes/dashboard_routes/chat/chatGenerationFlow.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
