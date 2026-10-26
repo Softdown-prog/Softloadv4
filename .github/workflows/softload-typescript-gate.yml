@@ -211,6 +211,25 @@ jobs:
         run: |
           node src/routes/dashboard_routes/chat/chatRag.test.js
           node src/routes/dashboard_routes/chat/chatRag.migration.test.js
+      - name: Validar contato e medicao Solaris Pro com testes sem rede
+        run: |
+          node --test src/routes/contatoRoutes.contract.test.js src/solaris/http/solarisProUsage.test.js src/solaris/http/solarisProUsage.boundaries.test.js
+      - name: Diagnostico transitorio de espelhos TypeScript em Base64
+        run: |
+          node - <<'NODE'
+          const ts = require('typescript'), fs = require('node:fs');
+          const sources = [
+            ['CONTATO', 'src/routes/contatoRoutes.ts'],
+            ['PRO_USAGE', 'src/solaris/http/solarisProUsage.ts']
+          ];
+          for (const [name,file] of sources) {
+            const output = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+              fileName: file, compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, newLine: ts.NewLineKind.LineFeed}
+            }).outputText;
+            const encoded = Buffer.from(output, 'utf8').toString('base64');
+            for (let i=0; i<encoded.length; i+=1200) console.log('EMIT_'+name+'_'+(i/1200)+'='+encoded.slice(i,i+1200));
+          }
+          NODE
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
