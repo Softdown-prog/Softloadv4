@@ -210,6 +210,8 @@ jobs:
         run: |
           node src/routes/dashboard_routes/chat/chatRag.test.js
           node src/routes/dashboard_routes/chat/chatRag.migration.test.js
+      - name: Validar conversao de blueprint e compilacao Workspace sem API externa
+        run: node --test src/routes/dashboard_routes/chat/chatTemplateCompiler.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

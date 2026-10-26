@@ -234,7 +234,8 @@
     "src/services/solarisGithubRepositoryCatalog.ts",
     "src/middlewares/workspaceCreditGate.ts",
     "src/routes/dashboard_routes/chat/chatRag.ts",
-    "src/services/solarisGithubMcp.ts"
+    "src/services/solarisGithubMcp.ts",
+    "src/routes/dashboard_routes/chat/chatTemplateCompiler.ts"
   ],
   "exclude": [
     "node_modules",
