@@ -117,35 +117,35 @@ async function run() {
         assert('créditos expirados: next() NÃO chamado', nextChamado === false);
     }
 
-    // G. Assinante ativo, falha no Firestore — nunca bloqueia cliente pagante à toa (fail open).
+    // G. Assinante ativo, falha no Firestore — bloqueia custo sem saldo confirmado.
     {
         deveLancar = true;
         const req = _req({ user: { email: 'x@x.com', is_active: true } });
         const res = _res();
         let nextChamado = false;
         await verificarSaldo(req, res, () => { nextChamado = true; });
-        assert('falha de Firestore: next() chamado (fail open)', nextChamado === true, JSON.stringify(res.body));
+        assert('falha Firestore pagante: 503 e bloqueio', res.statusCode === 503 && res.body?.codigo === 'SALDO_INDISPONIVEL' && nextChamado === false, JSON.stringify(res.body));
         deveLancar = false;
     }
 
-    // H. Assinante ativo, doc ausente no Firestore — fail open (sem dado, sem bloqueio).
+    // H. Assinante ativo sem carteira não chama Gemini.
     {
         docFake = null;
         const req = _req({ user: { email: 'x@x.com', is_active: true } });
         const res = _res();
         let nextChamado = false;
         await verificarSaldo(req, res, () => { nextChamado = true; });
-        assert('doc ausente: next() chamado (fail open)', nextChamado === true);
+        assert('doc ausente: sem créditos, bloqueia', res.statusCode === 402 && nextChamado === false);
     }
 
-    // I. Usuário free (is_active=false) — comportamento antigo preservado (não é o que mudou aqui).
+    // I. Usuário free sem documento cadastrado também deve ser bloqueado.
     {
-        docFake = null; // snap.exists=false → deixa passar (doc recém-criado)
+        docFake = null; // doc ausente => sem créditos
         const req = _req({ user: { email: 'x@x.com', is_active: false } });
         const res = _res();
         let nextChamado = false;
         await verificarSaldo(req, res, () => { nextChamado = true; });
-        assert('free sem doc ainda: next() chamado', nextChamado === true);
+        assert('free sem carteira: 402', res.statusCode === 402 && nextChamado === false);
     }
 
     // J. verificarSaldoBloggerAi — free/inativo: 403 PLANO_INSUFICIENTE (comportamento antigo preservado).
@@ -191,15 +191,50 @@ async function run() {
         assert('bloggerai créditos expirados: next() NÃO chamado', nextChamado === false);
     }
 
-    // N. verificarSaldoBloggerAi — falha no Firestore — fail open, nunca bloqueia cliente pagante à toa.
+    // N. verificarSaldoBloggerAi — falha no Firestore bloqueia uso pago.
     {
         deveLancar = true;
         const req = _req({ user: { email: 'x@x.com', is_active: true, plano: 'studio' } });
         const res = _res();
         let nextChamado = false;
         await verificarSaldoBloggerAi(req, res, () => { nextChamado = true; });
-        assert('bloggerai falha de Firestore: next() chamado (fail open)', nextChamado === true, JSON.stringify(res.body));
+        assert('bloggerai falha Firestore: 503 e bloqueio', res.statusCode === 503 && res.body?.codigo === 'SALDO_INDISPONIVEL' && nextChamado === false, JSON.stringify(res.body));
         deveLancar = false;
+    }
+
+
+    // O. Free com saldo válido pode usar Especialista e Solaris.
+    {
+        docFake={ creditos:5 };
+        const req=_req({user:{email:'x@x.com',is_active:false,plano:'free'}});
+        const res=_res();let nextChamado=false;
+        await verificarSaldo(req,res,()=>{nextChamado=true;});
+        assert('free com créditos: passa', nextChamado===true && res.statusCode===null);
+    }
+    // P. Free não recebe acesso se o Firestore estiver fora do ar.
+    {
+        deveLancar=true;
+        const req=_req({user:{email:'x@x.com',is_active:false,plano:'free'}});
+        const res=_res();let nextChamado=false;
+        await verificarSaldo(req,res,()=>{nextChamado=true;});
+        assert('free Firestore offline: 503', res.statusCode===503 && !nextChamado);
+        deveLancar=false;
+    }
+    // Q. Sessão free atualizada por webhook também tem saldo conferido.
+    {
+        docFake={ is_active:true,creditos:0 };
+        const req=_req({user:{email:'x@x.com',is_active:false,plano:'free'}});
+        const res=_res();let nextChamado=false;
+        await verificarSaldo(req,res,()=>{nextChamado=true;});
+        assert('renovação sem saldo não libera IA', res.statusCode===402 && !nextChamado);
+    }
+    // R. Blogger AI: sessão free renovada deve passar pelo gate de saldo.
+    {
+        docFake={ is_active:true,plano:'studio',creditos_bloggerai:0 };
+        const req=_req({user:{email:'x@x.com',is_active:false,plano:'free'}});
+        const res=_res();let nextChamado=false;
+        await verificarSaldoBloggerAi(req,res,()=>{nextChamado=true;});
+        assert('bloggerai renovado sem créditos bloqueado',res.statusCode===402&&!nextChamado);
     }
 
     console.log(`\n${failed === 0 ? '✅' : '❌'} authGuard: ${passed} passed, ${failed} failed`);

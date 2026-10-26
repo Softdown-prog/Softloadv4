@@ -153,13 +153,14 @@ async function verificarSaldo(req, res, next) {
                 const dados = await buscarStatusPremiumAtual(user.email);
                 if (assinaturaRenovada(dados)) {
                     aplicarRenovacaoNaSessao(req, dados);
-                    return next();
+                    // Continua para a conferência do saldo no Firestore.
+                } else {
+                    req.session.user.is_active = false;
+                    return res.status(402).json({
+                        erro: 'Sua assinatura expirou. Renove em /dashboard/upgrade.',
+                        codigo: 'ASSINATURA_EXPIRADA',
+                    });
                 }
-                req.session.user.is_active = false;
-                return res.status(402).json({
-                    erro: 'Sua assinatura expirou. Renove em /dashboard/upgrade.',
-                    codigo: 'ASSINATURA_EXPIRADA',
-                });
             }
         }
 
@@ -174,8 +175,11 @@ async function verificarSaldo(req, res, next) {
             const nomeModelo  = isGpt ? 'GPT' : 'Gemini';
 
             const snap = await db.collection('clientes_premium').doc(user.email.toLowerCase()).get();
-            if (snap.exists) {
-                const dados = snap.data();
+            if (!snap.exists) {
+                return res.status(402).json({ erro: 'Conta sem créditos cadastrados.', codigo: 'SEM_CREDITOS' });
+            }
+            {
+                const dados = snap.data() || {};
 
                 if (dados[campoExpira] && new Date(dados[campoExpira]) < new Date()) {
                     return res.status(402).json({
@@ -184,7 +188,7 @@ async function verificarSaldo(req, res, next) {
                     });
                 }
                 const saldo = dados[campoSaldo] ?? 0;
-                if (saldo <= 0) {
+                if (typeof saldo !== 'number' || !Number.isFinite(saldo) || saldo <= 0) {
                     return res.status(402).json({
                         erro: `Seus créditos ${nomeModelo} deste ciclo acabaram. Aguarde a renovação do ciclo ou fale com o suporte.`,
                         codigo: 'SEM_CREDITOS',
@@ -192,9 +196,9 @@ async function verificarSaldo(req, res, next) {
                 }
             }
         } catch (err) {
-            // Falha de DB nunca bloqueia cliente pagante indevidamente —
-            // mesmo princípio já usado no resto deste arquivo.
+            // Consultas indisponíveis não autorizam chamadas pagas ao Gemini/GPT.
             console.warn('[AUTH] Falha ao verificar saldo de assinante ativo:', err.message);
+            return res.status(503).json({erro:'Não foi possível confirmar seus créditos. Tente novamente.',codigo:'SALDO_INDISPONIVEL'});
         }
 
         return next();
@@ -204,15 +208,15 @@ async function verificarSaldo(req, res, next) {
     try {
         const snap = await db.collection('clientes_premium').doc(user.email.toLowerCase()).get();
 
-        // Sem doc ainda ou doc recém-criado — deixa passar
-        if (!snap.exists) return next();
+        // Sem carteira criada, não existe saldo confirmado para uma chamada paga.
+        if (!snap.exists) return res.status(402).json({erro:'Conta sem créditos cadastrados.',codigo:'SEM_CREDITOS'});
 
         const dados = snap.data();
 
         // Pode ter sido ativado via webhook sem sessão atualizada
         if (dados.is_active === true) {
             req.session.user.is_active = true;
-            return next();
+            // Continua para conferir o saldo antes de liberar o provedor.
         }
 
         // Créditos expirados — zera e bloqueia
@@ -225,7 +229,7 @@ async function verificarSaldo(req, res, next) {
         }
 
         const saldo = dados.creditos ?? 0;
-        if (saldo <= 0) {
+        if (typeof saldo !== 'number' || !Number.isFinite(saldo) || saldo <= 0) {
             return res.status(402).json({
                 erro: 'Seus 5 créditos gratuitos acabaram. Assine um plano em /dashboard/upgrade.',
                 codigo: 'SEM_CREDITOS',
@@ -233,7 +237,7 @@ async function verificarSaldo(req, res, next) {
         }
     } catch (err) {
         console.warn('[AUTH] Falha ao verificar créditos free:', err.message);
-        // Em caso de falha de DB, deixa passar para não bloquear indevidamente
+        return res.status(503).json({erro:'Não foi possível confirmar seus créditos. Tente novamente.',codigo:'SALDO_INDISPONIVEL'});
     }
 
     next();
@@ -306,6 +310,7 @@ async function verificarSaldoBloggerAi(req, res, next) {
 
     // Se sessão indicar free ou inativo, confirma no DB antes de bloquear
     if (!user.is_active || plano === 'free' || plano === '') {
+        let renovado = false;
         try {
             const emailKey = (user.email || '').toLowerCase();
             if (emailKey) {
@@ -317,14 +322,14 @@ async function verificarSaldoBloggerAi(req, res, next) {
                         req.session.user.is_active = true;
                         req.session.user.plano     = dados.plano;
                         if (dados.premium_ate) req.session.user.premium_ate = dados.premium_ate;
-                        return next();
+                        renovado = true;
                     }
                 }
             }
         } catch (err) {
             console.warn('[AUTH] verificarSaldoBloggerAi DB check err:', err.message);
         }
-        return res.status(403).json({
+        if (!renovado) return res.status(403).json({
             erro: 'O Gerador de Templates IA é exclusivo para planos pagos. Acesse /dashboard/upgrade.',
             codigo: 'PLANO_INSUFICIENTE',
             plano_necessario: 'premium',
@@ -340,14 +345,14 @@ async function verificarSaldoBloggerAi(req, res, next) {
             const dados = await buscarStatusPremiumAtual(user.email);
             if (assinaturaRenovada(dados)) {
                 aplicarRenovacaoNaSessao(req, dados);
-                return next();
-            }
+            } else {
             req.session.user.is_active = false;
             req.session.user.plano     = 'free';
             return res.status(402).json({
                 erro: 'Sua assinatura expirou. Renove em /dashboard/upgrade.',
                 codigo: 'ASSINATURA_EXPIRADA',
             });
+            }
         }
     }
 
@@ -355,8 +360,9 @@ async function verificarSaldoBloggerAi(req, res, next) {
     // debitarCreditosBloggerAi (creditService.js) debita.
     try {
         const snap = await db.collection('clientes_premium').doc(user.email.toLowerCase()).get();
-        if (snap.exists) {
-            const dados = snap.data();
+        if (!snap.exists) return res.status(402).json({erro:'Conta sem créditos Blogger IA cadastrados.',codigo:'SEM_CREDITOS'});
+        {
+            const dados = snap.data() || {};
 
             if (dados.creditos_bloggerai_expira_em && new Date(dados.creditos_bloggerai_expira_em) < new Date()) {
                 return res.status(402).json({
@@ -365,7 +371,7 @@ async function verificarSaldoBloggerAi(req, res, next) {
                 });
             }
             const saldo = dados.creditos_bloggerai ?? 0;
-            if (saldo <= 0) {
+            if (typeof saldo !== 'number' || !Number.isFinite(saldo) || saldo <= 0) {
                 return res.status(402).json({
                     erro: 'Seus créditos do Gerador de Templates IA deste ciclo acabaram. Aguarde a renovação do ciclo ou fale com o suporte.',
                     codigo: 'SEM_CREDITOS',
@@ -373,8 +379,8 @@ async function verificarSaldoBloggerAi(req, res, next) {
             }
         }
     } catch (err) {
-        // Falha de DB nunca bloqueia cliente pagante indevidamente.
         console.warn('[AUTH] Falha ao verificar saldo bloggerai de assinante ativo:', err.message);
+        return res.status(503).json({erro:'Não foi possível confirmar seus créditos Blogger IA.',codigo:'SALDO_INDISPONIVEL'});
     }
 
     next();
