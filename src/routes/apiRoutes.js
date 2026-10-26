@@ -13,7 +13,6 @@ const { MercadoPagoConfig, Payment, Preference } = require('mercadopago');
 const { exigirLogin } = require('../middlewares/authGuard');
 const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage');
 const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch');
-
 const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces');
 // Rate limit por IP nas rotas de iniciar pagamento — já exigem login
 // (exigirLogin), mas sem limite um usuário autenticado podia disparar
@@ -439,7 +438,8 @@ router.post('/internal/solaris/rag/buscar', async (req, res) => {
         const error = errorCaught;
         return res.status(400).json({ erro: error.message });
     }
-    // Sem embeddings, consulta determinística ao catálogo local JSON.
+    // Sem modelos de embeddings, o catálogo opera por palavras-chave,
+    // utilizando os JSON versionados. Índice vetorial de código fica indisponível.
     if (corpus === 'codigo') {
         return res.status(503).json({ erro: 'Busca vetorial de código desativada: serviço de embeddings retirado.' });
     }
