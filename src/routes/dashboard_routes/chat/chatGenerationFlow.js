@@ -43,10 +43,7 @@ const TEMPLATE_MARKER_RE = /\[\[TEMPLATE:([\s\S]+?)\]\]/;
  * @param {string|null} [opcoes.wsSessionId]
  * @returns {Promise<{ fullText: string, downloadUrl: string|null, novoSnapshot: object|null, codeValidation: object|null }>}
  */
-async function gerarComPossivelTemplate({
-    msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef,
-    wsProjetoId = null, wsSessionId = null, permitirGeracao = false,
-}) {
+async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef, wsProjetoId = null, wsSessionId = null, permitirGeracao = false, }) {
     let fullText = '';
     let downloadUrl = null;
     let novoSnapshot = null;
@@ -117,7 +114,8 @@ async function gerarComPossivelTemplate({
                 sistemaFinal = sistemaFinal +
                     `\n\n---\n## BLUEPRINT DE NICHO (RAG PIPELINE)\n${pipelineRag.contextoStr}`;
             }
-        } else if (ragArquivos.length === 0) {
+        }
+        else if (ragArquivos.length === 0) {
             // Suporte/ia-de-balcao sem hit no buscarRagRelevante: usa ragLoader para
             // injetar o ficheiro de tópicos (fallback automático do selecionarFicheiros).
             const suporteRag = loadForGeminiSync(msg);
