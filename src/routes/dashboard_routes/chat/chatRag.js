@@ -81,9 +81,7 @@ function carregarPersonalidade() {
             ...(data.comportamentos_ativos || []).map(c => `- **${c.id}**: ${c.descricao}`),
             ``,
             `### COMPORTAMENTOS PROIBIDOS`,
-            ...(data.comportamentos_proibidos || []).map(c =>
-                `- **${c.id}** (${(c.exemplos || []).slice(0, 2).join(', ')}): ${c.motivo}`
-            ),
+            ...(data.comportamentos_proibidos || []).map(c => `- **${c.id}** (${(c.exemplos || []).slice(0, 2).join(', ')}): ${c.motivo}`),
             ``,
             `### TOM`,
             `${data.tom?.descricao || ''}`,
