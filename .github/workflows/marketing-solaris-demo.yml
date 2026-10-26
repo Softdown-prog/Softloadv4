@@ -30,14 +30,28 @@ jobs:
           node --test scripts/marketing/record-solaris-demo.test.cjs
           npm run typecheck:frontend
           npm run build
-      - name: Instalar Chromium de teste
+      - name: Instalar apenas Chromium Headless Shell
         run: |
+          # --with-deps executava apt no runner; o espelho Ubuntu consumiu
+          # mais de 20 minutos no primeiro teste, sem chegar à captura.
+          # O runner GitHub já fornece bibliotecas de execução usuais.
           npm install --no-save --no-package-lock --legacy-peer-deps --no-audit --no-fund playwright@1.56.1
-          npx playwright install --with-deps chromium
-          if ! command -v ffmpeg >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
+          npx playwright install --only-shell chromium
+      - name: Disponibilizar FFmpeg estatico sem apt
+        run: |
+          set -euo pipefail
+          media_dir="${RUNNER_TEMP}/solaris-video-media"
+          npm install --prefix "$media_dir" --no-save --ignore-scripts --no-audit --no-fund --package-lock=false \
+            @ffmpeg-installer/linux-x64@4.1.0 @ffprobe-installer/linux-x64@5.2.0
+          install -d "$media_dir/bin"
+          ffmpeg_binary="$media_dir/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
+          ffprobe_binary="$media_dir/node_modules/@ffprobe-installer/linux-x64/ffprobe"
+          chmod +x "$ffmpeg_binary" "$ffprobe_binary"
+          ln -s "$ffmpeg_binary" "$media_dir/bin/ffmpeg"
+          ln -s "$ffprobe_binary" "$media_dir/bin/ffprobe"
+          echo "$media_dir/bin" >> "$GITHUB_PATH"
+          "$ffmpeg_binary" -hide_banner -encoders 2>/dev/null | grep -F libx264
+          "$ffprobe_binary" -version >/dev/null
       - name: Capturar conversa demonstrativa em MP4
         run: |
           node scripts/marketing/record-solaris-demo.mjs out/solaris-demo

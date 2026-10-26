@@ -27,6 +27,9 @@ test('captura em Actions sem VPS, deploy ou publicacao automatica no portal', ()
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /retention-days: 14/);
   assert.match(workflow, /ffmpeg/);
+  assert.match(workflow, /playwright install --only-shell chromium/);
+  assert.match(workflow, /@ffmpeg-installer\/linux-x64@4\.1\.0/);
+  assert.doesNotMatch(workflow, /sudo apt-get|--with-deps chromium/);
   assert.match(workflow, /contents: read/);
   assert.doesNotMatch(workflow, /SOFTLOAD_VPS_SSH_KEY/);
   assert.doesNotMatch(workflow, /scp |ssh |deploy|git push/);
