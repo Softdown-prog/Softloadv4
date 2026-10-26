@@ -24,6 +24,10 @@ test('ativação v2 é protegida por handshake somente-leitura antes de upload',
   assert.match(workflow, /'contract:v2'/);
   assert.match(workflow, /softload-deploy:v2:app,agent/);
   assert.match(workflow, /Receptor VPS não confirmou contrato v2 app\+agent/);
+  assert.match(workflow, /Reconfirm receiver v2 immediately before activating/);
+  assert.equal((workflow.match(/'contract:v2'/g) || []).length, 2, 'dois handshakes independentes');
+  assert.ok(workflow.indexOf('Reconfirm receiver v2 immediately before activating') < workflow.indexOf('Activate only after every image arrives'));
+  assert.match(workflow, /Contrato v2 divergente; ativação cancelada sem trocar containers/);
 });
 
 test('imagem Agent usa base slim e mantém ferramentas de GitHub/MCP/Forge', () => {
