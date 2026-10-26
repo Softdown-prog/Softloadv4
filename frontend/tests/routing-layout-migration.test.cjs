@@ -525,3 +525,17 @@ test('visibilidade de senha tem rótulo acessível e a recuperação não transf
   assert.doesNotMatch(recover, /expira em 60 minutos/);
   assert.match(recover, /Se o endereço estiver cadastrado/);
 });
+
+
+test('sitemap público anunciado por robots.txt tem somente rotas indexáveis', () => {
+  const sitemap = source('public/sitemap.xml');
+  const robots = source('public/robots.txt');
+  assert.ok(robots.includes('Sitemap: https://softload.analysepro.com/sitemap.xml'));
+  for (const publicUrl of ['/', '/contato', '/termos-de-uso', '/privacidade']) {
+    assert.ok(sitemap.includes('<loc>https://softload.analysepro.com' + publicUrl + '</loc>'), publicUrl);
+  }
+  for (const privateRoute of ['/dashboard', '/login', '/register', '/recover', '/eu']) {
+    assert.doesNotMatch(sitemap, new RegExp('<loc>[^<]*' + privateRoute + '([/<]|$)'), privateRoute);
+  }
+  assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
+});
