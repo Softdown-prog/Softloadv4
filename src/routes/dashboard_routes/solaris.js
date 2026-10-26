@@ -22,6 +22,7 @@ const { modoCreditosSolarisV2, criarGateCreditosSolarisV2, debitoLegadoSolaris }
 const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = require('../../services/aiCreditsV2Http');
 const { createGithubAppService } = require('../../services/solarisGithubApp');
 const { createGithubOperations, GithubOperationError } = require('../../services/solarisGithubOperations');
+const { createSolarisGithubAgent } = require('../../services/solarisGithubAgent');
 const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
 const { getAgent }          = require('../../services/agentBridge');
@@ -73,6 +74,7 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 const livroOrcamento = criarLivroRazaoIa(db);
 const githubApp = createGithubAppService(db);
 const githubOperations = createGithubOperations(githubApp);
+const githubAgent = createSolarisGithubAgent(db, githubApp, githubOperations);
 // A V2, quando explicitamente ativada, consulta o livro-razão antes de enviar
 // ao modelo e não confia no contador legado nem no body HTTP para orçamento.
 const verificarCreditosSolaris = criarGateCreditosSolarisV2({
@@ -181,6 +183,10 @@ router.delete('/dashboard/solaris/github/disconnect', exigirLogin, githubLimiter
 router.post('/dashboard/solaris/github/action', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
     res.set('Cache-Control','no-store, private');
     try {
+        // Ações de escrita só pelo endpoint de aprovação humana da proposta
+        // armazenada no Firestore. Nunca confie em confirm:true no body do cliente.
+        if (!['repository_get','file_read','pull_requests_list'].includes(req.body?.action))
+            return res.status(403).json({ok:false,erro:'Gravações exigem aprovação de proposta no painel.'});
         const result = await githubOperations.execute(req.session.user.uid, req.body);
         return res.json({ok:true,result});
     } catch (err) {
@@ -188,6 +194,25 @@ router.post('/dashboard/solaris/github/action', exigirLogin, githubLimiter, mesm
         return res.status(status).json({ok:false,erro:status===503
             ? 'Serviço GitHub indisponível no momento.' : err.message});
     }
+});
+
+// Aprovação isolada do modelo: nunca aceita conteúdo/caminho/branch do browser.
+router.get('/dashboard/solaris/github/pending', exigirLogin, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { return res.json(await githubAgent.pending(req.session.user.uid)); }
+    catch (_) { return res.status(503).json({erro:'Não foi possível carregar a proposta GitHub.'}); }
+});
+router.post('/dashboard/solaris/github/approve', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { return res.json(await githubAgent.approve(req.session.user.uid)); }
+    catch (err) { const status = err instanceof GithubOperationError ? err.status : 503;
+        return res.status(status).json({erro:status===503
+            ? 'Falha ao publicar. Verifique a branch de trabalho antes de tentar novamente.' : err.message}); }
+});
+router.delete('/dashboard/solaris/github/pending', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { return res.json(await githubAgent.reject(req.session.user.uid)); }
+    catch (_) { return res.status(503).json({erro:'Não foi possível cancelar a proposta.'}); }
 });
 
 router.get('/dashboard/solaris', exigirLogin, (req, res) => {
@@ -295,12 +320,32 @@ const depsChatSolaris = {
 };
 const chatSolarisSemOrcamento = criarHandlerChatSolaris(depsChatSolaris);
 router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSolaris, (req, res) => {
-    if (process.env.SOLARIS_AI_BUDGET_ENFORCE !== 'true') {
-        return chatSolarisSemOrcamento(req, res);
-    }
     const deps = dependenciasPorRequisicao(req);
+    const ghMode = req.body?.tool === 'github';
+    // O handler SSE continua responsável por requestId, histórico e cobrança.
+    // Este wrapper injeta o loop Gemini com ferramentas SOMENTE para uma conta
+    // GitHub conectada; sem conexão preserva a análise pública anterior.
+    const githubChat = ghMode ? {
+        async *perguntarStream(contextAndMessage, history, tokensRef) {
+            const uid = req.session?.user?.uid;
+            if (!uid) throw Error('Sessão expirada.');
+            const status = await githubApp.status(uid);
+            if (!status.connected) {
+                yield* deps.solarisChat.perguntarStream(contextAndMessage, history, tokensRef);
+                return;
+            }
+            const result = await githubAgent.prepare({
+                uid, repository:req.body.githubRepository, message:req.body.message,
+                history,context:contextAndMessage,modelRouter:deps.modelRouter
+            });
+            Object.assign(tokensRef, result.tokens);
+            yield result.text;
+        }
+    } : deps.solarisChat;
     return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps,
-        debitarCreditos: debitarSomenteSeLegado,
+        solarisChat: githubChat,
+        debitarCreditos: process.env.SOLARIS_AI_BUDGET_ENFORCE === 'true'
+            ? debitarSomenteSeLegado : debitarCreditos,
         contextoRepositorioPublico: async (repo) => {
             const uid = req.session?.user?.uid;
             if (!uid) throw Error('Sessão expirada.');

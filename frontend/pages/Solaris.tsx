@@ -30,6 +30,12 @@ interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: 
 interface UploadCandidate { score: number; framework: string; evidencias: string[] }
 interface VisualStatus { enabled: boolean; origins: string[]; maxRequestsPerTenMinutes: number }
 interface VisualResponse { ok?: boolean; analise?: string; error?: string; tokens?: { input: number; output: number } }
+interface GithubProposal {
+ state:'none'|'pending'|'applying'|'completed'|'cancelled'|'failed'|'expired';
+ repository?:string; title?:string; branch?:string; expiresAt?:number;
+ files?:Array<{path:string;summary:string;operation:string;proposedContent:string;currentSha:string|null}>;
+ result?:{prUrl:string;prNumber:number;branch:string;commits:string[]};
+}
 interface SolarisGithubStatus {
     configured: boolean;
     connected: boolean;
@@ -68,6 +74,8 @@ export default function Solaris(): React.JSX.Element {
     const [toolError, setToolError] = useState('');
     const [githubStatus, setGithubStatus] = useState<SolarisGithubStatus | null>(null);
     const [githubBusy, setGithubBusy] = useState(false);
+    const [githubProposal, setGithubProposal] = useState<GithubProposal>({state:'none'});
+    const [githubApprovalBusy, setGithubApprovalBusy] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const chatFeedRef = useRef<HTMLDivElement | null>(null);
@@ -150,8 +158,44 @@ export default function Solaris(): React.JSX.Element {
             if (!response.ok) throw Error('Não foi possível desconectar GitHub.');
             setGithubStatus(status => status ? {...status,connected:false,repository:null,account:null} : null);
             setGithubRepository('');
+            setGithubProposal({state:'none'});
         } catch (e) { setToolError(e instanceof Error ? e.message : 'Falha ao desconectar.'); }
         finally { setGithubBusy(false); }
+    };
+
+    const carregarPropostaGithub = async (): Promise<void> => {
+        try {
+            const response = await fetch('/dashboard/solaris/github/pending', {cache:'no-store'});
+            if (response.ok) setGithubProposal(await response.json() as GithubProposal);
+        } catch { /* Não descartar proposta quando a rede oscilar. */ }
+    };
+    const aprovarPropostaGithub = async (): Promise<void> => {
+        if (githubProposal.state !== 'pending' || githubApprovalBusy) return;
+        if (!window.confirm('Criar uma branch e abrir um pull request rascunho com as alterações exibidas?')) return;
+        setGithubApprovalBusy(true); setToolError('');
+        try {
+            const response = await fetch('/dashboard/solaris/github/approve', {
+                method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
+            });
+            const data = await response.json() as {erro?:string;result?:{prUrl:string;branch:string;prNumber:number;commits:string[]}};
+            if (!response.ok || !data.result) throw Error(data.erro || 'Não foi possível publicar a proposta.');
+            setGithubProposal({state:'completed',result:data.result});
+            setMessages(prev=>[...prev,{role:'assistant',
+                content:'GitHub: branch **'+data.result!.branch+'** criada. Pull request rascunho: '+data.result!.prUrl}]);
+        } catch(e) {
+            setToolError(e instanceof Error?e.message:'Falha ao aprovar GitHub');
+            void carregarPropostaGithub();
+        } finally { setGithubApprovalBusy(false); }
+    };
+    const cancelarPropostaGithub = async (): Promise<void> => {
+        if (githubApprovalBusy) return;
+        setGithubApprovalBusy(true);
+        try {
+            const response = await fetch('/dashboard/solaris/github/pending',{method:'DELETE'});
+            if(!response.ok) throw Error('Não foi possível cancelar a proposta.');
+            setGithubProposal({state:'cancelled'});
+        } catch(e) { setToolError(e instanceof Error?e.message:'Falha ao cancelar a proposta.'); }
+        finally {setGithubApprovalBusy(false);}
     };
 
     const suggestions = [
@@ -166,6 +210,7 @@ export default function Solaris(): React.JSX.Element {
         carregarCreditos();
         carregarHistorico();
         void carregarGithub();
+        void carregarPropostaGithub();
         const retornoGithub = new URLSearchParams(window.location.search).get('github');
         if (retornoGithub === 'connected') {
             setActiveTool('github');
@@ -487,6 +532,7 @@ export default function Solaris(): React.JSX.Element {
                         }
                     } else if (event.type === 'done') {
                         setStatusText('');
+                        if (activeTool === 'github') void carregarPropostaGithub();
                         const finalReply = event.reply || currentAssistantReply;
                         
                         // Remover marcador do texto final
@@ -740,6 +786,35 @@ export default function Solaris(): React.JSX.Element {
             {/* Input e Controles de Chat */}
             <div className="sl-conversation__composer p-3 flex-shrink-0">
                 <div className="sl-conversation__composer-inner">
+                    {githubProposal.state === 'pending' && (
+                        <section className="border border-info rounded-3 p-3 mb-3 bg-dark text-light" aria-label="Proposta GitHub pendente">
+                            <div className="fw-bold small mb-1">GitHub — revisar antes de publicar</div>
+                            <p className="small text-secondary mb-2">{githubProposal.repository} · {githubProposal.files?.length || 0} arquivo(s).
+                                A aprovação cria uma branch e um PR rascunho, sem alterar a principal.
+                            </p>
+                            <div style={{maxHeight:'24vh',overflowY:'auto'}}>
+                                {(githubProposal.files || []).map(file => (
+                                    <details key={file.path} className="mb-2">
+                                        <summary className="small">{file.operation === 'edit' ? 'Editar' : 'Criar'}: {file.path} — {file.summary}</summary>
+                                        <pre className="small p-2 mt-1 rounded bg-black text-light"
+                                            style={{whiteSpace:'pre-wrap',wordBreak:'break-word',maxHeight:'240px',overflowY:'auto'}}>{file.proposedContent}</pre>
+                                    </details>
+                                ))}
+                            </div>
+                            <div className="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" className="btn btn-info btn-sm"
+                                    disabled={loading || githubApprovalBusy} onClick={()=>{void aprovarPropostaGithub();}}>
+                                    {githubApprovalBusy?'Publicando...':'Aprovar e abrir PR'}
+                                </button>
+                                <button type="button" className="btn btn-outline-secondary btn-sm"
+                                    disabled={githubApprovalBusy} onClick={()=>{void cancelarPropostaGithub();}}>Descartar</button>
+                            </div>
+                        </section>
+                    )}
+                    {githubProposal.state === 'completed' && githubProposal.result?.prUrl?.startsWith('https://github.com/') && (
+                        <a href={githubProposal.result.prUrl} target="_blank" rel="noopener noreferrer"
+                            className="small d-block mb-2 text-info">Ver pull request rascunho no GitHub</a>
+                    )}
                     <div className="sl-conversation__actions-scope" ref={quickMenuRef}>
                         {quickMenuOpen && (
                             <div id="solaris-actions-menu" className="sl-conversation__actions-popover" role="group" aria-label="Opções e ferramentas do Solaris">
@@ -844,7 +919,7 @@ export default function Solaris(): React.JSX.Element {
                                         </div>
                                         <p className="small text-secondary mb-0">
                                             {githubStatus?.connected
-                                                ? 'Conta autorizada. Vincule um repositório permitido. O backend já oferece leitura, branches, commits e PRs autenticados, com confirmação de gravação; a execução automática dessas ações pelo chat ainda não está habilitada.'
+                                                ? 'Conta autorizada. Vincule um repositório permitido. O Solaris pode ler arquivos e preparar mudanças pelo chat. Confira a proposta abaixo e aprove a criação da branch e do PR rascunho.'
                                                 : githubStatus?.configured
                                                     ? 'Na primeira conexão, o GitHub pedirá autorização à GitHub App. Depois escolha o repositório. Repositórios públicos também podem ser consultados pelo link sem login.'
                                                     : 'A conexão de contas requer configurar a GitHub App na Softload. Por enquanto, o link de um repositório público funciona para análise em modo somente leitura.'}
