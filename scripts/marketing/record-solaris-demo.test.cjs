@@ -4,11 +4,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
-const script = fs.readFileSync(path.join(__dirname, 'record-solaris-demo.mjs'), 'utf8');
+const script = fs.readFileSync(path.join(__dirname, 'record-solaris-demo.ts'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/marketing-solaris-demo.yml'), 'utf8');
 const solaris = fs.readFileSync(path.join(root, 'frontend/pages/Solaris.tsx'), 'utf8');
 
 test('filma interface atual do Solaris sem contas reais ou chamadas de IA', () => {
+  assert.match(script, /function json\(res: ServerResponse, value: unknown/);
+  assert.match(script, /async function streamDemo\(req: IncomingMessage/);
   assert.match(script, /recordVideo:/);
   assert.match(script, /pressSequentially\(QUESTION/);
   assert.match(script, /\/dashboard\/solaris\/chat\/stream/);

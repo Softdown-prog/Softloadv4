@@ -2,6 +2,7 @@
 // Nenhum dado pessoal, API de IA, VPS ou rede externa é usado.
 import { chromium } from 'playwright';
 import { createServer } from 'node:http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile, mkdir, rename, writeFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 
@@ -15,15 +16,15 @@ const ANSWER = [
   'A correção é:\n\n' + tick.repeat(3) + 'ts\nconst total: number = 42;\n' + tick.repeat(3) + '\n\n',
   'Se o valor vier como texto, converta com ' + tick + 'Number(valor)' + tick + '.'
 ].join('');
-const mime = { '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+const mime: Record<string, string> = { '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2',
   '.ico': 'image/x-icon', '.html': 'text/html; charset=utf-8' };
 const wait = ms => new Promise(done => setTimeout(done, ms));
-function json(res, value, status = 200) {
+function json(res: ServerResponse, value: unknown, status = 200): void {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(value));
 }
-async function streamDemo(req, res) {
+async function streamDemo(req: IncomingMessage, res: ServerResponse): Promise<void> {
   let body = '';
   for await (const chunk of req) {
     body += chunk;
@@ -51,7 +52,7 @@ async function streamDemo(req, res) {
     res.end();
   }
 }
-async function handler(req, res) {
+async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const pathname = decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname);
     if (pathname === '/dashboard/solaris' && req.method === 'GET') {
@@ -108,7 +109,7 @@ try {
     deviceScaleFactor: 1, recordVideo: { dir: OUTPUT, size: { width: 1280, height: 720 } },
     reducedMotion: 'reduce' });
   const page = await context.newPage();
-  const pageErrors = [];
+  const pageErrors: string[] = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());

@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/marketing/record-solaris-demo.mjs'
+      - 'scripts/marketing/record-solaris-demo.ts'
       - 'scripts/marketing/record-solaris-demo.test.cjs'
       - '.github/workflows/marketing-solaris-demo.yml'
 
@@ -26,7 +26,7 @@ jobs:
         run: npm ci --legacy-peer-deps --no-audit --no-fund
       - name: Verificar roteiro e compilar frontend
         run: |
-          node --check scripts/marketing/record-solaris-demo.mjs
+          node --experimental-strip-types --check scripts/marketing/record-solaris-demo.ts
           node --test scripts/marketing/record-solaris-demo.test.cjs
           npm run typecheck:frontend
           npm run build
@@ -54,7 +54,7 @@ jobs:
           "$ffprobe_binary" -version >/dev/null
       - name: Capturar conversa demonstrativa em MP4
         run: |
-          node scripts/marketing/record-solaris-demo.mjs out/solaris-demo
+          node --experimental-strip-types scripts/marketing/record-solaris-demo.ts out/solaris-demo
           ffmpeg -hide_banner -loglevel error -y -i out/solaris-demo/solaris-demo-real-ui.webm \
             -an -c:v libx264 -pix_fmt yuv420p -preset veryfast -crf 22 \
             -movflags +faststart out/solaris-demo/solaris-demo.mp4
