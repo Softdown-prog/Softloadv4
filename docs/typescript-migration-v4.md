@@ -2,6 +2,23 @@
 
 Estado atual: inventário fechado da issue [#17](https://github.com/Softdown-prog/Softloadv4/issues/17), em 26/10/2026.
 
+## Fechamento das entradas e módulos periféricos — 11 → 6 pendências
+
+Inventário confirmado na main `dc605e43`: 11 itens, sendo 6 rotas e 5 periféricos. Este lote resolve os cinco periféricos:
+
+- `server.ts` e `cli.ts` tornam-se as fontes estritas das entradas CommonJS atuais; os caminhos executáveis `server.js` e `cli.js` permanecem gerados e compatíveis.
+- `agent/forge/index.ts` tipa comandos, receitas, arquivos, validações de diretório/symlink, execução isolada, cotas e proveniência. O `index.cjs` é gerado e validado com `tsconfig.forge-index.json`.
+- `public/js/workers/w-sentinel.ts` tipa dados de saúde, gráficos, requisições e DOM. O `.js` continua script clássico, sem imports CommonJS, e entra no checker de espelhos do navegador.
+- O `agent.js` da raiz foi aposentado: não há referências executáveis a ele e seus imports apontavam para diretórios inexistentes. `agent/package.json` continua iniciando `agent/src/index.js`, que usa o agente tipado ativo em `agent/src/agent.ts`. O inventário-base permanece intacto e a remoção é deduzida pelo auditor.
+
+O diagnóstico `sistema:deps` passa a procurar `frontend/App.tsx`, substituindo o caminho JSX já removido pela migração anterior. O fluxo do servidor preserva as sessões Firestore, cookies seguros, cabeçalhos de cache, health público sem segredos, recuperação de cobranças e encerramento no SIGTERM. O gate passa a conferir também os espelhos das entradas da raiz.
+
+Validações novas usam serviços falsos para boot/sessões/webhook, DOM e Chart simulados para o Sentinel, CLI com worker real para ping e diretórios temporários isolados para Forge. O teste do caminho Python substitui o processo por um fake e confere que apenas o ambiente permitido é encaminhado; nenhum renderizador, provedor pago ou serviço de produção é iniciado.
+
+A rodada local passou com 53 testes, incluindo a capability Forge real do agente, e os typechecks do backend/agente, navegador e Forge.
+
+Restam apenas as seis rotas: `adminRoutes`, `apiRoutes`, `chat`, `solaris`, `workspace` e `workspaceChat`. Os quatro utilitários CJS auxiliares continuam fora do saldo de runtime.
+
 ## Lote de serviços e acesso — 8 novas fontes
 
 O inventário global cai de **28 para 20** pendências de runtime/entrada, mantendo as quatro ferramentas CJS fora dessa contagem.

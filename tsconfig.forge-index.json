@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.forge-catalog.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "files": [
+    "agent/forge/index.ts"
+  ]
+}

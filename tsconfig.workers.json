@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "None",
-    "lib": ["ES2022", "DOM"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -12,6 +15,7 @@
     "public/js/workers/w-utils.ts",
     "public/js/workers/w-init.ts",
     "public/js/workers/w-log-init.ts",
-    "public/js/workers/w-errorlog.ts"
+    "public/js/workers/w-errorlog.ts",
+    "public/js/workers/w-sentinel.ts"
   ]
 }

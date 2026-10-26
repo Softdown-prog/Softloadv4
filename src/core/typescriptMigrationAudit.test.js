@@ -174,6 +174,24 @@ try {
     write('src/workers/xmlPatchWorker.js', '"use strict";');
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
+    // Root server/CLI sources are production entry points and obey the same gate.
+    const rootRegistry = JSON.parse(fs.readFileSync(path.join(root, 'scripts/typescript-mirror-sources.json'), 'utf8'));
+    for (const entry of ['server', 'cli']) {
+        const typed = entry + '.ts', generated = entry + '.js';
+        write(typed, 'export interface Entry {}'); write(generated, '"use strict";');
+        assert.ok(auditarMigracao(root).errors.some(e => e.includes('Fonte TypeScript não registrada: ' + typed)));
+        rootRegistry.push(typed); registry(rootRegistry); config(rootRegistry);
+        assert.equal(auditarMigracao(root).ok, true);
+        fs.unlinkSync(path.join(root, generated));
+        assert.ok(auditarMigracao(root).errors.some(e => e.includes('Espelho CommonJS ausente: ' + generated)));
+        write(generated, '"use strict";');
+        config(rootRegistry.filter(item => item !== typed));
+        assert.ok(auditarMigracao(root).errors.some(e => e.includes('fora de tsconfig.include: ' + typed)));
+        config(rootRegistry);
+    }
+    registry([...rootRegistry, 'unknown-root.ts']);
+    assert.ok(auditarMigracao(root).errors.some(e => e.includes('Entrada inválida no registro')));
+    registry(rootRegistry); assert.equal(auditarMigracao(root).ok, true);
     console.log('✅ Auditoria TypeScript: registro, tsconfig, espelhos e arquivos legados.');
 } finally {
     fs.rmSync(root, {recursive:true,force:true});

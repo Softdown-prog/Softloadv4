@@ -259,6 +259,10 @@ jobs:
           src/services/sentinelWorker.contract.test.js
           src/routes/dashboard_routes/historico.contract.test.js
           src/middlewares/authGuard.test.js
+      - name: Validar boot, CLI, Forge e Sentinel do navegador sem produção
+        run: |
+          node --test scripts/serverEntrypoint.test.cjs scripts/rootCli.test.cjs scripts/browserSentinel.test.cjs
+          npm run typecheck:forge-index
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

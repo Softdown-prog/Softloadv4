@@ -261,7 +261,9 @@
     "src/services/sentinelWorker.ts",
     "src/middlewares/authGuard.ts",
     "src/routes/dashboard_routes/historico.ts",
-    "src/routes/authRoutes.ts"
+    "src/routes/authRoutes.ts",
+    "server.ts",
+    "cli.ts"
   ],
   "exclude": [
     "node_modules",
