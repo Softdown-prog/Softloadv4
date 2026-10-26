@@ -171,7 +171,7 @@ test('GPT sem orçamento não cria cotas; BloggerAI usa set com merge, gratuito 
     assert.equal(h.calls.writes[0].key,KEY);
 });
 
-test('Gemini: inativos respeitam saldo e expiração; ativos não bloqueiam; logs são não bloqueantes',async()=>{
+test('Gemini: todos os planos respeitam saldo e expiração; logs são não bloqueantes',async()=>{
     const h=harness({[KEY]:{is_active:false,creditos:1,creditos_expira_em:'2099-12-31T23:59:59Z'}});
     assert.equal(await h.api.debitarCreditos(EMAIL,999,0),1);
     assert.equal(h.docs.get(KEY).creditos,0);
@@ -181,9 +181,11 @@ test('Gemini: inativos respeitam saldo e expiração; ativos não bloqueiam; log
     h.docs.set(KEY,{is_active:false,creditos:10,creditos_expira_em:'2000-01-01'});
     await assert.rejects(h.api.debitarCreditos(EMAIL,1000,0),/Créditos insuficientes/);
     h.docs.set(KEY,{is_active:true,creditos:0});
+    await assert.rejects(h.api.debitarCreditos(EMAIL,1001,0),/Créditos insuficientes/);
+    h.docs.set(KEY,{is_active:true,creditos:2});
     h.setBillingError(true);
     assert.equal(await h.api.debitarCreditos(EMAIL,1001,0),2);
-    assert.equal(h.docs.get(KEY).creditos,-2);
+    assert.equal(h.docs.get(KEY).creditos,0);
     await Promise.resolve();
     assert.ok(h.calls.errors.some(args=>args[0]==='[BILLING] log error:'));
     const n=h.calls.transactions;

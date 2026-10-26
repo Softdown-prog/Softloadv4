@@ -233,13 +233,12 @@ async function debitarCreditos(email, inputTokens, outputTokens, operacaoId) {
         if (!doc.exists)
             throw new Error('Usuário não encontrado');
         const dados = doc.data();
-        // Assinantes ativos: créditos são contadores de analytics — nunca bloqueia por saldo.
-        if (!dados.is_active) {
-            const expirado = dados.creditos_expira_em && new Date(dados.creditos_expira_em) < new Date();
-            const saldo = expirado ? 0 : (dados.creditos ?? 0);
-            if (saldo < creditosADebitar)
-                throw new Error('Créditos insuficientes');
-        }
+        // A transação respeita o saldo de todos os planos, inclusive pagos,
+        // impedindo saldo negativo após chamadas concorrentes.
+        const expirado = dados.creditos_expira_em && new Date(dados.creditos_expira_em) < new Date();
+        const saldo = expirado ? 0 : (dados.creditos ?? 0);
+        if (saldo < creditosADebitar)
+            throw new Error('Créditos insuficientes');
         tx.update(userRef, { creditos: FV.increment(-creditosADebitar) });
         if (reciboRef) {
             tx.set(reciboRef, {

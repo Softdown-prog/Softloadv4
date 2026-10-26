@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const router  = express.Router();
-const { exigirLogin, exigirPlanoStudio } = require('../../middlewares/authGuard');
+const { exigirLogin } = require('../../middlewares/authGuard');
 const { db, bucket, admin } = require('../../services/firebase');
 const { gerarDiagnostico }  = require('../../core/diagnostico');
 const { reverterParaVersao } = require('../../core/templateEditWorker');
@@ -46,14 +46,14 @@ function formatarData(ts) {
 // ──────────────────────────────────────────────────────────────────────────
 // GET /dashboard/workspace
 // ──────────────────────────────────────────────────────────────────────────
-router.get('/dashboard/workspace', exigirLogin, exigirPlanoStudio, (req, res) => {
+router.get('/dashboard/workspace', exigirLogin, (req, res) => {
     res.render('pages/react-test', {
         activePage: 'workspace',
         user: req.session.user
     });
 });
 
-router.get('/api/workspace/projetos', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/projetos', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
 
@@ -90,7 +90,7 @@ router.get('/api/workspace/projetos', exigirLogin, exigirPlanoStudio, async (req
 // ──────────────────────────────────────────────────────────────────────────
 // POST /api/workspace/projetos  → criar projeto
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/api/workspace/projetos', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.post('/api/workspace/projetos', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { nome } = req.body || {};
@@ -115,7 +115,7 @@ router.post('/api/workspace/projetos', exigirLogin, exigirPlanoStudio, async (re
 // ──────────────────────────────────────────────────────────────────────────
 // DELETE /api/workspace/projetos/:id  → deletar projeto + sessões
 // ──────────────────────────────────────────────────────────────────────────
-router.delete('/api/workspace/projetos/:id', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.delete('/api/workspace/projetos/:id', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { id } = req.params;
@@ -136,7 +136,7 @@ router.delete('/api/workspace/projetos/:id', exigirLogin, exigirPlanoStudio, asy
 // ──────────────────────────────────────────────────────────────────────────
 // POST /api/workspace/projetos/:pid/sessoes  → criar sessão com snapshot
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/api/workspace/projetos/:pid/sessoes', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.post('/api/workspace/projetos/:pid/sessoes', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { pid } = req.params;
@@ -203,7 +203,7 @@ router.post('/api/workspace/projetos/:pid/sessoes', exigirLogin, exigirPlanoStud
 // ──────────────────────────────────────────────────────────────────────────
 // DELETE /api/workspace/projetos/:pid/sessoes/:sid
 // ──────────────────────────────────────────────────────────────────────────
-router.delete('/api/workspace/projetos/:pid/sessoes/:sid', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.delete('/api/workspace/projetos/:pid/sessoes/:sid', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { pid, sid } = req.params;
@@ -219,7 +219,7 @@ router.delete('/api/workspace/projetos/:pid/sessoes/:sid', exigirLogin, exigirPl
 // ──────────────────────────────────────────────────────────────────────────
 // GET /api/workspace/compilacoes  → lista compilações para o seletor de import
 // ──────────────────────────────────────────────────────────────────────────
-router.get('/api/workspace/compilacoes', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/compilacoes', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
 
@@ -256,7 +256,7 @@ router.get('/api/workspace/compilacoes', exigirLogin, exigirPlanoStudio, async (
 // ──────────────────────────────────────────────────────────────────────────
 // POST /api/workspace/importar  → importa compilação como projeto + sessão
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/api/workspace/importar', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.post('/api/workspace/importar', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { compilacaoId } = req.body || {};
@@ -319,7 +319,7 @@ router.post('/api/workspace/importar', exigirLogin, exigirPlanoStudio, async (re
 // ──────────────────────────────────────────────────────────────────────────
 // GET /api/workspace/snapshot-info  → info da última compilação (para preview)
 // ──────────────────────────────────────────────────────────────────────────
-router.get('/api/workspace/snapshot-info', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/snapshot-info', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
 
@@ -367,7 +367,7 @@ router.post('/api/workspace/set-preview', exigirLogin, (req, res) => {
 // "ao vivo" no Blogger — isso exigiria integração com a Blogger API real,
 // ausente hoje.
 // ──────────────────────────────────────────────────────────────────────────
-router.get('/api/workspace/diagnostico/:compilacaoId', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/diagnostico/:compilacaoId', exigirLogin, async (req, res) => {
     try {
         const user  = req.session.user;
         const email = user.email.toLowerCase();
@@ -411,7 +411,7 @@ router.get('/api/workspace/diagnostico/:compilacaoId', exigirLogin, exigirPlanoS
 // compilerPipeline.js/templateEditWorker.js). Lista LEVE — sem `manifesto`
 // completo, só carregado no momento do revert (ver rota abaixo).
 // ──────────────────────────────────────────────────────────────────────────
-router.get('/api/workspace/projetos/:pid/sessoes/:sid/historico', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/projetos/:pid/sessoes/:sid/historico', exigirLogin, async (req, res) => {
     try {
         const email = req.session.user.email.toLowerCase();
         const { pid, sid } = req.params;
@@ -458,7 +458,7 @@ router.get('/api/workspace/projetos/:pid/sessoes/:sid/historico', exigirLogin, e
 // ATUAL da sessão. O revert em si vira mais uma entrada nova no histórico
 // (origem:'revert') — nunca apaga nada, mesmo princípio de `git revert`.
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/api/workspace/projetos/:pid/sessoes/:sid/reverter', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.post('/api/workspace/projetos/:pid/sessoes/:sid/reverter', exigirLogin, async (req, res) => {
     try {
         const user  = req.session.user;
         const email = user.email.toLowerCase();

@@ -50,11 +50,13 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         return { fullText: 'Tive um problema técnico ao processar isso agora — pode tentar de novo?' };
     }
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
+    let falhaDebito = false;
     if (tokens && (tokens.input || tokens.output)) {
         try {
             await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
         }
         catch (e) {
+            falhaDebito = true;
             console.error(`[BILLING] chat-edicao-agente debit err: ${e.message}`);
         }
     }
@@ -99,6 +101,6 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         colorPreset: resultado.manifestoFinal?.colorPreset || null,
         nichoTema: resultado.manifestoFinal?.nichoTema || null,
     } : null;
-    return { fullText: resposta, downloadUrl: downloadUrl || null, preview };
+    return { fullText: resposta + (falhaDebito ? '\n\n⚠️ Não foi possível confirmar o débito desta edição. Confira seu saldo de créditos.' : ''), downloadUrl: downloadUrl || null, preview };
 }
 module.exports = { processarEdicaoDeTemplate };

@@ -86,10 +86,12 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
 
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
 
+    let falhaDebito = false;
     if (tokens && (tokens.input || tokens.output)) {
         try {
             await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
         } catch (e) {
+            falhaDebito = true;
             console.error(`[BILLING] chat-edicao-agente debit err: ${(e as Error).message}`);
         }
     }
@@ -134,7 +136,7 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         nichoTema:   resultado.manifestoFinal?.nichoTema || null,
     } : null;
 
-    return { fullText: resposta, downloadUrl: downloadUrl || null, preview };
+    return { fullText: resposta + (falhaDebito ? '\n\n⚠️ Não foi possível confirmar o débito desta edição. Confira seu saldo de créditos.' : ''), downloadUrl: downloadUrl || null, preview };
 }
 
 module.exports = { processarEdicaoDeTemplate };

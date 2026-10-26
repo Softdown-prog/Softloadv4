@@ -214,7 +214,7 @@ export default function Workspace(): React.JSX.Element {
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                         Workspace Industrial
                     </h1>
-                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Gerencie projetos, versões e sessões de engenharia em tempo real.</p>
+                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Workspace disponível em todos os planos. Organize projetos livremente; a IA utiliza créditos Gemini conforme os tokens consumidos.</p>
                 </div>
                 <div className="d-flex align-items-center gap-2">
                     <button onClick={carregarProjetos} className="btn btn-sl-outline btn-sm d-flex align-items-center gap-1">

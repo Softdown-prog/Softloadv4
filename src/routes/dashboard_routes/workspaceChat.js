@@ -2,9 +2,11 @@
 const express   = require('express');
 const router    = express.Router();
 
-const { exigirLogin, exigirPlanoStudio, verificarSaldo } = require('../../middlewares/authGuard');
+const { exigirLogin } = require('../../middlewares/authGuard');
+const { criarGateCreditosWorkspace } = require('../../middlewares/workspaceCreditGate');
 const chatStorage                             = require('../../services/chatStorageService');
 const { db, admin }                           = require('../../services/firebase');
+const verificarCreditosWorkspace = criarGateCreditosWorkspace({db});
 const { debitarCreditos, PLAN_CREDITS }       = require('../../services/creditService');
 
 const { processarEdicaoDeTemplate } = require('./chat/chatEditFlow');
@@ -37,7 +39,7 @@ function sessoesRef(email, projetoId) {
     return projetosRef(email).doc(projetoId).collection('sessoes');
 }
 
-router.get('/dashboard/workspace/chat', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/dashboard/workspace/chat', exigirLogin, async (req, res) => {
     const email       = req.session.user.email.toLowerCase();
     const wsSessionId = req.query.wsSession || null;
     const wsProjetoId = req.query.projeto   || null;
@@ -80,7 +82,7 @@ router.get('/dashboard/workspace/chat', exigirLogin, exigirPlanoStudio, async (r
     });
 });
 
-router.get('/api/workspace/chat/info', exigirLogin, exigirPlanoStudio, async (req, res) => {
+router.get('/api/workspace/chat/info', exigirLogin, async (req, res) => {
     const email       = req.session.user.email.toLowerCase();
     const wsSessionId = req.query.wsSession || null;
     const wsProjetoId = req.query.projeto   || null;
@@ -145,7 +147,7 @@ router.get('/api/workspace/chat/info', exigirLogin, exigirPlanoStudio, async (re
         }
 
         const planoSessao = req.session.user?.plano || 'free';
-        let creditosGemini      = PLAN_CREDITS[planoSessao] ?? PLAN_CREDITS.free;
+        let creditosGemini      = 0;
         let creditosGeminiTotal = creditosGemini;
         try {
             const contaSnap = await db.collection('clientes_premium').doc(email).get();
@@ -200,7 +202,7 @@ router.get('/api/workspace/chat/info', exigirLogin, exigirPlanoStudio, async (re
 //   data: {"type":"done","reply":"..."}
 //   data: {"type":"error","message":"..."}
 // ──────────────────────────────────────────────────────────────────────────
-router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, verificarSaldo, async (req, res) => {
+router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWorkspace, async (req, res) => {
     const { message, history, sessionId: clientSessionId,
             wsSessionId, wsProjetoId } = req.body;
 
@@ -262,6 +264,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
     let tokensRef    = { total: 0, input: 0, output: 0 };
     let novoSnapshot = null;
     let debitoManual = false; // true no modo edição — chatEditFlow já cuida do billing
+    let falhaDebito = false;
     let doneEvent = null; // emitido só após salvar a sessão e contabilizar os créditos
 
     let wsSnapshot     = null;
@@ -465,12 +468,14 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, exigirPlanoStudio, 
             try {
                 await debitarCreditos(email, inputToks, outputToks, billingOperationId);
             } catch (e) {
+                falhaDebito = true;
                 console.error(`[BILLING] workspace-chat debit err: ${e.message}`);
             }
         }
 
         try {
             if (doneEvent && !res.destroyed) {
+                if (falhaDebito) doneEvent.reply += '\n\n⚠️ Não foi possível confirmar o débito desta chamada. O sistema tentará reconciliar a cobrança.';
                 if (!historicoSalvo || !vinculoSalvo) {
                     doneEvent.reply += '\n\n⚠️ Não consegui salvar esta conversa no histórico. Copie a resposta antes de sair da página.';
                 }
