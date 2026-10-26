@@ -19,15 +19,16 @@ COPY native/diff_patch_engine.cpp ./diff_patch_engine.cpp
 
 RUN g++ -std=c++17 -O2 -o diff_patch_engine diff_patch_engine.cpp
 
-# Estágio 2: imagem final do Worker Agent (Node.js) -- igual à anterior,
-# com a adição do binário compilado no estágio acima.
-FROM node:22-bookworm
+# Estágio 2: Node.js em Debian slim (sem SDKs/navegador embutidos).
+# Mantém Git, MCP, ferramentas de build, runtimes de projetos pequenos,
+# FFmpeg e Asset Forge. Pacotes opcionais nao sao instalados por recommends.
+FROM node:22-bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_ENV=production
 
 # Ferramentas necessárias para o Worker Agent
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     git-lfs \
     curl \
