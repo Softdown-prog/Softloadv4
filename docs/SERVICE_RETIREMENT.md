@@ -28,3 +28,19 @@ Esta branch prepara a remoção **no código**, não garante economia imediata d
 No produto, o caminho preferencial é a integração `solarisGithubAgent` + `solarisGithubOperations`: ler arquivos do repositório autorizado, propor até três arquivos por interação (sem gravar), mostrar a proposta e, com aprovação explícita, abrir branch `solaris/*`, criar commits e PR. O MCP GitHub opcional é somente leitura nesse fluxo de proposta. As operações GitHub do Worker Agent continuam disponíveis, mas suas credenciais/permissões são distintas e não autorizam gravação automática em qualquer repositório.
 
 Rodar builds/testes de sites em runners temporários do GitHub Actions **não exige** navegador residente na VPS. Ferramentas de testes com navegador podem existir no CI; nesta migração removemos apenas os serviços dedicados pesados e a capability remota de navegador do Agent.
+
+## Contrato de compatibilidade do receptor (`contract:v2`)
+
+O workflow verifica **antes do build/transferência** o comando SSH restrito **somente-leitura** `contract:v2`. O receptor migrado precisa imprimir **exatamente** uma linha com:
+
+```
+softload-deploy:v2:app,agent
+```
+
+Nenhuma chave, segredo, variável de ambiente ou recurso Docker deve ser exposto. O receptor anterior deve rejeitar o comando (falha segura). **Este repositório não contém o arquivo real do receptor/forced-command instalado na VPS**; não alterar a VPS apenas com suposições sobre onde ele mora. O operador deve inspecionar e fazer backup da instalação atual, implementar o contrato v2 em sua cópia autoritativa, garantir staging/rollback só para `app` e `agent` e testar comandos num ambiente controlado antes de liberar produção.
+
+A resposta positiva **não substitui testes** de `finish`, `reuse`, `deploy`, rollback e saúde pública. Só depois disso pode ser mesclada a PR. O handshake evita upload a receptor antigo, não desliga containers ou remove imagens sozinho.
+
+## Base enxuta do Agent
+
+O Dockerfile do Agent muda `node:22-bookworm` para `node:22-bookworm-slim` e usa `apt-get --no-install-recommends`. GitHub/MCP, FFmpeg, runtimes Python/PHP, Git e o Asset Forge continuam presentes. A CI do Asset Forge executa renderizações reais e a construção da imagem. **A economia de disco da mudança ainda precisa ser medida**, sem prometer um valor fixo de GB.
