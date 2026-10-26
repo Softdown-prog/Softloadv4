@@ -227,7 +227,8 @@
     "src/services/agentBridge.ts",
     "src/services/firebase.ts",
     "src/routes/dashboard_routes/chat/chatCodeValidator.ts",
-    "src/services/openaiService.ts"
+    "src/services/openaiService.ts",
+    "src/routes/dashboard_routes/chat/chatEditFlow.ts"
   ],
   "exclude": [
     "node_modules",

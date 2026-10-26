@@ -1,10 +1,10 @@
 'use strict';
-const { admin }                      = require('../../../services/firebase');
-const { aplicarEdicao }              = require('../../../core/templateEditWorker');
-const { debitarCreditos }            = require('../../../services/creditService');
-const { processarEdicaoAgentica }    = require('../../../ai/templateEditAgent');
-const { _snapshotDeManifesto }       = require('./chatTemplateCompiler');
-
+Object.defineProperty(exports, "__esModule", { value: true });
+const { admin } = require('../../../services/firebase');
+const { aplicarEdicao } = require('../../../core/templateEditWorker');
+const { debitarCreditos } = require('../../../services/creditService');
+const { processarEdicaoAgentica } = require('../../../ai/templateEditAgent');
+const { _snapshotDeManifesto } = require('./chatTemplateCompiler');
 // ──────────────────────────────────────────────────────────────────────────
 // CHAT AGÊNTICO DE EDIÇÃO — camada de integração (Firestore + billing +
 // compile) do agente de tool-calling em src/ai/templateEditAgent.js. Toda a
@@ -23,7 +23,6 @@ const { _snapshotDeManifesto }       = require('./chatTemplateCompiler');
 // código dentro do próprio agente (nunca aplica na mesma resposta em que
 // propôs), não depende deste arquivo.
 // ──────────────────────────────────────────────────────────────────────────
-
 /**
  * Processa a mensagem via o agente de edição de template. Sempre retorna
  * uma resposta pra mostrar ao usuário — o agente decide, em linguagem
@@ -37,30 +36,28 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         sendEvent({ type: 'status', label: 'Recompilando template com as alterações...' });
         return aplicarEdicao(wsSnapshot.manifesto, campos, user, label => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
     };
-
     let resultado;
     try {
         resultado = await processarEdicaoAgentica(historico || [], msg, {
-            manifestoAtual:   wsSnapshot.manifesto,
+            manifestoAtual: wsSnapshot.manifesto,
             propostaPendente: edicaoPendente ? { campos: edicaoPendente.campos, resumo: edicaoPendente.resumo } : null,
             aplicarEdicaoReal,
             onProgress: sendEvent,
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error('[CHAT-EDICAO] processarEdicaoAgentica falhou:', err.message);
         return { fullText: 'Tive um problema técnico ao processar isso agora — pode tentar de novo?' };
     }
-
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
-
     if (tokens && (tokens.input || tokens.output)) {
         try {
             await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
-        } catch (e) {
+        }
+        catch (e) {
             console.error(`[BILLING] chat-edicao-agente debit err: ${e.message}`);
         }
     }
-
     // Persiste o estado final do turno no Firestore — 1 único write, decidido
     // pelo que o agente efetivamente fez neste turno:
     //   - aplicou de verdade (downloadUrl presente)  → snapshot novo + limpa pendência
@@ -74,18 +71,18 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         } else if (propostaFinal && propostaFinal.resumo !== edicaoPendente?.resumo) {
             await sessaoRef.set({
                 edicaoPendente: {
-                    campos:   propostaFinal.campos,
-                    resumo:   propostaFinal.resumo,
+                    campos: propostaFinal.campos,
+                    resumo: propostaFinal.resumo,
                     criadoEm: admin.firestore.FieldValue.serverTimestamp(),
                 },
             }, { merge: true });
         } else if (!propostaFinal && edicaoPendente) {
             await sessaoRef.update({ edicaoPendente: admin.firestore.FieldValue.delete() });
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.error('[CHAT-EDICAO] Falha ao persistir estado da sessão:', err.message);
     }
-
     // preview: só presente quando a edição foi aplicada de verdade nesta
     // resposta (downloadUrl presente) — dá pro caller (workspaceChat.js)
     // oferecer um jeito de VER a mudança sem o usuário ter que sair do chat
@@ -94,14 +91,12 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
     // texto — nenhum link/preview aparecia depois de aplicar, então mesmo
     // uma edição real ficava indistinguível de uma que não fez nada.
     const preview = downloadUrl ? {
-        xmlPath:     resultado.xmlPath || null,
-        gcPath:      resultado.gcPath || null,
-        siteName:    resultado.manifestoFinal?.siteName || null,
+        xmlPath: resultado.xmlPath || null,
+        gcPath: resultado.gcPath || null,
+        siteName: resultado.manifestoFinal?.siteName || null,
         colorPreset: resultado.manifestoFinal?.colorPreset || null,
-        nichoTema:   resultado.manifestoFinal?.nichoTema || null,
+        nichoTema: resultado.manifestoFinal?.nichoTema || null,
     } : null;
-
     return { fullText: resposta, downloadUrl: downloadUrl || null, preview };
 }
-
 module.exports = { processarEdicaoDeTemplate };
