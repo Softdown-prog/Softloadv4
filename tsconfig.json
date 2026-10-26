@@ -240,6 +240,7 @@
     "src/solaris/http/solarisProUsage.ts",
     "src/routes/workersRoutes.ts",
     "src/services/billingRecoveryMonitor.ts",
+    "src/lib/bloggerTemplateRenderer.ts",
     "src/routes/dashboard_routes/conta.ts"
   ],
   "exclude": [

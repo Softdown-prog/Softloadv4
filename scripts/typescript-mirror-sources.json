@@ -193,5 +193,6 @@
   "src/solaris/http/solarisProUsage.ts",
   "src/routes/workersRoutes.ts",
   "src/routes/dashboard_routes/conta.ts",
-  "src/services/billingRecoveryMonitor.ts"
+  "src/services/billingRecoveryMonitor.ts",
+  "src/lib/bloggerTemplateRenderer.ts"
 ]
