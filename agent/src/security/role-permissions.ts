@@ -101,8 +101,6 @@ export function createExplorerPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": false,
-        "archive.extract_zip": false,
         "knowledge.search": true,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
@@ -192,8 +190,6 @@ export function createArchitectPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": false,
-        "archive.extract_zip": false,
         "knowledge.search": true,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
@@ -283,12 +279,6 @@ export function createCoderPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": false,
-        // Receber um projeto compactado e materializá-lo no workspace
-        // é uma operação de edição. O Coder já possui file.read/write
-        // e é o único papel cujo escopo comporta os dois efeitos da
-        // capability (ler o ZIP e gravar os arquivos extraídos).
-        "archive.extract_zip": true,
         "knowledge.search": true,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
@@ -407,8 +397,6 @@ export function createValidatorPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": true,
-        "archive.extract_zip": false,
         "knowledge.search": false,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
@@ -523,8 +511,6 @@ export function createPackagerPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": false,
-        "archive.extract_zip": false,
         "knowledge.search": false,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
@@ -612,8 +598,6 @@ export function createOrchestratorPermissions(): RoleSecurityPreset {
 
         "web.search": false,
         "web.fetch": false,
-        "websandbox.run": false,
-        "archive.extract_zip": false,
         "knowledge.search": false,
 
         // Cliente MCP genérico pode acessar ferramentas de terceiros;
