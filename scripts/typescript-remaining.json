@@ -50,7 +50,6 @@
   "tooling": [
     "agent/forge/smoke.cjs",
     "agent/forge/verify-source.cjs",
-    "sandbox-efemoro/scripts/check-typescript-mirrors.cjs",
     "scripts/check-agent-capabilities-ts-mirrors.cjs"
   ]
 }
