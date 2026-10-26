@@ -1,4 +1,5 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 const ENDPOINT = 'https://api.githubcopilot.com/mcp/readonly';
 const MAX_RESPONSE = 1024 * 1024;
 const MAX_CONTEXT = 16000;

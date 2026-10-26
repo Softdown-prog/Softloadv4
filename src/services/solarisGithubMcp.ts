@@ -103,3 +103,5 @@ function createSolarisGithubMcp(githubApp: GithubApp, { fetchImpl = fetch }: { f
     };
 }
 module.exports = { createSolarisGithubMcp, parseMcpPayload, safePath };
+
+export {};
