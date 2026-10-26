@@ -786,6 +786,14 @@ export default function Solaris(): React.JSX.Element {
             {/* Input e Controles de Chat */}
             <div className="sl-conversation__composer p-3 flex-shrink-0">
                 <div className="sl-conversation__composer-inner">
+                    {activeTool === 'github' && toolError && (
+                        <p className="small text-warning mb-2" role="alert">{toolError}</p>
+                    )}
+                    {githubProposal.state === 'failed' && (
+                        <p className="small text-warning mb-2" role="alert">
+                            A publicação não foi concluída. Verifique a branch criada no GitHub antes de iniciar outra proposta.
+                        </p>
+                    )}
                     {githubProposal.state === 'pending' && (
                         <section className="border border-info rounded-3 p-3 mb-3 bg-dark text-light" aria-label="Proposta GitHub pendente">
                             <div className="fw-bold small mb-1">GitHub — revisar antes de publicar</div>

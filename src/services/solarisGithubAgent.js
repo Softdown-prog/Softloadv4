@@ -122,10 +122,13 @@ function createSolarisGithubAgent(db, githubApp, operations) {
     return {text:(output.texto||'Análise do repositório concluída.')+suffix,tokens:output.tokens};
   }
   async function reject(uid) {
-    const data=await readProposal(uid);
-    if(!data || data.state!=='pending') return {state:'none'};
-    await document(uid).update({state:'cancelled',cancelledAt:Date.now()});
-    return {state:'cancelled'};
+    return db.runTransaction(async tx=>{
+      const ref=document(uid),snap=await tx.get(ref);
+      const data=snap.exists?snap.data():null;
+      if(!data || data.state!=='pending') return {state:'none'};
+      tx.update(ref,{state:'cancelled',cancelledAt:Date.now()});
+      return {state:'cancelled'};
+    });
   }
   async function approve(uid) {
     let row;
