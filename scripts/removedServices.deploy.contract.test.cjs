@@ -40,3 +40,15 @@ test('imagem Agent usa base slim e mantém ferramentas de GitHub/MCP/Forge', () 
   assert.match(dockerfile, /SOLARIS_FORGE_PYTHON/);
   assert.doesNotMatch(dockerfile, /playwright|chromium|puppeteer/i);
 });
+
+test('inspeção manual do receptor é estritamente read-only e usa segredo SSH', () => {
+  const inspector = fs.readFileSync(path.join(root, '.github/workflows/receiver-v2-readonly.yml'), 'utf8');
+  assert.match(inspector, /workflow_dispatch:/);
+  assert.doesNotMatch(inspector, /\n\s+push:\s|\n\s+schedule:\s/);
+  assert.match(inspector, /'contract:v2'/);
+  assert.match(inspector, /'current'/);
+  assert.match(inspector, /softload-deploy:v2:app,agent/);
+  assert.match(inspector, /secrets\.SOFTLOAD_VPS_SSH_KEY/);
+  assert.match(inspector, /softload\.analysepro\.com\/health/);
+  assert.doesNotMatch(inspector, /'(?:finish|reuse|deploy):|docker\s+(?:rm|rmi|system\s+prune)|sudo\s+/);
+});
