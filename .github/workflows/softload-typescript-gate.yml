@@ -164,7 +164,9 @@ jobs:
           node src/services/mpPlanRules.test.js
           node --test src/services/mpPlanRules.contract.test.js
       - name: Testar ciclo de créditos com Firestore simulado
-        run: node --test src/services/creditService.contract.test.js
+        run: |
+          node --test src/services/creditService.contract.test.js
+          node src/middlewares/authGuard.test.js
       - name: Verificar reservas e cálculo do custo por modelo (sem API real)
         run: |
           node --test src/services/aiBudgetGeminiClient.test.js

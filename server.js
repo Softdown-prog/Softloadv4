@@ -27,6 +27,7 @@ const sentinelWorker          = require('./src/services/sentinelWorker');
 const errorLogWorker          = require('./src/services/errorLogWorker');
 const buildInfo               = require('./src/services/buildInfo');
 const { recuperarCobrancasPendentes } = require('./src/services/creditService');
+const { recuperarReservasWorkspace } = require('./src/services/workspaceCreditReservations');
 const { criarMonitorRecuperacaoCobrancas, definirMonitorRecuperacaoCobrancas } =
     require('./src/services/billingRecoveryMonitor');
 const { setPublicStaticHeaders } = require('./scripts/vendorCachePolicy');
@@ -280,6 +281,12 @@ definirMonitorRecuperacaoCobrancas(monitorCobrancas);
 let recuperadorCobrancasTimer = null;
 async function executarRecuperadorCobrancas() {
     const estado = await monitorCobrancas.executar();
+    try {
+        const ws = await recuperarReservasWorkspace();
+        if (ws.recuperadas || ws.falhas) console.log('[WORKSPACE-BILLING] Recuperação:', ws);
+    } catch (error) {
+        console.error('[WORKSPACE-BILLING] Recuperador indisponível:', error?.code || 'erro');
+    }
     if (estado.processadas || estado.falhas || estado.alertaAtivo) {
         console.log('[BILLING] Recuperação:', {
             estado: estado.estado, processadas: estado.processadas,
