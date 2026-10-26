@@ -5,7 +5,7 @@ import { fetchAppConfig, type AppUser } from '../services/api';
 const NAV_LINKS = [
     { href: '/', label: 'Início' },
     { href: '/#solucoes', label: 'Ferramentas' },
-    { href: '/#ia-pode', label: 'Demonstração' },
+    { href: '/#demo-solaris', label: 'Demonstração' },
     { href: '/contato', label: 'Contato' },
 ];
 

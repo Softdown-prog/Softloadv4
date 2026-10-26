@@ -229,6 +229,16 @@ test('landing TypeScript mantém animações, toast e início da demo', () => {
   assert.ok(landing.includes('<CapabilityChecklist />'));
   assert.ok(landing.includes('id="solucoes"'));
   assert.ok(landing.includes('Solaris Code'));
+  assert.ok(landing.includes('id="demo-solaris"'));
+  assert.ok(landing.includes('preload="none"'));
+  assert.ok(landing.includes('controls'));
+  assert.ok(landing.includes('poster="/media/solaris-code-demo.png"'));
+  assert.ok(landing.includes('src="/media/solaris-code-demo.mp4"'));
+  assert.ok(landing.includes('resposta simulada'));
+  assert.ok(source('frontend/components/PublicNavbar.tsx').includes("href: '/#demo-solaris'"));
+  const publisher = source('.github/workflows/publish-solaris-demo.yml');
+  assert.ok(publisher.includes('12686667041') || publisher.includes('40396522894'));
+  assert.ok(publisher.includes('sha256sum -c'));
   const publicLanding = source('views/pages/react-landing.ejs');
   const publicAuth = source('views/pages/react-public.ejs');
   assert.match(publicLanding, /Softload V4/);

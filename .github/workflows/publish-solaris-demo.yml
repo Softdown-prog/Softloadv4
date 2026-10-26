@@ -1,0 +1,63 @@
+name: Publicar vídeo Solaris na landing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-solaris-demo.yml'
+      - 'frontend/pages/Landing.tsx'
+  workflow_dispatch:
+
+# Executa uma vez por revisão; commits que só adicionam o MP4 não realimentam este workflow.
+concurrency:
+  group: softload-solaris-video-publication
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publicar-video:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Baixar gravação aprovada do GitHub Actions
+        uses: actions/download-artifact@v4
+        with:
+          name: softload-v4-solaris-demo-revisao
+          run-id: 40396522894
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/solaris-demo
+      - name: Verificar integridade e formato dos arquivos
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}/solaris-demo"
+          printf '%s  %s\n' \
+            '0ed0bdc29ddc3056bec75478e8ab3e12e0195160855f91c51063b9facf53fd7b' 'solaris-demo.mp4' \
+            '23ddcd4a21585ae055f57d0a317ff8926be65ee11b72a86b680ee58a51d93c79' 'solaris-demo-final.png' \
+            | sha256sum -c -
+          test "$(stat -c%s solaris-demo.mp4)" -lt 5242880
+          file --mime-type solaris-demo.mp4 | grep -F 'video/mp4'
+          file --mime-type solaris-demo-final.png | grep -F 'image/png'
+      - name: Versionar os arquivos de mídia no repositório
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d public/media
+          install -m 644 "${RUNNER_TEMP}/solaris-demo/solaris-demo.mp4" public/media/solaris-code-demo.mp4
+          install -m 644 "${RUNNER_TEMP}/solaris-demo/solaris-demo-final.png" public/media/solaris-code-demo.png
+          git add public/media/solaris-code-demo.mp4 public/media/solaris-code-demo.png
+          if git diff --cached --quiet; then
+            echo "Mídias já versionadas; sem alterações."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "assets(marketing): publish approved Solaris demo MP4 and poster"
+          git push origin HEAD:main
+          echo "Vídeo aprovado incorporado à main; sem regravar nem alterar o conteúdo."

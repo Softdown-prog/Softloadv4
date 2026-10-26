@@ -255,6 +255,61 @@ export default function Landing(): React.JSX.Element {
             </section>
 
 
+            {/* ═══════════════════════════════ VÍDEO REAL DA INTERFACE DO SOLARIS ═══════════════════════════════ */}
+            <section id="demo-solaris" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', scrollMarginTop: '5rem' }} aria-labelledby="demo-solaris-title">
+                <div className="container" style={{ maxWidth: 1180 }}>
+                    <div className="row align-items-center g-4 g-lg-5">
+                        <div className="col-12 col-lg-4">
+                            <span className="d-inline-block rounded-pill border px-3 py-1 font-monospace mb-3"
+                                  style={{ borderColor: 'rgba(56,189,248,.24)', color: '#38bdf8', background: 'rgba(56,189,248,.06)', fontSize: 11 }}>
+                                SOLARIS CODE · EM VÍDEO
+                            </span>
+                            <h2 id="demo-solaris-title" className="fw-bolder text-white mb-3"
+                                style={{ fontSize: 'clamp(1.7rem,3vw,2.6rem)', letterSpacing: '-.035em' }}>
+                                Veja o chat em ação
+                            </h2>
+                            <p className="mb-3" style={{ color: 'var(--sl-text-400)', lineHeight: 1.8 }}>
+                                Uma demonstração de como o Solaris Code apresenta explicações e sugestões de correção para código TypeScript.
+                            </p>
+                            <p className="small mb-4" style={{ color: 'var(--sl-text-500)', lineHeight: 1.7 }}>
+                                Gravação da interface real da Softload com uma resposta simulada e identificada.
+                                Não é uma chamada ao Gemini nem uma conversa de cliente.
+                            </p>
+                            <a href="/register" className="btn btn-sl-primary fw-bold px-4 py-3">
+                                Experimentar Solaris Code
+                            </a>
+                        </div>
+                        <div className="col-12 col-lg-8">
+                            <div className="rounded-4 overflow-hidden"
+                                 style={{ background: '#060b17', border: '1px solid rgba(56,189,248,.18)', boxShadow: '0 25px 70px -35px rgba(56,189,248,.27)' }}>
+                                <div className="d-flex align-items-center justify-content-between gap-2 px-3 py-2"
+                                     style={{ background: 'rgba(255,255,255,.025)', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                                    <span className="fw-bold small text-white">Solaris Code</span>
+                                    <span className="font-monospace" style={{ color: 'var(--sl-text-400)', fontSize: 11 }}>DEMO · 16 SEGUNDOS</span>
+                                </div>
+                                <video
+                                    className="d-block w-100"
+                                    width={1280}
+                                    height={720}
+                                    controls
+                                    playsInline
+                                    preload="none"
+                                    poster="/media/solaris-code-demo.png"
+                                    aria-label="Demonstração do chat Solaris Code explicando um erro de TypeScript"
+                                    style={{ aspectRatio: '16 / 9', objectFit: 'contain', background: '#060b17', height: 'auto' }}
+                                >
+                                    <source src="/media/solaris-code-demo.mp4" type="video/mp4" />
+                                    Seu navegador não suporta reprodução de vídeo MP4.
+                                </video>
+                            </div>
+                            <p className="small text-center mt-3 mb-0" style={{ color: 'var(--sl-text-500)' }}>
+                                Aperte reproduzir para assistir · Sem áudio · O vídeo não inicia automaticamente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ═══════════════════════════════ SOLUÇÕES DA SOFTLOAD ═══════════════════════════════ */}
             <section id="solucoes" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', scrollMarginTop: '5rem' }}>
                 <div className="container" style={{ maxWidth: 1200 }}>
