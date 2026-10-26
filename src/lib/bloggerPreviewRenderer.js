@@ -1,5 +1,6 @@
 'use strict';
-
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseBloggerXMLToHTML = parseBloggerXMLToHTML;
 // ============================================================
 // Converte o XML de um template Blogger em HTML renderizável para
 // preview (dashboard → historico.js).
@@ -35,12 +36,9 @@
 // em ação para eles (o hero real, sendo um widget de verdade, já é
 // resolvido pelo interpretador).
 // ============================================================
-
-const { renderBloggerTree } = require('./bloggerTemplateRenderer');
-const { buildBaseContext } = require('./bloggerMockContext');
-
+const bloggerTemplateRenderer_1 = require("./bloggerTemplateRenderer");
+const bloggerMockContext_1 = require("./bloggerMockContext");
 const MOCK_NAV_ITEMS = ['Início', 'Tecnologia', 'Web Design', 'Tutoriais', 'Sobre'];
-
 /**
  * Converte o XML de um template Blogger em HTML renderizável para preview.
  *
@@ -50,7 +48,6 @@ const MOCK_NAV_ITEMS = ['Início', 'Tecnologia', 'Web Design', 'Tutoriais', 'Sob
  */
 function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
     let html = xml;
-
     // 1. Resolver variáveis Blogger $(varName) no CSS ANTES de extrair o
     //    b:skin — o Blogger resolve essas variáveis no servidor.
     const variables = {};
@@ -75,14 +72,12 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
             variables[vm[1]] = vm[2];
         }
     }
-
     const skinMatch = html.match(/<b:skin>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/b:skin>/);
     if (skinMatch) {
         let css = skinMatch[1];
         css = css.replace(/\$\(([^)]+)\)/g, (_, name) => variables[name] || '#888888');
         html = html.replace(skinMatch[0], `<style id='blogger-skin'>\n${css}\n</style>`);
     }
-
     // 2. Interpretador determinístico: resolve b:if/b:elseif/b:else, b:loop,
     //    b:with, b:include, b:widget (settings + includables reais), b:section,
     //    data:* e expr:* contra um contexto mock.
@@ -90,15 +85,13 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
     // e ícones sociais. A simulação genérica usava os MESMOS 3 links em
     // ambos e fazia o template parecer um nav de blog convencional.
     const isBiolink = /class=['"][^'"]*\bbiolink-wrapper\b/i.test(html);
-    html = renderBloggerTree(html, buildBaseContext(blogTitle, isBiolink ? 'biolink-social' : null));
-
+    html = (0, bloggerTemplateRenderer_1.renderBloggerTree)(html, (0, bloggerMockContext_1.buildBaseContext)(blogTitle, isBiolink ? 'biolink-social' : null));
     // 3. Substituições globais residuais fora de qualquer b:widget (ex.: título
     //    da aba/meta tags no <head>, que ficam fora de qualquer b:section).
     html = html.replace(/<data:view\.title\.escaped\/>/g, `${blogTitle} — Prévia`);
     html = html.replace(/<data:blog\.title\.escaped\/>/g, blogTitle);
     html = html.replace(/<data:blog\.title\/>/g, blogTitle);
     html = html.replace(/<data:[A-Za-z0-9_.-]+\/>/g, ''); // qualquer data: desconhecido residual — vazio, nunca vaza texto bruto
-
     // 4. Atributos expr:/b: residuais (fora de qualquer nó reconhecido pelo
     //    interpretador — normalmente não deveria sobrar nada, mas é uma rede
     //    de segurança contra sintaxe não coberta pelo levantamento).
@@ -108,13 +101,11 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
     html = html.replace(/expr:[a-zA-Z-]+='[^']*'/g, '');
     html = html.replace(/<\/?b:[^>]*>/g, '');
     html = html.replace(/\s+b:[a-z-]+='[^']*'/gi, '');
-
     // 5. CDATA residual em scripts.
     html = html.replace(/\/\/<!\[CDATA\[/g, '');
     html = html.replace(/\/\/\]\]>/g, '');
     html = html.replace(/<!\[CDATA\[/g, '');
     html = html.replace(/\]\]>/g, '');
-
     // 5b. Decodificar entidades XML residuais dentro do CONTEÚDO de
     // <script>. Achado real: templates Blogger reais têm &#39; (aspas
     // simples) dentro de <script> (ex.: widget do Google Translate,
@@ -140,7 +131,6 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
             .replace(/&amp;/g, '&');
         return abre + decodificado + fecha;
     });
-
     // 6. Converter tags XML self-closing não-void para HTML5 válido.
     //    Em HTML5 APENAS os void elements (img, br, input, etc.) aceitam "/>" —
     //    em qualquer outro elemento o browser ignora o "/" e trata como tag
@@ -150,18 +140,16 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
     const HTML_VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
     html = html.replace(/<([a-z][a-z0-9]*)([^>]*)\s*\/>/gi, (m, tag, attrs) => {
         const t = tag.toLowerCase();
-        if (HTML_VOID.has(t)) return `<${tag}${attrs}>`;
+        if (HTML_VOID.has(t))
+            return `<${tag}${attrs}>`;
         return `<${tag}${attrs}></${tag}>`;
     });
-
     // 7. Fallback pra chassis genérico antigo (elearning-academy/portfolio-
     //    minimalista, ainda sem esqueleto próprio): se sobrar um
     //    `.sl-hero-wrapper`/nav vazio (sem widget real dentro), injeta mock
     //    visual só pra dar contexto — nichos com esqueleto próprio nunca têm
     //    esse marcador, então isso não entra em ação para eles.
-    html = html.replace(
-        /<div class='sl-hero-wrapper'>\s*<\/div>/,
-        `<div class='sl-hero-wrapper'>
+    html = html.replace(/<div class='sl-hero-wrapper'>\s*<\/div>/, `<div class='sl-hero-wrapper'>
   <div class='py-5 text-center text-white' style='background:linear-gradient(135deg,var(--sl-primary,#0ea5e9) 0%,var(--sl-secondary,#2563eb) 100%);'>
     <div class='container py-3'>
       <p class='small text-uppercase fw-bold mb-2 opacity-75' style='letter-spacing:0.12em'>Preview do Template</p>
@@ -170,18 +158,12 @@ function parseBloggerXMLToHTML(xml, blogTitle = 'Meu Blog') {
       <a class='btn btn-light fw-bold px-4 py-2 rounded-pill' href='#'>Explorar Agora</a>
     </div>
   </div>
-</div>`
-    );
-    html = html.replace(
-        /(<nav[^>]*>[\s\S]*?<div[^>]*>)([\s\S]*?)(<\/div>\s*<\/nav>)/,
-        (_, navOpen, navContent, navClose) => {
-            if (navContent.trim()) return navOpen + navContent + navClose;
-            const items = MOCK_NAV_ITEMS.map(i => `<a class='nav-link fw-bold px-3' href='#'>${i}</a>`).join('');
-            return `${navOpen}<div class='d-flex align-items-center gap-1'>${items}</div>${navClose}`;
-        }
-    );
-
+</div>`);
+    html = html.replace(/(<nav[^>]*>[\s\S]*?<div[^>]*>)([\s\S]*?)(<\/div>\s*<\/nav>)/, (_, navOpen, navContent, navClose) => {
+        if (navContent.trim())
+            return navOpen + navContent + navClose;
+        const items = MOCK_NAV_ITEMS.map(i => `<a class='nav-link fw-bold px-3' href='#'>${i}</a>`).join('');
+        return `${navOpen}<div class='d-flex align-items-center gap-1'>${items}</div>${navClose}`;
+    });
     return html;
 }
-
-module.exports = { parseBloggerXMLToHTML };

@@ -111,5 +111,12 @@ const FIXTURE = `<html>
     assert('xml reflete só as ops até o erro (Blog1 ainda presente)', xml.includes("id='Blog1'") && !xml.includes("id='HTML5'"));
 }
 
+// H. JSON operation names must select only owned handlers, never Object.prototype.
+for (const op of ['unknown', 'toString', 'constructor', '__proto__']) {
+    const { xml, resultados } = aplicarPatch(FIXTURE, { ops: [{ op }] });
+    assert(`operação ${op} rejeitada sem alterar XML`, xml === FIXTURE && resultados[0].ok === false);
+    assert(`operação ${op} reporta erro`, /operação desconhecida/.test(resultados[0].erro));
+}
+
 console.log(`\n${failed === 0 ? '✅' : '❌'} xmlPatchWorker: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

@@ -1,35 +1,13 @@
-'use strict';
+import type { TemplateNode, IncludableNode } from './bloggerTemplateTree';
+import type { MockContext } from './bloggerMockContext';
+import { parseTemplateTree, parseWidgetSettings } from './bloggerTemplateTree';
+import { evalCond, evalValueExpr, evalIncludeDataAttr, resolveLoopSource, resolvePath, stringifyValue } from './bloggerTemplateEngine';
+import { buildWidgetContext } from './bloggerMockContext';
 
-// Renderer determinístico do Blogger: a fonte TypeScript tipa a árvore do
-// interpretador. O JS CommonJS gerado continua como entrada para Node.
-interface WidgetSettingsNode { type: 'widgetSettings'; raw: string }
-interface IncludableNode { type: 'includable'; id: string | null; var: string | null; main: boolean; children: TemplateNode[] }
-type TemplateNode =
-    | { type: 'text'; text: string }
-    | { type: 'if'; branches: Array<{ cond: string | null; children: TemplateNode[] }> }
-    | { type: 'loop'; var: string | null; values: string | null; index: string | null; children: TemplateNode[] }
-    | { type: 'with'; var: string | null; value: string | null; children: TemplateNode[] }
-    | { type: 'include'; cond: string | null; name: string | null; data: string | null }
-    | WidgetSettingsNode | IncludableNode
-    | { type: 'widget'; id: string | null; widgetType: string | null; title: string | null; children: TemplateNode[] }
-    | { type: 'section'; tag: string; id: string | null; class: string | null; children: TemplateNode[] };
-type PreviewContext = Record<string, unknown> & { __includables?: Record<string, IncludableNode> };
-interface RendererTreeDependency { parseTemplateTree(xml: string): TemplateNode[]; parseWidgetSettings(node?: WidgetSettingsNode): Record<string, unknown> }
-interface RendererEngineDependency {
-    evalCond(expr: string | null, ctx: PreviewContext): boolean;
-    evalValueExpr(expr: string | null, ctx: PreviewContext): unknown;
-    evalIncludeDataAttr(expr: string, ctx: PreviewContext): unknown;
-    resolveLoopSource(expr: string | null, ctx: PreviewContext): unknown[];
-    resolvePath(path: string, ctx: PreviewContext): unknown;
-    stringifyValue(value: unknown): string;
-}
-interface MockContextDependency { buildWidgetContext(ctx: PreviewContext, widgetType: string | null, settings: Record<string, unknown>, id: string | null, title: string | null): PreviewContext }
-declare const require: (id: string) => unknown;
-declare const module: { exports: unknown };
-
-const { parseTemplateTree, parseWidgetSettings } = require('./bloggerTemplateTree') as RendererTreeDependency;
-const { evalCond, evalValueExpr, evalIncludeDataAttr, resolveLoopSource, resolvePath, stringifyValue } = require('./bloggerTemplateEngine') as RendererEngineDependency;
-const { buildWidgetContext } = require('./bloggerMockContext') as MockContextDependency;
+// The renderer already migrated on main now shares its AST and context
+// contracts with the newly typed parser and mock data, without duplicate types.
+type PreviewContext = MockContext;
+type WidgetSettingsNode = Extract<TemplateNode, { type: 'widgetSettings' }>;
 
 // Includable 'responsiveImage' da plataforma Blogger (não está no XML do tema).
 const BUILTIN_INCLUDABLES: Record<string, (data: unknown, ctx: PreviewContext) => string> = {
@@ -119,9 +97,7 @@ function renderNode(node: TemplateNode, ctx: PreviewContext): string {
             return '';
     }
 }
-function renderBloggerTree(xmlFragment: string, baseCtx: PreviewContext): string {
+export function renderBloggerTree(xmlFragment: string, baseCtx: PreviewContext): string {
     const tree = parseTemplateTree(xmlFragment);
     return renderNodes(tree, baseCtx);
 }
-module.exports = { renderBloggerTree };
-export {};

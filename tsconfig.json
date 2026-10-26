@@ -241,7 +241,18 @@
     "src/routes/workersRoutes.ts",
     "src/services/billingRecoveryMonitor.ts",
     "src/lib/bloggerTemplateRenderer.ts",
-    "src/routes/dashboard_routes/conta.ts"
+    "src/routes/dashboard_routes/conta.ts",
+    "src/lib/bloggerTemplateTree.ts",
+    "src/lib/bloggerTemplateEngine.ts",
+    "src/lib/bloggerMockContext.ts",
+    "src/lib/bloggerPreviewRenderer.ts",
+    "src/rag/ragLoader.ts",
+    "src/rag/ragAgent.ts",
+    "src/workers/xmlPatchWorker.ts",
+    "src/workers/taskWorker.ts",
+    "src/services/workspaceCreditReservations.ts",
+    "src/services/storageService.ts",
+    "src/routes/dashboard_routes/chat/chatSystemPrompt.ts"
   ],
   "exclude": [
     "node_modules",

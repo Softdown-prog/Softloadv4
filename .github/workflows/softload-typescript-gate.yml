@@ -235,6 +235,10 @@ jobs:
           node --test src/routes/contatoRoutes.contract.test.js src/solaris/http/solarisProUsage.test.js src/solaris/http/solarisProUsage.boundaries.test.js
       - name: Verificar exclusao de conta, Firestore e sessao em memoria
         run: node --test src/routes/dashboard_routes/conta.contract.test.js
+      - name: Validar RAG e workers migrados sem serviços externos
+        run: >-
+          node --test src/rag/ragAgent.contract.test.js
+          src/workers/xmlPatchWorker.test.js src/workers/taskWorker.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

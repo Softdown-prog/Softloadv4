@@ -1,10 +1,10 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SISTEMA_SUPORTE = exports.SISTEMA_GERACAO = void 0;
 const { CATALOGO, carregarPersonalidade } = require('./chatRag');
 const { ENUMS } = require('../../../ai/blueprintSchema');
 const { NICHO_COLOR_INCOMPATIVEIS, NICHOS_HERO_DE_POSTS_REAIS } = require('../../../core/blueprintCritics');
-
 const PERSONALIDADE = carregarPersonalidade();
-
 // Linha só existe se houver pelo menos 1 regra — texto pronto pra injetar
 // no prompt. Antes essa regra só existia em blueprintCritics.js (Regra 6)
 // e trocava o colorPreset do usuário SILENCIOSAMENTE depois da IA já ter
@@ -15,7 +15,6 @@ const PERSONALIDADE = carregarPersonalidade();
 const COLOR_INCOMPATIVEIS_TEXTO = Object.entries(NICHO_COLOR_INCOMPATIVEIS)
     .map(([nicho, regra]) => `${nicho}: evite ${regra.proibidos.join(', ')} (prefira ${regra.fallback})`)
     .join(' · ');
-
 // Mesmo racional do bloco acima, pra heroTitle/heroSubtitle: achado real
 // (teste manual, portal de notícias "News") — a IA prometeu "Título do
 // Hero: Jornalismo direto, apuração aberta" na conversa e nada disso
@@ -24,7 +23,6 @@ const COLOR_INCOMPATIVEIS_TEXTO = Object.entries(NICHO_COLOR_INCOMPATIVEIS)
 // customizado nunca é aplicado, silenciosamente. Expor aqui evita a
 // promessa vazia desde a conversa.
 const HERO_DE_POSTS_REAIS_TEXTO = [...NICHOS_HERO_DE_POSTS_REAIS].join(', ');
-
 // ──────────────────────────────────────────────────────────────────────────
 // SYSTEM PROMPT — Especialista Blogger
 //
@@ -42,7 +40,6 @@ const HERO_DE_POSTS_REAIS_TEXTO = [...NICHOS_HERO_DE_POSTS_REAIS].join(', ');
 //     quando permitirGeracao=false) — este prompt é a primeira camada,
 //     não a única.
 // ──────────────────────────────────────────────────────────────────────────
-
 const IDENTIDADE = `Você é o Especialista Blogger do Softload Engine v3 — assistente técnico especializado em Blogger/Blogspot, XML de templates, SEO, AdSense e personalização.
 
 ## IDENTIDADE
@@ -51,7 +48,6 @@ Diferente de um chat genérico, você conhece a fundo a plataforma Blogger: XML,
 ## O QUE VOCÊ FAZ
 
 `;
-
 // ──────────────────────────────────────────────────────────────────────────
 // GERAÇÃO DE TEMPLATES — só entra em SISTEMA_GERACAO
 // ──────────────────────────────────────────────────────────────────────────
@@ -252,7 +248,6 @@ O campo \`designVoice\` controla a micro-linguagem visual do template (raio de b
 - NUNCA use infinite-scroll em portfólios com grid-mosaic ou carousel (prefira classic-numbers ou ajax-load-more).
 
 `;
-
 // ──────────────────────────────────────────────────────────────────────────
 // AVISO_SEM_GERACAO — substitui GERACAO_TEMPLATES em SISTEMA_SUPORTE
 // ──────────────────────────────────────────────────────────────────────────
@@ -260,7 +255,6 @@ const AVISO_SEM_GERACAO = `### Sobre criar um blog novo
 Este chat (Especialista Blogger) não gera templates completos — a geração de blogs novos roda no chat dedicado do Workspace (menu do painel → Workspace → abra ou crie um projeto → chat do projeto, disponível no modelo Gemini). Se o usuário pedir pra criar, gerar ou montar um blog do zero, explique isso brevemente e oriente a ir pro Workspace. Você continua livre pra ajudar com tudo mais: suporte técnico, SEO, AdSense, snippets de código, dúvidas sobre a plataforma — inclusive dando ideias e explicando o processo de criação, só não emite nenhum template pronto aqui.
 
 `;
-
 // ──────────────────────────────────────────────────────────────────────────
 // SUPORTE E EDUCAÇÃO — compartilhado pelos dois modos
 // ──────────────────────────────────────────────────────────────────────────
@@ -325,7 +319,6 @@ Exemplo correto: "No Blogger, categorias são chamadas de **Labels** — você c
 Exemplo errado: primeiro responde tecnicamente, depois adiciona "obs: isso é uma label no Blogger"
 
 `;
-
 // ──────────────────────────────────────────────────────────────────────────
 // REGRAS DE RESPOSTA — compartilhado pelos dois modos
 // ──────────────────────────────────────────────────────────────────────────
@@ -336,8 +329,5 @@ const REGRAS_RESPOSTA = `## REGRAS DE RESPOSTA
 - Seja direto e prático — o usuário quer resolver problemas reais
 - Nunca invente funcionalidades do Blogger que não existem
 - **Código primeiro, explicação depois**: quando o usuário pedir código, esqueleto, estrutura ou exemplo — entregue o bloco de código IMEDIATAMENTE, sem preamble de "vou gerar...", "escolhi o tema X porque...". Uma linha de contexto após o bloco é suficiente. NUNCA narre as suas escolhas antes de mostrar o código.`;
-
-const SISTEMA_GERACAO = IDENTIDADE + GERACAO_TEMPLATES + SUPORTE_E_EDUCACAO + REGRAS_RESPOSTA + CATALOGO + PERSONALIDADE;
-const SISTEMA_SUPORTE = IDENTIDADE + AVISO_SEM_GERACAO + SUPORTE_E_EDUCACAO + REGRAS_RESPOSTA + PERSONALIDADE;
-
-module.exports = { SISTEMA_GERACAO, SISTEMA_SUPORTE };
+exports.SISTEMA_GERACAO = IDENTIDADE + GERACAO_TEMPLATES + SUPORTE_E_EDUCACAO + REGRAS_RESPOSTA + CATALOGO + PERSONALIDADE;
+exports.SISTEMA_SUPORTE = IDENTIDADE + AVISO_SEM_GERACAO + SUPORTE_E_EDUCACAO + REGRAS_RESPOSTA + PERSONALIDADE;

@@ -1,27 +1,34 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.STORAGE_LIMITS_MB = void 0;
+exports.verificarCota = verificarCota;
+exports.reservarCota = reservarCota;
+exports.liberarCota = liberarCota;
+exports.reconciliarCotaArquivos = reconciliarCotaArquivos;
+exports.salvarCompilacao = salvarCompilacao;
+exports.carregarManifesto = carregarManifesto;
+exports.deletarTodosArquivos = deletarTodosArquivos;
+const node_crypto_1 = require("node:crypto");
 const archiver = require('archiver');
-const { createHash } = require('node:crypto');
 const admin = require('firebase-admin');
 const { bucket, db } = require('./firebase');
-
 // Limite de armazenamento GCS por plano (em MB)
-const STORAGE_LIMITS_MB = {
-    free:    5,
+exports.STORAGE_LIMITS_MB = {
+    free: 5,
     starter: 100,
-    start:   100, // backward compat
-    pro:     100,
-    studio:  500,
+    start: 100, // backward compat
+    pro: 100,
+    studio: 500,
     premium: 100, // backward compat — usuários com plano='premium' legado
 };
-
 function verificarCota(storageMb, tamanhoBytes, limiteMb = 100) {
     const limiteBytes = limiteMb * 1024 * 1024;
-    const usadoBytes  = (storageMb || 0) * 1024 * 1024;
+    const usadoBytes = (storageMb || 0) * 1024 * 1024;
     if (usadoBytes + tamanhoBytes > limiteBytes) {
         const usadoMb = (usadoBytes / (1024 * 1024)).toFixed(1);
         throw new Error(`Cota de ${limiteMb}MB excedida. Uso atual: ${usadoMb}MB. Exclua compilações antigas no Histórico.`);
     }
 }
-
 /**
  * Reserva cota de armazenamento ANTES de gravar algo novo em GCS — lança
  * se a estimativa já não couber no limite do plano (falha cedo, antes de
@@ -48,28 +55,24 @@ function verificarCota(storageMb, tamanhoBytes, limiteMb = 100) {
  */
 async function reservarCota(email, plano, tamanhoBytesEstimado, operacaoId) {
     const emailKey = (email || '').toLowerCase();
-    const snap      = await db.collection('clientes_premium').doc(emailKey).get();
+    const snap = await db.collection('clientes_premium').doc(emailKey).get();
     const storageMb = snap.exists ? (snap.data().storage_usado_mb || 0) : 0;
-    const limiteMb  = STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
+    const limiteMb = exports.STORAGE_LIMITS_MB[plano] ?? exports.STORAGE_LIMITS_MB.free;
     verificarCota(storageMb, tamanhoBytesEstimado, limiteMb);
-
     return {
         async confirmarUso(tamanhoBytesReal, confirmacaoId = operacaoId) {
-            if (!tamanhoBytesReal) return;
+            if (!tamanhoBytesReal)
+                return;
             // Compilations learn their stable Firestore ID only after upload.
             // A confirmation-scoped key keeps the initial quota preflight unchanged.
             if (confirmacaoId !== undefined) {
                 await movimentarCotaIdempotente(emailKey, tamanhoBytesReal, confirmacaoId, { limiteMb });
                 return;
             }
-            await db.collection('clientes_premium').doc(emailKey).set(
-                { storage_usado_mb: admin.firestore.FieldValue.increment(tamanhoBytesReal / (1024 * 1024)) },
-                { merge: true }
-            );
+            await db.collection('clientes_premium').doc(emailKey).set({ storage_usado_mb: admin.firestore.FieldValue.increment(tamanhoBytesReal / (1024 * 1024)) }, { merge: true });
         },
     };
 }
-
 /**
  * Libera cota de armazenamento — decremento simétrico ao `confirmarUso()`
  * de `reservarCota()`, usado quando algo persistido é apagado de
@@ -89,47 +92,48 @@ async function movimentarCotaIdempotente(emailKey, deltaBytes, operacaoId, { lim
     if (typeof operacaoId !== 'string' || operacaoId.length === 0 || operacaoId.length > 512) {
         throw new TypeError('Operacao de cota sem identificador valido.');
     }
-    if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Cota deve usar bytes inteiros.');
-    const hash = createHash('sha256').update(JSON.stringify([emailKey, operacaoId])).digest('hex');
+    if (!Number.isSafeInteger(deltaBytes))
+        throw new RangeError('Cota deve usar bytes inteiros.');
+    const hash = (0, node_crypto_1.createHash)('sha256').update(JSON.stringify([emailKey, operacaoId])).digest('hex');
     const opRef = db.collection('storage_cota_operacoes').doc(hash);
     const userRef = db.collection('clientes_premium').doc(emailKey);
-    return db.runTransaction(async tx => {
+    return db.runTransaction(async (tx) => {
         const prior = await tx.get(opRef);
         if (prior.exists) {
-            if (prior.data().deltaBytes !== deltaBytes) throw new Error('Recibo reutilizado com quantidade diferente.');
+            if (prior.data().deltaBytes !== deltaBytes)
+                throw new Error('Recibo reutilizado com quantidade diferente.');
             return { aplicada: false };
         }
         const user = await tx.get(userRef);
         if (deltaBytes > 0 && limiteMb !== undefined) {
             verificarCota(user.exists ? (user.data().storage_usado_mb || 0) : 0, deltaBytes, limiteMb);
         }
-        if (deltaBytes !== 0) tx.set(userRef, {
-            storage_usado_mb: admin.firestore.FieldValue.increment(deltaBytes / (1024 * 1024))
-        }, { merge: true });
+        if (deltaBytes !== 0)
+            tx.set(userRef, {
+                storage_usado_mb: admin.firestore.FieldValue.increment(deltaBytes / (1024 * 1024))
+            }, { merge: true });
         if (trackingMutacao) {
-            if (trackingMutacao.data === null) tx.delete(trackingMutacao.ref);
-            else tx.set(trackingMutacao.ref, trackingMutacao.data);
+            if (trackingMutacao.data === null)
+                tx.delete(trackingMutacao.ref);
+            else
+                tx.set(trackingMutacao.ref, trackingMutacao.data);
         }
         tx.create(opRef, { deltaBytes, criadoEm: admin.firestore.FieldValue.serverTimestamp(), origem: 'solaris' });
         return { aplicada: true };
     });
 }
-
 async function liberarCota(email, tamanhoBytes, operacaoId, trackingMutacao) {
-    if (!tamanhoBytes && !trackingMutacao) return;
+    if (!tamanhoBytes && !trackingMutacao)
+        return;
     const emailKey = (email || '').toLowerCase();
     if (operacaoId !== undefined) {
         await movimentarCotaIdempotente(emailKey, -(tamanhoBytes || 0), operacaoId, { trackingMutacao });
         return;
     }
-    if (trackingMutacao) throw new Error('Mutacao atomica exige identificador idempotente.');
-    await db.collection('clientes_premium').doc(emailKey).set(
-        { storage_usado_mb: admin.firestore.FieldValue.increment(-(tamanhoBytes / (1024 * 1024))) },
-        { merge: true }
-    );
+    if (trackingMutacao)
+        throw new Error('Mutacao atomica exige identificador idempotente.');
+    await db.collection('clientes_premium').doc(emailKey).set({ storage_usado_mb: admin.firestore.FieldValue.increment(-(tamanhoBytes / (1024 * 1024))) }, { merge: true });
 }
-
-
 /**
  * Quota do chat: each GCS object has a persisted byte baseline.
  * The first rewrite of a legacy object credits/debits ONLY its difference,
@@ -153,12 +157,12 @@ async function reconciliarCotaArquivos(email, plano, uid, alteracoes, { apenasCr
             throw new TypeError('Arquivo ou tamanho de quota invalido.');
         }
         seen.add(path);
-        const id = createHash('sha256').update(JSON.stringify([emailKey, uid, path])).digest('hex');
+        const id = (0, node_crypto_1.createHash)('sha256').update(JSON.stringify([emailKey, uid, path])).digest('hex');
         return { path, bytesAntes, bytesDepois, ref: db.collection('storage_cota_arquivos').doc(id) };
     });
     const userRef = db.collection('clientes_premium').doc(emailKey);
-    const limiteMb = STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
-    return db.runTransaction(async tx => {
+    const limiteMb = exports.STORAGE_LIMITS_MB[plano] ?? exports.STORAGE_LIMITS_MB.free;
+    return db.runTransaction(async (tx) => {
         // All reads precede any write, as required by Firestore transactions.
         const snapshots = await Promise.all(items.map(item => tx.get(item.ref)));
         const user = await tx.get(userRef);
@@ -172,9 +176,11 @@ async function reconciliarCotaArquivos(email, plano, uid, alteracoes, { apenasCr
             // A deletion must never grant guessed credit for those old bytes.
             return sum + (apenasCreditosRastreados && !snapshots[i].exists && delta < 0 ? 0 : delta);
         }, 0);
-        if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Diferenca de armazenamento fora do limite.');
+        if (!Number.isSafeInteger(deltaBytes))
+            throw new RangeError('Diferenca de armazenamento fora do limite.');
         const oldMb = user.exists ? (user.data().storage_usado_mb || 0) : 0;
-        if (deltaBytes > 0) verificarCota(oldMb, deltaBytes, limiteMb);
+        if (deltaBytes > 0)
+            verificarCota(oldMb, deltaBytes, limiteMb);
         if (deltaBytes !== 0) {
             tx.set(userRef, { storage_usado_mb: Math.max(0, oldMb + deltaBytes / (1024 * 1024)) }, { merge: true });
         }
@@ -187,19 +193,14 @@ async function reconciliarCotaArquivos(email, plano, uid, alteracoes, { apenasCr
         return { deltaBytes };
     });
 }
-
-
 function readme(slug) {
-    return (
-        `Softload Engine — Template Compilado\n` +
+    return (`Softload Engine — Template Compilado\n` +
         `Gerado em: ${new Date().toISOString()}\n\n` +
         `Como instalar:\n` +
         `1. Acesse o Blogger → Tema → Personalizar → Editar HTML\n` +
         `2. Selecione todo o conteúdo e cole o arquivo ${slug}.xml\n` +
-        `3. Salve o tema\n`
-    );
+        `3. Salve o tema\n`);
 }
-
 /**
  * Compila o XML em um ZIP e envia para o GCS via stream.
  * Também salva o XML bruto separadamente para uso no preview, e o
@@ -214,41 +215,35 @@ function readme(slug) {
  * XML bruto separado NÃO entra na conta (mesmo comportamento de antes).
  */
 async function salvarCompilacao(userId, slug, xmlString, manifesto = null) {
-    const timestamp     = Date.now();
-    const nomeArquivo   = `${timestamp}-${slug}.zip`;
-    const gcPath        = `users/${userId}/compilations/${nomeArquivo}`;
-    const xmlPath       = `users/${userId}/compilations/${timestamp}-${slug}.xml`;
+    const timestamp = Date.now();
+    const nomeArquivo = `${timestamp}-${slug}.zip`;
+    const gcPath = `users/${userId}/compilations/${nomeArquivo}`;
+    const xmlPath = `users/${userId}/compilations/${timestamp}-${slug}.xml`;
     const manifestoPath = manifesto ? `users/${userId}/compilations/${timestamp}-${slug}-manifesto.json` : null;
-    const file          = bucket.file(gcPath);
-
+    const file = bucket.file(gcPath);
     let tamanhoBytes = 0;
-
     await new Promise((resolve, reject) => {
         const gcsStream = file.createWriteStream({
             metadata: { contentType: 'application/zip' },
             resumable: false,
         });
         const archive = archiver('zip', { zlib: { level: 6 } });
-
         archive.on('error', reject);
         gcsStream.on('error', reject);
         gcsStream.on('finish', () => {
             tamanhoBytes = archive.pointer();
             resolve();
         });
-
         archive.pipe(gcsStream);
         archive.append(Buffer.from(xmlString, 'utf-8'), { name: `${slug}.xml` });
         archive.append(Buffer.from(readme(slug), 'utf-8'), { name: 'README.txt' });
         archive.finalize();
     });
-
     // XML bruto separado para o preview — tamanhoBytes não inclui este arquivo
     await bucket.file(xmlPath).save(Buffer.from(xmlString, 'utf-8'), {
         metadata: { contentType: 'text/xml; charset=utf-8' },
         resumable: false,
     });
-
     if (manifestoPath) {
         const manifestoBuf = Buffer.from(JSON.stringify(manifesto), 'utf-8');
         await bucket.file(manifestoPath).save(manifestoBuf, {
@@ -257,10 +252,8 @@ async function salvarCompilacao(userId, slug, xmlString, manifesto = null) {
         });
         tamanhoBytes += manifestoBuf.byteLength;
     }
-
     return { gcPath, xmlPath, manifestoPath, nomeArquivo, tamanhoBytes };
 }
-
 /**
  * Lê de volta um manifesto salvo via salvarCompilacao (manifestoPath).
  * Usado pelo Histórico de Versões do Workspace (revert, seed de sessão
@@ -273,9 +266,6 @@ async function carregarManifesto(manifestoPath) {
     const [buf] = await bucket.file(manifestoPath).download();
     return JSON.parse(buf.toString('utf-8'));
 }
-
 async function deletarTodosArquivos(userId) {
     await bucket.deleteFiles({ prefix: `users/${userId}/` });
 }
-
-module.exports = { STORAGE_LIMITS_MB, verificarCota, reservarCota, liberarCota, reconciliarCotaArquivos, salvarCompilacao, carregarManifesto, deletarTodosArquivos };

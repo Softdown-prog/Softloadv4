@@ -1,13 +1,28 @@
 # Migração JavaScript → TypeScript — Softloadv4
 
-Estado de referência: inventário da main de 24/10/2026, antes deste lote.
+Estado atual: inventário fechado da issue [#17](https://github.com/Softdown-prog/Softloadv4/issues/17), em 26/10/2026.
 
-## Contagem e exclusões
+## Lote de fechamento — 11 novas fontes e integração do renderer
 
-- 597 arquivos `.js`; 218 arquivos `.ts`; 480 `.js` sem irmão `.ts/.tsx`.
-- **480 NÃO é uma lista de arquivos de produção para converter**: inclui testes em JavaScript, bundles versionados de `public/dist/`, exemplos de código e entradas independentes como `agent/` e `sandbox-efemoro/`.
-- `scripts/audit-typescript-migration.js` fornece o **saldo confiável do núcleo**: exclui `.test.js` e confere cadastro, typecheck e espelho CommonJS de cada módulo migrado.
-- Diretórios ainda com muitos arquivos JS sem fonte TS: `agent/src/`, `src/routes/dashboard_routes/`, `sandbox-efemoro/src/`, `scripts/codeCorpus/`, `src/services/` e scripts CLI. Não alterar `public/dist/` manualmente: é saída gerada.
+O saldo global cai de **39 para 28** arquivos de runtime/entrada sem fonte TypeScript. O monitor de cobrança (`5edf483d`/`6bcad4f`) e o renderer Blogger (`6b1e5e8`) chegaram à main durante o trabalho. O monitor foi preservado; o renderer mantém a implementação recente e passa a usar os tipos compartilhados da árvore e do contexto, eliminando declarações duplicadas. O inventário-base JSON permanece congelado; o auditor deduz automaticamente os itens que ganharam fonte TS.
+
+- Blogger (4 novas fontes): `bloggerMockContext`, `bloggerPreviewRenderer`, `bloggerTemplateEngine`, `bloggerTemplateTree`; integração de tipos compartilhados em `bloggerTemplateRenderer`.
+- RAG (2): `ragLoader`, `ragAgent`.
+- Workers (2): `taskWorker`, `xmlPatchWorker`.
+- Serviços (2): `storageService`, `workspaceCreditReservations`.
+- Chat (1): `chatSystemPrompt`.
+
+Cada módulo entrega fonte TypeScript estrita, espelho CommonJS gerado e registro no typecheck. Os contratos cobrem a árvore e expressões Blogger, contextos mock, seleção RAG, orçamento de tokens, operações XML discriminadas, mensagens do worker, transações de créditos e cotas de armazenamento. O transporte existente do RAG foi preservado.
+
+O auditor de espelhos passa a aceitar fontes de `src/lib` e `src/workers`, áreas que já eram escaneadas, mas faltavam na validação do registro. O despachante XML também rejeita nomes herdados de `Object.prototype` (`toString`, `constructor`, `__proto__`) antes de selecionar um handler.
+
+Validação local: typecheck do backend/agente e frontend, build Vite, HTML idêntico ao baseline para os 20 templates Blogger e regressões com dependências simuladas para Blogger, RAG, workers, cobrança, cotas, editor Workspace e armazenamento Solaris. Os novos testes do worker usam uma thread real, mas bloqueiam o carregamento de Firebase. Os testes RAG simulam o SDK Gemini e a leitura de arquivos. Nenhuma chamada paga ou alteração em dados de produção é necessária para esses testes.
+
+Os JavaScripts compilados continuam necessários para execução Node e **não representam migração pendente**. As quatro ferramentas auxiliares CJS continuam no inventário separado. `node scripts/check-typescript-remaining.cjs` informa o saldo global; `npm run audit:typescript` informa apenas o núcleo auditado.
+
+## Histórico da contagem anterior ao inventário fechado
+
+Em 24/10/2026 havia 597 arquivos `.js` e 218 `.ts`; os 480 JavaScripts sem irmão TS incluíam testes, bundles, exemplos e entradas independentes. Esse número histórico não deve ser usado como saldo de produção. Não alterar `public/dist/` manualmente: é saída gerada pelo Vite.
 
 ## Critério de convivência
 

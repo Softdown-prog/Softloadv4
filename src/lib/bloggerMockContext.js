@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildBaseContext = buildBaseContext;
+exports.buildWidgetContext = buildWidgetContext;
 'use strict';
-
 // ============================================================
 // bloggerMockContext.js — dado fictício usado pelo interpretador de
 // preview (bloggerTemplateTree.js + bloggerTemplateEngine.js) pra
@@ -8,15 +11,12 @@
 // bloggerTemplateEngine.js) — não é exaustivo, mas closesa o
 // vocabulário fechado observado nos 19 chassis + 13 exemplos reais.
 // ============================================================
-
 const PLACEHOLDER_IMGS = [
     'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200&h=675',
     'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1200&h=675',
     'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200&h=675',
 ];
-
 const SNIPPET = 'Explorando as novas fronteiras da inteligência artificial e como ela está moldando o futuro das interfaces digitais e do design de experiência.';
-
 const MOCK_AUTHOR = {
     name: 'João Silva',
     aboutMe: 'Especialista em tecnologia e desenvolvimento web. Escreve sobre inovação digital há mais de 8 anos.',
@@ -24,13 +24,11 @@ const MOCK_AUTHOR = {
     avatarUrl: 'https://ui-avatars.com/api/?name=Jo%C3%A3o+Silva&size=80&background=0ea5e9&color=fff',
     authorPhoto: { url: 'https://ui-avatars.com/api/?name=Jo%C3%A3o+Silva&size=80&background=0ea5e9&color=fff' },
 };
-
 const RAW_POSTS = [
     { title: 'A Revolução do Design Generativo em 2026', cat: 'Tecnologia', date: '20 de maio de 2026' },
     { title: 'Como criar paletas de cores magnéticas para seu Blog', cat: 'Web Design', date: '18 de maio de 2026' },
     { title: 'O Guia completo para Bootstrap 5 no Blogger', cat: 'Desenvolvimento', date: '15 de maio de 2026' },
 ];
-
 function buildMockPosts() {
     return RAW_POSTS.map((p, i) => ({
         title: p.title,
@@ -54,14 +52,12 @@ function buildMockPosts() {
         comments: [],
     }));
 }
-
 const MOCK_PLATFORMS = [
     { key: 'facebook', shareMessage: 'Compartilhar no Facebook' },
     { key: 'twitter', shareMessage: 'Compartilhar no X' },
     { key: 'pinterest', shareMessage: 'Compartilhar no Pinterest' },
     { key: 'whatsapp', shareMessage: 'Compartilhar no WhatsApp' },
 ];
-
 const MOCK_LABELS = [{ name: 'Tecnologia', url: '#' }, { name: 'Web Design', url: '#' }, { name: 'Tutoriais', url: '#' }];
 // Achado real: `data:links` é referenciado tanto por LinkList1 (campos
 // .name/.target) quanto pelo PageList1 nativo real (campos .href/.title/
@@ -94,7 +90,6 @@ const MOCK_ARCHIVE = [
     { name: '2026', url: '#', 'post-count': 12, expclass: 'expanded', data: [{ name: 'Julho', url: '#', 'post-count': 4, expclass: 'collapsed' }] },
     { name: '2025', url: '#', 'post-count': 30, expclass: 'collapsed', data: [] },
 ];
-
 function buildBaseContext(blogTitle, previewNiche = null) {
     const posts = buildMockPosts();
     return {
@@ -136,7 +131,6 @@ function buildBaseContext(blogTitle, previewNiche = null) {
         i: 0, j: 0,
     };
 }
-
 // Settings de widget-instance viram parte do escopo — achado real: a
 // mesma configuração aparece referenciada tanto como `data:X` solta
 // (ex.: HTML1 usa `data:title`/`data:content`, PopularPosts usa
@@ -150,7 +144,6 @@ function buildBaseContext(blogTitle, previewNiche = null) {
 const SETTING_ALIAS_BY_WIDGET_TYPE = {
     BlogArchive: { showStyle: 'style' },
 };
-
 function buildWidgetContext(baseCtx, widgetType, settings, widgetId, widgetTitle) {
     const ctx = Object.create(baseCtx);
     // Achado real: <data:title/> dentro do 'main' de widgets sem
@@ -164,14 +157,18 @@ function buildWidgetContext(baseCtx, widgetType, settings, widgetId, widgetTitle
     // fantasma (WhatsApp com href='https://wa.me/' sem número).
     Object.assign(ctx, widgetType === 'HTML' ? { content: '' } : {}, settings);
     if (baseCtx.__previewNiche === 'biolink-social' && widgetType === 'LinkList') {
-        if (widgetId === 'LinkList1') ctx.links = MOCK_BIOLINK_LINKS;
-        if (widgetId === 'LinkList2') ctx.links = MOCK_BIOLINK_SOCIAL;
+        if (widgetId === 'LinkList1')
+            ctx.links = MOCK_BIOLINK_LINKS;
+        if (widgetId === 'LinkList2')
+            ctx.links = MOCK_BIOLINK_SOCIAL;
     }
-    const aliases = SETTING_ALIAS_BY_WIDGET_TYPE[widgetType];
-    if (aliases) for (const [from, to] of Object.entries(aliases)) if (from in settings) ctx[to] = settings[from];
+    const aliases = SETTING_ALIAS_BY_WIDGET_TYPE[widgetType || ''];
+    if (aliases)
+        for (const [from, to] of Object.entries(aliases))
+            if (from in settings)
+                ctx[to] = settings[from];
     ctx.post = Object.assign({}, baseCtx.post, settings);
     ctx.widget = Object.assign({}, baseCtx.widget, { instanceId: widgetId || baseCtx.widget.instanceId });
-
     if (widgetType === 'FeaturedPost') {
         const p = baseCtx.posts[0];
         Object.assign(ctx, {
@@ -181,7 +178,6 @@ function buildWidgetContext(baseCtx, widgetType, settings, widgetId, widgetTitle
             postSnippet: p.snippet,
         });
     }
-
     // Achado real (gamer-playerone/culinaria-boutique-gourmet, reproduzido
     // via Chromium): `data:pageLanguage`/`data:layout` no includable nativo
     // do widget Translate NÃO são widget-setting declarada no template —
@@ -203,8 +199,5 @@ function buildWidgetContext(baseCtx, widgetType, settings, widgetId, widgetTitle
             layout: ctx.displayMode || 'HORIZONTAL',
         });
     }
-
     return ctx;
 }
-
-module.exports = { buildBaseContext, buildWidgetContext };

@@ -1,5 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.extractAttr = extractAttr;
+exports.parseTemplateTree = parseTemplateTree;
+exports.parseWidgetSettings = parseWidgetSettings;
 'use strict';
-
 // ============================================================
 // bloggerTemplateTree.js — parser + renderer de árvore pro
 // subconjunto de tags de controle do Blogger (b:if/b:elseif/b:else,
@@ -22,7 +26,6 @@
 // toda tag de abertura com atributos SEMPRE tem espaço depois do
 // nome; confirmado nos 19 chassis + 13 exemplos reais).
 // ============================================================
-
 const MARKERS = [
     '<![CDATA[', '<!--',
     '<b:if ', '<b:elseif ', '<b:else/>', '</b:if>',
@@ -34,38 +37,39 @@ const MARKERS = [
     '<b:includable ', '</b:includable>',
     '<b:section ', '</b:section>',
 ];
-
 function findNextMarker(str, from) {
-    let best = -1, bestMarker = null;
+    let best = -1;
+    let bestMarker = null;
     for (const m of MARKERS) {
         const idx = str.indexOf(m, from);
-        if (idx !== -1 && (best === -1 || idx < best)) { best = idx; bestMarker = m; }
+        if (idx !== -1 && (best === -1 || idx < best)) {
+            best = idx;
+            bestMarker = m;
+        }
     }
     return { idx: best, marker: bestMarker };
 }
-
 function tagEnd(str, from) { return str.indexOf('>', from); }
-
 function extractAttr(tagStr, name) {
     const m = tagStr.match(new RegExp(`\\b${name}='([^']*)'`));
     return m ? m[1] : null;
 }
-
 function parseNodes(state, stopMarkers) {
     const nodes = [];
     for (;;) {
         const { idx, marker } = findNextMarker(state.str, state.i);
-        if (idx === -1) {
+        if (idx === -1 || marker === null) {
             nodes.push({ type: 'text', text: state.str.slice(state.i) });
             state.i = state.str.length;
             return nodes;
         }
         if (stopMarkers.includes(marker)) {
-            if (idx > state.i) nodes.push({ type: 'text', text: state.str.slice(state.i, idx) });
+            if (idx > state.i)
+                nodes.push({ type: 'text', text: state.str.slice(state.i, idx) });
             return nodes; // não consome o marcador de fechamento — o caller consome
         }
-        if (idx > state.i) nodes.push({ type: 'text', text: state.str.slice(state.i, idx) });
-
+        if (idx > state.i)
+            nodes.push({ type: 'text', text: state.str.slice(state.i, idx) });
         if (marker === '<![CDATA[') {
             const end = state.str.indexOf(']]>', idx);
             const stop = end === -1 ? state.str.length : end + 3;
@@ -73,7 +77,6 @@ function parseNodes(state, stopMarkers) {
             state.i = stop;
             continue;
         }
-
         if (marker === '<!--') {
             // Achado real (tecnologia-techwind): os doc-comments de achado no
             // topo dos templates citam nomes de tag como prosa dentro do
@@ -88,7 +91,6 @@ function parseNodes(state, stopMarkers) {
             state.i = stop;
             continue;
         }
-
         if (marker === '<b:if ') {
             const tEnd = tagEnd(state.str, idx);
             const condRaw = extractAttr(state.str.slice(idx, tEnd + 1), 'cond');
@@ -121,7 +123,6 @@ function parseNodes(state, stopMarkers) {
             nodes.push({ type: 'if', branches });
             continue;
         }
-
         if (marker === '<b:loop ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
@@ -134,28 +135,32 @@ function parseNodes(state, stopMarkers) {
             // item da iteração, não a posição).
             const indexName = extractAttr(tag, 'index');
             state.i = tEnd + 1;
-            if (tag.endsWith('/>')) { nodes.push({ type: 'loop', values, var: varName, index: indexName, children: [] }); continue; }
+            if (tag.endsWith('/>')) {
+                nodes.push({ type: 'loop', values, var: varName, index: indexName, children: [] });
+                continue;
+            }
             const children = parseNodes(state, ['</b:loop>']);
             const closeIdx = state.str.indexOf('</b:loop>', state.i);
             state.i = closeIdx === -1 ? state.str.length : closeIdx + '</b:loop>'.length;
             nodes.push({ type: 'loop', values, var: varName, index: indexName, children });
             continue;
         }
-
         if (marker === '<b:with ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
             const value = extractAttr(tag, 'value');
             const varName = extractAttr(tag, 'var');
             state.i = tEnd + 1;
-            if (tag.endsWith('/>')) { nodes.push({ type: 'with', value, var: varName, children: [] }); continue; }
+            if (tag.endsWith('/>')) {
+                nodes.push({ type: 'with', value, var: varName, children: [] });
+                continue;
+            }
             const children = parseNodes(state, ['</b:with>']);
             const closeIdx = state.str.indexOf('</b:with>', state.i);
             state.i = closeIdx === -1 ? state.str.length : closeIdx + '</b:with>'.length;
             nodes.push({ type: 'with', value, var: varName, children });
             continue;
         }
-
         if (marker === '<b:include ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
@@ -172,7 +177,6 @@ function parseNodes(state, stopMarkers) {
             state.i = tEnd + 1;
             continue;
         }
-
         if (marker === '<b:widget-settings>') {
             const closeIdx = state.str.indexOf('</b:widget-settings>', idx);
             const stop = closeIdx === -1 ? state.str.length : closeIdx + '</b:widget-settings>'.length;
@@ -180,7 +184,6 @@ function parseNodes(state, stopMarkers) {
             state.i = stop;
             continue;
         }
-
         if (marker === '<b:widget ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
@@ -192,14 +195,16 @@ function parseNodes(state, stopMarkers) {
             // <b:widget>, não de widget-settings.
             const wtitle = extractAttr(tag, 'title');
             state.i = tEnd + 1;
-            if (tag.endsWith('/>')) { nodes.push({ type: 'widget', id: wid, widgetType: wtype, title: wtitle, children: [] }); continue; }
+            if (tag.endsWith('/>')) {
+                nodes.push({ type: 'widget', id: wid, widgetType: wtype, title: wtitle, children: [] });
+                continue;
+            }
             const children = parseNodes(state, ['</b:widget>']);
             const closeIdx = state.str.indexOf('</b:widget>', state.i);
             state.i = closeIdx === -1 ? state.str.length : closeIdx + '</b:widget>'.length;
             nodes.push({ type: 'widget', id: wid, widgetType: wtype, title: wtitle, children });
             continue;
         }
-
         if (marker === '<b:includable ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
@@ -221,7 +226,6 @@ function parseNodes(state, stopMarkers) {
             nodes.push({ type: 'includable', id: iid, var: ivar, main: isMain, children });
             continue;
         }
-
         if (marker === '<b:section ') {
             const tEnd = tagEnd(state.str, idx);
             const tag = state.str.slice(idx, tEnd + 1);
@@ -229,29 +233,30 @@ function parseNodes(state, stopMarkers) {
             const sclass = extractAttr(tag, 'class');
             const stag = extractAttr(tag, 'tag') || 'div';
             state.i = tEnd + 1;
-            if (tag.endsWith('/>')) { nodes.push({ type: 'section', id: sid, class: sclass, tag: stag, children: [] }); continue; }
+            if (tag.endsWith('/>')) {
+                nodes.push({ type: 'section', id: sid, class: sclass, tag: stag, children: [] });
+                continue;
+            }
             const children = parseNodes(state, ['</b:section>']);
             const closeIdx = state.str.indexOf('</b:section>', state.i);
             state.i = closeIdx === -1 ? state.str.length : closeIdx + '</b:section>'.length;
             nodes.push({ type: 'section', id: sid, class: sclass, tag: stag, children });
             continue;
         }
-
         // marcador reconhecido mas sem handler — nunca deveria acontecer
         // dado MARKERS acima; tolerante, avança 1 char pra não travar.
         nodes.push({ type: 'text', text: state.str[idx] });
         state.i = idx + 1;
     }
 }
-
 function parseTemplateTree(str) {
     const state = { str, i: 0 };
     return parseNodes(state, []);
 }
-
 function parseWidgetSettings(node) {
     const settings = {};
-    if (!node) return settings;
+    if (!node)
+        return settings;
     const re = /<b:widget-setting\s+name='([^']+)'>([\s\S]*?)<\/b:widget-setting>/g;
     let m;
     while ((m = re.exec(node.raw)) !== null) {
@@ -260,5 +265,3 @@ function parseWidgetSettings(node) {
     }
     return settings;
 }
-
-module.exports = { parseTemplateTree, parseWidgetSettings, extractAttr };
