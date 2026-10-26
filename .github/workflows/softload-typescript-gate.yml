@@ -17,6 +17,7 @@ on:
       - 'tsconfig.frontend.json'
       - 'tsconfig.workers.json'
       - 'tsconfig.forge-html5.json'
+      - 'tsconfig.forge-catalog.json'
       - 'src/**/*.ts'
       - 'src/**/*.js'
       - 'src/solaris/code-examples/**'
@@ -156,6 +157,8 @@ jobs:
         run: |
           node --test scripts/check-typescript-remaining.test.cjs
           node scripts/check-typescript-remaining.cjs
+      - name: Verificar catálogo tipado do Asset Forge e espelho CommonJS
+        run: npm run typecheck:forge-catalog
       - name: Verificar runtime procedural Forge HTML5 e espelho ESM
         run: npm run typecheck:forge-html5
       - name: Verificar scripts clássicos dos workers com TypeScript e testes de navegador

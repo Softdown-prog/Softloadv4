@@ -51,6 +51,14 @@ function verificarEspelhoProcedural(root=path.resolve(__dirname,'..')) {
   }}).outputText;
   return expected===fs.readFileSync(base+'.mjs','utf8');
 }
+function verificarEspelhoForgeCatalog(root=path.resolve(__dirname,'..')) {
+  const ts=require('typescript');
+  const base=path.join(root,'agent/forge/catalog');
+  const expected=ts.transpileModule(fs.readFileSync(base+'.ts','utf8'),{compilerOptions:{
+    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,removeComments:false
+  }}).outputText;
+  return expected===fs.readFileSync(base+'.cjs','utf8');
+}
 if(require.main===module){
   const r=auditar();
   console.log('[TS-MIGRACAO] Fontes JS de runtime ainda sem TS:',r.runtime.length);
@@ -62,6 +70,8 @@ if(require.main===module){
   for(const nome of browsers)console.error('Espelho browser JS não sincronizado com TypeScript:',nome);
   const procedural=verificarEspelhoProcedural();
   if(!procedural)console.error('Forge HTML5 procedural.mjs não sincronizado com TypeScript');
-  if(!r.ok||browsers.length||!procedural)process.exitCode=1;
+  const catalogo=verificarEspelhoForgeCatalog();
+  if(!catalogo)console.error('Forge catalog.cjs não sincronizado com fonte TypeScript');
+  if(!r.ok||browsers.length||!procedural||!catalogo)process.exitCode=1;
 }
-module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural};
+module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural,verificarEspelhoForgeCatalog};

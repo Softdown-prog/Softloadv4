@@ -1,5 +1,4 @@
 'use strict';
-
 const fs = require('node:fs');
 const path = require('node:path');
 const ROOT = __dirname;
@@ -21,12 +20,14 @@ function catalog() {
         function visit(dir) {
             for (const file of fs.readdirSync(dir, { withFileTypes: true })) {
                 const abs = path.join(dir, file.name);
-                if (file.isDirectory()) visit(abs);
+                if (file.isDirectory())
+                    visit(abs);
                 else if (file.name.endsWith('.json')) {
                     const data = JSON.parse(fs.readFileSync(abs, 'utf8'));
-                    if (!data || Array.isArray(data)) continue;
+                    if (!data || Array.isArray(data))
+                        continue;
                     entries.push({ recipeId: path.relative(ROOT, abs).split(path.sep).join('/'),
-                        contract: data.contract || null, command: CONTRACT_COMMAND[data.contract] || null,
+                        contract: data.contract || null, command: CONTRACT_COMMAND[data.contract || ''] || null,
                         id: data.id || path.basename(file.name, '.json') });
                 }
             }
@@ -42,7 +43,8 @@ function catalog() {
 }
 function readRecipe(recipeId) {
     const entry = catalog().recipes.find(x => x.recipeId === recipeId);
-    if (!entry) throw new Error('Receita ausente do catálogo Forge. Use forge.catalog.');
+    if (!entry)
+        throw new Error('Receita ausente do catálogo Forge. Use forge.catalog.');
     return { ...entry, recipe: JSON.parse(fs.readFileSync(path.join(ROOT, recipeId), 'utf8')) };
 }
 module.exports = { ROOT, COMMANDS, CONTRACT_COMMAND, catalog, readRecipe };
