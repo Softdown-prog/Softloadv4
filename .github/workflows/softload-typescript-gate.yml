@@ -187,7 +187,7 @@ jobs:
       - name: Testar captura e retenção de erros sem listeners reais
         run: node --test src/services/errorLogWorker.contract.test.js
       - name: Verificar guards de acesso e rotas do dashboard migradas (sem rede)
-        run: node --test src/middlewares/backendMigration.contract.test.js src/routes/dashboard_routes/backendMigration.contract.test.js
+        run: node --test src/middlewares/backendMigration.contract.test.js src/routes/dashboard_routes/backendMigration.contract.test.js src/routes/workersRoutes.test.js
       - name: Testar entradas do dashboard e historico do chat sem dependencias externas
         run: node --test src/routes/dashboard_routes/dashboardEntries.contract.test.js src/routes/api_routes/appConfig.contract.test.js src/routes/dashboard_routes/chat/chatHistory.test.js
       - name: Testar parser de palavras do RAG, padroes visuais e headers HTTP migrados
