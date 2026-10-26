@@ -44,3 +44,11 @@ A resposta positiva **não substitui testes** de `finish`, `reuse`, `deploy`, ro
 ## Base enxuta do Agent
 
 O Dockerfile do Agent muda `node:22-bookworm` para `node:22-bookworm-slim` e usa `apt-get --no-install-recommends`. GitHub/MCP, FFmpeg, runtimes Python/PHP, Git e o Asset Forge continuam presentes. A CI do Asset Forge executa renderizações reais e a construção da imagem. **A economia de disco da mudança ainda precisa ser medida**, sem prometer um valor fixo de GB.
+
+## Verificação manual somente-leitura (sem deploy)
+
+O workflow `.github/workflows/receiver-v2-readonly.yml` só possui `workflow_dispatch` e consulta o receptor SSH restrito com `contract:v2` e `current`, além do endpoint público HTTPS `/health`. Não envia `finish`/`reuse`/`deploy`, não toca no Docker e remove a chave temporária. Permite comprovar quando a instalação real do receptor já estiver migrada, sem publicar imagens.
+
+**O workflow não instala o receptor.** Sua execução também exige a chave do Actions `SOFTLOAD_VPS_SSH_KEY` e que o fluxo esteja acessível no GitHub; os testes em PR verificam a definição sem entrar na VPS.
+
+A sequência segura continua: inventário da versão real do receptor → backup → atualização e validação fora de produção → handshake v2 confirmado → checks da PR → implantação app/agent com rollback → validação externa → desativação e remoção seletiva das imagens antigas. O handshake é verificado uma vez antes do upload e novamente imediatamente antes da ativação.
