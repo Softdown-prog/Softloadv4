@@ -139,6 +139,10 @@ jobs:
         run: node --test scripts/appendBlocks.test.js
       - name: Testar atualizador CSS Vars sem Gemini real
         run: node --test scripts/fixImplCssVars.test.js
+      - name: Conferir inventário fechado de JavaScript restante
+        run: |
+          node --test scripts/check-typescript-remaining.test.cjs
+          node scripts/check-typescript-remaining.cjs
       - name: Testar autoauditoria de espelhos TypeScript (arquivos temporários)
         run: node --test scripts/check-typescript-mirrors.test.js
       - name: Testar contratos da base React em ambientes simulados
