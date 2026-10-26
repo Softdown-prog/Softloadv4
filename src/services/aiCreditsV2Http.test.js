@@ -18,6 +18,7 @@ test('prévia V2 fica desligada por padrão e não consulta Firestore',async()=>
   try {await h(req('user@example.test'),response);}
   finally {if(before!==undefined)process.env.AI_CREDITS_V2_PREVIEW=before;}
   assert.equal(response.statusCode,404);
+  assert.equal(response.body?.codigo,'CREDITOS_V2_DESABILITADOS');
   assert.equal(response.headers['Cache-Control'],'no-store, private');
 });
 

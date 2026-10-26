@@ -12,6 +12,7 @@ import {
     ArrowRight, ArrowDown, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
+import { consultarSaldoSolaris, type SaldoSolarisVisual } from '../services/solarisCredits';
 
 type MessageRole = 'user' | 'assistant';
 interface ZipFile { base64: string; nome: string; totalArquivos: number }
@@ -19,7 +20,6 @@ interface PreviewFile { xmlPath?: string; gcPath?: string; siteName?: string; co
 interface ChatMessage { role: MessageRole; content: string; zip?: ZipFile; preview?: PreviewFile; patched?: { lang?: string } }
 interface ChatSession { sessionId: string; updatedAt: string; firstMessage?: string; messageCount?: number }
 interface ChatHistoryResponse { sessions?: ChatSession[]; session?: { messages?: ChatMessage[] } }
-interface ChatCreditsResponse { creditosGemini?: number; creditosGeminiTotal?: number }
 interface ChatApiError { error?: string; erro?: string }
 interface ChatStreamEvent {
     type: 'status' | 'chunk' | 'done' | 'code_patch' | 'error';
@@ -59,6 +59,7 @@ export default function Solaris(): React.JSX.Element {
     const [statusHistory, setStatusHistory] = useState<string[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [credits, setCredits] = useState<ChatCredits>({ creditos: 0, creditosTotal: 0 });
+    const [saldoFonte, setSaldoFonte] = useState<SaldoSolarisVisual['fonte']>('indisponivel');
     const [sessionsList, setSessionsList] = useState<ChatSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [copiedId, setCopiedId] = useState<number | null>(null);
@@ -255,17 +256,12 @@ export default function Solaris(): React.JSX.Element {
     }, [messages, statusText, statusHistory]);
 
     const carregarCreditos = async (): Promise<void> => {
-        try {
-            const res = await fetch('/api/chat/status');
-            if (res.ok) {
-                const data = await res.json() as ChatCreditsResponse;
-                setCredits({
-                    creditos: data.creditosGemini || 0,
-                    creditosTotal: data.creditosGeminiTotal || 0
-                });
-            }
-        } catch (err) {
-            console.error('Erro ao carregar créditos:', err);
+        // O Solaris não pode mostrar créditos Gemini legados como saldo V2.
+        // Em falha da contabilidade ativa, exibir saldo indisponível.
+        const saldo = await consultarSaldoSolaris();
+        setSaldoFonte(saldo.fonte);
+        if (saldo.fonte !== 'indisponivel') {
+            setCredits({ creditos: saldo.disponiveis, creditosTotal: saldo.total });
         }
     };
 
@@ -656,11 +652,16 @@ export default function Solaris(): React.JSX.Element {
                 <div className="d-flex align-items-center gap-2 flex-shrink-0">
                     {/* Exibição de créditos — sempre visível (era d-none d-sm-flex,
                         sumia por completo abaixo de 576px) */}
-                    <div className="d-flex align-items-center gap-1 text-secondary px-2 py-1 rounded border border-secondary bg-black" style={{ fontSize: '0.7rem', fontWeight: 700 }}>
+                    <div className="d-flex align-items-center gap-1 text-secondary px-2 py-1 rounded border border-secondary bg-black"
+                        style={{ fontSize: '0.7rem', fontWeight: 700 }}
+                        title={saldoFonte === 'v2' ? 'Créditos de IA do Solaris (orçamento por modelo)' : saldoFonte === 'indisponivel' ? 'Não foi possível consultar os créditos.' : 'Créditos Gemini disponíveis'}>
                         <Zap size={11} className="text-warning" />
-                        <span>{credits.creditos.toLocaleString('pt-BR')}</span>
-                        <span className="text-muted d-none d-sm-inline">/</span>
-                        <span className="text-muted d-none d-sm-inline">{credits.creditsTotal ? credits.creditsTotal.toLocaleString('pt-BR') : credits.creditosTotal.toLocaleString('pt-BR')}</span>
+                        <span>{saldoFonte === 'indisponivel' ? '—' : credits.creditos.toLocaleString('pt-BR')}</span>
+                        {saldoFonte !== 'indisponivel' && <>
+                            <span className="text-muted d-none d-sm-inline">/</span>
+                            <span className="text-muted d-none d-sm-inline">{credits.creditosTotal.toLocaleString('pt-BR')}</span>
+                        </>}
+                        {saldoFonte === 'v2' && <span className="text-info ms-1">IA</span>}
                     </div>
 
                     <ChatHeaderActions

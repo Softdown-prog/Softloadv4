@@ -15,7 +15,7 @@ function criarHandlerResumoCreditosV2({ consultarSaldo, habilitado = () => proce
             return res.status(401).json({ erro: 'Sessão expirada. Faça login novamente.' });
         }
         if (!habilitado()) {
-            return res.status(404).json({ erro: 'Prévia de créditos indisponível.' });
+            return res.status(404).json({ erro: 'Prévia de créditos indisponível.', codigo: 'CREDITOS_V2_DESABILITADOS' });
         }
         try {
             // O email vem EXCLUSIVAMENTE da sessão autenticada.

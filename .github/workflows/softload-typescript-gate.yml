@@ -146,7 +146,7 @@ jobs:
       - name: Conferir rotas e layouts React migrados
         run: npm run test:frontend-layouts
       - name: Testar prévia isolada de créditos V2 do dashboard
-        run: node --test frontend/tests/creditsV2.test.cjs
+        run: node --test frontend/tests/creditsV2.test.cjs frontend/tests/solarisCredits.test.cjs
       - name: Validar layout e rolagem dos chats React
         run: node --test frontend/tests/conversation-ui.test.cjs
       - name: Verificar TypeScript do frontend React
