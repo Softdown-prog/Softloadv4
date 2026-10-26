@@ -34,7 +34,7 @@ const { _snapshotDeManifesto } = require('./chatTemplateCompiler');
 async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId }) {
     const aplicarEdicaoReal = async (campos, resumoMudancas) => {
         sendEvent({ type: 'status', label: 'Recompilando template com as alterações...' });
-        return aplicarEdicao(wsSnapshot.manifesto, campos, user, label => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
+        return aplicarEdicao(wsSnapshot.manifesto, campos, user, (label) => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
     };
     let resultado;
     try {
@@ -68,7 +68,8 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         if (downloadUrl) {
             const novoSnapshot = _snapshotDeManifesto(downloadUrl, resultado.manifestoFinal, resultado.xmlPath, resultado.gcPath);
             await sessaoRef.update({ snapshot: novoSnapshot, edicaoPendente: admin.firestore.FieldValue.delete() });
-        } else if (propostaFinal && propostaFinal.resumo !== edicaoPendente?.resumo) {
+        }
+        else if (propostaFinal && propostaFinal.resumo !== edicaoPendente?.resumo) {
             await sessaoRef.set({
                 edicaoPendente: {
                     campos: propostaFinal.campos,
@@ -76,7 +77,8 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
                     criadoEm: admin.firestore.FieldValue.serverTimestamp(),
                 },
             }, { merge: true });
-        } else if (!propostaFinal && edicaoPendente) {
+        }
+        else if (!propostaFinal && edicaoPendente) {
             await sessaoRef.update({ edicaoPendente: admin.firestore.FieldValue.delete() });
         }
     }
