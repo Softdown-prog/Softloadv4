@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
     paths:
+      # Toda fonte JS/TS altera a contagem da migração; dist é gerado pelo Vite.
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.cjs'
+      - '**/*.mjs'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '!public/dist/**'
+      - 'scripts/typescript-remaining.json'
+      - 'tsconfig.json'
+      - 'tsconfig.frontend.json'
       - 'src/**/*.ts'
       - 'src/**/*.js'
       - 'src/solaris/code-examples/**'
