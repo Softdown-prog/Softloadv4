@@ -252,7 +252,15 @@
     "src/workers/taskWorker.ts",
     "src/services/workspaceCreditReservations.ts",
     "src/services/storageService.ts",
-    "src/routes/dashboard_routes/chat/chatSystemPrompt.ts"
+    "src/routes/dashboard_routes/chat/chatSystemPrompt.ts",
+    "src/services/solarisGithubOperations.ts",
+    "src/services/solarisGithubApp.ts",
+    "src/services/solarisGithubAgent.ts",
+    "src/services/geminiService.ts",
+    "src/services/chatStorageService.ts",
+    "src/services/sentinelWorker.ts",
+    "src/middlewares/authGuard.ts",
+    "src/routes/dashboard_routes/historico.ts"
   ],
   "exclude": [
     "node_modules",

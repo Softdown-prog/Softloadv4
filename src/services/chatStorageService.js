@@ -1,5 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.newSessionId = newSessionId;
+exports.saveSession = saveSession;
+exports.loadSession = loadSession;
+exports.listSessions = listSessions;
+exports.deleteSession = deleteSession;
+exports.loadMemory = loadMemory;
+exports.saveMemory = saveMemory;
+exports.updateMemoryFromSession = updateMemoryFromSession;
+exports.formatMemoryForPrompt = formatMemoryForPrompt;
 'use strict';
-
 // ============================================================
 // CHAT STORAGE SERVICE — Sessões de chat e memória no GCS
 // ============================================================
@@ -32,17 +42,13 @@
 // chamadores atuais (chat.js/workspaceChat.js/solaris.js/adminRoutes.js)
 // já passam `cota` desde que este comentário foi escrito.
 // ============================================================
-
 const { bucket, db } = require('./firebase');
 const { reservarCota, reconciliarCotaArquivos } = require('./storageService');
 const { createHash, randomUUID } = require('node:crypto');
-
 function _tamanhoJson(obj) {
     return Buffer.byteLength(JSON.stringify(obj), 'utf8');
 }
-
 // ── Paths ─────────────────────────────────────────────────────────────────
-
 function assertGcsSegment(value, label) {
     // GCS keys are strings, not filesystem paths. Never let user-controlled
     // session IDs impersonate the metadata objects in this same prefix.
@@ -53,7 +59,6 @@ function assertGcsSegment(value, label) {
         throw new TypeError(`Identificador de armazenamento inválido: ${label}`);
     }
 }
-
 function sessionPath(uid, type, sessionId) {
     assertGcsSegment(uid, 'uid');
     assertGcsSegment(type, 'type');
@@ -63,88 +68,79 @@ function sessionPath(uid, type, sessionId) {
     }
     return `users/${uid}/sessions/${type}/${sessionId}.json`;
 }
-
 function latestRefPath(uid, type) {
     assertGcsSegment(uid, 'uid');
     assertGcsSegment(type, 'type');
     return `users/${uid}/sessions/${type}/latest.json`;
 }
-
 function memoryPath(uid) {
     assertGcsSegment(uid, 'uid');
     return `users/${uid}/memory/context.json`;
 }
-
 function indexPath(uid, type) {
     assertGcsSegment(uid, 'uid');
     assertGcsSegment(type, 'type');
     return `users/${uid}/sessions/${type}/_index.json`;
 }
-
 // ── Helpers ───────────────────────────────────────────────────────────────
-
 function newSessionId() {
     return `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 }
-
 async function readGcs(filePath) {
     try {
         const [content] = await bucket.file(filePath).download();
         return JSON.parse(content.toString('utf8'));
-    } catch (err) {
+    }
+    catch (err) {
         // 404 = arquivo ainda não existe (comportamento normal na 1ª vez)
         const is404 = err.code === 404 || err.message?.includes('No such object');
-        if (is404) return null;
+        if (is404)
+            return null;
         throw err;
     }
 }
-
 async function writeGcs(filePath, data) {
-    await bucket.file(filePath).save(
-        JSON.stringify(data),
-        { metadata: { contentType: 'application/json; charset=utf-8' } }
-    );
+    await bucket.file(filePath).save(JSON.stringify(data), { metadata: { contentType: 'application/json; charset=utf-8' } });
 }
-
-
 async function readGcsSized(filePath) {
     try {
         const [bytes] = await bucket.file(filePath).download();
         return { value: JSON.parse(bytes.toString('utf8')), bytes: bytes.length };
-    } catch (err) {
+    }
+    catch (err) {
         if (err.code === 404 || err.message?.includes('No such object')) {
             return { value: null, bytes: 0 };
         }
         throw err;
     }
 }
-
 async function writeGcsVerified(filePath, data) {
     const content = JSON.stringify(data);
     try {
         await bucket.file(filePath).save(content, {
             metadata: { contentType: 'application/json; charset=utf-8' }
         });
-    } catch (error) {
+    }
+    catch (error) {
         // A GCS upload can complete and lose its acknowledgement.
         // Verify the exact bytes before declaring an otherwise committed write failed.
         try {
             const [actual] = await bucket.file(filePath).download();
-            if (actual.toString('utf8') === content) return;
-        } catch (readError) {
+            if (actual.toString('utf8') === content)
+                return;
+        }
+        catch (readError) {
             console.error('[CHAT-STORAGE] gravação incerta; exige reconciliação:', filePath, readError);
         }
         throw error;
     }
 }
-
 function lockId(uid, scope) {
     if (typeof uid !== 'string' || !uid || typeof scope !== 'string' || !scope) {
         throw new TypeError('Identidade de armazenamento inválida.');
     }
     return createHash('sha256').update(JSON.stringify([uid, scope])).digest('hex');
 }
-
 /**
  * Firestore create() serializes writers across VPS replicas. Do not clear a
  * lock by age: a slow worker can still be updating shared index/latest files.
@@ -158,8 +154,10 @@ async function withChatLock(uid, scope, callback) {
             await ref.create({ uid, scope, owner, iniciadoEm: new Date().toISOString() });
             acquired = true;
             break;
-        } catch (error) {
-            if (![6, 409, 'ALREADY_EXISTS'].includes(error.code)) throw error;
+        }
+        catch (error) {
+            if (![6, 409, 'ALREADY_EXISTS'].includes(error.code))
+                throw error;
             if (attempt === 11) {
                 const busy = new Error('O histórico de chat está ocupado. Tente novamente.');
                 busy.code = 'CHAT_STORAGE_BUSY';
@@ -169,23 +167,26 @@ async function withChatLock(uid, scope, callback) {
             await new Promise(resolve => setTimeout(resolve, Math.min(50 * (attempt + 1), 400)));
         }
     }
-    if (!acquired) throw new Error('Não foi possível adquirir o bloqueio de chat.');
+    if (!acquired)
+        throw new Error('Não foi possível adquirir o bloqueio de chat.');
     try {
         return await callback();
-    } finally {
+    }
+    finally {
         try {
             const snap = await ref.get();
             if (snap.exists && snap.data()?.owner === owner) {
-                if (!snap.updateTime) throw new Error('Sem precondição de versão para liberar bloqueio.');
+                if (!snap.updateTime)
+                    throw new Error('Sem precondição de versão para liberar bloqueio.');
                 await ref.delete({ lastUpdateTime: snap.updateTime });
             }
-        } catch (error) {
+        }
+        catch (error) {
             // A stale lock blocks future writes instead of risking concurrent loss.
             console.error('[CHAT-STORAGE] falha ao liberar bloqueio:', error);
         }
     }
 }
-
 /**
  * A DELETE may remove the GCS object and lose its acknowledgement.
  * A 404 on read-back confirms removal; other failures stay visible.
@@ -193,26 +194,27 @@ async function withChatLock(uid, scope, callback) {
 async function deleteGcsVerified(filePath) {
     try {
         await bucket.file(filePath).delete({ ignoreNotFound: true });
-    } catch (error) {
+    }
+    catch (error) {
         try {
             await bucket.file(filePath).download();
-        } catch (readError) {
-            if (readError.code === 404 || readError.message?.includes('No such object')) return;
+        }
+        catch (readError) {
+            if (readError.code === 404 || readError.message?.includes('No such object'))
+                return;
             console.error('[CHAT-STORAGE] exclusão incerta; exige reconciliação:', filePath, readError);
         }
         throw error;
     }
 }
-
 async function verifyWrites(entries) {
     // Wait for every write to settle before releasing the cross-process lock.
     const results = await Promise.allSettled(entries.map(item => writeGcsVerified(item.path, item.value)));
     const failed = results.find(item => item.status === 'rejected');
-    if (failed) throw failed.reason;
+    if (failed)
+        throw failed.reason;
 }
-
 // ── Sessões ───────────────────────────────────────────────────────────────
-
 /**
  * Salva uma sessão de chat e atualiza o ponteiro latest.
  *
@@ -232,7 +234,6 @@ async function saveSession(uid, type, sessionId, { messages, tokens, meta = {} }
         const idxFile = indexPath(uid, type);
         const sessionFile = sessionPath(uid, type, sessionId);
         const latestFile = latestRefPath(uid, type);
-
         // Read the GCS objects under the same distributed lock that protects writes.
         const current = cota ? await Promise.all([
             readGcsSized(sessionFile), readGcsSized(latestFile), readGcsSized(idxFile)
@@ -252,32 +253,30 @@ async function saveSession(uid, type, sessionId, { messages, tokens, meta = {} }
             { path: latestFile, value: latestRefPayload },
             { path: idxFile, value: newIndex },
         ];
-
         if (cota) {
             const changes = entries.map((item, i) => ({
                 path: item.path, bytesAntes: current[i].bytes, bytesDepois: _tamanhoJson(item.value)
             }));
-            const increase = Math.max(0, changes.reduce((n, item) =>
-                n + item.bytesDepois - item.bytesAntes, 0));
+            const increase = Math.max(0, changes.reduce((n, item) => n + item.bytesDepois - item.bytesAntes, 0));
             // Preflight before GCS writes; the authoritative check runs in Firestore.
-            if (increase) await reservarCota(cota.email, cota.plano, increase);
+            if (increase)
+                await reservarCota(cota.email, cota.plano, increase);
             await verifyWrites(entries);
             await reconciliarCotaArquivos(cota.email, cota.plano, uid, changes);
-        } else {
+        }
+        else {
             await verifyWrites(entries);
         }
         return session;
     };
     return cota ? withChatLock(uid, `sessions:${type}`, run) : run();
 }
-
 /**
  * Carrega uma sessão específica.
  */
 async function loadSession(uid, type, sessionId) {
     return readGcs(sessionPath(uid, type, sessionId));
 }
-
 /**
  * Lista todas as sessões do usuário para um dado tipo.
  * Lê o índice em _index.json e retorna array ordenado por updatedAt desc.
@@ -289,14 +288,16 @@ async function loadSession(uid, type, sessionId) {
  */
 async function listSessions(uid, type) {
     const index = await readGcs(indexPath(uid, type));
-    if (!Array.isArray(index)) return [];
+    if (!Array.isArray(index))
+        return [];
     return index.slice().sort((a, b) => {
-        if (a.updatedAt > b.updatedAt) return -1;
-        if (a.updatedAt < b.updatedAt) return 1;
+        if (a.updatedAt > b.updatedAt)
+            return -1;
+        if (a.updatedAt < b.updatedAt)
+            return 1;
         return 0;
     });
 }
-
 /**
  * Remove uma sessão do GCS e actualiza o índice.
  * Se a sessão removida era a latest, apaga também o latest.json.
@@ -312,46 +313,42 @@ async function deleteSession(uid, type, sessionId, cota = null) {
             const idxFile = indexPath(uid, type);
             const latestFile = latestRefPath(uid, type);
             const paths = [sessionFile, idxFile, latestFile];
-            const before = await Promise.all(paths.map(readGcsSized));
-
+            const before = await Promise.all(paths.map(path => readGcsSized(path)));
             const existingIndex = before[1].value;
             const newIndex = Array.isArray(existingIndex)
                 ? existingIndex.filter(item => item.sessionId !== sessionId)
                 : [];
             const latestIsTarget = before[2].value?.sessionId === sessionId;
             const ops = [];
-
             // Do not fabricate index/latest objects when removing an already
             // absent session. The first deletion must be safe to retry.
-            if (before[0].bytes) ops.push(deleteGcsVerified(sessionFile));
+            if (before[0].bytes)
+                ops.push(deleteGcsVerified(sessionFile));
             if (Array.isArray(existingIndex) && newIndex.length !== existingIndex.length) {
                 ops.push(writeGcsVerified(idxFile, newIndex));
             }
-            if (latestIsTarget) ops.push(deleteGcsVerified(latestFile));
-
+            if (latestIsTarget)
+                ops.push(deleteGcsVerified(latestFile));
             // A failure in one operation must not leave another in flight when
             // the lock is released. Account for successfully changed objects
             // even when another deletion failed; retry handles the remainder.
             const results = await Promise.allSettled(ops);
-            const after = await Promise.all(paths.map(readGcsSized));
-            await reconciliarCotaArquivos(cota.email, cota.plano, uid,
-                paths.map((path, i) => ({
-                    path,
-                    bytesAntes: before[i].bytes,
-                    bytesDepois: after[i].bytes,
-                })), { apenasCreditosRastreados: true });
-
+            const after = await Promise.all(paths.map(path => readGcsSized(path)));
+            await reconciliarCotaArquivos(cota.email, cota.plano, uid, paths.map((path, i) => ({
+                path,
+                bytesAntes: before[i].bytes,
+                bytesDepois: after[i].bytes,
+            })), { apenasCreditosRastreados: true });
             const failed = results.find(result => result.status === 'rejected');
-            if (failed) throw failed.reason;
+            if (failed)
+                throw failed.reason;
         });
     }
-
     // Legacy callers without cota retain the previous behaviour.
     const [index, latestRef] = await Promise.all([
         readGcs(indexPath(uid, type)),
         readGcs(latestRefPath(uid, type)),
     ]);
-
     const ops = [
         bucket.file(sessionPath(uid, type, sessionId)).delete({ ignoreNotFound: true }),
     ];
@@ -364,9 +361,7 @@ async function deleteSession(uid, type, sessionId, cota = null) {
     }
     await Promise.all(ops);
 }
-
 // ── Memória persistente ───────────────────────────────────────────────────
-
 /**
  * Carrega a memória de contexto do usuário.
  * Retorna null se ainda não existe.
@@ -374,7 +369,6 @@ async function deleteSession(uid, type, sessionId, cota = null) {
 async function loadMemory(uid) {
     return readGcs(memoryPath(uid));
 }
-
 /**
  * Salva (merge) dados na memória do usuário.
  * Faz merge com o estado existente — não substitui campos não enviados.
@@ -394,19 +388,20 @@ async function saveMemory(uid, patch, cota = null) {
         if (cota) {
             const bytesDepois = _tamanhoJson(updated);
             const increase = Math.max(0, bytesDepois - previous.bytes);
-            if (increase) await reservarCota(cota.email, cota.plano, increase);
+            if (increase)
+                await reservarCota(cota.email, cota.plano, increase);
             await writeGcsVerified(location, updated);
             await reconciliarCotaArquivos(cota.email, cota.plano, uid, [
                 { path: location, bytesAntes: previous.bytes, bytesDepois }
             ]);
-        } else {
+        }
+        else {
             await writeGcs(location, updated);
         }
         return updated;
     };
     return cota ? withChatLock(uid, 'memory', run) : run();
 }
-
 /**
  * Atualiza a memória a partir de uma sessão finalizada.
  * Chamado depois de saveSession — acumula totais e captura preferências.
@@ -438,7 +433,6 @@ async function updateMemoryFromSession(uid, session, cota = null) {
         return patch;
     }, cota);
 }
-
 /**
  * Formata a memória do usuário como texto injetável no system prompt.
  * Retorna string vazia se não há memória relevante.
@@ -447,35 +441,21 @@ async function updateMemoryFromSession(uid, session, cota = null) {
  * @returns {string}
  */
 function formatMemoryForPrompt(memory) {
-    if (!memory) return '';
-
+    if (!memory)
+        return '';
     const lines = [];
-
     if (memory.lastTemplate) {
         const t = memory.lastTemplate;
         lines.push(`- Último template gerado: "${t.siteName || 'sem nome'}" | cor: ${t.colorPreset || '?'} | grid: ${t.gridLayout || '?'}`);
     }
-    if (memory.sessionCount > 1) {
+    if ((memory.sessionCount ?? 0) > 1) {
         lines.push(`- Sessões anteriores: ${memory.sessionCount - 1}`);
     }
-    if (memory.totalTokensUsed > 0) {
+    if ((memory.totalTokensUsed ?? 0) > 0) {
         const k = (memory.totalTokensUsed / 1000).toFixed(1);
         lines.push(`- Total de tokens utilizados (lifetime): ${k}K`);
     }
-
-    if (lines.length === 0) return '';
-
+    if (lines.length === 0)
+        return '';
     return '\n\n## CONTEXTO DO USUÁRIO (histórico)\n' + lines.join('\n');
 }
-
-module.exports = {
-    newSessionId,
-    saveSession,
-    loadSession,
-    listSessions,
-    deleteSession,
-    loadMemory,
-    saveMemory,
-    updateMemoryFromSession,
-    formatMemoryForPrompt,
-};

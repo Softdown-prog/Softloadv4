@@ -2,6 +2,20 @@
 
 Estado atual: inventário fechado da issue [#17](https://github.com/Softdown-prog/Softloadv4/issues/17), em 26/10/2026.
 
+## Lote de serviços e acesso — 8 novas fontes
+
+O inventário global cai de **28 para 20** pendências de runtime/entrada, mantendo as quatro ferramentas CJS fora dessa contagem.
+
+- Serviços (6): `chatStorageService`, `geminiService`, `sentinelWorker`, `solarisGithubApp`, `solarisGithubOperations`, `solarisGithubAgent`.
+- Acesso (1): `src/middlewares/authGuard`.
+- Histórico (1): `src/routes/dashboard_routes/historico`.
+
+Todos têm fontes estritas, espelhos CommonJS gerados e registro no tsconfig e no auditor. As operações GitHub passam a usar entradas discriminadas por ação e retornos específicos; a aplicação mantém OAuth/PKCE, criptografia autenticada, consentimento, vínculo de repositório, aprovação de propostas e controle de SHA. As chamadas de escrita continuam exigindo confirmação e a carteira/cota não muda de regra.
+
+Contratos novos cobrem geração JSON/texto/peças e streaming Gemini, uso de tokens, sessões/memória, status e recomendações Sentinel, sessão autenticada e dados do histórico. As regressões usam SDK, HTTP, Firestore, Auth e GCS simulados. Os testes de histórico verificam isolamento por UID para preview, download e exclusão, fallback de XML legado e limite inferior zero da cota. Os testes de Sentinel cobrem timeout, destruição da requisição, tendência, alertas e parada do agendador sem abrir conexões.
+
+A suíte local de 104 testes inclui fluxos downstream do Workspace, aprovação GitHub, reservas de créditos, armazenamento de conversas, geração de peças e compilador. Os typechecks do backend/agente também passam. O CI executa os novos contratos junto às verificações existentes.
+
 ## Lote de fechamento — 11 novas fontes e integração do renderer
 
 O saldo global cai de **39 para 28** arquivos de runtime/entrada sem fonte TypeScript. O monitor de cobrança (`5edf483d`/`6bcad4f`) e o renderer Blogger (`6b1e5e8`) chegaram à main durante o trabalho. O monitor foi preservado; o renderer mantém a implementação recente e passa a usar os tipos compartilhados da árvore e do contexto, eliminando declarações duplicadas. O inventário-base JSON permanece congelado; o auditor deduz automaticamente os itens que ganharam fonte TS.

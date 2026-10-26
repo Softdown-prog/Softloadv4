@@ -239,6 +239,12 @@ jobs:
         run: >-
           node --test src/rag/ragAgent.contract.test.js
           src/workers/xmlPatchWorker.test.js src/workers/taskWorker.contract.test.js
+      - name: Validar serviços, acesso e histórico migrados sem APIs externas
+        run: >-
+          node --test src/services/geminiService.contract.test.js
+          src/services/sentinelWorker.contract.test.js
+          src/routes/dashboard_routes/historico.contract.test.js
+          src/middlewares/authGuard.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript
