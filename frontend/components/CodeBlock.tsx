@@ -3,6 +3,7 @@ import hljs from 'highlight.js/lib/core';
 import xml from 'highlight.js/lib/languages/xml';
 import css from 'highlight.js/lib/languages/css';
 import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
 import json from 'highlight.js/lib/languages/json';
 import bash from 'highlight.js/lib/languages/bash';
 import { Clipboard, Check } from 'lucide-react';
@@ -12,15 +13,17 @@ hljs.registerLanguage('html', xml);
 hljs.registerLanguage('css', css);
 hljs.registerLanguage('javascript', javascript);
 hljs.registerLanguage('js', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('ts', typescript);
 hljs.registerLanguage('json', json);
 hljs.registerLanguage('bash', bash);
 hljs.registerLanguage('sh', bash);
 
-const APELIDOS: Record<string, string> = { js: 'JavaScript', html: 'HTML', xml: 'XML', css: 'CSS', json: 'JSON', bash: 'Bash', sh: 'Shell' };
+const APELIDOS: Record<string, string> = { js: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript', html: 'HTML', xml: 'XML', css: 'CSS', json: 'JSON', bash: 'Bash', sh: 'Shell' };
 
 // Bloco de código do chat — pill com o nome da linguagem + botão de copiar,
 // e highlight via highlight.js (core + só as linguagens reais do domínio:
-// XML/HTML do Blogger, CSS, JS, JSON, Bash). Mesmo padrão de import estático
+// XML/HTML do Blogger, CSS, JS, TS, JSON, Bash). Mesmo padrão de import estático
 // já usado por MermaidBlock.jsx (o bundle inteiro já é carregado pelas
 // páginas de chat de qualquer forma).
 export interface CodeBlockProps {

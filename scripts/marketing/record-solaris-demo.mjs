@@ -44,7 +44,7 @@ async function streamDemo(req, res) {
   for (const part of ANSWER.match(/.{1,17}/gs) || []) {
     if (res.destroyed) break;
     send({ type: 'chunk', text: part });
-    await wait(175);
+    await wait(350);
   }
   if (!res.destroyed) {
     send({ type: 'done', reply: ANSWER, sessionId: 'solaris-demo-local' });
@@ -128,12 +128,12 @@ try {
   const input = page.getByPlaceholder('Fale com o Solaris...');
   await input.waitFor({ state: 'visible' });
   await wait(850);
-  await input.pressSequentially(QUESTION, { delay: 35 });
+  await input.pressSequentially(QUESTION, { delay: 70 });
   await wait(450);
   await page.getByRole('button', { name: 'Enviar mensagem' }).click();
   await page.locator('.sl-conversation__bubble--assistant').last()
     .getByText('Number(valor)', { exact: false }).waitFor({ timeout: 18000 });
-  await wait(1700);
+  await wait(2400);
   if (pageErrors.length) throw new Error('Erro React: ' + pageErrors.join(' | '));
   await page.screenshot({ path: resolve(OUTPUT, 'solaris-demo-final.png'), fullPage: false });
   const video = page.video();

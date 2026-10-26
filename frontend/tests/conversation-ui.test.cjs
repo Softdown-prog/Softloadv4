@@ -99,3 +99,12 @@ test('ações dos três chats ficam em menu compacto com saída acessível',()=>
     assert.ok(css.includes(selector),'CSS do menu ausente: '+selector);
   }
 });
+
+// O Solaris usa TypeScript; nunca rotular um bloco ts como CSS por autodetecção.
+test('blocos de código TypeScript preservam linguagem e rótulo na conversa', () => {
+  const source = fs.readFileSync(path.join(root, 'frontend/components/CodeBlock.tsx'), 'utf8');
+  assert.match(source, /registerLanguage\('ts', typescript\)/);
+  assert.match(source, /registerLanguage\('typescript', typescript\)/);
+  assert.match(source, /ts: 'TypeScript'/);
+  assert.match(source, /typescript: 'TypeScript'/);
+});
