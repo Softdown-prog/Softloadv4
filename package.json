@@ -33,7 +33,8 @@
     "typecheck:frontend": "tsc --project tsconfig.frontend.json --noEmit",
     "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs",
     "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs frontend/tests/billingRecovery.test.cjs",
-    "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs"
+    "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs",
+    "typecheck:forge-html5": "tsc --project tsconfig.forge-html5.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/html5/procedural.test.cjs"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",

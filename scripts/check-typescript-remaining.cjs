@@ -43,6 +43,14 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
   }
   return divergentes;
 }
+function verificarEspelhoProcedural(root=path.resolve(__dirname,'..')) {
+  const ts=require('typescript');
+  const base=path.join(root,'agent/forge/html5/procedural');
+  const expected=ts.transpileModule(fs.readFileSync(base+'.ts','utf8'),{compilerOptions:{
+    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,removeComments:false
+  }}).outputText;
+  return expected===fs.readFileSync(base+'.mjs','utf8');
+}
 if(require.main===module){
   const r=auditar();
   console.log('[TS-MIGRACAO] Fontes JS de runtime ainda sem TS:',r.runtime.length);
@@ -52,6 +60,8 @@ if(require.main===module){
   for(const x of r.frontendForaTypecheck)console.error('TypeScript ignorado pelo typecheck frontend:',x);
   const browsers=verificarEspelhosWorkers();
   for(const nome of browsers)console.error('Espelho browser JS não sincronizado com TypeScript:',nome);
-  if(!r.ok||browsers.length)process.exitCode=1;
+  const procedural=verificarEspelhoProcedural();
+  if(!procedural)console.error('Forge HTML5 procedural.mjs não sincronizado com TypeScript');
+  if(!r.ok||browsers.length||!procedural)process.exitCode=1;
 }
-module.exports={inventariar,auditar,verificarEspelhosWorkers};
+module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural};
