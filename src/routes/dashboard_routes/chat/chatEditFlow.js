@@ -43,7 +43,7 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
             propostaPendente: edicaoPendente ? { campos: edicaoPendente.campos, resumo: edicaoPendente.resumo } : null,
             aplicarEdicaoReal,
             onProgress: sendEvent,
-        maxOutputTokens,
+            maxOutputTokens,
         });
     }
     catch (err) {
