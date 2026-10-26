@@ -38,14 +38,14 @@ export default function Login(): React.JSX.Element {
                      style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(24px)', border: '1px solid var(--sl-bg-800)' }}>
 
                     <div className="text-center mb-4">
-                        <h1 className="fw-black text-white text-uppercase mb-1" style={{ letterSpacing: '-0.03em' }}>Acessar Fundição</h1>
-                        <p className="fw-bold text-uppercase mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Identifique-se para entrar no sistema</p>
+                        <h1 className="fw-black text-white text-uppercase mb-1" style={{ letterSpacing: '-0.03em' }}>Acesse sua conta</h1>
+                        <p className="fw-bold text-uppercase mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Entre na Softload V4 para acessar suas ferramentas.</p>
                     </div>
 
                     <form action="/login" method="POST">
                         <div className="mb-3">
                             <label htmlFor="email" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Identidade (E-mail)</label>
+                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>E-mail</label>
                             <div className="input-group">
                                 <span className="input-group-text" style={{ background: 'rgba(15,23,42,0.7)', borderColor: 'var(--sl-bg-800)' }}>
                                     <Mail size={16} style={{ color: 'var(--sl-text-500)' }} />
@@ -59,7 +59,7 @@ export default function Login(): React.JSX.Element {
 
                         <div className="mb-3">
                             <label htmlFor="password" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Chave de Acesso</label>
+                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Senha</label>
                             <div className="input-group">
                                 <span className="input-group-text" style={{ background: 'rgba(15,23,42,0.7)', borderColor: 'var(--sl-bg-800)' }}>
                                     <Lock size={16} style={{ color: 'var(--sl-text-500)' }} />
@@ -69,6 +69,9 @@ export default function Login(): React.JSX.Element {
                                        className="form-control"
                                        style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff' }} />
                                 <button type="button" className="input-group-text" onClick={() => setShowPwd(v => !v)}
+                                        aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
+                                        aria-pressed={showPwd}
+                                        title={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
                                         style={{ background: 'rgba(15,23,42,0.7)', borderColor: 'var(--sl-bg-800)', cursor: 'pointer' }}>
                                     {showPwd
                                         ? <EyeOff size={16} style={{ color: 'var(--sl-primary-light)' }} />
@@ -79,19 +82,19 @@ export default function Login(): React.JSX.Element {
 
                         <div className="d-flex justify-content-end mb-4">
                             <a href="/recover" className="fw-bold text-uppercase text-decoration-none"
-                               style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.1em' }}>Esqueceu a chave?</a>
+                               style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.1em' }}>Esqueceu sua senha?</a>
                         </div>
 
                         <button type="submit" className="btn btn-sl-primary w-100 fw-black text-uppercase"
                                 style={{ letterSpacing: '0.1em', height: '48px' }}>
-                            Entrar no Sistema
+                            Entrar na Softload
                         </button>
                     </form>
 
                     <div className="text-center mt-4">
                         <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>
-                            Novo usuário?{' '}
-                            <a href="/register" className="fw-bold text-white text-decoration-none">Forjar Identidade</a>
+                            Ainda não tem uma conta?{' '}
+                            <a href="/register" className="fw-bold text-white text-decoration-none">Criar conta grátis</a>
                         </p>
                     </div>
                 </div>

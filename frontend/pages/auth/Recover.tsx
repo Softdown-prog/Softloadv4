@@ -39,48 +39,52 @@ export default function Recover(): React.JSX.Element {
                              style={{ width: '64px', height: '64px', background: 'var(--sl-bg-900)', border: '1px solid var(--sl-bg-800)' }}>
                             <KeyRound size={24} style={{ color: 'var(--sl-primary-light)' }} />
                         </div>
-                        <h1 className="fw-black text-white text-uppercase mb-0" style={{ letterSpacing: '-0.03em' }}>Recuperar Acesso</h1>
+                        <h1 className="fw-black text-white text-uppercase mb-0" style={{ letterSpacing: '-0.03em' }}>Recuperar senha</h1>
                     </div>
+
+                    <p className="small text-center mb-4" style={{ color: 'var(--sl-text-400)', lineHeight: 1.6 }}>
+                        Informe seu e-mail para receber as instruções de redefinição de senha.
+                    </p>
 
                     <form action="/recover" method="POST">
                         <div className="mb-4">
                             <label htmlFor="recover-email" className="d-block mb-1 fw-bold text-uppercase"
-                                   style={{ fontSize: '11px', color: 'var(--sl-text-500)', letterSpacing: '0.12em' }}>E-mail do Operador</label>
-                            <input id="recover-email" type="email" name="email" placeholder="ALVO@DOMINIO.COM" required
-                                   className="form-control text-uppercase"
-                                   style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff', letterSpacing: '0.05em' }} />
+                                   style={{ fontSize: '11px', color: 'var(--sl-text-500)', letterSpacing: '0.12em' }}>E-mail da conta</label>
+                            <input id="recover-email" type="email" name="email" autoComplete="email" placeholder="seu@email.com" required
+                                   className="form-control"
+                                   style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff' }} />
                         </div>
 
                         <button type="submit" className="btn btn-sl-primary w-100 fw-black text-uppercase mb-4"
                                 style={{ letterSpacing: '0.1em', height: '48px' }}>
-                            Enviar Link de Resgate
+                            Enviar link de recuperação
                         </button>
                     </form>
 
                     <div className="rounded-3 p-3 mb-4" style={{ background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(51,65,85,0.3)' }}>
                         <h3 className="fw-black text-uppercase mb-3 d-flex align-items-center gap-2"
                             style={{ fontSize: '10px', color: 'var(--sl-primary)', letterSpacing: '0.25em' }}>
-                            <Info size={13} /> Protocolo de Resgate
+                            <Info size={13} /> Como recuperar sua senha
                         </h3>
                         <div className="d-flex flex-column gap-3">
                             <div className="d-flex align-items-start gap-3">
                                 <span className="font-monospace fw-bold flex-shrink-0" style={{ fontSize: '11px', color: 'var(--sl-primary-light)', marginTop: '1px' }}>01.</span>
-                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>Verifique a sua <strong>caixa de entrada</strong> e a pasta de <strong>spam</strong> após disparar o sinal.</p>
+                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>Se o endereço estiver cadastrado, verifique a <strong>caixa de entrada</strong> e a pasta de <strong>spam</strong>.</p>
                             </div>
                             <div className="d-flex align-items-start gap-3">
                                 <span className="font-monospace fw-bold flex-shrink-0" style={{ fontSize: '11px', color: 'var(--sl-primary-light)', marginTop: '1px' }}>02.</span>
-                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>Utilize o link seguro enviado pelo <strong>Firebase</strong> para redefinir a sua chave de acesso.</p>
+                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>Abra o link enviado pela <strong>Softload</strong> para definir uma nova senha.</p>
                             </div>
                             <div className="d-flex align-items-start gap-3">
                                 <span className="font-monospace fw-bold flex-shrink-0" style={{ fontSize: '11px', color: 'var(--sl-primary-light)', marginTop: '1px' }}>03.</span>
-                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>O link de resgate é temporário e <strong>expira em 60 minutos</strong> por razões de blindagem.</p>
+                                <p className="mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-400)', lineHeight: 1.6 }}>O link de recuperação é temporário. Se expirar, solicite um novo nesta página.</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="text-center pt-3" style={{ borderTop: '1px solid rgba(51,65,85,0.5)' }}>
                         <a href="/login" className="fw-bold text-decoration-none d-inline-flex align-items-center gap-1" style={{ fontSize: '0.875rem', color: 'var(--sl-text-400)' }}>
-                            <ArrowLeft size={14} /> Voltar ao Login
+                            <ArrowLeft size={14} /> Voltar para entrar
                         </a>
                     </div>
                 </div>

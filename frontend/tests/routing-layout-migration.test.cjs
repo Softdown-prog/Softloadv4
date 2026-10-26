@@ -496,3 +496,32 @@ test('documentos legais descrevem Solaris, GitHub, conteúdo e limites reais de 
   }
   assert.match(privacy,/pageCanonical: '\/privacidade'/);
 });
+
+
+// Testes de consistência comercial, clareza e acessibilidade das rotas públicas de autenticação.
+test('login e cadastro usam linguagem da Softload V4 em vez da interface antiga de fundição', () => {
+  const login = source('frontend/pages/auth/Login.tsx');
+  const register = source('frontend/pages/auth/Register.tsx');
+  const recover = source('frontend/pages/auth/Recover.tsx');
+  for (const page of [login, register, recover]) {
+    assert.doesNotMatch(page, /Fundição|Forjar Identidade|Operador|Chave de Acesso|Resgate|blindagem/);
+    assert.match(page, /<form action="\/(login|register|recover)" method="POST">/);
+  }
+  assert.match(login, /Acesse sua conta/);
+  assert.match(register, /Crie sua conta grátis/);
+  assert.match(recover, /Recuperar senha/);
+  assert.match(register, /Após criar sua conta, entre com seu e-mail e senha/);
+  assert.match(register, />Criar conta<\/button>/);
+  assert.doesNotMatch(register, /Registrar e Entrar/);
+});
+
+test('visibilidade de senha tem rótulo acessível e a recuperação não transforma e-mail em maiúsculas', () => {
+  const login = source('frontend/pages/auth/Login.tsx');
+  const recover = source('frontend/pages/auth/Recover.tsx');
+  assert.match(login, /aria-label={showPwd \? 'Ocultar senha' : 'Mostrar senha'}/);
+  assert.match(login, /aria-pressed={showPwd}/);
+  assert.match(recover, /autoComplete="email"/);
+  assert.doesNotMatch(recover, /className="form-control text-uppercase"/);
+  assert.doesNotMatch(recover, /expira em 60 minutos/);
+  assert.match(recover, /Se o endereço estiver cadastrado/);
+});
