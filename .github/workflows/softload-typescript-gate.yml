@@ -192,6 +192,8 @@ jobs:
           node --test src/services/mpPlanRules.contract.test.js
       - name: Testar renderização determinística de templates Blogger
         run: node src/lib/bloggerPreviewRenderer.test.js
+      - name: Testar autenticação tipada com Firebase e sessão simulados
+        run: node --test src/routes/authRoutes.test.js
       - name: Testar monitor tipado de recuperação financeira
         run: node --test src/services/billingRecoveryMonitor.test.js
       - name: Testar ciclo de créditos com Firestore simulado

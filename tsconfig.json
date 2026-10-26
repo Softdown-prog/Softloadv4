@@ -260,7 +260,8 @@
     "src/services/chatStorageService.ts",
     "src/services/sentinelWorker.ts",
     "src/middlewares/authGuard.ts",
-    "src/routes/dashboard_routes/historico.ts"
+    "src/routes/dashboard_routes/historico.ts",
+    "src/routes/authRoutes.ts"
   ],
   "exclude": [
     "node_modules",

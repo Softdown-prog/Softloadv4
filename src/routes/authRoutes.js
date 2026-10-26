@@ -1,9 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const { db, admin } = require('../services/firebase');
 const { enviarBoasVindas, enviarRecuperacaoSenha } = require('../services/emailService');
-
 // Rate limit por IP — sem isso, login/registro/recuperação ficam abertos
 // a força bruta e criação em massa de contas (mesmo padrão de handler já
 // usado em contatoRoutes.js: redireciona com ?erro= em vez do JSON 429
@@ -35,7 +36,6 @@ const recoverLimiter = rateLimit({
         res.redirect('/recover?erro=Muitas tentativas de recuperação. Aguarde alguns minutos e tente novamente.');
     },
 });
-
 // ==========================================
 // HELPER: busca usuário pelo campo email
 // (ID do documento pode ser uid ou email — busca pelo campo garante compatibilidade)
@@ -45,15 +45,13 @@ async function buscarUsuarioPorEmail(email) {
         .where('email', '==', email.toLowerCase())
         .limit(1)
         .get();
-
-    if (query.empty) return null;
+    if (query.empty)
+        return null;
     return { ref: query.docs[0].ref, data: query.docs[0].data() };
 }
-
 // ==========================================
 // 1. ROTAS VISUAIS (GET)
 // ==========================================
-
 // Login/registro/recuperação foram migrados pro app React (frontend/pages/auth/*.jsx)
 // — 'pages/react-public' é a bridge pública (com header+footer completos,
 // diferente de 'pages/react-test' usada pelo dashboard, que omite o footer
@@ -61,43 +59,37 @@ async function buscarUsuarioPorEmail(email) {
 // (?erro=.../?sucesso=...), lidos client-side com useSearchParams() — não
 // precisam mais ser passados como locals do EJS.
 router.get('/login', (req, res) => {
-    if (req.session && req.session.user) return res.redirect('/dashboard');
+    if (req.session && req.session.user)
+        return res.redirect('/dashboard');
     res.render('pages/react-public');
 });
-
 router.get('/register', (req, res) => {
-    if (req.session && req.session.user) return res.redirect('/dashboard');
+    if (req.session && req.session.user)
+        return res.redirect('/dashboard');
     res.render('pages/react-public');
 });
-
 router.get('/recover', (req, res) => {
-    if (req.session && req.session.user) return res.redirect('/dashboard');
+    if (req.session && req.session.user)
+        return res.redirect('/dashboard');
     res.render('pages/react-public');
 });
-
 // ==========================================
 // 2. REGISTRO MANUAL
 // ==========================================
-
 router.post('/register', registerLimiter, async (req, res) => {
     try {
         const { name, email, password } = req.body;
         console.log(`[AUTH] Registrando: ${email}`);
-
         const apiKey = process.env.FIREBASE_API_KEY;
-
         const authResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, returnSecureToken: true })
         });
-
         const authData = await authResponse.json();
-
         if (!authResponse.ok) {
             throw new Error(authData.error.message || 'Erro desconhecido na API');
         }
-
         // Novos usuários: ID do documento = email (padrão novo)
         await db.collection('clientes_premium').doc(email.toLowerCase()).set({
             uid: authData.localId,
@@ -115,62 +107,52 @@ router.post('/register', registerLimiter, async (req, res) => {
             creditos_expira_em: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             criado_em: new Date().toISOString()
         });
-
         console.log(`✅ [AUTH] Registrado: ${email}`);
-
         // Email de boas-vindas — fire-and-forget (falha não bloqueia o cadastro)
         enviarBoasVindas(email.toLowerCase(), name)
             .catch(e => console.error('[EMAIL] Boas-vindas falhou:', e.message));
-
         res.redirect('/login?sucesso=Conta criada! Faça login para entrar.');
-    } catch (error) {
+    }
+    catch (error) {
         console.error('🚨 [REGISTRO]:', error.message);
         let msgErro = 'Erro ao criar conta. Verifique os dados.';
-        if (error.message.includes('EMAIL_EXISTS')) msgErro = 'Este e-mail já possui uma conta.';
-        if (error.message.includes('WEAK_PASSWORD')) msgErro = 'A senha deve ter no mínimo 6 caracteres.';
-        if (error.message.includes('INVALID_EMAIL')) msgErro = 'O formato do e-mail é inválido.';
+        if (error.message.includes('EMAIL_EXISTS'))
+            msgErro = 'Este e-mail já possui uma conta.';
+        if (error.message.includes('WEAK_PASSWORD'))
+            msgErro = 'A senha deve ter no mínimo 6 caracteres.';
+        if (error.message.includes('INVALID_EMAIL'))
+            msgErro = 'O formato do e-mail é inválido.';
         res.redirect(`/register?erro=${encodeURIComponent(msgErro)}`);
     }
 });
-
 // ==========================================
 // 3. LOGIN MANUAL
 // ==========================================
-
 router.post('/login', loginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         const apiKey = process.env.FIREBASE_API_KEY;
-
         console.log(`[AUTH] Login: ${email}`);
-
         const authResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, returnSecureToken: true })
         });
-
         const authData = await authResponse.json();
-
         if (!authResponse.ok) {
             console.error('[AUTH] Credenciais inválidas:', authData.error.message);
             return res.redirect('/login?erro=E-mail ou senha incorretos.');
         }
-
         // Busca pelo campo email — funciona independente do ID do documento
         const usuario = await buscarUsuarioPorEmail(email);
-
         if (!usuario) {
             console.error(`[AUTH] Usuário não encontrado no Firestore: ${email}`);
             return res.redirect('/login?erro=Conta não encontrada. Faça o registro primeiro.');
         }
-
         const userData = usuario.data;
-
         // Verifica se assinatura premium ainda é válida
         let isActive = userData.is_active || false;
         let planoAtual = userData.plano || 'free';
-
         if (isActive && userData.premium_ate) {
             const vencimento = new Date(userData.premium_ate);
             if (vencimento < new Date()) {
@@ -185,7 +167,6 @@ router.post('/login', loginLimiter, async (req, res) => {
                 console.log(`[AUTH] Assinatura vencida: ${email} → rebaixado para free.`);
             }
         }
-
         req.session.user = {
             uid: authData.localId,
             email: email.toLowerCase(),
@@ -200,7 +181,6 @@ router.post('/login', loginLimiter, async (req, res) => {
             // no middleware exigirPlanoAtivo
             premium_ate: userData.premium_ate || null
         };
-
         req.session.save((err) => {
             if (err) {
                 console.error('🚨 [AUTH] Falha ao salvar sessão:', err.message);
@@ -209,25 +189,22 @@ router.post('/login', loginLimiter, async (req, res) => {
             console.log(`✅ [AUTH] Login OK: ${email} | Plano: ${planoAtual}`);
             res.redirect('/dashboard');
         });
-
-    } catch (error) {
+    }
+    catch (error) {
         console.error('🚨 [LOGIN]:', error.message);
         res.redirect('/login?erro=Erro interno. Tente novamente.');
     }
 });
-
 // ==========================================
 // 4. RECUPERAÇÃO DE SENHA
 // ==========================================
-
 router.post('/recover', recoverLimiter, async (req, res) => {
     // Resposta sempre genérica para não revelar se o e-mail existe (anti-enumeração)
     const SUCESSO = '/recover?sucesso=Se o e-mail existir, o link foi enviado.';
-
     try {
         const email = (req.body.email || '').trim().toLowerCase();
-        if (!email) return res.redirect('/recover?erro=O e-mail é obrigatório.');
-
+        if (!email)
+            return res.redirect('/recover?erro=O e-mail é obrigatório.');
         // Gera o link de reset via Admin SDK (não envia o email do Firebase)
         // Se o usuário não existir no Auth, generatePasswordResetLink lança USER_NOT_FOUND
         let resetLink;
@@ -235,36 +212,34 @@ router.post('/recover', recoverLimiter, async (req, res) => {
             resetLink = await admin.auth().generatePasswordResetLink(email, {
                 url: `${process.env.BASE_URL || 'https://softload.analysepro.com'}/login`,
             });
-        } catch (authErr) {
+        }
+        catch (authErr) {
             // USER_NOT_FOUND ou qualquer outro erro → retorna genérico (segurança)
             console.warn('[RECOVER] Firebase auth err:', authErr.code || authErr.message, 'para:', email);
             return res.redirect(SUCESSO);
         }
-
         // Busca nome do usuário para personalizar o email
-        const snap  = await db.collection('clientes_premium').doc(email).get();
-        const nome  = snap.exists ? (snap.data().nome || '') : '';
-
+        const snap = await db.collection('clientes_premium').doc(email).get();
+        const nome = snap.exists ? (snap.data().nome || '') : '';
         enviarRecuperacaoSenha(email, nome, resetLink)
             .catch(e => console.error('[EMAIL] Recuperação falhou:', e.message));
-
         res.redirect(SUCESSO);
-    } catch (error) {
+    }
+    catch (error) {
         console.error('[RECOVER] Erro inesperado:', error.message);
         res.redirect('/recover?erro=Erro no servidor. Tente novamente.');
     }
 });
-
 // ==========================================
 // 6. LOGOUT
 // ==========================================
-
 router.get('/logout', (req, res) => {
-    if (!req.session) return res.redirect('/login');
+    if (!req.session)
+        return res.redirect('/login');
     req.session.destroy((err) => {
-        if (err) console.error('[AUTH] Erro ao destruir sessão:', err);
+        if (err)
+            console.error('[AUTH] Erro ao destruir sessão:', err);
         res.redirect('/login?sucesso=Sessão encerrada com segurança.');
     });
 });
-
 module.exports = router;
