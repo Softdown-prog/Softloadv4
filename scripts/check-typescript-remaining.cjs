@@ -30,7 +30,7 @@ function auditar({root=path.resolve(__dirname,'..'),tracked=null,lista=null,tsco
 // Browsers carregam scripts clássicos, não módulos CommonJS.
 function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
   const ts=require('typescript');
-  const arquivos=['w-utils','w-init','w-log-init'];
+  const arquivos=['w-utils','w-init','w-log-init','w-errorlog'];
   const divergentes=[];
   for(const nome of arquivos) {
     const base=path.join(root,'public/js/workers',nome);

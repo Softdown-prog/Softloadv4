@@ -16,7 +16,7 @@ test('loop limita catch-up, evita start duplicado e cancela frame ao parar',asyn
  frames[1](5000);assert.equal(steps.length,3);assert.ok(Math.abs(renders.at(-1)) < 1e-10);
  loop.stop();assert.equal(cancelled.length,1);
  const count=frames.length;frames.at(-1)(6000);assert.equal(frames.length,count);
- assert.throws(()=>createLoop({update(){},render(){},hz:0}),/loop configuration/);
+ assert.throws(()=>createLoop({update(){},render(){},hz:0,requestFrame:()=>1,cancelFrame:()=>{}}),/loop configuration/);
 });
 test('input limpa teclas e ponteiros e remove listeners',async()=>{
  const {createInput}=await api;

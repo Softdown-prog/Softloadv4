@@ -11,6 +11,7 @@
   "files": [
     "public/js/workers/w-utils.ts",
     "public/js/workers/w-init.ts",
-    "public/js/workers/w-log-init.ts"
+    "public/js/workers/w-log-init.ts",
+    "public/js/workers/w-errorlog.ts"
   ]
 }
