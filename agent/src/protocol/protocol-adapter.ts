@@ -42,8 +42,6 @@ const TASK_TYPE_PREFIX: Record<string, string> = {
   // vira "web.search" e "web.fetch" respectivamente, sem colisão.
   "web-search": "web",
   "web-fetch": "web",
-  "web-sandbox": "websandbox",
-  archive: "archive",
   "knowledge-search": "knowledge",
   mcp: "mcp",
   escalation: "escalation",
@@ -107,28 +105,8 @@ const FIELD_RENAMES: Record<string, Record<string, string>> = {
     callback_url: "callbackUrl",
     callback_secret: "callbackSecret",
     escalation_id: "escalationId",
-  },
-  "web-sandbox": {
-    // timeout_ms -> timeout (não timeoutMs): o campo, do lado do
-    // serviço sandbox-efemoro (POST /run), já se chama literalmente
-    // "timeout" (em ms) -- ver sandbox-efemoro/README.md. Renomear
-    // pra "timeoutMs" aqui só criaria um nome que WebSandboxCapability
-    // teria que traduzir de volta antes de repassar.
-    timeout_ms: "timeout",
-    allowed_hosts: "allowedHosts",
-  },
-  "knowledge-search": {
+  },  "knowledge-search": {
     top_k: "topK",
-  },
-  archive: {
-    zip_path: "zipPath",
-    dest_path: "destPath",
-    max_files: "maxFiles",
-    max_file_bytes: "maxFileBytes",
-    max_total_bytes: "maxTotalBytes",
-    max_compressed_bytes: "maxCompressedBytes",
-    max_depth: "maxDepth",
-    timeout_ms: "timeoutMs",
   },
 };
 
