@@ -51,7 +51,11 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         return { fullText: 'Tive um problema técnico ao processar isso agora — pode tentar de novo?' };
     }
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
-    if(tokensRef && tokens) {tokensRef.input=tokens.input;tokensRef.output=tokens.output;tokensRef.total=tokens.input+tokens.output;}
+    if (tokensRef && tokens) {
+        tokensRef.input = tokens.input;
+        tokensRef.output = tokens.output;
+        tokensRef.total = tokens.input + tokens.output;
+    }
     let falhaDebito = false;
     if (cobrarDiretamente && tokens && (tokens.input || tokens.output)) {
         try {
