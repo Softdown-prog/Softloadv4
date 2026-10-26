@@ -26,6 +26,9 @@ interface OpcaoEdicao {
     wsProjetoId?: string | null;
     wsSessionId?: string | null;
     billingOperationId?: string;
+    cobrarDiretamente?: boolean;
+    tokensRef?: { input?: number; output?: number; total?: number };
+    maxOutputTokens?: number;
 }
 interface PreviewEdicao { xmlPath: string | null; gcPath: string | null; siteName: string | null; colorPreset: string | null; nichoTema: string | null }
 interface RetornoEdicao { fullText: string; downloadUrl?: string | null; preview?: PreviewEdicao | null }
@@ -65,7 +68,7 @@ const { _snapshotDeManifesto } = require('./chatTemplateCompiler') as { _snapsho
  *
  * @returns {Promise<{ fullText: string, downloadUrl?: string }>}
  */
-async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId }: OpcaoEdicao): Promise<RetornoEdicao> {
+async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId, cobrarDiretamente = true, tokensRef, maxOutputTokens }: OpcaoEdicao): Promise<RetornoEdicao> {
     const aplicarEdicaoReal = async (campos: unknown, resumoMudancas: string): Promise<unknown> => {
         sendEvent({ type: 'status', label: 'Recompilando template com as alterações...' });
         return aplicarEdicao(wsSnapshot.manifesto, campos, user, (label: string) => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
@@ -78,6 +81,7 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
             propostaPendente: edicaoPendente ? { campos: edicaoPendente.campos, resumo: edicaoPendente.resumo } : null,
             aplicarEdicaoReal,
             onProgress: sendEvent,
+        maxOutputTokens,
         });
     } catch (err) {
         console.error('[CHAT-EDICAO] processarEdicaoAgentica falhou:', (err as Error).message);
@@ -86,8 +90,9 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
 
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
 
+    if(tokensRef && tokens) {tokensRef.input=tokens.input;tokensRef.output=tokens.output;tokensRef.total=tokens.input+tokens.output;}
     let falhaDebito = false;
-    if (tokens && (tokens.input || tokens.output)) {
+    if (cobrarDiretamente && tokens && (tokens.input || tokens.output)) {
         try {
             await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
         } catch (e) {

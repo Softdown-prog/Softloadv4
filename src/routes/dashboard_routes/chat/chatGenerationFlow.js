@@ -43,7 +43,7 @@ const TEMPLATE_MARKER_RE = /\[\[TEMPLATE:([\s\S]+?)\]\]/;
  * @param {string|null} [opcoes.wsSessionId]
  * @returns {Promise<{ fullText: string, downloadUrl: string|null, novoSnapshot: object|null, codeValidation: object|null }>}
  */
-async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef, wsProjetoId = null, wsSessionId = null, permitirGeracao = false, maxOutputTokens, }) {
+async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef, maxOutputTokens, wsProjetoId = null, wsSessionId = null, permitirGeracao = false, }) {
     let fullText = '';
     let downloadUrl = null;
     let novoSnapshot = null;
