@@ -1,47 +1,86 @@
-<%- include('../partials/header') %>
-
+<%- include('../partials/header', { pageTitle: 'Política de Privacidade | Softload V4', pageDescription: 'Como a Softload V4 utiliza dados de conta, conversas com IA, projetos e integrações GitHub.', pageCanonical: '/privacidade' }) %>
 <main class="sl-pt-nav py-5" style="min-height:100vh;background:var(--sl-bg-900)">
     <div class="container">
         <div class="mx-auto" style="max-width:760px">
-            <p class="text-uppercase fw-bolder mb-2" style="font-size:11px;letter-spacing:0.18em;color:var(--sl-primary)">
-                Política de Privacidade
+            <p class="text-uppercase fw-bolder mb-2" style="font-size:11px;letter-spacing:0.18em;color:var(--sl-primary)">Documento de Privacidade</p>
+            <h1 class="fw-bold text-white mb-2" style="letter-spacing:-0.02em">Política de Privacidade</h1>
+            <p class="small mb-4" style="color:var(--sl-text-500)">Última atualização: 26 de outubro de 2026</p>
+            <p style="color:var(--sl-text-400);line-height:1.8">
+                A Softload V4 reúne Solaris Code, Especialista Blogger e Workspace. Esta política descreve
+                as categorias de dados utilizadas para operar essas ferramentas, proteger contas, processar
+                solicitações de IA, fornecer suporte e viabilizar pagamentos.
             </p>
-            <h1 class="fw-bold text-white mb-3" style="letter-spacing:-0.02em">Privacidade de Dados</h1>
-            <p style="color:var(--sl-text-500);font-size:0.95rem;line-height:1.8">
-                A Softload Engine trata dados de conta, autenticação, uso da plataforma e mensagens de contato apenas para operar o serviço,
-                entregar os templates solicitados, processar pagamentos e responder solicitações de suporte.
-            </p>
 
-            <div class="sl-card mt-4">
-                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">Dados utilizados</h2>
+            <section class="sl-card mt-4" aria-labelledby="priv-dados">
+                <h2 id="priv-dados" class="h6 fw-bolder text-white text-uppercase mb-3">Dados utilizados</h2>
                 <ul class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    <li>Dados cadastrais informados no registro, como nome e e-mail.</li>
-                    <li>Dados técnicos e de sessão necessários para login, segurança e continuidade da experiência.</li>
-                    <li>Histórico de compilações e arquivos gerados para permitir download, auditoria e controle de cotas.</li>
-                    <li>Informações de pagamento processadas pelo provedor de checkout configurado.</li>
+                    <li><strong class="text-white">Conta:</strong> nome, e-mail, dados de autenticação e informações do plano.</li>
+                    <li><strong class="text-white">Uso e segurança:</strong> informações de sessão, registros técnicos, consumo de créditos e eventos necessários à operação e à prevenção de abuso.</li>
+                    <li><strong class="text-white">Conteúdo das ferramentas:</strong> mensagens de chat, trechos de código, projetos ou arquivos enviados, resultados de compilações e histórico, quando armazenados.</li>
+                    <li><strong class="text-white">Atendimento:</strong> nome, e-mail e mensagem enviados pelo formulário de contato.</li>
+                    <li><strong class="text-white">Pagamentos:</strong> identificação e estado de transações e do plano; os dados do checkout são processados pelo provedor de pagamento.</li>
                 </ul>
-            </div>
+            </section>
 
-            <div class="sl-card mt-3">
-                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">Cookies e armazenamento local</h2>
-                <ul class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    <li><strong style="color:var(--sl-text-300)">Cookie de sessão</strong> — essencial, usado apenas para manter você conectado com segurança após o login. É protegido (HTTP-only), expira em 24 horas e não é compartilhado com terceiros.</li>
-                    <li><strong style="color:var(--sl-text-300)">Armazenamento local do navegador</strong> — usado para lembrar preferências como o tema (claro/escuro) e o seu consentimento a este aviso.</li>
-                    <li>Não usamos cookies de rastreamento, publicidade ou ferramentas de analytics de terceiros hoje.</li>
-                </ul>
-            </div>
-
-            <div class="sl-card mt-3">
-                <h2 class="h6 fw-bolder text-white text-uppercase mb-3" style="letter-spacing:0.08em">Solicitações</h2>
-                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    Para solicitar acesso, correção ou exclusão de dados, entre em contato pelo formulário oficial da plataforma.
-                    Usuários autenticados também podem excluir a conta em Configurações.
+            <section class="sl-card mt-3" aria-labelledby="priv-ia">
+                <h2 id="priv-ia" class="h6 fw-bolder text-white text-uppercase mb-3">Inteligência artificial e arquivos</h2>
+                <p style="color:var(--sl-text-400);line-height:1.8">
+                    Para responder a uma solicitação, textos, partes de projetos ou conteúdos enviados podem ser
+                    transmitidos ao provedor de IA configurado para aquela ferramenta, como a API Google Gemini.
+                    Evite incluir senhas, chaves de API e outros segredos nos conteúdos compartilhados com as ferramentas.
                 </p>
-            </div>
+                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    Conversas, compilações, projetos e arquivos associados à conta podem ser armazenados
+                    para histórico, continuidade das sessões, recuperação e controle de uso, conforme o recurso utilizado.
+                </p>
+            </section>
 
-            <a href="/contato" class="btn btn-sl-primary fw-bold mt-4">Falar com a Softload</a>
+            <section class="sl-card mt-3" aria-labelledby="priv-github">
+                <h2 id="priv-github" class="h6 fw-bolder text-white text-uppercase mb-3">Integração com GitHub</h2>
+                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    A conexão com GitHub é opcional. Após autorização, a plataforma pode usar dados da integração
+                    e acessar os repositórios permitidos para listar, consultar ou executar ações solicitadas
+                    pelo usuário, dentro das permissões concedidas. As demais áreas da plataforma não exigem
+                    conexão a uma conta GitHub.
+                </p>
+            </section>
+
+            <section class="sl-card mt-3" aria-labelledby="priv-terceiros">
+                <h2 id="priv-terceiros" class="h6 fw-bolder text-white text-uppercase mb-3">Serviços de terceiros</h2>
+                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    As funcionalidades podem depender de Firebase Authentication, Firestore e Google Cloud Storage,
+                    provedores de IA, GitHub, Mercado Pago e serviços de hospedagem. Cada integração trata
+                    as informações necessárias à execução de sua função segundo as condições aplicáveis.
+                </p>
+            </section>
+
+            <section class="sl-card mt-3" aria-labelledby="priv-cookies">
+                <h2 id="priv-cookies" class="h6 fw-bolder text-white text-uppercase mb-3">Cookies e armazenamento local</h2>
+                <ul class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    <li><strong class="text-white">Cookie de sessão:</strong> essencial para autenticação e segurança.</li>
+                    <li><strong class="text-white">Navegador:</strong> armazenamento local pode guardar preferências visuais e o registro do aceite do aviso de cookies.</li>
+                    <li>O aviso de cookies exibido pela plataforma informa sobre o uso atual dessas tecnologias.</li>
+                </ul>
+            </section>
+
+            <section class="sl-card mt-3" aria-labelledby="priv-direitos">
+                <h2 id="priv-direitos" class="h6 fw-bolder text-white text-uppercase mb-3">Acesso, correção e exclusão</h2>
+                <p style="color:var(--sl-text-400);line-height:1.8">
+                    Para solicitar acesso, correção ou exclusão de informações pessoais, use o
+                    <a href="/contato">formulário de contato</a>. Usuários autenticados também podem
+                    solicitar a exclusão da conta em Configurações.
+                </p>
+                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    Os períodos de conservação podem variar conforme a finalidade, as necessidades operacionais
+                    e obrigações legais aplicáveis. Não há um único prazo de retenção para todas as categorias de dados.
+                </p>
+            </section>
+
+            <div class="mt-4 d-flex flex-wrap gap-3">
+                <a href="/contato" class="btn btn-sl-primary fw-bold">Falar com a Softload</a>
+                <a href="/termos-de-uso" class="btn btn-outline-secondary fw-semibold">Termos de Uso</a>
+            </div>
         </div>
     </div>
 </main>
-
 <%- include('../partials/footer') %>
