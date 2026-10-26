@@ -25,3 +25,33 @@ pendente pelo commit mais recente. Cada execução confere novamente a ponta da
 substituiu, a execução antiga termina sem trocar os containers. Assim, uma
 sequência rápida de pushes converge para a versão mais recente sem enviar
 imagens obsoletas à VPS.
+
+## Custos de rebuild e tráfego (outubro de 2026)
+
+O GitHub Actions faz `npm ci`, testes e build no runner hospedado. A VPS **não**
+reinstala automaticamente dependências npm ou Chromium após cada push:
+ela recebe imagens Docker já construídas. O deploy identifica mudanças dos
+serviços `agent`, `sandbox` (Chromium) e `embeddings` e reutiliza a
+imagem instalada quando seus insumos não foram alterados.
+
+A imagem `app` ainda é reconstruída e enviada em toda revisão publicada,
+pois o SHA exposto por `/health` precisa corresponder ao commit ativo.
+Antes das melhorias de cache, exemplos reais em 26/10 registraram um
+`docker save | gzip -1` do app com cerca de **401 MB** por revisão.
+O rsync retoma uploads interrompidos, mas um arquivo de imagem com SHA
+novo não é uma transferência incremental de camadas.
+
+O workflow agora usa BuildKit com cache separado por serviço nos runners
+GitHub. Isso evita repetir diversas instalações no **build**, mas o arquivo
+`.tar.gz` transferido à VPS continua completo. Também exclui `.git` do
+contexto/imagem final e injeta `GIT_SHA`/`GIT_DATE` via build args,
+verificando o SHA da imagem antes de enviá-la.
+
+**Próxima otimização (exige alteração coordenada e validada no receptor da
+VPS):** transporte OCI/registry por camadas reutilizáveis. O receptor SSH
+restrito atual aceita `finish:serviço:sha:digest` e importa arquivos
+`.tar.gz`; não substituir por `docker pull` sem testar credenciais,
+assinaturas/digests, retenção da revisão anterior, rollback e integridade.
+Não declarar economia de tráfego na VPS apenas com o cache do BuildKit.
+
+A franquia da Locacloud pode seguir outra metodologia de medição.

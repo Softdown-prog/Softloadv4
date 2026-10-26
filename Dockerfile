@@ -1,12 +1,6 @@
-# ── Stage: build-info ─────────────────────────────────────────────────────
-# Pass immutable source metadata from the GitHub Actions checkout. We no longer
-# need to install git or send the entire .git history into the Docker context.
-# For manual/local builds, unknown is explicit rather than a misleading SHA.
-FROM node:20-slim AS build-info
-ARG SOURCE_GIT_SHA=unknown
-ARG SOURCE_GIT_DATE=unknown
-RUN printf '%s\n' "$SOURCE_GIT_SHA" > /GIT_SHA \
-    && printf '%s\n' "$SOURCE_GIT_DATE" > /GIT_DATE
+# Build identity is passed by GitHub Actions, not extracted by copying .git.
+# This avoids shipping repository history in the Docker context and image.
+# Local docker builds without arguments use explicit development fallbacks.
 
 # ── Stage: frontend-build ─────────────────────────────────────────────────
 # Achado real: a imagem final sempre instalou só `--only=production`
@@ -82,9 +76,13 @@ COPY --from=frontend-build /usr/src/app/public/vendor ./public/vendor
 RUN node scripts/vendorTemplateRefs.js
 # Smoke HTTP sob Node da imagem: Bootstrap/Chart, MIME, Cache-Control, ETag e 404.
 RUN node src/core/vendorStaticPolicy.test.js
-COPY --from=build-info /GIT_SHA /usr/src/app/GIT_SHA
-COPY --from=build-info /GIT_DATE /usr/src/app/GIT_DATE
-RUN date -u +"%Y-%m-%dT%H:%M:%SZ" > /usr/src/app/BUILD_TIME
+# Keep release identity in the final small layer. Changing the SHA never
+# invalidates apt, pip, npm or the React build stages.
+ARG GIT_SHA=dev-local
+ARG GIT_DATE=unknown
+RUN printf '%s\n' "$GIT_SHA" > /usr/src/app/GIT_SHA \
+    && printf '%s\n' "$GIT_DATE" > /usr/src/app/GIT_DATE \
+    && date -u +"%Y-%m-%dT%H:%M:%SZ" > /usr/src/app/BUILD_TIME
 # Smoke test determinístico: carrega, sob o Node exato desta imagem, toda a
 # árvore de require() que server.js carrega ANTES de app.listen(). Existe
 # porque um require() de pacote ESM-only (parse5@8, "ERR_REQUIRE_ESM") ou um

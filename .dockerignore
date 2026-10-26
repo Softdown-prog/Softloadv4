@@ -6,9 +6,11 @@ node_modules
 npm-debug.log*
 *.local
 
-# Git history does not belong in Docker build context or runtime image.
-# The Actions builder injects the exact commit SHA/date as Docker build arguments.
+# O SHA/data são passados via build args pelo workflow.
+# Nunca copiar o histórico Git para a imagem, inclusive no COPY . . final.
 .git
+.github
+
 
 # A imagem de produção recompila o React no stage frontend-build.
 # Não reenviar ao contexto Docker o bundle versionado (public/dist):

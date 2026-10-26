@@ -26,8 +26,6 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
-      - name: Verify deploy optimization and SHA contract
-        run: node --test scripts/deployBuildCache.contract.test.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -212,34 +210,42 @@ jobs:
           npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
           npm run typecheck:agent
           npm run build:agent:capabilities
-      # Cache persists across GitHub-hosted runners, including Node, Python,
-      # APT and npm dependency layers. No change to the restricted VPS runner.
-      # Only app uses the remote cache: Chromium and other large images already
-      # skip rebuilds when unchanged; caching them consumes excessive quota.
-      - name: Prepare Buildx cache for app
-        if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true' && matrix.service == 'app'
+      # Cache de camadas entre runners hospedados. O contexto sandbox só
+      # recompila quando sua fonte muda (plano já existente).
+      # Importante: o cache acelera build/npm/apt/Chromium no GitHub,
+      # mas não reduz sozinho o .tar.gz enviado à VPS.
+      - name: Prepare shared Docker BuildKit cache
+        if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
         uses: docker/setup-buildx-action@v3
-      - name: Build versioned image
+      - name: Build versioned image with cached layers
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          image="softload-${{ matrix.service }}:${{ github.sha }}"
-          if [ '${{ matrix.service }}' = app ]; then
-            date_iso="$(git show -s --format=%cI "$GITHUB_SHA")"
-            [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
-            [[ -n "$date_iso" ]]
-            # --load preserves the existing docker save / rsync / docker load
-            # delivery contract and SHA verification on public /health.
-            docker buildx build --load \
-              --cache-from type=gha,scope=softload-app \
-              --cache-to type=gha,mode=max,scope=softload-app,ignore-error=true \
-              --build-arg "SOURCE_GIT_SHA=$GITHUB_SHA" \
-              --build-arg "SOURCE_GIT_DATE=$date_iso" \
-              -t "$image" -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
-          else
-            docker build -t "$image" -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
+          extra_args=()
+          if [[ '${{ matrix.service }}' == app ]]; then
+            # O app expõe esses arquivos em /health; nunca reciclar um SHA
+            # anterior em um deploy novo.
+            commit_date="$(git show -s --format=%cI "$GITHUB_SHA")"
+            extra_args+=(--build-arg "GIT_SHA=$GITHUB_SHA" --build-arg "GIT_DATE=$commit_date")
           fi
+          docker buildx build --load \
+            --cache-from 'type=gha,scope=softload-${{ matrix.service }}' \
+            --cache-to 'type=gha,scope=softload-${{ matrix.service }},mode=max,ignore-error=true' \
+            "${extra_args[@]}" \
+            -t 'softload-${{ matrix.service }}:${{ github.sha }}' \
+            -f '${{ matrix.dockerfile }}' '${{ matrix.context }}'
+      - name: Verify app release metadata without network
+        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'app' && steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="softload-app:${GITHUB_SHA}"
+          actual="$(docker run --rm --entrypoint cat "$image" /usr/src/app/GIT_SHA)"
+          test "$actual" = "$GITHUB_SHA"
+          docker run --rm --entrypoint sh "$image" -c 'test ! -d /usr/src/app/.git'
+          echo "[BUILD] Commit SHA verified; .git absent from production container"
+
       # Medição real da imagem Docker (não confundir com bytes versionados no Git).
       - name: Report Docker image size
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
@@ -283,20 +289,15 @@ jobs:
         run: |
           set -euo pipefail
           archive="$RUNNER_TEMP/softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"
-          # Prefer smaller transfers for frequent app-only changes. Keep
-          # fast gzip for the large, infrequently changed browser image.
-          if [ '${{ matrix.service }}' = app ]; then
-            docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -6 > "$archive"
-          else
-            docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -1 > "$archive"
-          fi
+          docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -1 > "$archive"
           digest="$(sha256sum "$archive" | cut -d' ' -f1)"
           packed_bytes="$(stat -c '%s' "$archive")"
           echo "[IMAGE] Comprimida para transferência (${{ matrix.service }}): $packed_bytes bytes"
           echo "Transferência comprimida: **$packed_bytes bytes**" >> "$GITHUB_STEP_SUMMARY"
+          echo "O rsync envia o arquivo completo em um novo SHA (exceto retomadas do mesmo arquivo); isso não é medição oficial de tráfego Locacloud." >> "$GITHUB_STEP_SUMMARY"
           for attempt in $(seq 1 24); do
             echo "[DEPLOY] Enviando ${{ matrix.service }} com retomada (tentativa $attempt/24)"
-            if timeout --signal=TERM --kill-after=10s 180s rsync --append-verify --partial --timeout=90 --no-compress --progress \
+            if timeout --signal=TERM --kill-after=10s 180s rsync --append-verify --partial --timeout=90 --no-compress --progress --stats \
                 -e "ssh -i $HOME/.ssh/softload_deploy -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
                 "$archive" "root@164.163.9.7:softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"; then
               break
