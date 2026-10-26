@@ -1,0 +1,68 @@
+name: Check VPS receiver v2 (read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check restricted receiver contract without changing containers
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_KEY"
+          dir="$RUNNER_TEMP/softload-receiver-inspect"
+          install -m 700 -d "$dir"
+          trap 'rm -f "$dir/key" "$dir/known_hosts"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$dir/key"
+          chmod 600 "$dir/key"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$dir/known_hosts"
+          chmod 600 "$dir/known_hosts"
+          ssh_cmd=(ssh -i "$dir/key" -o UserKnownHostsFile="$dir/known_hosts"
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=20 root@164.163.9.7)
+          if ! contract="$("${ssh_cmd[@]}" 'contract:v2')"; then
+            echo "::error::Receptor não reconhece contract:v2. Migre o receptor antes de tentar PR #19."
+            exit 1
+          fi
+          if [[ "$contract" != 'softload-deploy:v2:app,agent' ]]; then
+            echo "::error::Contrato incompatível: esperado v2 app+agent; sem alterações na VPS."
+            exit 1
+          fi
+          if ! current="$("${ssh_cmd[@]}" 'current')"; then
+            echo "::error::Receptor não informou revisão ativa."
+            exit 1
+          fi
+          [[ "$current" =~ ^[a-f0-9]{40}$ ]] || { echo "::error::Revisão ativa inválida."; exit 1; }
+          echo "### Receptor VPS (somente leitura)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Contrato: **v2 app+agent confirmado**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Revisão ativa reportada: \`$current\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Nenhum container/imagem foi alterado" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check public site health without deploying
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 \
+            -H 'Cache-Control: no-cache' \
+            'https://softload.analysepro.com/health?receiver_v2_check=1' \
+            | node -e '
+              let text = "";
+              process.stdin.setEncoding("utf8");
+              process.stdin.on("data", d => {text += d; if (text.length > 16384) process.exit(1)});
+              process.stdin.on("end", () => {
+                const obj = JSON.parse(text);
+                if (obj.status !== "ok") process.exit(1);
+                const sha = String(obj.deploy?.gitSha || "");
+                if (!/^[a-f0-9]{7,40}$/.test(sha)) process.exit(1);
+                console.log("Site saudável, revisão pública:", sha);
+                require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+                  "- HTTPS público: **saudável** (revisão " + sha + ")\n");
+              });
+            '
