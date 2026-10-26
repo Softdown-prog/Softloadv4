@@ -218,6 +218,8 @@ jobs:
       - name: Validar contato e medicao Solaris Pro com testes sem rede
         run: |
           node --test src/routes/contatoRoutes.contract.test.js src/solaris/http/solarisProUsage.test.js src/solaris/http/solarisProUsage.boundaries.test.js
+      - name: Verificar exclusao de conta, Firestore e sessao em memoria
+        run: node --test src/routes/dashboard_routes/conta.contract.test.js
       - name: Verificar TypeScript, espelhos e auditoria
         run: npm run typecheck
       - name: Regressões do editor e auditoria TypeScript

@@ -237,7 +237,8 @@
     "src/services/solarisGithubMcp.ts",
     "src/routes/dashboard_routes/chat/chatTemplateCompiler.ts",
     "src/routes/contatoRoutes.ts",
-    "src/solaris/http/solarisProUsage.ts"
+    "src/solaris/http/solarisProUsage.ts",
+    "src/routes/dashboard_routes/conta.ts"
   ],
   "exclude": [
     "node_modules",
