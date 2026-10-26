@@ -94,8 +94,8 @@ function carregarPersonalidade() {
     }
 }
 // Índice unificado e cache partilhado — populados no startup
-let RAG_INDEX = [];  // [ { arquivo, _cacheKey, _keywords, _dir, ...resto } ]
-const RAG_CACHE = {};  // _cacheKey → objeto JSON parseado
+let RAG_INDEX = []; // [ { arquivo, _cacheKey, _keywords, _dir, ...resto } ]
+const RAG_CACHE = {}; // _cacheKey → objeto JSON parseado
 function _listarEntradasFonte(fonte, idx) {
     if (Array.isArray(idx.ficheiros))
         return idx.ficheiros;
@@ -131,10 +131,11 @@ function _carregarFonteRag(fonte) {
         const idx = JSON.parse(fs.readFileSync(path.join(fonte.dir, 'index.json'), 'utf8'));
         const rota = idx.rota || path.basename(fonte.dir);
         const entries = _listarEntradasFonte(fonte, idx);
-        let   n       = 0;
+        let n = 0;
         for (const entry of entries) {
             if (fonte.skipArquivos.has(entry.arquivo) ||
-                fonte.skipArquivos.has(path.basename(entry.arquivo))) continue;
+                fonte.skipArquivos.has(path.basename(entry.arquivo)))
+                continue;
             // Normaliza: alguns índices usam 'palavras_chave', outros 'tags'
             const keywords = entry.palavras_chave || entry.tags || [];
             const cacheKey = `${rota}/${entry.arquivo}`;
@@ -152,7 +153,8 @@ function _carregarFonteRag(fonte) {
                 const existente = RAG_INDEX.findIndex(item => item._cacheKey === cacheKey);
                 if (existente >= 0)
                     RAG_INDEX[existente] = normalizada;
-                else RAG_INDEX.push(normalizada);
+                else
+                    RAG_INDEX.push(normalizada);
                 RAG_CACHE[cacheKey] = data;
                 n++;
             }
