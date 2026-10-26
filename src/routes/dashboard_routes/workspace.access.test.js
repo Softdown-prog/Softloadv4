@@ -13,5 +13,5 @@ test('Workspace e chat não dependem de Studio',()=>{
 });
 test('chat Workspace mantém idempotência e gate de créditos Gemini',()=>{
  assert.match(chat,/router\.post\('\/dashboard\/workspace\/chat\/stream', exigirLogin, verificarCreditosWorkspace/);
- assert.match(chat,/await debitarCreditos\(email, inputToks, outputToks, billingOperationId\)/);
+ assert.match(chat,/await liquidarWorkspace/);
 });

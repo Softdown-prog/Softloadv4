@@ -7,7 +7,8 @@ const { criarGateCreditosWorkspace } = require('../../middlewares/workspaceCredi
 const chatStorage                             = require('../../services/chatStorageService');
 const { db, admin }                           = require('../../services/firebase');
 const verificarCreditosWorkspace = criarGateCreditosWorkspace({db});
-const { debitarCreditos, PLAN_CREDITS }       = require('../../services/creditService');
+const { PLAN_CREDITS } = require('../../services/creditService');
+const {reservarWorkspace,iniciarWorkspace,liquidarWorkspace} = require('../../services/workspaceCreditReservations');
 
 const { processarEdicaoDeTemplate } = require('./chat/chatEditFlow');
 const { gerarComPossivelTemplate }  = require('./chat/chatGenerationFlow');
@@ -252,6 +253,17 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
         }
     }
 
+    // Reserva transacional de créditos antes de qualquer chamada ao Gemini.
+    let creditoReservado;
+    try {
+        creditoReservado = await reservarWorkspace(email,billingOperationId);
+    } catch (e) {
+        return res.status(e.status || 503).json({
+            erro: e.status === 402 ? e.message : 'Não foi possível reservar créditos do Workspace.',
+            codigo: e.code || 'FALHA_RESERVA',
+        });
+    }
+
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('X-Accel-Buffering', 'no');
@@ -263,7 +275,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
     let fullText     = '';
     let tokensRef    = { total: 0, input: 0, output: 0 };
     let novoSnapshot = null;
-    let debitoManual = false; // true no modo edição — chatEditFlow já cuida do billing
+    let provedorIniciado = false; // guarda que nenhuma IA é chamada sem reserva
     let falhaDebito = false;
     let doneEvent = null; // emitido só após salvar a sessão e contabilizar os créditos
 
@@ -331,10 +343,13 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
     try {
         if (wsSnapshot && wsSnapshot.manifesto) {
             // ── MODO EDIÇÃO — 100% agêntico, sem fallback ──────────────────
-            debitoManual = true;
+            await iniciarWorkspace(email,billingOperationId);
+            provedorIniciado = true;
             const resultado = await processarEdicaoDeTemplate({
                 msg, wsSnapshot, edicaoPendente, sessaoRef, user: req.session.user, sendEvent,
                 historico: safeHistory, wsProjetoId, wsSessionId, billingOperationId,
+                cobrarDiretamente: false, tokensRef,
+                maxOutputTokens: Math.max(256,Math.min(1024,creditoReservado.creditosReservados*500)),
             });
             fullText = resultado.fullText;
             preview  = resultado.preview || null;
@@ -345,9 +360,12 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
             // ver chat.js). isGpt aqui já é sempre false (rota Gemini-only),
             // mas o parâmetro é explícito mesmo assim — não depende de
             // adivinhar a partir de outro estado.
+            await iniciarWorkspace(email,billingOperationId);
+            provedorIniciado = true;
             const resultado = await gerarComPossivelTemplate({
                 msg, safeHistory, isGpt, wsSnapshot, email, uid, user: req.session.user,
                 sendEvent, tokensRef, wsProjetoId, wsSessionId, permitirGeracao: true,
+                maxOutputTokens:Math.max(256,Math.min(8192,creditoReservado.creditosReservados*1000-3000)),
             });
             fullText     = resultado.fullText;
             novoSnapshot = resultado.novoSnapshot;
@@ -460,17 +478,20 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
             }
         }
 
-        // O modo edição faz seu débito no fluxo do agente. Para geração,
-        // aguardar a transação de créditos antes de atualizar o painel.
-        if (email && fullText && !debitoManual) {
-            const inputToks = tokensRef.input > 0 ? tokensRef.input : Math.ceil(msg.length / 3.5);
-            const outputToks = tokensRef.output > 0 ? tokensRef.output : Math.ceil(fullText.length / 3.5);
-            try {
-                await debitarCreditos(email, inputToks, outputToks, billingOperationId);
-            } catch (e) {
+        // Liquidação única para geração e edição. Uso confirmado devolve a
+        // diferença; resultado ambíguo mantém o valor reservado como estimativa.
+        try {
+            const cobrança = await liquidarWorkspace(email,billingOperationId,{
+                input: Number.isSafeInteger(tokensRef.input) ? tokensRef.input : 0,
+                output: Number.isSafeInteger(tokensRef.output) ? tokensRef.output : 0,
+            });
+            if(cobrança.descobertos > 0) {
                 falhaDebito = true;
-                console.error(`[BILLING] workspace-chat debit err: ${e.message}`);
+                console.error('[BILLING] Workspace excedeu reserva: '+cobrança.descobertos+' crédito(s) de custo não coberto');
             }
+        } catch (e) {
+            falhaDebito = true;
+            console.error('[BILLING] Workspace settlement falhou:', e.message);
         }
 
         try {

@@ -73,6 +73,15 @@ function createHarness({ failSave = false, delaySave = null, delayDebit = null }
                 delete: () => 'deleted',
             } } } };
         }
+        if (id.endsWith('services/workspaceCreditReservations')) return {
+            async reservarWorkspace(...args) {calls.push(['reserve',args]);return {creditosReservados:5};},
+            async iniciarWorkspace(...args) {calls.push(['start',args]);},
+            async liquidarWorkspace(...args) {
+                if (delayDebit) await delayDebit;
+                calls.push(['settle',args]);
+                return {creditos:2,descobertos:0};
+            },
+        };
         if (id.endsWith('services/creditService')) {
             return {
                 PLAN_CREDITS: { free: 0, studio: 50 },
@@ -155,8 +164,8 @@ test('SSE done aguarda gravação, vínculo no Workspace e débito de créditos'
     releaseDebit();
     await handling;
 
-    assert.deepEqual(calls.filter(e => ['save', 'link', 'debit'].includes(e[0])).map(e => e[0]),
-        ['save', 'link', 'debit']);
+    assert.deepEqual(calls.filter(e => ['save', 'link', 'settle'].includes(e[0])).map(e => e[0]),
+        ['save', 'link', 'settle']);
     assert.equal(calls.find(e => e[0] === 'link')[1].chatSessionId, 'chat-1');
     assert.deepEqual(events.slice(-2).map(e => e[0]), ['done', 'end']);
     assert.equal(events.at(-2)[1].reply, 'Resposta gerada');
@@ -166,14 +175,17 @@ test('falha no GCS não bloqueia cobrança nem finge que o histórico foi salvo'
     const { routes, calls } = createHarness({ failSave: true });
     const events = [];
     await routes.post.get('/dashboard/workspace/chat/stream')(fakeReq(), fakeResponse(events));
-    assert.equal(calls.some(e => e[0] === 'debit'), true);
+    assert.equal(calls.some(e => e[0] === 'settle'), true);
     assert.equal(calls.some(e => e[0] === 'link'), false);
     const done = events.find(e => e[0] === 'done')[1];
     assert.match(done.reply, /não consegui salvar esta conversa no histórico/i);
     assert.equal(events.at(-1)[0], 'end');
 });
 
-test('modo edição também aguarda o débito antes de concluir', () => {
+test('modo edição mantém cobrança legada nos demais callers; Workspace usa reserva única', () => {
     const edit = fs.readFileSync(path.join(__dirname, 'chat/chatEditFlow.js'), 'utf8');
-    assert.match(edit, /await debitarCreditos\(user\.email, tokens\.input, tokens\.output, billingOperationId\)/);
+    assert.match(edit, /cobrarDiretamente && tokens/);
+    const workspace = fs.readFileSync(path.join(__dirname, 'workspaceChat.js'), 'utf8');
+    assert.match(workspace, /cobrarDiretamente: false/);
+    assert.doesNotMatch(workspace, /await debitarCreditos\(email,/);
 });

@@ -197,7 +197,7 @@ jobs:
       - name: Validar reparos de código e streaming GPT com API simulada
         run: node --test src/routes/dashboard_routes/chat/chatCodeValidator.retry.contract.test.js src/services/openaiService.contract.test.js && node src/routes/dashboard_routes/chat/chatCodeValidator.test.js
       - name: Validar acesso do Workspace por créditos em todos os planos
-        run: node --test src/middlewares/workspaceCreditGate.test.js src/routes/dashboard_routes/workspace.access.test.js
+        run: node --test src/middlewares/workspaceCreditGate.test.js src/services/workspaceCreditReservations.test.js src/routes/dashboard_routes/workspace.access.test.js
       - name: Validar edição agentica e persistência do Workspace sem rede
         run: node --test src/routes/dashboard_routes/chat/chatEditFlow.contract.test.js
       - name: Garantir gate de geração Workspace e tratamento de falhas com mocks

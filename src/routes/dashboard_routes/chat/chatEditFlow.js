@@ -31,7 +31,7 @@ const { _snapshotDeManifesto } = require('./chatTemplateCompiler');
  *
  * @returns {Promise<{ fullText: string, downloadUrl?: string }>}
  */
-async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId }) {
+async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sessaoRef, user, sendEvent, historico, wsProjetoId, wsSessionId, billingOperationId, cobrarDiretamente = true, tokensRef, maxOutputTokens }) {
     const aplicarEdicaoReal = async (campos, resumoMudancas) => {
         sendEvent({ type: 'status', label: 'Recompilando template com as alterações...' });
         return aplicarEdicao(wsSnapshot.manifesto, campos, user, (label) => sendEvent({ type: 'status', label }), wsProjetoId, wsSessionId, resumoMudancas);
@@ -43,6 +43,7 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
             propostaPendente: edicaoPendente ? { campos: edicaoPendente.campos, resumo: edicaoPendente.resumo } : null,
             aplicarEdicaoReal,
             onProgress: sendEvent,
+        maxOutputTokens,
         });
     }
     catch (err) {
@@ -50,8 +51,9 @@ async function processarEdicaoDeTemplate({ msg, wsSnapshot, edicaoPendente, sess
         return { fullText: 'Tive um problema técnico ao processar isso agora — pode tentar de novo?' };
     }
     const { resposta, propostaFinal, downloadUrl, tokens } = resultado;
+    if(tokensRef && tokens) {tokensRef.input=tokens.input;tokensRef.output=tokens.output;tokensRef.total=tokens.input+tokens.output;}
     let falhaDebito = false;
-    if (tokens && (tokens.input || tokens.output)) {
+    if (cobrarDiretamente && tokens && (tokens.input || tokens.output)) {
         try {
             await debitarCreditos(user.email, tokens.input, tokens.output, billingOperationId);
         }

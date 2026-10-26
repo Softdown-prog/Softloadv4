@@ -103,12 +103,17 @@ async function _validarECorrigir(fullText, msg, isGpt, tokensRef, sendEvent) {
         `${failBlock.raw}`;
     try {
         let fixedRaw = '';
+        const retryTokens = {};
         const retrySource = isGpt
-            ? gerarChatGptStream([], retryPrompt, SISTEMA_CORRETOR, { maxOutputTokens: 1024, tokensRef })
-            : gerarChatStream([], retryPrompt, SISTEMA_CORRETOR, { maxOutputTokens: 1024, tokensRef });
+            ? gerarChatGptStream([], retryPrompt, SISTEMA_CORRETOR, { maxOutputTokens: 1024, tokensRef: retryTokens })
+            : gerarChatStream([], retryPrompt, SISTEMA_CORRETOR, { maxOutputTokens: 1024, tokensRef: retryTokens });
         for await (const chunk of retrySource) {
             fixedRaw += chunk;
         }
+        // Segunda chamada ao modelo: some input/output em vez de apagar o stream principal.
+        tokensRef.input = (tokensRef.input || 0) + (retryTokens.input || 0);
+        tokensRef.output = (tokensRef.output || 0) + (retryTokens.output || 0);
+        tokensRef.total = (tokensRef.total || 0) + (retryTokens.total || 0);
         // Extrai bloco da resposta do retry
         const fixedBlocks = extractCodeBlocks(fixedRaw);
         if (!fixedBlocks.length) {

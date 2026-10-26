@@ -35,7 +35,7 @@ declare const module: { exports: unknown };
 const { admin } = require('../../../services/firebase') as { admin: { firestore: { FieldValue: { delete(): unknown; serverTimestamp(): unknown } } } };
 const { aplicarEdicao } = require('../../../core/templateEditWorker') as { aplicarEdicao: (manifesto: ManifestoEdicao, campos: unknown, user: EdicaoUsuario, progress: (label: string) => void, projetoId?: string | null, sessionId?: string | null, resumo?: string) => Promise<unknown> };
 const { debitarCreditos } = require('../../../services/creditService') as { debitarCreditos(email: string, input: number, output: number, operationId?: string): Promise<unknown> };
-const { processarEdicaoAgentica } = require('../../../ai/templateEditAgent') as { processarEdicaoAgentica(history: unknown[], message: string, options: { manifestoAtual: ManifestoEdicao; propostaPendente: PropostaEdicao | null; aplicarEdicaoReal: (campos: unknown, resumo: string) => Promise<unknown>; onProgress: OpcaoEdicao['sendEvent'] }): Promise<RespostaAgente> };
+const { processarEdicaoAgentica } = require('../../../ai/templateEditAgent') as { processarEdicaoAgentica(history: unknown[], message: string, options: { manifestoAtual: ManifestoEdicao; propostaPendente: PropostaEdicao | null; aplicarEdicaoReal: (campos: unknown, resumo: string) => Promise<unknown>; onProgress: OpcaoEdicao['sendEvent']; maxOutputTokens?: number }): Promise<RespostaAgente> };
 const { _snapshotDeManifesto } = require('./chatTemplateCompiler') as { _snapshotDeManifesto(downloadUrl: string, manifesto: ManifestoEdicao | null | undefined, xmlPath?: string | null, gcPath?: string | null): unknown };
 
 // ──────────────────────────────────────────────────────────────────────────

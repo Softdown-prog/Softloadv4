@@ -43,7 +43,7 @@ const TEMPLATE_MARKER_RE = /\[\[TEMPLATE:([\s\S]+?)\]\]/;
  * @param {string|null} [opcoes.wsSessionId]
  * @returns {Promise<{ fullText: string, downloadUrl: string|null, novoSnapshot: object|null, codeValidation: object|null }>}
  */
-async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef, wsProjetoId = null, wsSessionId = null, permitirGeracao = false, }) {
+async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, email, uid, user, sendEvent, tokensRef, wsProjetoId = null, wsSessionId = null, permitirGeracao = false, maxOutputTokens, }) {
     let fullText = '';
     let downloadUrl = null;
     let novoSnapshot = null;
@@ -148,7 +148,7 @@ async function gerarComPossivelTemplate({ msg, safeHistory, isGpt, wsSnapshot, e
     }
     // GPT: 2048 tokens de output é suficiente para suporte/snippets
     // Gemini Flash: mantém 8192 (modelo barato, respostas longas são OK)
-    const maxOutput = isGpt ? 2048 : 8192;
+    const maxOutput = isGpt ? 2048 : (Number.isSafeInteger(maxOutputTokens) ? Math.max(256, Math.min(8192, maxOutputTokens)) : 8192);
     const streamSource = isGpt
         ? gerarChatGptStream(safeHistory, msg, sistemaFinal, { maxOutputTokens: maxOutput, tokensRef })
         : gerarChatStream(safeHistory, msg, sistemaFinal, { maxOutputTokens: maxOutput, tokensRef });
