@@ -31,7 +31,7 @@ test('imagem Agent usa base slim e mantém ferramentas de GitHub/MCP/Forge', () 
   assert.match(dockerfile, /^FROM node:22-bookworm-slim$/m);
   assert.match(dockerfile, /apt-get install -y --no-install-recommends/);
   for (const tool of ['git', 'openssh-client', 'python3', 'ffmpeg', 'php-cli']) {
-    assert.match(dockerfile, new RegExp('\\\\b'+tool+'\\\\b'));
+    assert.ok(dockerfile.includes(tool), tool);
   }
   assert.match(dockerfile, /SOLARIS_FORGE_PYTHON/);
   assert.doesNotMatch(dockerfile, /playwright|chromium|puppeteer/i);
