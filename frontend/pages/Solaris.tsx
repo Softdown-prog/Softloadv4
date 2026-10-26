@@ -74,6 +74,9 @@ export default function Solaris(): React.JSX.Element {
     const [toolError, setToolError] = useState('');
     const [githubStatus, setGithubStatus] = useState<SolarisGithubStatus | null>(null);
     const [githubBusy, setGithubBusy] = useState(false);
+    const [githubRepos, setGithubRepos] = useState<Array<{name:string;private:boolean;canPush:boolean}>>([]);
+    const [githubReposBusy, setGithubReposBusy] = useState(false);
+    const [githubReposTruncated, setGithubReposTruncated] = useState(false);
     const [githubProposal, setGithubProposal] = useState<GithubProposal>({state:'none'});
     const [githubApprovalBusy, setGithubApprovalBusy] = useState(false);
 
@@ -133,6 +136,19 @@ export default function Solaris(): React.JSX.Element {
             if (status.repository) setGithubRepository('https://github.com/' + status.repository);
         } catch { setGithubStatus(null); }
     };
+    const listarRepositoriosGithub = async (): Promise<void> => {
+        if (!githubStatus?.connected || githubReposBusy) return;
+        setGithubReposBusy(true);
+        try {
+            const response = await fetch('/dashboard/solaris/github/repositories', {cache:'no-store'});
+            const result = await response.json() as {repositories?:Array<{name:string;private:boolean;canPush:boolean}>;truncated?:boolean;erro?:string};
+            if (!response.ok) throw Error(result.erro || 'Falha ao listar repositórios.');
+            setGithubRepos(result.repositories || []);
+            setGithubReposTruncated(result.truncated === true);
+            setToolError((result.repositories || []).length ? '' : 'Nenhum repositório autorizado. Instale a GitHub App nos repositórios desejados.');
+        } catch(e) { setToolError(e instanceof Error ? e.message : 'Falha no catálogo GitHub.'); }
+        finally { setGithubReposBusy(false); }
+    };
     const salvarRepositorioGithub = async (): Promise<void> => {
         if (!githubStatus?.connected) return;
         setGithubBusy(true);
@@ -158,6 +174,7 @@ export default function Solaris(): React.JSX.Element {
             if (!response.ok) throw Error('Não foi possível desconectar GitHub.');
             setGithubStatus(status => status ? {...status,connected:false,repository:null,account:null} : null);
             setGithubRepository('');
+            setGithubRepos([]);
             setGithubProposal({state:'none'});
         } catch (e) { setToolError(e instanceof Error ? e.message : 'Falha ao desconectar.'); }
         finally { setGithubBusy(false); }
@@ -914,6 +931,26 @@ export default function Solaris(): React.JSX.Element {
                                             maxLength={240}
                                             onChange={e => { setGithubRepository(e.target.value); setToolError(''); }}
                                             disabled={loading || uploading} />
+                                        {githubStatus?.connected && (
+                                            <div className="d-flex flex-column gap-2">
+                                                <button type="button" className="btn btn-outline-info btn-sm align-self-start"
+                                                    disabled={githubBusy || githubReposBusy || loading}
+                                                    onClick={() => { void listarRepositoriosGithub(); }}>
+                                                    {githubReposBusy ? 'Consultando...' : 'Listar repositórios autorizados'}
+                                                </button>
+                                                {githubRepos.length > 0 && (
+                                                    <select className="form-select form-select-sm" aria-label="Selecionar repositório autorizado"
+                                                        defaultValue="" disabled={loading || githubBusy}
+                                                        onChange={e => { if (e.target.value) setGithubRepository('https://github.com/' + e.target.value); }}>
+                                                        <option value="">Escolha um repositório</option>
+                                                        {githubRepos.map(r => <option key={r.name} value={r.name}>
+                                                            {r.name}{r.private ? ' (privado)' : ''}{!r.canPush ? ' (somente leitura)' : ''}
+                                                        </option>)}
+                                                    </select>
+                                                )}
+                                                {githubReposTruncated && <small className="text-warning">Lista parcial. Também é possível colar o link.</small>}
+                                            </div>
+                                        )}
                                         <div className="d-flex flex-wrap gap-2 align-items-center">
                                             {githubStatus?.connected ? (
                                                 <>

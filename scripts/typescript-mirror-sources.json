@@ -183,5 +183,6 @@
   "src/services/openaiService.ts",
   "src/routes/dashboard_routes/chat/chatEditFlow.ts",
   "src/services/solarisGithubReadiness.ts",
-  "src/routes/dashboard_routes/chat/chatGenerationFlow.ts"
+  "src/routes/dashboard_routes/chat/chatGenerationFlow.ts",
+  "src/services/solarisGithubRepositoryCatalog.ts"
 ]

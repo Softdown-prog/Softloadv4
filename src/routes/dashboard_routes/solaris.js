@@ -168,6 +168,11 @@ router.get('/dashboard/solaris/github/callback', exigirLogin, githubLimiter, asy
         return res.redirect('/dashboard/solaris?github=connected');
     } catch (_) { return res.redirect('/dashboard/solaris?github=error'); }
 });
+router.get('/dashboard/solaris/github/repositories', exigirLogin, githubLimiter, async(req,res)=>{
+    res.set('Cache-Control','no-store, private');
+    try { return res.json(await githubApp.listRepos(req.session.user.uid)); }
+    catch (_) { return res.status(503).json({erro:'Não foi possível listar os repositórios autorizados da GitHub App.'}); }
+});
 router.post('/dashboard/solaris/github/repository', exigirLogin, githubLimiter, mesmaOrigemGithub, async(req,res)=>{
     res.set('Cache-Control','no-store, private');
     try { const repository = await githubApp.selectRepo(req.session.user.uid,req.body?.repository);

@@ -4,6 +4,7 @@
  */
 const crypto=require('node:crypto');
 const {contextoRepositorioPublico,normalizarRepositorioGithub}=require('../solaris/tools/solarisToolModes');
+const {listGithubRepositories}=require('./solarisGithubRepositoryCatalog');
 const BASE='https://softload.analysepro.com/dashboard/solaris/github/callback';
 function config(env=process.env){
  const id=env.SOLARIS_GITHUB_APP_CLIENT_ID||'',secret=env.SOLARIS_GITHUB_APP_CLIENT_SECRET||'';
@@ -44,6 +45,7 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
     account:row?.account||null,repository:row?.repository||null,installable:!!settings().installUrl};
   },
   installUrl(){return settings().ready?settings().installUrl:null;},
+  async listRepos(uid){const {value}=await token(uid);return listGithubRepositories(value,fetchImpl);},
   async begin(req){
    const cfg=settings();
    if(!cfg.ready)throw Error('GitHub App ainda não configurado pelo administrador.');
