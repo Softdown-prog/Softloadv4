@@ -42,7 +42,8 @@ function createGithubAppService(db,{env=process.env,fetchImpl=fetch}={}){
   async status(uid){
    const row=await load(uid);
    return {configured:settings().ready,connected:settings().ready&&!!row?.encrypted&&row.expires>Date.now()+30000,
-    account:row?.account||null,repository:row?.repository||null,installable:!!settings().installUrl};
+    account:row?.account||null,repository:row?.repository||null,installable:!!settings().installUrl,
+    mcpEnabled:process.env.SOLARIS_GITHUB_MCP_ENABLED==='true'};
   },
   installUrl(){return settings().ready?settings().installUrl:null;},
   async listRepos(uid){const {value}=await token(uid);return listGithubRepositories(value,fetchImpl);},

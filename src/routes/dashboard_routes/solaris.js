@@ -23,6 +23,7 @@ const { criarHandlerResumoCreditosV2, criarHandlerHistoricoCreditosV2 } = requir
 const { createGithubAppService } = require('../../services/solarisGithubApp');
 const { createGithubOperations, GithubOperationError } = require('../../services/solarisGithubOperations');
 const { createSolarisGithubAgent } = require('../../services/solarisGithubAgent');
+const { createSolarisGithubMcp } = require('../../services/solarisGithubMcp');
 const { resolveGithubChatAccess } = require('../../services/solarisGithubReadiness');
 const { contextoRepositorioPublico } = require('../../solaris/tools/solarisToolModes');
 const { GoogleGenAI } = require('@google/genai');
@@ -75,7 +76,8 @@ const orquestrador = criarOrquestrador({ modelRouter, buscarConhecimento });
 const livroOrcamento = criarLivroRazaoIa(db);
 const githubApp = createGithubAppService(db);
 const githubOperations = createGithubOperations(githubApp);
-const githubAgent = createSolarisGithubAgent(db, githubApp, githubOperations);
+const githubMcp = process.env.SOLARIS_GITHUB_MCP_ENABLED === 'true' ? createSolarisGithubMcp(githubApp) : null;
+const githubAgent = createSolarisGithubAgent(db, githubApp, githubOperations, githubMcp);
 // A V2, quando explicitamente ativada, consulta o livro-razão antes de enviar
 // ao modelo e não confia no contador legado nem no body HTTP para orçamento.
 const verificarCreditosSolaris = criarGateCreditosSolarisV2({

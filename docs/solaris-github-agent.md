@@ -32,9 +32,19 @@ protegido por orçamento quando `SOLARIS_AI_BUDGET_ENFORCE=true`.
 
 ## Limites / pendências
 
-A integração atual usa a API REST oficial do GitHub pelo gateway da Softload,
-não implementa ainda a sessão MCP remota oficial por usuário. A autenticação
-OAuth já existente usa tokens com expiração e pode pedir reconexão.
+A API REST continua sendo usada para propostas e escrita após aprovação.
+O cliente TypeScript `solarisGithubMcp.ts` implementa a negociação MCP
+Streamable HTTP com o GitHub MCP remoto no endpoint fixo
+`https://api.githubcopilot.com/mcp/readonly`, no toolset `repos`.
+Configure `SOLARIS_GITHUB_MCP_ENABLED=true` na aplicação para habilitar
+`consultarMcpGithub` no agente Gemini. A ferramenta só pode executar
+`get_file_contents` no repositório vinculado ao usuário; o modelo não
+recebe token e o MCP não recebe permissão de escrita. Nenhum commit ou PR
+é executado pelo MCP; a aprovação REST humana continua obrigatória.
+A autorização OAuth pode precisar de escopos/permissões adicionais para o
+servidor MCP remoto; testes locais usam mocks e não garantem acesso real.
+O transporte nativo implementa um subconjunto de MCP e ainda não depende do
+SDK TypeScript completo, nem oferece todas as ferramentas do GitHub.
 O editor GitHub não roda testes de CI na VPS; o PR rascunho deve ser revisado
 antes de merge. Arquivos maiores, alterações de workflow e commits multi-arquivo
 atômicos são propositalmente bloqueados nesta fase.

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const {createSolarisGithubAgent}=require('./solarisGithubAgent');
 const {GithubOperationError}=require('./solarisGithubOperations');
 
-function fixture() {
+function fixture(mcp=null) {
  const rows=new Map(),calls=[];
  const doc=id=>({
    id,async get(){return {exists:rows.has(id),data(){return rows.get(id);}};},
@@ -33,7 +33,7 @@ function fixture() {
    if(action.action==='pull_request_create')return {number:8,url:'https://github.com/alice/demo/pull/8'};
    throw Error('unexpected action');
  }};
- const agent=createSolarisGithubAgent(db,app,ops);
+ const agent=createSolarisGithubAgent(db,app,ops,mcp);
  return {agent,calls,rows,setSelected:x=>{selected=x;}};
 }
 async function propose(f,overrides={}){
@@ -93,4 +93,22 @@ test('proposta rejeitada não gera commit',async()=>{
  assert.equal((await f.agent.pending('uid')).state,'cancelled');
  await assert.rejects(()=>f.agent.approve('uid'),/utilizada/);
  assert.equal(f.calls.some(x=>x.action==='branch_create'),false);
+});
+
+test('MCP consulta somente leitura integrada ao loop do Solaris',async()=>{
+ const remoteReads=[];
+ const f=fixture({async open(uid,repo){
+  assert.equal(uid,'uid');assert.equal(repo,'alice/demo');
+  return {async readPath(path){remoteReads.push(path);return 'conteúdo remoto';},async close(){}};
+ }});
+ const result=await f.agent.prepare({uid:'uid',repository:'alice/demo',message:'Leia README',history:[],context:'repo',
+  modelRouter:{async executarTarefaComFerramentas({tools,executorFerramenta}){
+   assert.ok(tools[0].functionDeclarations.some(d=>d.name==='consultarMcpGithub'));
+   const result=await executorFerramenta('consultarMcpGithub',{path:'README.md'});
+   assert.equal(result.readonly,true);assert.equal(result.content,'conteúdo remoto');
+   return {texto:'Consulta feita pelo MCP.',tokens:{total:1,input:1,output:0}};
+  }}});
+ assert.match(result.text,/MCP/);
+ assert.deepEqual(remoteReads,['README.md']);
+ assert.deepEqual(f.calls.map(x=>x.action),['repository_get']);
 });

@@ -186,5 +186,6 @@
   "src/routes/dashboard_routes/chat/chatGenerationFlow.ts",
   "src/services/solarisGithubRepositoryCatalog.ts",
   "src/middlewares/workspaceCreditGate.ts",
-  "src/routes/dashboard_routes/chat/chatRag.ts"
+  "src/routes/dashboard_routes/chat/chatRag.ts",
+  "src/services/solarisGithubMcp.ts"
 ]

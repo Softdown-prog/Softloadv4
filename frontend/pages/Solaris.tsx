@@ -40,6 +40,7 @@ interface SolarisGithubStatus {
     configured: boolean;
     connected: boolean;
     installable?: boolean;
+    mcpEnabled?: boolean;
     account: string | null;
     repository: string | null;
 }
@@ -957,6 +958,9 @@ export default function Solaris(): React.JSX.Element {
                                                     <span className="small text-info">
                                                         <CheckCircle2 size={13} className="me-1" />
                                                         Conectado como {githubStatus.account}
+                                                    </span>
+                                                    <span className="small text-secondary">
+                                                        {githubStatus.mcpEnabled ? 'MCP GitHub configurado: consultas somente leitura.' : 'REST disponível; MCP remoto desativado.'}
                                                     </span>
                                                     {githubStatus.installable && (
                                                         <button type="button" className="btn btn-outline-secondary btn-sm"
