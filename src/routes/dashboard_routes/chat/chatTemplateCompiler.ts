@@ -213,7 +213,7 @@ function _blueprintParaManifesto(bp: ChatBlueprint): ChatManifesto {
                 // compilerWorker.js) — repassados 1:1, sem tradução. Só
                 // 'simple'→'classico' continua como caso especial (nome
                 // histórico do vocabulário da IA).
-                if (['offcanvas', 'offcanvas-right', 'hamburger-svg', 'hamburger-icons'].includes(bp.menuType)) return bp.menuType;
+                if (['offcanvas', 'offcanvas-right', 'hamburger-svg', 'hamburger-icons'].includes(bp.menuType as string)) return bp.menuType;
                 if (bp.menuType === 'simple')    return 'classico';
                 // Nicho default
                 if (nichoDefaults.menuType)      return nichoDefaults.menuType;
