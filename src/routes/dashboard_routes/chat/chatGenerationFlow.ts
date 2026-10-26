@@ -215,7 +215,7 @@ async function gerarComPossivelTemplate({
 
     // GPT: 2048 tokens de output é suficiente para suporte/snippets
     // Gemini Flash: mantém 8192 (modelo barato, respostas longas são OK)
-    const maxOutput = isGpt ? 2048 : (Number.isSafeInteger(maxOutputTokens) ? Math.max(256, Math.min(8192, maxOutputTokens)) : 8192);
+    const maxOutput = isGpt ? 2048 : (Number.isSafeInteger(maxOutputTokens) ? Math.max(256, Math.min(8192, maxOutputTokens as number)) : 8192);
 
     const streamSource = isGpt
         ? gerarChatGptStream(safeHistory, msg, sistemaFinal, { maxOutputTokens: maxOutput, tokensRef })
