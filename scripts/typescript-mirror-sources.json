@@ -82,6 +82,7 @@
   "src/solaris/rag/ragEmbeddingsClient.ts",
   "src/solaris/rag/ragEntryGenerator.ts",
   "src/solaris/rag/ragCatalogLoader.ts",
+  "src/solaris/rag/ragLocalSearch.ts",
   "src/solaris/workers/ragOrganizerWorker.ts",
   "src/solaris/workers/ragDraftWorker.ts",
   "src/solaris/workers/ragKebabWorker.ts",

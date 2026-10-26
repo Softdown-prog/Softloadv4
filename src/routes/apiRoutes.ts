@@ -16,8 +16,8 @@ const { enviarPlanoAtivado }              = require('../services/emailService') 
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago') as typeof import('mercadopago');
 const { exigirLogin } = require('../middlewares/authGuard') as { exigirLogin: RouteHandler<RouteBody> };
 const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage') as typeof import('../solaris/tools/projectStorage');
-const { buscarNoCatalogo } = require('../solaris/rag/ragSearchService') as typeof import('../solaris/rag/ragSearchService');
-const { buscarCodigo, buscarConhecimentoMisto } = require('../../scripts/codeCorpus/codeSearchService') as typeof import('../../scripts/codeCorpus/codeSearchService');
+const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch') as typeof import('../solaris/rag/ragLocalSearch');
+
 const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces') as typeof import('../knowledge/ragNamespaces');
 
 // Rate limit por IP nas rotas de iniciar pagamento — já exigem login
@@ -490,22 +490,18 @@ router.post('/internal/solaris/rag/buscar', async (req, res) => {
         const error = errorCaught as RouteFailure;
         return res.status(400).json({ erro: error.message });
     }
-    const codigoAtivo = process.env.SOLARIS_CODE_SEARCH_ENABLED === 'true';
-    if (corpus === 'codigo' && !codigoAtivo) {
-        return res.status(503).json({ erro: 'Índice de código ainda não habilitado.' });
+    // Sem modelos de embeddings, o catálogo opera por palavras-chave,
+    // utilizando os JSON versionados. Índice vetorial de código fica indisponível.
+    if (corpus === 'codigo') {
+        return res.status(503).json({ erro: 'Busca vetorial de código desativada: serviço de embeddings retirado.' });
     }
-
     try {
-        const resultado = corpus === 'codigo'
-            ? await buscarCodigo({ query, topK, db })
-            : corpus === 'ambos'
-                ? await buscarConhecimentoMisto({ query, topK, db, codeSearchEnabled: codigoAtivo })
-                : await buscarNoCatalogo({ query, topK, db: db as unknown as Parameters<typeof buscarNoCatalogo>[0]['db'] });
+        const resultado = await buscarCatalogoLocal({ query, topK });
         res.status(200).json(resultado);
     } catch (errCaught) {
         const err = errCaught as RouteFailure;
-        console.error('[SOLARIS-RAG-BUSCA] falhou:', err.message);
-        res.status(500).json({ erro: 'Falha ao buscar no catálogo RAG.' });
+        console.error('[SOLARIS-RAG-BUSCA] falha na busca local:', err.message);
+        res.status(500).json({ erro: 'Falha ao buscar no catálogo RAG local.' });
     }
 });
 

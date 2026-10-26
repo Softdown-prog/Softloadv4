@@ -114,32 +114,12 @@ const DEFAULT_PERMISSIONS = {
   // chamador. Negada por padrão, mesmo critério de web.search.
   "web.fetch": false,
 
-  // Roda um container isolado (sandbox-efemoro/) em Cloud Run —
-  // custo real de compute/rede, mesma categoria de web.search/
-  // build.run/test.run. Só o preset do Validador
-  // (createValidatorPermissions) libera isto, mesmo raciocínio de
-  // build.run/test.run: é o papel cujo trabalho É auditar o
-  // resultado (aqui, visualmente/acessibilidade, via navegador real).
-  "websandbox.run": false,
-
-  // Extração segura de ZIP -- roda no MESMO serviço isolado
-  // sandbox-efemoro/ de websandbox.run (container/credenciais
-  // separados, ver capabilities/archive.js), mesma categoria de
-  // custo de compute/rede. Continua negada no preset default
-  // (fail closed); role-permissions.js a libera somente para o Coder,
-  // que já pode ler e gravar arquivos no workspace. Outros papéis
-  // ainda precisam de permissions.grant() pontual.
-  "archive.extract_zip": false,
-
-  // Consulta vetorial: o modelo de embeddings Python é local,
-  // mas a busca consome CPU/rede e operações no Firestore. O default
-  // continua negado; presets técnicos liberam leitura pontualmente.
+  // Catálogo RAG local exige permissão específica por papel.
   "knowledge.search": false,
 
   // Cliente MCP genérico (mcp-client.js) — fala com QUALQUER servidor
   // MCP de terceiros configurado em MCP_SERVERS_JSON, não com um
-  // serviço isolado próprio da Softload (diferente de websandbox.run/
-  // knowledge.search). Superfície de risco desconhecida por natureza
+  // serviço isolado próprio da Softload. Superfície de risco desconhecida por natureza
   // (a ferramenta exposta por um servidor MCP externo pode fazer
   // qualquer coisa), então tratado com a MESMA cautela de
   // knowledge.search: transversal, deliberadamente NÃO liberado em

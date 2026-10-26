@@ -20,7 +20,6 @@
     "extract:all": "node scripts/extractTemplate.js --all",
     "rag:generate": "node scripts/ragGenerate.js",
     "rag:organizar": "node scripts/ragOrganizarRascunhos.js",
-    "rag:embed-index": "node scripts/ragEmbedIndex.js",
     "solaris:limpar-projetos-expirados": "node scripts/limparProjetosSolarisExpirados.js",
     "audit:templates": "node scripts/audit-template-fidelity.js --out=out/template-fidelity",
     "test:quality": "node scripts/audit-template-fidelity.test.js && npm run audit:templates",

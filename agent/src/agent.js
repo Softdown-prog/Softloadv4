@@ -18,8 +18,6 @@ import { ProjectInspectorCapability } from "./capabilities/project-inspector.js"
 import { WebSearchCapability } from "./capabilities/web-search.js";
 import { WebFetchCapability } from "./capabilities/web-fetch.js";
 import { EscalationCapability } from "./capabilities/escalation.js";
-import { WebSandboxCapability } from "./capabilities/web-sandbox.js";
-import { ArchiveCapability } from "./capabilities/archive.js";
 import { KnowledgeSearchCapability } from "./capabilities/knowledge-search.js";
 import { McpClientCapability } from "./capabilities/mcp-client.js";
 import { AssetForgeCapability } from "./capabilities/asset-forge.js";
@@ -186,21 +184,8 @@ export class Agent {
         permissions: this.permissions,
       }),
 
-      // WebSandbox também não opera sobre o workspace local — fala
-      // via HTTP com o serviço isolado sandbox-efemoro/ (Playwright
-      // em container/credenciais próprios, ver web-sandbox.js).
-      webSandbox: new WebSandboxCapability({
-        permissions: this.permissions,
-      }),
-
-      // Archive lê o .zip de dentro do workspace (por isso recebe
-      // `workspace`, diferente de webSandbox) e delega a extração de
-      // verdade ao mesmo serviço isolado sandbox-efemoro/ -- ver
-      // capabilities/archive.js.
-      archive: new ArchiveCapability({
-        workspace: this.workspace,
-        permissions: this.permissions,
-      }),
+      // WebSandbox e Archive foram retirados junto do serviço isolado.
+      // NUNCA executar conteúdos web/ZIP não confiáveis no Agent.
 
       // KnowledgeSearch fala via HTTP com o app principal (que já tem
       // credencial de Firestore) — o agent/ continua sem nenhuma

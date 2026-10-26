@@ -195,13 +195,7 @@ const escalationInput = z.object({
   note: z.string().optional(),
 }).strict();
 
-// web-sandbox: espelha o body aceito por sandbox-efemoro/src/server.js
-// (POST /run) — ver sandbox-efemoro/src/webSandbox/security.js para os
-// mesmos valores válidos de browser/device e o teto de timeout (o
-// serviço já revalida tudo de novo do lado dele; esta camada é só
-// defesa em profundidade extra, mesmo padrão já usado nos outros
-// timeout_ms deste arquivo).
-// knowledge-search: busca SEMÂNTICA (embeddings) no catálogo RAG do
+// knowledge-search: consulta por palavras-chave ao catálogo RAG do
 // Solaris, via endpoint interno do app principal — ver
 // knowledge-search.js e src/routes/apiRoutes.js (POST
 // /internal/solaris/rag/buscar) no repositório Node principal.
@@ -226,49 +220,6 @@ const mcpInput = z.object({
   arguments: z.record(z.string(), z.unknown()).optional(),
 }).strict();
 
-const webSandboxInput = z.object({
-  url: z.string().min(1),
-  browser: z.enum(["chromium", "webkit"]).optional(),
-  device: z.enum([
-    "desktop",
-    "android-mobile",
-    "iphone",
-    "tablet",
-    "mobile-landscape",
-  ]).optional(),
-  viewport: z.object({
-    width: z.number().int().positive(),
-    height: z.number().int().positive(),
-  }).optional(),
-  screenshot: z.boolean().optional(),
-  accessibility: z.boolean().optional(),
-  allowed_hosts: z.array(z.string().min(1)).optional(),
-  timeout_ms: z.number().int().positive().max(120000).optional(),
-}).strict();
-
-// archive: extração segura de arquivo compactado (ZIP nesta primeira
-// etapa), delegada ao mesmo serviço isolado sandbox-efemoro/ que
-// atende web-sandbox -- ver capabilities/archive.js. `zip_path`/
-// `dest_path` são caminhos RELATIVOS AO WORKSPACE do agent (o .zip em
-// si nunca viaja pelo corpo desta requisição -- precisa já estar no
-// workspace, ex: via file.write); os demais campos espelham os
-// limites de segurança aceitos por
-// sandbox-efemoro/src/archive/security.js (contagem/tamanho de
-// arquivo, tamanho total descomprimido, tamanho compactado,
-// profundidade, timeout) -- o serviço já revalida tudo de novo do
-// lado dele, esta camada é só defesa em profundidade extra, mesmo
-// padrão dos outros timeout_ms deste arquivo.
-const archiveInput = z.object({
-  zip_path: z.string().min(1),
-  dest_path: z.string().min(1),
-  max_files: z.number().int().positive().max(5000).optional(),
-  max_file_bytes: z.number().int().positive().optional(),
-  max_total_bytes: z.number().int().positive().optional(),
-  max_compressed_bytes: z.number().int().positive().optional(),
-  max_depth: z.number().int().positive().max(32).optional(),
-  timeout_ms: z.number().int().positive().max(60000).optional(),
-}).strict();
-
 // ── Schema de uma action individual ─────────────────────────────
 
 const actionSchema = z.object({
@@ -291,8 +242,6 @@ const actionSchema = z.object({
     "project-inspector",
     "web-search",
     "web-fetch",
-    "web-sandbox",
-    "archive",
     "knowledge-search",
     "mcp",
     "escalation",
@@ -418,13 +367,6 @@ const CAPABILITY_OPERATIONS: Record<string, Set<string>> = {
     "fetch",
   ]),
 
-  "web-sandbox": new Set([
-    "run",
-  ]),
-
-  archive: new Set([
-    "extract_zip",
-  ]),
 
   "knowledge-search": new Set([
     "search",
@@ -469,8 +411,6 @@ const INPUT_SCHEMAS: Record<string, ValidatedInputSchema> = {
   "project-inspector": projectInspectorInput,
   "web-search": webSearchInput,
   "web-fetch": webFetchInput,
-  "web-sandbox": webSandboxInput,
-  archive: archiveInput,
   "knowledge-search": knowledgeSearchInput,
   mcp: mcpInput,
   escalation: escalationInput,

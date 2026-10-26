@@ -112,9 +112,6 @@ const TASK_MAP: Record<string, string> = {
   "escalation.get": "escalation",
   "escalation.list": "escalation",
 
-  "websandbox.run": "webSandbox",
-
-  "archive.extract_zip": "archive",
 
   "knowledge.search": "knowledgeSearch",
 

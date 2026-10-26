@@ -99,9 +99,6 @@ const TASK_MAP = {
   "escalation.get": "escalation",
   "escalation.list": "escalation",
 
-  "websandbox.run": "webSandbox",
-
-  "archive.extract_zip": "archive",
 
   "knowledge.search": "knowledgeSearch",
 

@@ -27,7 +27,7 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
       - name: Verify image metadata and deploy cache contracts
-        run: node --test scripts/deployBuildCache.contract.test.cjs
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -96,6 +96,23 @@ jobs:
           chmod 600 "$HOME/.ssh/softload_deploy"
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
+      # Contrato somente-leitura: fail-closed antes de gerar/carregar imagens.
+      # O receptor da VPS precisa ser migrado e retornar esta resposta exata.
+      # O comando desconhecido no receptor antigo deve falhar sem efeitos.
+      - name: Confirm receiver understands app+agent before upload
+        if: steps.latest.outputs.proceed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! contract="$(ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"; then
+            echo "::error::Receptor VPS não implementa contract:v2; migre o receptor antes do deploy."
+            exit 1
+          fi
+          if [[ "$contract" != 'softload-deploy:v2:app,agent' ]]; then
+            echo "::error::Receptor VPS não confirmou contrato v2 app+agent; nenhuma imagem será transferida."
+            exit 1
+          fi
+          echo '[DEPLOY] Receptor compatível com app+agent (v2).'
       - name: Compare with running revision
         if: steps.latest.outputs.proceed == 'true'
         id: diff
@@ -183,8 +200,7 @@ jobs:
           npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
           npm run typecheck:agent
           npm run build:agent:capabilities
-      # Cache de camadas entre runners hospedados. O contexto sandbox só
-      # recompila quando sua fonte muda (plano já existente).
+      # Cache de camadas dos serviços app/agent nos runners hospedados.
       # Importante: o cache acelera build/npm/apt/Chromium no GitHub,
       # mas não reduz sozinho o .tar.gz enviado à VPS.
       - name: Prepare shared Docker BuildKit cache
@@ -350,6 +366,22 @@ jobs:
           chmod 600 "$RUNNER_TEMP/softload-ssh/deploy_key"
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$RUNNER_TEMP/softload-ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/softload-ssh/known_hosts"
+      - name: Reconfirm receiver v2 immediately before activating
+        if: steps.latest.outputs.proceed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! contract="$(ssh -i "$RUNNER_TEMP/softload-ssh/deploy_key" \
+            -o UserKnownHostsFile="$RUNNER_TEMP/softload-ssh/known_hosts" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"; then
+            echo "::error::Receptor VPS indisponível/incompatível antes da ativação."
+            exit 1
+          fi
+          if [[ "$contract" != 'softload-deploy:v2:app,agent' ]]; then
+            echo "::error::Contrato v2 divergente; ativação cancelada sem trocar containers."
+            exit 1
+          fi
       - name: Activate only after every image arrives
         if: steps.latest.outputs.proceed == 'true'
         run: ssh -i "$RUNNER_TEMP/softload-ssh/deploy_key" -o UserKnownHostsFile="$RUNNER_TEMP/softload-ssh/known_hosts" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes root@164.163.9.7 'deploy:${{ github.sha }}'
