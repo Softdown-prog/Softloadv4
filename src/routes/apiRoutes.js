@@ -12,8 +12,8 @@ const { enviarPlanoAtivado } = require('../services/emailService');
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago');
 const { exigirLogin } = require('../middlewares/authGuard');
 const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage');
-const { buscarNoCatalogo } = require('../solaris/rag/ragSearchService');
-const { buscarCodigo, buscarConhecimentoMisto } = require('../../scripts/codeCorpus/codeSearchService');
+const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch');
+
 const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces');
 // Rate limit por IP nas rotas de iniciar pagamento — já exigem login
 // (exigirLogin), mas sem limite um usuário autenticado podia disparar
@@ -439,22 +439,18 @@ router.post('/internal/solaris/rag/buscar', async (req, res) => {
         const error = errorCaught;
         return res.status(400).json({ erro: error.message });
     }
-    const codigoAtivo = process.env.SOLARIS_CODE_SEARCH_ENABLED === 'true';
-    if (corpus === 'codigo' && !codigoAtivo) {
-        return res.status(503).json({ erro: 'Índice de código ainda não habilitado.' });
+    // Sem embeddings, consulta determinística ao catálogo local JSON.
+    if (corpus === 'codigo') {
+        return res.status(503).json({ erro: 'Busca vetorial de código desativada: serviço de embeddings retirado.' });
     }
     try {
-        const resultado = corpus === 'codigo'
-            ? await buscarCodigo({ query, topK, db })
-            : corpus === 'ambos'
-                ? await buscarConhecimentoMisto({ query, topK, db, codeSearchEnabled: codigoAtivo })
-                : await buscarNoCatalogo({ query, topK, db: db });
+        const resultado = await buscarCatalogoLocal({ query, topK });
         res.status(200).json(resultado);
     }
     catch (errCaught) {
         const err = errCaught;
-        console.error('[SOLARIS-RAG-BUSCA] falhou:', err.message);
-        res.status(500).json({ erro: 'Falha ao buscar no catálogo RAG.' });
+        console.error('[SOLARIS-RAG-BUSCA] falha na busca local:', err.message);
+        res.status(500).json({ erro: 'Falha ao buscar no catálogo RAG local.' });
     }
 });
 /*
