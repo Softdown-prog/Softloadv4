@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "None",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "files": [
+    "public/js/workers/w-utils.ts",
+    "public/js/workers/w-init.ts",
+    "public/js/workers/w-log-init.ts"
+  ]
+}

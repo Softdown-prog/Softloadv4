@@ -27,6 +27,22 @@ function auditar({root=path.resolve(__dirname,'..'),tracked=null,lista=null,tsco
   const ausentes=result.frontendTs.filter(x=>!config.include.includes(x));
   return {...result,frontendForaTypecheck:ausentes,ok:result.inesperados.length===0&&ausentes.length===0};
 }
+// Browsers carregam scripts clássicos, não módulos CommonJS.
+function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
+  const ts=require('typescript');
+  const arquivos=['w-utils','w-init','w-log-init'];
+  const divergentes=[];
+  for(const nome of arquivos) {
+    const base=path.join(root,'public/js/workers',nome);
+    const fonte=fs.readFileSync(base+'.ts','utf8');
+    const emitido=ts.transpileModule(fonte,{compilerOptions:{
+      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+    }}).outputText;
+    const atual=fs.readFileSync(base+'.js','utf8');
+    if(emitido!==atual)divergentes.push(nome);
+  }
+  return divergentes;
+}
 if(require.main===module){
   const r=auditar();
   console.log('[TS-MIGRACAO] Fontes JS de runtime ainda sem TS:',r.runtime.length);
@@ -34,6 +50,8 @@ if(require.main===module){
   if(process.argv.includes('--json'))console.log(JSON.stringify(r,null,2));
   for(const x of r.inesperados)console.error('JS novo sem fonte TypeScript no inventário:',x);
   for(const x of r.frontendForaTypecheck)console.error('TypeScript ignorado pelo typecheck frontend:',x);
-  if(!r.ok)process.exitCode=1;
+  const browsers=verificarEspelhosWorkers();
+  for(const nome of browsers)console.error('Espelho browser JS não sincronizado com TypeScript:',nome);
+  if(!r.ok||browsers.length)process.exitCode=1;
 }
-module.exports={inventariar,auditar};
+module.exports={inventariar,auditar,verificarEspelhosWorkers};
