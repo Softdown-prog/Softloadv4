@@ -1,4 +1,4 @@
-<%- include('../partials/header') %>
+<%- include('../partials/header', { pageTitle: 'Termos de Uso | Softload V4', pageDescription: 'Condições da Softload V4 para Solaris Code, Blogger, Workspace, planos e créditos de IA.', pageCanonical: '/termos-de-uso' }) %>
 
 <main class="sl-pt-nav py-5" style="min-height:100vh;background:var(--sl-bg-900)">
     <div class="container">
@@ -10,7 +10,7 @@
             </p>
             <h1 class="fw-bold text-white mb-1" style="letter-spacing:-0.02em">Termos de Uso</h1>
             <p class="mb-4" style="color:var(--sl-text-500);font-size:0.85rem">
-                Última atualização: Maio de 2026
+                Última atualização: 26 de outubro de 2026
             </p>
             <p style="color:var(--sl-text-400);font-size:0.95rem;line-height:1.85">
                 Bem-vindo à <strong class="text-white">Softload</strong>. Ao acessar ou utilizar a plataforma,
@@ -44,19 +44,20 @@
                     1. Sobre a Plataforma
                 </h2>
                 <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
-                    A Softload é uma plataforma SaaS especializada em criação, assistência e gerenciamento
-                    de projetos para <strong class="text-white">Blogger/Blogspot</strong>. Seu núcleo é um
-                    compilador inteligente que gera templates XML prontos para importação direta no painel do Blogger,
-                    configurados com presets de cores, tipografia, grid e módulos escolhidos pelo usuário.
+                    A <strong class="text-white">Softload V4</strong> é uma plataforma SaaS para desenvolvimento
+                    assistido por inteligência artificial, com <strong class="text-white">Solaris Code</strong>,
+                    assistência especializada em Blogger/Blogspot e um Workspace para projetos e templates XML.
+                    Recursos, limites e ferramentas dependem do plano e das configurações habilitadas.
                 </p>
                 <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.75rem">
-                    Além do compilador, a plataforma oferece:
+                    Entre as funcionalidades disponíveis, conforme o plano, estão:
                 </p>
                 <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
-                    <li><strong class="text-white">Chat IA Especialista Blogger</strong> — suporte técnico por inteligência artificial com base de conhecimento RAG específica para Blogger/Blogspot (SEO, XML, CSS, snippets, AdSense).</li>
-                    <li><strong class="text-white">Compiler de Templates</strong> — geração automatizada de templates XML completos com layout responsivo, dark mode, tipografia via Google Fonts e integração com JSON Feed do Blogger.</li>
+                    <li><strong class="text-white">Solaris Code</strong> — assistência na análise e revisão de código e projetos, com conexão opcional a repositórios GitHub mediante autorização.</li>
+                    <li><strong class="text-white">Chat IA Especialista Blogger</strong> — suporte técnico para XML, widgets, CSS, SEO e templates Blogger/Blogspot.</li>
+                    <li><strong class="text-white">Compilador de Templates</strong> — geração de templates XML para Blogger com módulos, layout e opções visuais.</li>
                     <li><strong class="text-white">Workspace</strong> — ambiente de projetos e sessões para usuários do plano Studio, com vínculo direto entre template compilado e chat IA (memória contextual persistente).</li>
-                    <li><strong class="text-white">Histórico e Cloud Storage</strong> — compilações salvas em cloud com opção de download do arquivo ZIP contendo o XML final.</li>
+                    <li><strong class="text-white">Histórico e armazenamento</strong> — organização de conversas, projetos e arquivos gerados, com consulta e download quando disponíveis.</li>
                     <li><strong class="text-white">Gerenciamento de créditos</strong> — sistema de tokens para controle de consumo dos modelos de IA.</li>
                 </ul>
                 <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem;margin-top:0.5rem">
@@ -92,17 +93,18 @@
                     3. Créditos e Consumo de IA
                 </h2>
                 <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
-                    A plataforma utiliza um sistema de créditos para controlar o consumo dos modelos de inteligência
-                    artificial disponíveis: <strong class="text-white">Gemini Flash</strong> (padrão). Outros modelos podem ser adicionados futuramente.
-                    Cada mensagem enviada ao chat ou operação de IA consome créditos proporcionalmente ao número
-                    de tokens processados (entrada + saída).
+                    As ferramentas de IA utilizam <strong class="text-white">cotas de créditos</strong> e
+                    controles de consumo. O uso pode ser contabilizado por tokens de entrada e saída;
+                    determinadas operações também podem ter regras adicionais de reserva ou orçamento.
+                    O modelo utilizado pode variar conforme a ferramenta e a configuração habilitada.
+                    Os saldos e limites aplicáveis são apresentados no painel.
                 </p>
                 <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
                     <li><strong class="text-white">Plano Free:</strong> 5 créditos gratuitos para experimentação, com validade limitada. Após esgotamento, é necessário assinar um plano pago.</li>
-                    <li><strong class="text-white">Planos pagos (Starter, Pro e Studio):</strong> o acesso às IAs é controlado pela vigência da assinatura, não por saldo de créditos. Créditos funcionam como contadores de uso analítico.</li>
+                    <li><strong class="text-white">Planos pagos (Starter, Pro e Studio):</strong> o acesso depende da vigência do plano e do saldo de créditos e limites de uso aplicáveis. Esgotada a cota, operações sujeitas a créditos podem ser bloqueadas até nova concessão ou renovação.</li>
                     <li>Créditos não representam moeda, saldo bancário ou ativo financeiro.</li>
                     <li>Créditos promocionais ou bônus podem expirar sem aviso prévio.</li>
-                    <li>O consumo é debitado independentemente da qualidade percebida da resposta, pois reflete o custo real de processamento junto às APIs externas.</li>
+                    <li>O uso concluído pode consumir créditos conforme medição efetiva. Falhas, cancelamentos e reservas seguem as regras técnicas da operação realizada.</li>
                 </ul>
             </div>
 
@@ -193,7 +195,7 @@
                     <li>Os dados de projetos, sessões e snapshots de template são armazenados no <strong class="text-white">Firebase Firestore</strong> vinculados ao e-mail do usuário.</li>
                     <li>A memória contextual é carregada por sessão de chat; conversas iniciadas fora do Workspace não possuem esse contexto.</li>
                     <li>O usuário pode excluir projetos e sessões a qualquer momento, o que remove os dados correspondentes do Firestore.</li>
-                    <li>Arquivos de template (XML) armazenados no Cloud Storage são mantidos até exclusão manual ou cancelamento do plano.</li>
+                    <li>O armazenamento e a exclusão de arquivos e projetos seguem as funcionalidades da plataforma e os procedimentos apresentados na Política de Privacidade.</li>
                 </ul>
             </div>
 
@@ -224,8 +226,8 @@
                     9. Disponibilidade dos Serviços
                 </h2>
                 <p style="color:var(--sl-text-400);line-height:1.85;font-size:0.93rem">
-                    A Softload depende de infraestrutura e APIs externas para operar, incluindo
-                    Firebase Authentication, Firestore, Google Cloud Storage e Google Gemini API.
+                    A Softload depende de infraestrutura e serviços externos para operar, incluindo
+                    autenticação, banco de dados, armazenamento em nuvem e provedores de IA.
                     Portanto, a plataforma <strong class="text-white">não garante disponibilidade contínua e ininterrupta</strong>.
                     Interrupções podem ocorrer devido a:
                 </p>
@@ -249,8 +251,9 @@
                 </p>
                 <ul style="color:var(--sl-text-400);line-height:1.9;font-size:0.93rem">
                     <li><strong class="text-white">Google Blogger/Blogspot</strong> — plataforma de destino dos templates gerados. Mudanças no Blogger podem impactar a compatibilidade dos templates.</li>
-                    <li><strong class="text-white">Google Gemini API</strong> — modelo de linguagem padrão (Gemini Flash) utilizado no Chat IA.</li>
-                    <li><strong class="text-white">OpenAI API</strong> — integração técnica mantida, porém indisponível no chat enquanto não houver orçamento para seu uso.</li>
+                    <li><strong class="text-white">Google Gemini API</strong> — processamento de solicitações com os modelos configurados para cada ferramenta.</li>
+                    <li><strong class="text-white">GitHub</strong> — conexão opcional a repositórios mediante autorização do usuário e permissões concedidas.</li>
+                    <li><strong class="text-white">Outros provedores de IA</strong> — integrações adicionais podem ser habilitadas conforme configuração e disponibilidade.</li>
                     <li><strong class="text-white">Firebase (Google)</strong> — autenticação de usuários e banco de dados Firestore para armazenamento de sessões, compilações e workspace.</li>
                     <li><strong class="text-white">Google Cloud Storage</strong> — armazenamento dos arquivos ZIP e XML gerados pelo compilador.</li>
                     <li><strong class="text-white">Mercado Pago</strong> — processamento de pagamentos e assinaturas. Os dados de pagamento são tratados exclusivamente pelo Mercado Pago e não ficam armazenados na Softload.</li>
