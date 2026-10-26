@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { fetchAppConfig, type AppUser } from '../services/api';
 
 const NAV_LINKS = [
-    { href: '/', label: 'Radar' },
-    { href: '/#features', label: 'A Arquitetura' },
+    { href: '/', label: 'Início' },
+    { href: '/#solucoes', label: 'Ferramentas' },
+    { href: '/#ia-pode', label: 'Demonstração' },
     { href: '/contato', label: 'Contato' },
 ];
 
@@ -23,18 +24,18 @@ export default function PublicNavbar(): React.JSX.Element {
     const loggedIn = !!user;
 
     return (
-        <nav className="navbar sl-navbar fixed-top">
+        <nav className="navbar navbar-expand-md sl-navbar fixed-top" aria-label="Navegação principal">
             <div className="container-xl">
 
                 <a href="/" className="navbar-brand sl-brand fw-black text-white text-decoration-none me-4">
-                    SOFTLOAD<span className="sl-accent">ENGINE</span>
+                    SOFTLOAD<span className="sl-accent"> V4</span>
                 </a>
 
-                <div className={`collapse navbar-collapse${mobileOpen ? ' show' : ''}`} id="sl-nav-collapse">
+                <div className={`collapse navbar-collapse order-3 order-md-2${mobileOpen ? ' show' : ''}`} id="sl-nav-collapse">
                     <ul className="navbar-nav mx-auto">
                         {NAV_LINKS.map((link) => (
                             <li className="nav-item" key={link.href}>
-                                <a href={link.href} className="nav-link">{link.label}</a>
+                                <a href={link.href} className="nav-link" onClick={() => setMobileOpen(false)}>{link.label}</a>
                             </li>
                         ))}
                     </ul>
@@ -55,7 +56,7 @@ export default function PublicNavbar(): React.JSX.Element {
                     </div>
                 </div>
 
-                <div className="d-flex align-items-center gap-2 ms-auto">
+                <div className="d-flex align-items-center gap-2 ms-auto order-2 order-md-3">
                     {loggedIn ? (
                         <a href="/dashboard" className="btn btn-sl-outline btn-sm d-none d-md-inline-flex">Painel de Controle</a>
                     ) : (
@@ -71,10 +72,10 @@ export default function PublicNavbar(): React.JSX.Element {
                         type="button"
                         aria-controls="sl-nav-collapse"
                         aria-expanded={mobileOpen}
-                        aria-label="Menu"
+                        aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
                         onClick={() => setMobileOpen((open) => !open)}
                     >
-                        <Menu size={28} className="text-white" />
+                        {mobileOpen ? <X size={26} className="text-white" /> : <Menu size={26} className="text-white" />}
                     </button>
                 </div>
             </div>

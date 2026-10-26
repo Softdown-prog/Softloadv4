@@ -99,6 +99,9 @@ test('Navbar, consentimento e lista de capacidades mantêm contratos públicos',
   assert.match(navbar, /config\.user \?\? null/);
   assert.match(navbar, /aria-expanded={mobileOpen}/);
   assert.match(navbar, /href="\/logout"/);
+  assert.match(navbar, /navbar-expand-md/);
+  assert.match(navbar, /href: '\/#solucoes'/);
+  assert.match(navbar, /onClick=\{\(\) => setMobileOpen\(false\)\}/);
   assert.match(consent, /softload_cookie_consent/);
   assert.match(consent, /365 \* 24 \* 60 \* 60 \* 1000/);
   assert.match(consent, /localStorage\.setItem/);
@@ -224,6 +227,14 @@ test('landing TypeScript mantém animações, toast e início da demo', () => {
   assert.ok(landing.includes('useHeroEntrance(useCallback(() => setDemoStart(true), []))'));
   assert.ok(landing.includes('<TerminalDemo start={demoStart} />'));
   assert.ok(landing.includes('<CapabilityChecklist />'));
+  assert.ok(landing.includes('id="solucoes"'));
+  assert.ok(landing.includes('Solaris Code'));
+  const publicLanding = source('views/pages/react-landing.ejs');
+  const publicAuth = source('views/pages/react-public.ejs');
+  assert.match(publicLanding, /Softload V4/);
+  assert.match(publicLanding, /rel="canonical"/);
+  assert.match(publicLanding, /property="og:description"/);
+  assert.match(publicAuth, /noindex, follow/);
 });
 
 test('analytics TypeScript preserva filtro, atualização periódica e diagnóstico Firestore', () => {

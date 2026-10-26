@@ -6,13 +6,10 @@ import TerminalDemo from '../components/landing/TerminalDemo';
 import CapabilityChecklist from '../components/landing/CapabilityChecklist';
 
 const CHIPS = [
-    { cor: '#4ade80', borda: 'rgba(74,222,128,.25)', bg: 'rgba(74,222,128,.05)', label: 'Compilador XML' },
-    { cor: '#38bdf8', borda: 'rgba(56,189,248,.25)', bg: 'rgba(56,189,248,.05)', label: 'IA Blogger' },
-    { cor: '#fb923c', borda: 'rgba(251,146,60,.25)', bg: 'rgba(251,146,60,.05)', label: 'SEO Automático' },
-    { cor: '#fbbf24', borda: 'rgba(251,191,36,.25)', bg: 'rgba(251,191,36,.05)', label: 'AdSense Ready' },
-    { cor: '#818cf8', borda: 'rgba(129,140,248,.25)', bg: 'rgba(129,140,248,.05)', label: 'Gadgets' },
-    { cor: '#f472b6', borda: 'rgba(244,114,182,.25)', bg: 'rgba(244,114,182,.05)', label: 'Workspace Pro' },
-    { cor: '#22d3ee', borda: 'rgba(34,211,238,.25)', bg: 'rgba(34,211,238,.05)', label: 'Estrutura Real' },
+    { cor: '#38bdf8', borda: 'rgba(56,189,248,.25)', bg: 'rgba(56,189,248,.05)', label: 'Solaris Code' },
+    { cor: '#4ade80', borda: 'rgba(74,222,128,.25)', bg: 'rgba(74,222,128,.05)', label: 'IA Especialista Blogger' },
+    { cor: '#f472b6', borda: 'rgba(244,114,182,.25)', bg: 'rgba(244,114,182,.05)', label: 'Workspace XML' },
+    { cor: '#818cf8', borda: 'rgba(129,140,248,.25)', bg: 'rgba(129,140,248,.05)', label: 'Integração GitHub' },
 ];
 
 const FEATURES = [
@@ -105,14 +102,14 @@ export default function Landing(): React.JSX.Element {
                             <div data-hero="badge" className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill border mb-4 font-monospace"
                                  style={{ background: 'rgba(14,165,233,.07)', borderColor: 'rgba(14,165,233,.2)', fontSize: 11, color: 'var(--sl-primary-light)' }}>
                                 <span className="sl-pulse rounded-circle" style={{ width: 6, height: 6, background: 'var(--sl-primary-light)', flexShrink: 0, display: 'inline-block' }}></span>
-                                IA ESPECIALISTA BLOGGER · ONLINE
+                                SOFTLOAD V4 · FERRAMENTAS DE IA
                             </div>
                             <h1 className="fw-bolder text-white mb-4" style={{ fontSize: 'clamp(2rem,5vw,3.6rem)', letterSpacing: '-.03em', lineHeight: 1.15, fontWeight: 900 }}>
-                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>Crie templates Blogger</span></span>
-                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>profissionais <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>com IA</span></span></span>
+                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>Desenvolva projetos</span></span>
+                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>e crie <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>com IA</span></span></span>
                             </h1>
                             <p data-hero="lead" className="mb-4" style={{ fontSize: '1.05rem', color: 'var(--sl-text-400)', lineHeight: 1.75, maxWidth: 480 }}>
-                                Editor visual + IA especialista + compilador XML + automação de SEO para Blogspot.
+                                Solaris Code para desenvolvimento e revisão de código, IA especialista em Blogger e um Workspace para criar e organizar templates XML.
                             </p>
                             <div data-hero="chips" className="d-flex flex-wrap gap-2 mb-5">
                                 {CHIPS.map((chip) => (
@@ -125,18 +122,18 @@ export default function Landing(): React.JSX.Element {
                             <div data-hero="cta" className="d-flex flex-column flex-sm-row gap-3">
                                 <a href="/register" className="btn btn-sl-primary fw-bold px-5 py-3 d-flex align-items-center gap-2 justify-content-center"
                                    style={{ fontSize: '1rem', boxShadow: '0 0 40px -8px rgba(56,189,248,.5)' }}>
-                                    Criar grátis
+                                    Criar conta grátis
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 </a>
-                                <a href="#ia-pode" className="btn fw-bold px-5 py-3 d-flex align-items-center gap-2 justify-content-center"
+                                <a href="#solucoes" className="btn fw-bold px-5 py-3 d-flex align-items-center gap-2 justify-content-center"
                                    style={{ background: 'rgba(255,255,255,.03)', border: '1px solid var(--sl-bg-800)', color: 'var(--sl-text-300)', fontSize: '1rem' }}>
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    Ver demonstração
+                                    Conhecer ferramentas
                                 </a>
                             </div>
                             <p data-hero="trust" className="mt-4 mb-0 small" style={{ color: 'var(--sl-text-500)' }}>
                                 <svg className="me-1" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ verticalAlign: 'middle' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                                Sem cartão de crédito · Templates XML reais para Blogspot
+                                Cadastro grátis e sem cartão de crédito · Funcionalidades variam conforme o plano
                             </p>
                         </div>
 
@@ -257,15 +254,59 @@ export default function Landing(): React.JSX.Element {
                 </div>
             </section>
 
+
+            {/* ═══════════════════════════════ SOLUÇÕES DA SOFTLOAD ═══════════════════════════════ */}
+            <section id="solucoes" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', scrollMarginTop: '5rem' }}>
+                <div className="container" style={{ maxWidth: 1200 }}>
+                    <div className="text-center mb-5">
+                        <p className="text-uppercase fw-bold font-monospace mb-2" style={{ color: 'var(--sl-primary-light)', fontSize: 11, letterSpacing: '0.15em' }}>Uma plataforma, ferramentas especializadas</p>
+                        <h2 className="fw-bolder text-white mb-3" style={{ fontSize: 'clamp(1.6rem,4vw,2.6rem)', letterSpacing: '-.02em' }}>
+                            Escolha a ferramenta certa para seu projeto
+                        </h2>
+                        <p style={{ color: 'var(--sl-text-400)', maxWidth: 610, margin: '0 auto', lineHeight: 1.7 }}>
+                            Conheça as áreas disponíveis na Softload V4. O acesso a cada recurso depende do seu plano.
+                        </p>
+                    </div>
+                    <div className="row g-4">
+                        {[
+                            {
+                                tag: 'DESENVOLVIMENTO', titulo: 'Solaris Code',
+                                desc: 'Converse sobre código, analise projetos e trabalhe com repositórios GitHub por meio das ferramentas de IA disponíveis.',
+                                href: '/register', link: 'Conhecer Solaris Code', cor: '#38bdf8',
+                            },
+                            {
+                                tag: 'BLOGGER E BLOGSPOT', titulo: 'Especialista Blogger',
+                                desc: 'Assistência para XML, widgets, CSS e SEO de templates Blogger, com exemplos de respostas da IA na demonstração.',
+                                href: '/#ia-pode', link: 'Ver demonstração', cor: '#4ade80',
+                            },
+                            {
+                                tag: 'GERAÇÃO DE TEMPLATES', titulo: 'Workspace',
+                                desc: 'Organize seus projetos e crie templates XML com o compilador disponível nos planos compatíveis.',
+                                href: '/#features', link: 'Explorar recursos', cor: '#f472b6',
+                            },
+                        ].map((solucao) => (
+                            <div key={solucao.titulo} className="col-12 col-md-4">
+                                <article className="rounded-4 border p-4 h-100 d-flex flex-column" style={{ background: 'rgba(15,23,42,.5)', borderColor: 'var(--sl-bg-800)' }}>
+                                    <p className="fw-bold font-monospace mb-3" style={{ color: solucao.cor, fontSize: 11, letterSpacing: '0.1em' }}>{solucao.tag}</p>
+                                    <h3 className="h4 fw-bold text-white mb-3">{solucao.titulo}</h3>
+                                    <p className="small flex-grow-1" style={{ color: 'var(--sl-text-400)', lineHeight: 1.8 }}>{solucao.desc}</p>
+                                    <a className="fw-bold text-decoration-none mt-2" style={{ color: solucao.cor }} href={solucao.href}>{solucao.link} <span aria-hidden="true">→</span></a>
+                                </article>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* ═══════════════════════════════════ FEATURES ═══════════════════════════════════ */}
-            <section id="features" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', paddingTop: '5rem', paddingBottom: '5rem' }}>
+            <section id="features" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', paddingTop: '5rem', paddingBottom: '5rem', scrollMarginTop: '5rem' }}>
                 <div className="container" style={{ maxWidth: 1200 }}>
                     <div className="text-center mb-5">
                         <div className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill border mb-3 font-monospace"
-                             style={{ background: 'var(--sl-bg-900)', borderColor: 'var(--sl-bg-800)', fontSize: 11, color: 'var(--sl-text-400)' }}>O QUE NINGUÉM MAIS ENTREGA</div>
+                             style={{ background: 'var(--sl-bg-900)', borderColor: 'var(--sl-bg-800)', fontSize: 11, color: 'var(--sl-text-400)' }}>FERRAMENTAS PARA BLOGGER</div>
                         <h2 className="fw-bolder text-white mb-2" style={{ fontSize: 'clamp(1.6rem,4vw,2.6rem)', fontWeight: 900, letterSpacing: '-.02em' }}>
-                            Não é só um gerador.<br />
-                            <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>É a plataforma completa do Blogger.</span>
+                            Do projeto ao XML pronto.<br />
+                            <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Ferramentas especializadas em Blogger.</span>
                         </h2>
                         <p style={{ color: 'var(--sl-text-500)', maxWidth: 540, margin: '0 auto', fontSize: '1rem' }}>
                             Construída por quem conhece a estrutura interna do Blogspot — do XML aos gadgets.
@@ -288,7 +329,7 @@ export default function Landing(): React.JSX.Element {
             </section>
 
             {/* ══════════════════════════════ O QUE A IA CONSEGUE FAZER ══════════════════════════════ */}
-            <section id="ia-pode" className="py-5 position-relative overflow-hidden" style={{ borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '5rem', paddingBottom: '5rem' }}>
+            <section id="ia-pode" className="py-5 position-relative overflow-hidden" style={{ borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '5rem', paddingBottom: '5rem', scrollMarginTop: '5rem' }}>
                 <div className="position-absolute" style={{ inset: 0, background: 'linear-gradient(180deg,transparent 0%,rgba(99,102,241,.04) 50%,transparent 100%)', pointerEvents: 'none' }}></div>
                 <div className="position-absolute" style={{ width: 600, height: 600, background: 'radial-gradient(circle,rgba(99,102,241,.07),transparent 65%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }}></div>
 
