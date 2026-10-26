@@ -435,3 +435,12 @@ test('histórico, configurações e upgrade seguem o tema unificado',()=>{
     assert.ok(css.includes(selector),'Estilo ausente: '+selector);
   }
 });
+
+test('arquivos aprovados do vídeo Solaris são MP4 e PNG válidos e leves', () => {
+  const mp4 = fs.readFileSync(path.join(root, 'public/media/solaris-code-demo.mp4'));
+  const poster = fs.readFileSync(path.join(root, 'public/media/solaris-code-demo.png'));
+  assert.ok(mp4.length > 100_000 && mp4.length < 5 * 1024 * 1024, 'MP4 da demonstração fora dos limites');
+  assert.equal(mp4.toString('ascii', 4, 8), 'ftyp', 'Assinatura MP4 ausente');
+  assert.ok(poster.length > 10_000 && poster.length < 1024 * 1024, 'Capa PNG fora dos limites');
+  assert.equal(poster.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'Assinatura PNG ausente');
+});
