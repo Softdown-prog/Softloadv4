@@ -6,11 +6,11 @@ as imagens alteradas à VPS com retomada de transferência e ativa a revisão
 somente após as verificações de saúde. O domínio público é
 `https://softload.analysepro.com`.
 
-Os jobs de validação e build usam runners do GitHub. O job `activate` usa o
-runner `softloadeng` instalado na VPS, com a etiqueta `softload-vps-deploy`.
-Ele roda como `softloadrunner`, sem sudo ou acesso ao Docker. A ativação dos
-containers passa pela chave SSH restrita ao receptor de deploy; a chave é
-apagada do diretório temporário ao fim do job.
+Validação, build e ativação usam runners hospedados no GitHub. O job
+`activate` **não** executa dentro da VPS: utiliza a chave SSH restrita
+para falar com o receptor de deploy instalado no servidor. A chave é
+apagada do diretório temporário ao fim do job; o runner não recebe socket
+Docker da VPS.
 
 A chave SSH de deploy fica no segredo Actions `SOFTLOAD_VPS_SSH_KEY`. A chave
 autorizada na VPS executa apenas o receptor de deploy, sem acesso a shell.
@@ -55,3 +55,9 @@ assinaturas/digests, retenção da revisão anterior, rollback e integridade.
 Não declarar economia de tráfego na VPS apenas com o cache do BuildKit.
 
 A franquia da Locacloud pode seguir outra metodologia de medição.
+
+## Pré-validação do receptor v2
+
+A retirada dos serviços pesados introduz um contrato novo. Antes de qualquer build ou transferência, o job `plan` chama pelo SSH restrito o comando de consulta `contract:v2` e exige resposta exata `softload-deploy:v2:app,agent`. Resposta ausente/incorreta **interrompe o deploy antes de enviar as imagens**; não ativa app/agent parcialmente. A implementação do receptor da VPS ainda precisa ser migrada fora deste repositório (issue #20). O handshake não libera espaço em disco por si só.
+
+Para provas de regressão, a CI compila a imagem do Agent em runner GitHub e executa o smoke real do Asset Forge com base Debian slim. Os valores de tamanho antes/depois devem ser medidos no Docker de produção após a troca da imagem e limpeza seletiva validada.
