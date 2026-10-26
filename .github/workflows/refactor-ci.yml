@@ -19,6 +19,8 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: Verificar contratos TypeScript
         run: npm run typecheck
+      - name: Garantir contrato de duas imagens e Agent sem Chromium
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs
       - name: Python para ferramentas 2D
         uses: actions/setup-python@v5
         with:
