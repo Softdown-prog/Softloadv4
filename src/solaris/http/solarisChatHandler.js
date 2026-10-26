@@ -69,7 +69,7 @@ function criarHandlerChatSolaris(deps) {
         let replyFinal = '';
         let zipInfo = null;
         let doneEvent = null;
-        let tokensGeracao = { input: 0, output: 0 }; // estimativa — ver comentário abaixo
+        let tokensGeracao = deps.geracaoTokens || { input: 0, output: 0 }; // medição por chamada Pro, ou fallback para testes legados
         // Propostas de mudança de arquivo pendentes de confirmação (Fase 2d,
         // ver pipeline/projectEditor.js) — carregadas do meta da sessão
         // ANTERIOR dentro do bloco de projeto abaixo, e regravadas no `finally`
@@ -230,15 +230,14 @@ function criarHandlerChatSolaris(deps) {
                                 nome: 'projeto-solaris.zip',
                                 totalArquivos: listarProjeto(baseDir).length,
                             };
-                            // orchestrator.js ainda não expõe usageMetadata real por
-                            // chamada de arquitetura (Pro) pro caller — estimativa
-                            // pela mesma heurística de caracteres já usada como
-                            // fallback no resto do projeto, pra nunca deixar o custo
-                            // real de Pro (manifesto + 1 chamada por arquivo) sem
-                            // cobrança nenhuma.
-                            const textoGerado = resultado.arquivos.map((a) => a.conteudo || '').join('');
-                            tokensGeracao.output = Math.ceil(textoGerado.length / 3.5);
-                            tokensGeracao.input = Math.ceil((marcador.objetivo.length + marcador.framework.length) / 3.5) * (1 + resultado.arquivos.length);
+                            // Em produção, o router medido agrega usageMetadata de
+                            // todas as chamadas Pro (incluindo tokens de pensamento).
+                            // Fallback apenas para clientes antigos/testes sem medição.
+                            if (tokensGeracao.input === 0 && tokensGeracao.output === 0) {
+                                const textoGerado = resultado.arquivos.map((a) => a.conteudo || '').join('');
+                                tokensGeracao.output = Math.ceil(textoGerado.length / 3.5);
+                                tokensGeracao.input = Math.ceil((marcador.objetivo.length + marcador.framework.length) / 3.5) * (1 + resultado.arquivos.length);
+                            }
                         }
                         else {
                             replyFinal += '\n\n⚠️ Não consegui empacotar o projeto — algum arquivo não passou na validação automática. Me diga o que você quer ajustar e eu tento de novo.';
@@ -314,8 +313,8 @@ function criarHandlerChatSolaris(deps) {
             // usageMetadata real do Gemini (ver modelRouter.executarTriagemStream);
             // heurística de caracteres só entra se por algum motivo a API não
             // devolveu usageMetadata nenhum (fallback, não o caminho normal).
-            // tokensGeracao (Pro, manifesto + arquivos) é sempre estimativa —
-            // ver comentário na chamada de gerarProjeto — somado no mesmo débito
+            // tokensGeracao agrega uso real por chamada Pro quando disponível,
+            // com fallback registrado no coletor. Soma no débito legado.
             // pra nunca deixar o custo real de geração sem cobrança.
             if (email && textoParaSalvar) {
                 const debito = calcularDebitoChatSolaris(msg, textoParaSalvar, tokensRef, tokensGeracao);

@@ -36,6 +36,7 @@ const { detectarFramework } = require('../../solaris/tools/frameworkDetector');
 const { salvarProjeto, carregarProjeto } = require('../../solaris/tools/projectStorage');
 const { lerProjetoParaPersistir } = require('../../solaris/tools/fileTools');
 const { criarHandlerChatSolaris } = require('../../solaris/http/solarisChatHandler');
+const { criarOrquestradorComMedicao } = require('../../solaris/http/solarisProUsage');
 const { criarHandlerUploadSolaris } = require('../../solaris/http/solarisUploadHandler');
 const { criarHandlerVisual } = require('../../solaris/visual/visualReview');
 const { browserSandboxReady } = require('../../solaris/visual/browserReadiness');
@@ -329,6 +330,11 @@ const depsChatSolaris = {
 const chatSolarisSemOrcamento = criarHandlerChatSolaris(depsChatSolaris);
 router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSolaris, (req, res) => {
     const deps = dependenciasPorRequisicao(req);
+    // Contabilizar cada chamada de arquitetura Pro desta requisição,
+    // separada das outras conversas (singleton não pode compartilhar tokens).
+    const usoPro = criarOrquestradorComMedicao({
+        modelRouter: deps.modelRouter, buscarConhecimento, criarOrquestrador,
+    });
     const ghMode = req.body?.tool === 'github';
     // O handler SSE continua responsável por requestId, histórico e cobrança.
     // Este wrapper injeta o loop Gemini com ferramentas SOMENTE para uma conta
@@ -352,6 +358,8 @@ router.post('/dashboard/solaris/chat/stream', exigirLogin, verificarCreditosSola
         }
     } : deps.solarisChat;
     return criarHandlerChatSolaris({ ...depsChatSolaris, ...deps,
+        orquestrador: usoPro.orquestrador,
+        geracaoTokens: usoPro.contagem,
         solarisChat: githubChat,
         debitarCreditos: process.env.SOLARIS_AI_BUDGET_ENFORCE === 'true'
             ? debitarSomenteSeLegado : debitarCreditos,
