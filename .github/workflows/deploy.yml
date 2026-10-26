@@ -34,13 +34,27 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --retries 3 --timeout 30 -r agent/forge/requirements.txt
-          # Evita instalar pacotes "recomendados" alheios aos testes (como
-          # pocketsphinx-en-us, de 27 MB), que podem travar no espelho Ubuntu.
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
-            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
-            install -y --no-install-recommends ffmpeg fonts-dejavu-core
-          ffmpeg -version >/dev/null
+          # Os runners hospedados podem levar >15 minutos baixando ffmpeg
+          # e suas dezenas de dependências do espelho Ubuntu. Durante o
+          # teste, usamos binários Linux estáticos de versões FIXAS do npm.
+          # Não são enviados para a VPS nem alteram o pacote de produção.
+          media_dir="${RUNNER_TEMP}/forge-test-media"
+          npm install --prefix "$media_dir" --no-save --ignore-scripts \
+            --no-audit --no-fund --package-lock=false \
+            @ffmpeg-installer/linux-x64@4.1.0 \
+            @ffprobe-installer/linux-x64@5.2.0
+          install -d "$media_dir/bin"
+          ffmpeg_binary="$media_dir/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
+          ffprobe_binary="$media_dir/node_modules/@ffprobe-installer/linux-x64/ffprobe"
+          chmod +x "$ffmpeg_binary" "$ffprobe_binary"
+          ln -s "$ffmpeg_binary" "$media_dir/bin/ffmpeg"
+          ln -s "$ffprobe_binary" "$media_dir/bin/ffprobe"
+          echo "$media_dir/bin" >> "$GITHUB_PATH"
+          "$media_dir/bin/ffmpeg" -version >/dev/null
+          "$media_dir/bin/ffprobe" -version >/dev/null
+          "$media_dir/bin/ffmpeg" -hide_banner -encoders 2>/dev/null | grep -F libvorbis
+          # Pillow usa fontes do sistema; sinaliza caso o runner as perca.
+          test -r /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: npm test
       - run: npm run test:quality
       - run: npm run build
