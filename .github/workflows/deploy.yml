@@ -70,8 +70,6 @@ jobs:
     outputs:
       proceed: ${{ steps.latest.outputs.proceed }}
       agent: ${{ steps.diff.outputs.agent }}
-      sandbox: ${{ steps.diff.outputs.sandbox }}
-      embeddings: ${{ steps.diff.outputs.embeddings }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -116,27 +114,10 @@ jobs:
           [[ "$base" =~ ^[0-9a-f]{40}$ ]]
           if git cat-file -e "$base^{commit}" 2>/dev/null; then
             if git diff --quiet "$base" "$TARGET_SHA" -- agent/ Power-up/; then echo 'agent=false' >> "$GITHUB_OUTPUT"; else echo 'agent=true' >> "$GITHUB_OUTPUT"; fi
-            # So muda a imagem completa quando algum insumo realmente copiado por
-            # sandbox-efemoro/Dockerfile muda. Dockerfile.archive e Compose
-            # pertencem a uma imagem separada, portanto nao devem forcar
-            # transferencia da imagem Chromium (>1 GB comprimido).
-            if git diff --quiet "$base" "$TARGET_SHA" -- \
-              sandbox-efemoro/Dockerfile \
-              sandbox-efemoro/.dockerignore \
-              sandbox-efemoro/package.json \
-              sandbox-efemoro/package-lock.json \
-              sandbox-efemoro/src/; then
-              echo 'sandbox=false' >> "$GITHUB_OUTPUT"
-            else
-              echo 'sandbox=true' >> "$GITHUB_OUTPUT"
-            fi
-            if git diff --quiet "$base" "$TARGET_SHA" -- Embedings-python/; then echo 'embeddings=false' >> "$GITHUB_OUTPUT"; else echo 'embeddings=true' >> "$GITHUB_OUTPUT"; fi
           else
             # First deployment from Softloadv4: the running SHA belongs to the old repository.
             # Rebuild every service once, then compare commits normally on future deployments.
             echo 'agent=true' >> "$GITHUB_OUTPUT"
-            echo 'sandbox=true' >> "$GITHUB_OUTPUT"
-            echo 'embeddings=true' >> "$GITHUB_OUTPUT"
           fi
           echo "[DEPLOY] Running revision: $base"
   build_and_transfer:
@@ -156,12 +137,6 @@ jobs:
           - service: agent
             context: agent
             dockerfile: agent/Dockerfile
-          - service: sandbox
-            context: sandbox-efemoro
-            dockerfile: sandbox-efemoro/Dockerfile
-          - service: embeddings
-            context: Embedings-python
-            dockerfile: Embedings-python/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - name: Record main revision before build
@@ -180,14 +155,10 @@ jobs:
         id: changes
         env:
           AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
-          SANDBOX_CHANGED: ${{ needs.plan.outputs.sandbox }}
-          EMBEDDINGS_CHANGED: ${{ needs.plan.outputs.embeddings }}
         run: |
           case '${{ matrix.service }}' in
             app) changed=true ;;
             agent) changed="$AGENT_CHANGED" ;;
-            sandbox) changed="$SANDBOX_CHANGED" ;;
-            embeddings) changed="$EMBEDDINGS_CHANGED" ;;
           esac
           [[ "$changed" == true || "$changed" == false ]]
           echo "changed=$changed" >> "$GITHUB_OUTPUT"
