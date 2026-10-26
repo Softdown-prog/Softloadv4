@@ -64,7 +64,8 @@ router.post('/contato', contatoLimiter, async (req, res) => {
         });
         console.log(`[CONTATO] Email enviado — ${nome} <${email}>`);
         res.redirect('/contato?sucesso=Mensagem enviada com sucesso! Retornaremos em breve.');
-    } catch (error) {
+    }
+    catch (error) {
         console.error('[CONTATO] Erro ao enviar email:', error.message);
         res.redirect('/contato?erro=Falha ao enviar a mensagem. Tente novamente.');
     }
