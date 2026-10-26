@@ -511,7 +511,7 @@ test('login e cadastro usam linguagem da Softload V4 em vez da interface antiga 
   assert.match(register, /Crie sua conta grátis/);
   assert.match(recover, /Recuperar senha/);
   assert.match(register, /Após criar sua conta, entre com seu e-mail e senha/);
-  assert.match(register, />Criar conta<\/button>/);
+  assert.match(register, /Criar conta\s*<\/button>/);
   assert.doesNotMatch(register, /Registrar e Entrar/);
 });
 
