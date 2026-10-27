@@ -20,7 +20,7 @@ jobs:
       - name: Verificar contratos TypeScript
         run: npm run typecheck
       - name: Garantir contrato de duas imagens e Agent sem Chromium
-        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs
       - name: Contratos das rotas finais e RAG local (sem servicos externos)
         run: node --test src/routes/finalRoutes.contract.test.cjs src/solaris/rag/ragLocalSearch.test.js
       - name: Python para ferramentas 2D

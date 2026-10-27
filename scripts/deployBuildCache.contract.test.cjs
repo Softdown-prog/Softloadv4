@@ -27,7 +27,8 @@ test('GitHub-hosted BuildKit caches layers and preserves signed/resumable transf
   assert.match(workflow, /--cache-from 'type=gha,scope=softload-\$\{\{ matrix.service \}\}'/);
   assert.match(workflow, /--cache-to 'type=gha,scope=softload-\$\{\{ matrix.service \}\},mode=max,ignore-error=true'/);
   assert.match(workflow, /docker save 'softload-\$\{\{ matrix.service \}\}:\$\{\{ github.sha \}\}' \| gzip -1/);
-  assert.match(workflow, /rsync --append-verify --partial/);
+  assert.match(workflow, /rsync --checksum --inplace --partial/);
+  assert.doesNotMatch(workflow, /rsync --append-verify/);
   assert.match(workflow, /sha256sum "\$archive"/);
   assert.match(workflow, /'reuse:\$\{\{ matrix.service \}\}:\$\{\{ github.sha \}\}'/);
 });
