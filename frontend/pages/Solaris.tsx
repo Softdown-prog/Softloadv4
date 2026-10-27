@@ -3,7 +3,6 @@ import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import ChatHeaderActions from '../components/ChatHeaderActions';
-import Pill from '../components/Pill';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
@@ -636,14 +635,13 @@ export default function Solaris(): React.JSX.Element {
         <div className="sl-conversation d-flex flex-column">
             {/* Topbar do Chat */}
             <div className="sl-conversation__header d-flex align-items-center justify-content-between gap-2 p-2 p-md-3 border-bottom flex-shrink-0 flex-wrap">
-                <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
+                <div className="sl-conversation__heading d-flex align-items-center gap-2 gap-sm-3" style={{ minWidth: 0 }}>
                     <div className="d-flex align-items-center justify-content-center rounded-3 bg-opacity-10 bg-primary border border-primary flex-shrink-0" style={{ width: '40px', height: '40px' }}>
                         <Cpu size={20} className="text-info" />
                     </div>
                     <div style={{ minWidth: 0 }}>
                         <h1 className="fw-bolder text-uppercase mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.05rem', letterSpacing: '-0.02em', minWidth: 0 }}>
-                            <span className="text-truncate" style={{ minWidth: 0 }}>Solaris Code AI</span>
-                            <Pill tone="indigo" className="flex-shrink-0">v3 IA</Pill>
+                            <span className="text-truncate" style={{ minWidth: 0 }}>Solaris Code</span>
                         </h1>
                         <p className="mb-0 text-secondary d-none d-md-block text-truncate" style={{ fontSize: '0.75rem' }}>Arquiteto front/back-end leve de alto desempenho.</p>
                     </div>
@@ -652,9 +650,11 @@ export default function Solaris(): React.JSX.Element {
                 <div className="d-flex align-items-center gap-2 flex-shrink-0">
                     {/* Exibição de créditos — sempre visível (era d-none d-sm-flex,
                         sumia por completo abaixo de 576px) */}
-                    <div className="d-flex align-items-center gap-1 text-secondary px-2 py-1 rounded border border-secondary bg-black"
+                    <div className="sl-conversation__credit d-flex align-items-center gap-1 px-2 py-1 rounded"
                         style={{ fontSize: '0.7rem', fontWeight: 700 }}
-                        title={saldoFonte === 'v2' ? 'Créditos de IA do Solaris (orçamento por modelo)' : saldoFonte === 'indisponivel' ? 'Não foi possível consultar os créditos.' : 'Créditos Gemini disponíveis'}>
+                        title={saldoFonte === 'v2' ? 'Créditos de IA do Solaris (orçamento por modelo)' : saldoFonte === 'indisponivel' ? 'Não foi possível consultar os créditos.' : 'Créditos Gemini disponíveis'}
+                        role="status"
+                        aria-label={saldoFonte === 'indisponivel' ? 'Saldo indisponível' : `${credits.creditos} de ${credits.creditosTotal} créditos ${saldoFonte === 'v2' ? 'Solaris' : 'Gemini'} disponíveis`}>
                         <Zap size={11} className="text-warning" />
                         <span>{saldoFonte === 'indisponivel' ? '—' : credits.creditos.toLocaleString('pt-BR')}</span>
                         {saldoFonte !== 'indisponivel' && <>
@@ -1161,7 +1161,7 @@ export default function Solaris(): React.JSX.Element {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'tween', duration: 0.25 }}
-                            className="position-fixed top-0 bottom-0 start-0 bg-dark border-end border-secondary"
+                            className="sl-conversation__history-drawer position-fixed top-0 bottom-0 start-0 border-end"
                             style={{ width: 'min(340px, 90vw)', zIndex: 1050, boxShadow: '4px 0 24px rgba(0,0,0,0.3)' }}
                         >
                             <div className="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary bg-black">
@@ -1184,38 +1184,31 @@ export default function Solaris(): React.JSX.Element {
                                 ) : (
                                     sessionsList.map((s) => {
                                         const date = new Date(s.updatedAt);
-                                        const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) +
-                                                        ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                        const dateStr = Number.isNaN(date.getTime()) ? 'Data indisponível'
+                                            : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) + ' ' +
+                                              date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                        const title = s.firstMessage || '(conversa vazia)';
                                         return (
-                                            <div
-                                                key={s.sessionId}
-                                                onClick={() => carregarSessao(s.sessionId)}
-                                                role="button"
-                                                tabIndex={0}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); carregarSessao(s.sessionId); } }}
-                                                className={`p-3 rounded mb-1 border cursor-pointer d-flex justify-content-between align-items-start transition-colors ${
-                                                    sessionId === s.sessionId
-                                                        ? 'bg-primary bg-opacity-10 border-primary text-light'
-                                                        : 'bg-transparent border-transparent text-secondary hover:bg-secondary hover:bg-opacity-5'
-                                                }`}
-                                                style={{ cursor: 'pointer' }}
-                                            >
-                                                <div className="min-w-0 flex-grow-1">
-                                                    <div className="text-truncate small fw-bold text-light mb-1">
-                                                        {s.firstMessage || '(conversa vazia)'}
-                                                    </div>
-                                                    <div className="d-flex align-items-center gap-2" style={{ fontSize: '0.68rem' }}>
-                                                        <span>{dateStr}</span>
-                                                        <span>·</span>
-                                                        <span>{s.messageCount || 0} msgs</span>
-                                                    </div>
-                                                </div>
-                                                <button 
+                                            <div key={s.sessionId}
+                                                className={`sl-conversation__history-row d-flex align-items-center gap-1 ${sessionId === s.sessionId ? 'is-active' : ''}`}>
+                                                <button type="button"
+                                                    className="sl-conversation__history-select d-flex flex-grow-1 text-start"
+                                                    aria-current={sessionId === s.sessionId ? 'page' : undefined}
+                                                    aria-label={`Abrir conversa: ${title}`}
+                                                    onClick={() => carregarSessao(s.sessionId)}>
+                                                    <span className="min-w-0 flex-grow-1">
+                                                        <span className="sl-conversation__history-name d-block text-truncate fw-semibold">{title}</span>
+                                                        <span className="sl-conversation__history-meta d-block text-truncate">
+                                                            {dateStr} · {s.messageCount || 0} mensagens
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                                <button type="button"
+                                                    className="sl-conversation__history-delete d-flex align-items-center justify-content-center flex-shrink-0"
                                                     onClick={(e) => excluirSessao(e, s.sessionId)}
-                                                    className="btn btn-link text-danger p-1 ms-2"
-                                                    title="Excluir conversa"
-                                                >
-                                                    <Trash2 size={13} />
+                                                    aria-label={`Excluir conversa: ${title}`}
+                                                    title="Excluir conversa">
+                                                    <Trash2 size={17} aria-hidden="true" />
                                                 </button>
                                             </div>
                                         );
