@@ -1,0 +1,59 @@
+name: Diagnostic public site and VPS listener (read only)
+
+on:
+  push:
+    branches:
+      - hotfix/diagnose-site-outage-20261027
+    paths:
+      - .github/workflows/site-outage-readonly.yml
+
+permissions:
+  contents: read
+
+jobs:
+  external:
+    name: Public route / DNS / origin probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Check DNS and HTTPS without secrets or HTTP bodies
+        shell: bash
+        run: |
+          set -u
+          for name in softload.analysepro.com panel.analysepro.com; do
+            echo "DNS $name"
+            getent ahostsv4 "$name" | awk 'NR<=3 { print $1 }' || true
+            for path in / /health; do
+              echo "EXTERNAL https://$name$path"
+              curl --no-progress-meter -L -sS --max-time 10 --connect-timeout 4 -o /dev/null -w 'status=%{http_code} remote_ip=%{remote_ip} connect=%{time_connect} total=%{time_total}\n' "https://$name$path" || true
+            done
+          done
+          echo "DIRECT_ORIGIN_SOFTLOAD"
+          curl --no-progress-meter -sS -k --max-time 10 --connect-timeout 4 --resolve softload.analysepro.com:443:164.163.9.7 -o /dev/null -w 'status=%{http_code} remote_ip=%{remote_ip} total=%{time_total}\n' 'https://softload.analysepro.com/health' || true
+
+  local-vps:
+    name: VPS localhost diagnostics
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 3
+    steps:
+      - name: Check local listeners and public endpoint without sudo or Docker
+        shell: bash
+        run: |
+          set -u
+          test "$(id -un)" = softloadrunner || exit 1
+          echo "VPS_FREE_SPACE"
+          df -h /
+          echo "LISTENERS_PORTS"
+          ss -lnt 2>/dev/null | awk 'NR==1 || /:(80|443|8080|8081|3000|8000|9000) /' | head -35
+          echo "PROCESS_NAMES"
+          ps -eo user,comm,stat | grep -E '(caddy|docker|node|sshd)' | head -35 || true
+          for port in 80 8080 8081 3000; do
+            for path in /health; do
+              echo "LOOPBACK $port $path"
+              curl --no-progress-meter -sS --max-time 7 --connect-timeout 3 -H 'Host: softload.analysepro.com' -o /dev/null -w 'status=%{http_code} connect=%{time_connect} total=%{time_total}\n' "http://127.0.0.1:$port$path" || true
+            done
+          done
+          echo "VPS_DNS"
+          getent ahostsv4 softload.analysepro.com | awk 'NR<=3 { print $1 }' || true
+          echo "PUBLIC_HTTPS"
+          curl --no-progress-meter -sS --max-time 10 --connect-timeout 4 -o /dev/null -w 'status=%{http_code} remote_ip=%{remote_ip} total=%{time_total}\n' 'https://softload.analysepro.com/health' || true
