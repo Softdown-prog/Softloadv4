@@ -57,5 +57,18 @@ jobs:
                   # Print only line number and safe characteristics, never shell source.
                   candidates.append((i, 'rsync' in line.lower(), 'SSH_ORIGINAL_COMMAND' in line))
           print('receiver_transport_related_lines='+str(candidates[:60]))
+          # Emit a very limited inspection of the rsync routing. The receiver's
+          # code is read-only, and any line with secret-like text is redacted.
+          for i,line in enumerate(receiver.splitlines(),1):
+              if i not in (25,26,27,28,29,30,49,50,51,52,53,54,55):
+                  continue
+              stripped=line.strip()
+              if any(word in stripped.lower() for word in ('secret','token','password','private','auth','ssh_key','api_key')):
+                  print(f'rsync_route_{i}=REDACTED')
+                  continue
+              if len(stripped)>180 or not all((32<=ord(c)<=126 or c in '\\t') for c in stripped):
+                  print(f'rsync_route_{i}=NONPRINTABLE_OR_LONG')
+                  continue
+              print(f'rsync_route_{i}={stripped}')
           PY
           echo 'This diagnostic made no SSH transfer, Docker call, configuration edit, or restart.'
