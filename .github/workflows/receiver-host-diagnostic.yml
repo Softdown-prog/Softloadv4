@@ -1,0 +1,56 @@
+name: Inspect installed receiver from VPS runner (read-only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/receiver-host-diagnostic.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 5
+    steps:
+      - name: Inspect local receiver structure without secrets or privilege escalation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(id -un)" = softloadrunner
+          if id -nG | tr ' ' '\n' | grep -qx docker || sudo -n true >/dev/null 2>&1; then
+            echo "::error::VPS runner privileges changed; refusing inspection."
+            exit 1
+          fi
+          receiver=/usr/local/sbin/softload-actions-receiver
+          if [ ! -e "$receiver" ]; then
+            echo "::warning::Receiver file not present in runner filesystem."
+            exit 0
+          fi
+          if [ ! -r "$receiver" ]; then
+            echo "::warning::Receiver file exists but is unreadable for unprivileged runner."
+            exit 0
+          fi
+          bash -n "$receiver"
+          python3 - "$receiver" <<'PY'
+          from pathlib import Path
+          import re, sys
+          p=Path(sys.argv[1])
+          lines=p.read_text(errors="replace").splitlines()
+          print("RECEIVER_DIAG line_count=", len(lines))
+          print("RECEIVER_DIAG bash_syntax=ok")
+          print("RECEIVER_DIAG recognizes_v2=", "contract:v2" in p.read_text(errors="replace"))
+          for label in ("current", "contract:v2", "finish", "reuse", "deploy", "sandbox", "embeddings", "softload-app", "softload-agent"):
+              n=sum(label in line for line in lines)
+              print("RECEIVER_DIAG matches_%s=%d" % (label.replace(":", "_").replace("-", "_"), n))
+          # Show only case labels and function declarations. Do not expose the
+          # command bodies, environment, credentials, file content or keys.
+          for i, line in enumerate(lines,1):
+              s=line.strip()
+              if re.fullmatch(r"(?:[a-zA-Z0-9_:*?|.-]{1,70}\)|;;|esac)", s) or re.fullmatch(r"(?:case [^ ]{1,60} in|function [A-Za-z_][A-Za-z0-9_]*\(\)|[A-Za-z_][A-Za-z0-9_]*\(\) \{)", s):
+                  if any(t in s.lower() for t in ("secret","token","password","key=","auth")):
+                      continue
+                  print("RECEIVER_STRUCTURE",i,repr(s[:75]))
+          PY
