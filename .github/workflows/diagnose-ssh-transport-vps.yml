@@ -1,0 +1,61 @@
+name: Diagnose VPS SSH transport receiver (read-only)
+on:
+  push:
+    branches: [diagnose/ssh-transfer-vps-20261027]
+    paths: [.github/workflows/diagnose-ssh-transport-vps.yml]
+permissions:
+  contents: read
+jobs:
+  receiver-check:
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 5
+    steps:
+      - name: Inspect locally installed receiver capabilities without privileges
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== Runner identity and privilege boundary ==='
+          test "$(id -un)" = softloadrunner
+          if id -nG | tr ' ' '\n' | grep -qx docker || sudo -n true >/dev/null 2>&1; then
+            echo '::error::Unexpected elevated runner rights; abort.'
+            exit 1
+          fi
+          echo 'runner=softloadrunner, no sudo and no docker group'
+          echo '=== Host capacity (metadata only) ==='
+          df -h / | tail -n 1
+          printf 'rsync_version='
+          if command -v rsync >/dev/null 2>&1; then rsync --version | head -n 1; else echo missing; fi
+          echo '=== Installed SSH receiver (no contents or credentials disclosed) ==='
+          receiver=/usr/local/sbin/softload-actions-receiver
+          if [ ! -r "$receiver" ]; then
+            echo "receiver_readable=no"
+            exit 0
+          fi
+          stat -c 'receiver_mode=%a receiver_owner_uid=%u receiver_gid=%g receiver_bytes=%s' "$receiver"
+          sha256sum "$receiver" | awk '{print "receiver_sha256="$1}'
+          bash -n "$receiver"
+          python3 - "$receiver" <<'PY'
+          from pathlib import Path
+          import sys
+          receiver=Path(sys.argv[1]).read_text(errors='replace')
+          print('receiver_shell_syntax=ok')
+          for name,fragment in {
+              'contract_v2':'contract:v2',
+              'rsync_server':'rsync --server',
+              'rsync_flag_append_verify':'--append-verify',
+              'rsync_flag_checksum':'--checksum',
+              'rsync_flag_inplace':'--inplace',
+              'rsync_flag_partial':'--partial',
+              'rsync_policy_exact':'SSH_ORIGINAL_COMMAND',
+              'finish_checks_sha':'sha256sum',
+              'has_file_lock':'flock',
+          }.items():
+              print(f'{name}={fragment in receiver}')
+          candidates=[]
+          for i,line in enumerate(receiver.splitlines(),1):
+              if 'rsync' in line.lower() or 'ssh_original_command' in line.lower():
+                  # Print only line number and safe characteristics, never shell source.
+                  candidates.append((i, 'rsync' in line.lower(), 'SSH_ORIGINAL_COMMAND' in line))
+          print('receiver_transport_related_lines='+str(candidates[:60]))
+          PY
+          echo 'This diagnostic made no SSH transfer, Docker call, configuration edit, or restart.'
