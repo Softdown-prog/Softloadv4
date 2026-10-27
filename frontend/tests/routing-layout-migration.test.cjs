@@ -577,3 +577,35 @@ test('landing identifica demonstração ilustrativa e não promete métricas nã
   assert.match(landing, /recursos para configurar metadados/i);
   assert.ok(landing.includes('funcionalidades variam conforme o plano') || landing.includes('Funcionalidades variam conforme o plano'));
 });
+
+
+test('dashboard apresenta ferramentas prioritárias antes dos indicadores e extrato', () => {
+  const home = source('frontend/pages/DashboardHome.tsx');
+  const layout = source('frontend/layouts/DashboardLayout.tsx');
+  const css = source('public/css/softload.css');
+  assert.ok(home.indexOf('id="dashboard-tools-title"') < home.indexOf('{/* Stats */}'));
+  for (const path of ['/dashboard/solaris','/dashboard/chat','/dashboard/workspace']) {
+    assert.ok(home.includes('to="'+path+'"'),path);
+    assert.ok(layout.includes('to="'+path+'"'),path);
+  }
+  assert.ok(home.includes('columnClassName="col-12 col-md-6 col-xl-4"'));
+  assert.ok(home.includes('<details className="sl-dashboard-credit-details mt-4">'));
+  assert.ok(home.includes('Ver histórico detalhado de consumo'));
+  assert.ok(home.includes('aria-label="Créditos Gemini disponíveis no ciclo"'));
+  assert.ok(home.includes('aria-label="Armazenamento utilizado"'));
+  assert.ok(home.includes('stats.creditosCicloTotal > 0'));
+  assert.ok(home.includes('stats.storageLimitMb > 0'));
+  assert.ok(css.includes('.sl-dashboard-primary-tools'));
+  assert.ok(css.includes('.sl-dashboard-credit-details'));
+});
+
+test('sidebar usa marca V4 e mantém navegação mobile acessível', () => {
+  const src = source('frontend/layouts/DashboardLayout.tsx');
+  assert.ok(src.includes('SOFTLOAD<span className="sl-accent"> V4</span>'));
+  assert.doesNotMatch(src,/Fábrica de Templates XML|>ENGINE<\/span>/);
+  assert.ok(src.includes('label="Planos e créditos"'));
+  assert.ok(src.includes('aria-controls="sl-dashboard-mobile-menu"'));
+  assert.ok(src.includes('aria-expanded={drawerOpen}'));
+  assert.ok(src.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
+  assert.ok(src.indexOf('label="Workspace"') < src.indexOf('>Projetos e conta</p>'));
+});

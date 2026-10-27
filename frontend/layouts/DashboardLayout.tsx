@@ -56,10 +56,10 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
             <div className="d-flex align-items-center justify-content-between px-4 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--bs-border-color)' }}>
                 <div>
                     <Link to="/dashboard" className="fw-black text-decoration-none sl-brand d-block" style={{ fontSize: '1.05rem', color: 'var(--bs-body-color)' }}>
-                        SOFTLOAD<span className="sl-accent">ENGINE</span>
+                        SOFTLOAD<span className="sl-accent"> V4</span>
                     </Link>
                     <p className="mb-0 text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.25em', marginTop: '2px' }}>
-                        Fábrica de Templates XML
+                        Ferramentas de desenvolvimento com IA
                     </p>
                 </div>
                 {onClose && (
@@ -98,11 +98,12 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
                 <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Visão geral" active={location.pathname === '/dashboard' || location.pathname === '/dashboard/'} onNavigate={onNavigate} />
                 <p className="fw-black text-uppercase mb-2 px-2 mt-3" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Ferramentas</p>
                 <SidebarItem to="/dashboard/chat" icon={MessageSquare} label="Especialista Blogger" badge="Gemini" badgeColor="primary" active={location.pathname === '/dashboard/chat'} onNavigate={onNavigate} />
-                <SidebarItem to="/dashboard/solaris" icon={Cpu} label="Solaris Code" badge="Novo" badgeColor="secondary" active={location.pathname === '/dashboard/solaris'} onNavigate={onNavigate} />
-
-                <p className="fw-black text-uppercase mb-2 px-2 mt-4" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Conta</p>
+                <SidebarItem to="/dashboard/solaris" icon={Cpu} label="Solaris Code" active={location.pathname === '/dashboard/solaris'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/workspace" icon={FolderOpen} label="Workspace" active={location.pathname === '/dashboard/workspace' || location.pathname.startsWith('/dashboard/workspace/')} onNavigate={onNavigate} />
+
+                <p className="fw-black text-uppercase mb-2 px-2 mt-4" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Projetos e conta</p>
                 <SidebarItem to="/dashboard/historico" icon={History} label="Histórico XML" active={location.pathname === '/dashboard/historico'} onNavigate={onNavigate} />
+                <SidebarItem to="/dashboard/upgrade" icon={ShieldCheck} label="Planos e créditos" active={location.pathname === '/dashboard/upgrade'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/configuracoes" icon={Settings} label="Configurações" active={location.pathname === '/dashboard/configuracoes'} onNavigate={onNavigate} />
             </nav>
 
@@ -172,6 +173,7 @@ export default function DashboardLayout(): React.JSX.Element | null {
                         />
                         <motion.aside
                             ref={drawerRef}
+                            id="sl-dashboard-mobile-menu"
                             role="dialog"
                             aria-modal="true"
                             aria-label="Menu de navegação"
@@ -197,6 +199,8 @@ export default function DashboardLayout(): React.JSX.Element | null {
                         className="btn btn-link p-1"
                         style={{ color: 'var(--bs-body-color)' }}
                         aria-label="Abrir menu"
+                        aria-controls="sl-dashboard-mobile-menu"
+                        aria-expanded={drawerOpen}
                     >
                         <Menu size={20} />
                     </button>

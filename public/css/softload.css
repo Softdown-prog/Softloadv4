@@ -2483,3 +2483,37 @@ body.sl-admin-body { background: var(--sl-bg-950); color: var(--sl-text-300); }
 @media (prefers-reduced-motion:reduce) {
   .sl-dashboard-page .sl-dashboard-plan-card { transition:none; }
 }
+
+
+
+/* Entrada do dashboard: ferramentas antes das métricas e histórico recolhível. */
+.sl-dashboard-primary-tools .sl-dashboard-quicklink {
+  min-height: 146px;
+  border-top: 2px solid rgba(56,189,248,.32);
+}
+.sl-dashboard-primary-tools .sl-dashboard-quicklink-description {
+  max-width: 34rem;
+}
+.sl-dashboard-credit-details {
+  border-top: 1px solid var(--sl-panel-border);
+  padding-top: 14px;
+}
+.sl-dashboard-credit-details > summary {
+  cursor: pointer;
+  color: var(--bs-body-color);
+  padding: 7px 0;
+}
+.sl-dashboard-credit-details > summary:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 3px;
+  border-radius: 5px;
+}
+.sl-dashboard-credit-details[open] > summary {
+  margin-bottom: 10px;
+}
+@media (max-width: 575.98px) {
+  .sl-dashboard-primary-tools .sl-dashboard-quicklink { min-height: auto; }
+  .sl-dashboard-intro h1 { font-size: 1.24rem!important; }
+  .sl-dashboard-primary-tools .sl-dashboard-quicklink { padding: 16px; }
+  .sl-dashboard-credit-details .form-select { max-width: 100%!important; }
+}
