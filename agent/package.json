@@ -23,7 +23,7 @@
     "@google-cloud/secret-manager": "^6.0.0",
     "@google-cloud/storage": "^7.16.0",
     "@google/genai": "^2.16.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@octokit/rest": "^22.0.0",
     "axios": "^1.11.0",
     "diff": "^7.0.0",
