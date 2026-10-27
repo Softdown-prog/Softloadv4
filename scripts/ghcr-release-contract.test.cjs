@@ -27,3 +27,18 @@ test('bootstrap publishes only inert images, and checks privacy before app stagi
   assert.match(stage, /sha-\$GITHUB_SHA/);
   assert.doesNotMatch(stage, /--platform linux\/arm64/);
 });
+
+test('GHCR image builds locally and is not pushed before second privacy and SHA gate', () => {
+  const build = stage.indexOf('Build image locally (no publish yet)');
+  const secondGate = stage.indexOf('Recheck main revision and package privacy immediately before push');
+  const push = stage.indexOf('Push image and capture immutable digest');
+  const postCheck = stage.indexOf('Check private visibility again after image upload');
+  assert.ok(build > 0 && secondGate > build && push > secondGate && postCheck > push);
+  assert.match(stage, /docker buildx build --load --platform linux\/amd64/);
+  assert.doesNotMatch(stage, /docker buildx build --push/);
+  assert.match(stage, /docker push "\$image"/);
+  assert.match(stage.slice(secondGate, push), /\[ "\$visibility" != private \]/);
+  assert.match(stage.slice(secondGate, push), /"\$latest" != "\$GITHUB_SHA"/);
+  assert.match(stage, /\[\[ "\$digest" =~ \^sha256:/);
+  assert.match(stage, /\$REGISTRY@\$DIGEST/);
+});
