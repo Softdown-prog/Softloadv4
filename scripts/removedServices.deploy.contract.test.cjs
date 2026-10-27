@@ -66,3 +66,47 @@ test('inventário do receptor usa apenas comandos de leitura e sintaxe shell vá
   assert.doesNotMatch(content, /docker (?:rm|rmi|system prune|volume rm)|sudo\s|chmod\s|chown\s|ssh-keygen\s/);
   assert.doesNotMatch(content, /cat\s+\/root\/\.ssh\/authorized_keys|docker inspect.*Env/);
 });
+
+
+test('inspeção do receptor v2 é estática e não executa código remoto', () => {
+  const file=fs.readFileSync(path.join(root,'scripts/vps/inspect-receiver-readonly.sh'),'utf8');
+  assert.match(file,/Receiver v2 static compatibility indicators/);
+  assert.match(file,/receiver_candidates_checked/);
+  assert.match(file,/contract:v2/);
+  assert.match(file,/softload-deploy:v2:app,agent/);
+  assert.match(file,/bash -n/);
+  assert.doesNotMatch(file,/SSH_ORIGINAL_COMMAND\s*=/);
+  assert.doesNotMatch(file,/docker\s+(?:rm|rmi|system\s+prune)|sudo\s|chmod\s|chown\s|ssh-keygen\s/);
+});
+
+test('runbook inclui causa do erro e proíbe contornar o handshake', () => {
+  const doc=fs.readFileSync(path.join(root,'docs/VPS_DEPLOY.md'),'utf8');
+  assert.match(doc,/Command not allowed/);
+  assert.match(doc,/No such image/);
+  assert.match(doc,/softload-deploy:v2:app,agent/);
+  assert.match(doc,/Não aplicar atualização automática do receptor desconhecido/);
+});
+
+
+test('preflight do receptor bloqueia dependências pesadas e builds antes do SSH v2', () => {
+  const plan = workflow.indexOf('  plan:');
+  const verify = workflow.indexOf('  verify:');
+  const transfer = workflow.indexOf('  build_and_transfer:');
+  assert.ok(verify > 0 && plan > verify && transfer > plan, 'jobs devem continuar declarados');
+  assert.match(workflow, /  verify:\n[\s\S]*?    needs: plan/);
+  assert.doesNotMatch(workflow, /  plan:\n\s+needs: verify/);
+  assert.ok(workflow.indexOf('Confirm receiver understands app+agent before upload') < transfer);
+  assert.match(workflow, /  build_and_transfer:\n    needs: \[verify, plan\]/);
+  assert.match(workflow, /  activate:\n    needs: build_and_transfer/);
+});
+
+test('reconciliador nao cria retries inuteis se o receiver v2 esta bloqueando', () => {
+  const file = fs.readFileSync(path.join(root,'.github/workflows/reconcile-deploy.yml'), 'utf8');
+  assert.match(file, /listJobsForWorkflowRun/);
+  assert.match(file, /Confirm receiver understands app\+agent before upload/);
+  assert.match(file, /receiverBlocked/);
+  const stopBlock = file.indexOf('if (receiverBlocked)');
+  const nextDispatch = file.indexOf('await github.rest.actions.createWorkflowDispatch');
+  assert.ok(stopBlock > 0 && nextDispatch > stopBlock);
+  assert.match(file, /Corrija o receptor no host/);
+});

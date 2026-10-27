@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { fetchAppConfig, type AppUser } from '../services/api';
 
 const NAV_LINKS = [
@@ -12,6 +13,8 @@ const NAV_LINKS = [
 export default function PublicNavbar(): React.JSX.Element {
     const [user, setUser] = useState<AppUser | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+    const location = useLocation();
 
     useEffect(() => {
         let mounted = true;
@@ -20,6 +23,21 @@ export default function PublicNavbar(): React.JSX.Element {
         });
         return () => { mounted = false; };
     }, []);
+
+    // O menu mobile não deve ficar aberto após navegar; Escape o fecha por teclado.
+    useEffect(() => { setMobileOpen(false); }, [location.pathname, location.hash]);
+
+    useEffect(() => {
+        if (!mobileOpen) return;
+        function onKeyDown(event: KeyboardEvent): void {
+            if (event.key === 'Escape') {
+                setMobileOpen(false);
+                menuButtonRef.current?.focus();
+            }
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [mobileOpen]);
 
     const loggedIn = !!user;
 
@@ -35,7 +53,7 @@ export default function PublicNavbar(): React.JSX.Element {
                     <ul className="navbar-nav mx-auto">
                         {NAV_LINKS.map((link) => (
                             <li className="nav-item" key={link.href}>
-                                <a href={link.href} className="nav-link" onClick={() => setMobileOpen(false)}>{link.label}</a>
+                                <a href={link.href} className="nav-link" onClick={() => setMobileOpen(false)} aria-current={location.pathname === '/' && link.href === '/' ? 'page' : undefined}>{link.label}</a>
                             </li>
                         ))}
                     </ul>
@@ -68,6 +86,7 @@ export default function PublicNavbar(): React.JSX.Element {
                     )}
 
                     <button
+                        ref={menuButtonRef}
                         className="navbar-toggler border-0 p-1 d-md-none"
                         type="button"
                         aria-controls="sl-nav-collapse"

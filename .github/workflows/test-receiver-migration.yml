@@ -1,0 +1,24 @@
+name: Test VPS receiver migration (offline)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/vps/migrate_receiver_v2.py
+      - scripts/vps/test_migrate_receiver_v2.py
+      - .github/workflows/test-receiver-migration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate syntax and offline backup/rollback guards
+        run: |
+          python3 -m py_compile scripts/vps/migrate_receiver_v2.py
+          python3 -m unittest discover -s scripts/vps -p test_migrate_receiver_v2.py -v

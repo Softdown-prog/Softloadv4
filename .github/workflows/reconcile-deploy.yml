@@ -57,6 +57,35 @@ jobs:
               return;
             }
 
+            // Se o ultimo deploy falhou no contrato SSH do receptor instalado
+            // na VPS, nao repetir o mesmo erro. A limpeza Docker nao atualiza
+            // o forced-command: o administrador precisa migrar o receptor v2
+            // antes de disparar o deploy manualmente.
+            const lastFailed = runs.find(run =>
+              run.head_sha === expected && run.conclusion === 'failure'
+            );
+            if (lastFailed) {
+              const details = await github.rest.actions.listJobsForWorkflowRun({
+                owner, repo, run_id: lastFailed.id, per_page: 100
+              });
+              const receiverBlocked = details.data.jobs.some(job =>
+                job.name === 'plan' && (job.steps || []).some(step =>
+                  step.name === 'Confirm receiver understands app+agent before upload' &&
+                  step.conclusion === 'failure'
+                )
+              );
+              if (receiverBlocked) {
+                core.notice(
+                  'Deploy parado com seguranca: o receptor SSH real da VPS ainda nao ' +
+                  'aceita contract:v2 (app+agent). Nao adianta repetir Actions ou ' +
+                  'limpar containers. Corrija o receptor no host e dispare ' +
+                  'Deploy Softload VPS por workflow_dispatch. Ultimo erro: ' +
+                  lastFailed.html_url
+                );
+                return;
+              }
+            }
+
             const retries = runs.filter(run =>
               run.head_sha === expected &&
               run.event === 'workflow_dispatch' &&

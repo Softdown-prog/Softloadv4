@@ -539,3 +539,73 @@ test('sitemap público anunciado por robots.txt tem somente rotas indexáveis', 
   }
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
 });
+
+
+test('rodapés React e EJS expõem os mesmos destinos públicos sem status fictício', () => {
+  const react = source('frontend/components/PublicFooter.tsx');
+  const ejs = source('views/partials/footer.ejs');
+  const landing = source('frontend/pages/Landing.tsx');
+  for (const href of ['/#demo-solaris', '/#ia-pode', '/#features', '/#solucoes',
+                      '/register', '/login', '/dashboard', '/contato', '/termos-de-uso', '/privacidade']) {
+    assert.ok(react.includes('href="'+href+'"'), 'React: '+href);
+    assert.ok(ejs.includes('href="'+href+'"'), 'EJS: '+href);
+  }
+  for (const section of ['demo-solaris', 'ia-pode', 'features', 'solucoes']) {
+    assert.ok(landing.includes('id="'+section+'"'), 'Âncora '+section+' ausente');
+  }
+  assert.ok(react.includes('rel="noopener noreferrer"'));
+  assert.ok(ejs.includes('rel="noopener noreferrer"'));
+  assert.doesNotMatch(react+ejs, /Sistemas Operacionais|sl-pulse/);
+  assert.ok(react.includes('Solaris Code · Blogger · Workspace'));
+  assert.ok(ejs.includes('Solaris Code · Blogger · Workspace'));
+  assert.ok(source('public/css/softload.css').includes('.sl-footer-heading'));
+});
+
+test('menu React responde ao Escape, restaura foco e indica início ativo', () => {
+  const nav = source('frontend/components/PublicNavbar.tsx');
+  assert.ok(nav.includes('menuButtonRef.current?.focus()'));
+  assert.ok(nav.includes("event.key === 'Escape'"));
+  assert.ok(nav.includes("window.removeEventListener('keydown', onKeyDown)"));
+  assert.ok(nav.includes('location.pathname, location.hash'));
+  assert.ok(nav.includes('aria-current='));
+});
+
+test('landing identifica demonstração ilustrativa e não promete métricas não medidas', () => {
+  const landing = source('frontend/pages/Landing.tsx');
+  assert.ok(landing.includes('Interface ilustrativa; indicadores não são resultados de auditoria'));
+  assert.doesNotMatch(landing, /SEO Score|>98<\/span>|0\.8s|Core Web Vitals aprovado|Compilado em 320ms/);
+  assert.match(landing, /recursos para configurar metadados/i);
+  assert.ok(landing.includes('funcionalidades variam conforme o plano') || landing.includes('Funcionalidades variam conforme o plano'));
+});
+
+
+test('dashboard apresenta ferramentas prioritárias antes dos indicadores e extrato', () => {
+  const home = source('frontend/pages/DashboardHome.tsx');
+  const layout = source('frontend/layouts/DashboardLayout.tsx');
+  const css = source('public/css/softload.css');
+  assert.ok(home.indexOf('id="dashboard-tools-title"') < home.indexOf('{/* Stats */}'));
+  for (const path of ['/dashboard/solaris','/dashboard/chat','/dashboard/workspace']) {
+    assert.ok(home.includes('to="'+path+'"'),path);
+    assert.ok(layout.includes('to="'+path+'"'),path);
+  }
+  assert.ok(home.includes('columnClassName="col-12 col-md-6 col-xl-4"'));
+  assert.ok(home.includes('<details className="sl-dashboard-credit-details mt-4">'));
+  assert.ok(home.includes('Ver histórico detalhado de consumo'));
+  assert.ok(home.includes('aria-label="Créditos Gemini disponíveis no ciclo"'));
+  assert.ok(home.includes('aria-label="Armazenamento utilizado"'));
+  assert.ok(home.includes('stats.creditosCicloTotal > 0'));
+  assert.ok(home.includes('stats.storageLimitMb > 0'));
+  assert.ok(css.includes('.sl-dashboard-primary-tools'));
+  assert.ok(css.includes('.sl-dashboard-credit-details'));
+});
+
+test('sidebar usa marca V4 e mantém navegação mobile acessível', () => {
+  const src = source('frontend/layouts/DashboardLayout.tsx');
+  assert.ok(src.includes('SOFTLOAD<span className="sl-accent"> V4</span>'));
+  assert.doesNotMatch(src,/Fábrica de Templates XML|>ENGINE<\/span>/);
+  assert.ok(src.includes('label="Planos e créditos"'));
+  assert.ok(src.includes('aria-controls="sl-dashboard-mobile-menu"'));
+  assert.ok(src.includes('aria-expanded={drawerOpen}'));
+  assert.ok(src.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
+  assert.ok(src.indexOf('label="Workspace"') < src.indexOf('>Projetos e conta</p>'));
+});

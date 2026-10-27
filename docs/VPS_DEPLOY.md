@@ -61,3 +61,80 @@ A franquia da Locacloud pode seguir outra metodologia de medição.
 A retirada dos serviços pesados introduz um contrato novo. Antes de qualquer build ou transferência, o job `plan` chama pelo SSH restrito o comando de consulta `contract:v2` e exige resposta exata `softload-deploy:v2:app,agent`. Resposta ausente/incorreta **interrompe o deploy antes de enviar as imagens**; não ativa app/agent parcialmente. A implementação do receptor da VPS ainda precisa ser migrada fora deste repositório (issue #20). O handshake não libera espaço em disco por si só.
 
 Para provas de regressão, a CI compila a imagem do Agent em runner GitHub e executa o smoke real do Asset Forge com base Debian slim. Os valores de tamanho antes/depois devem ser medidos no Docker de produção após a troca da imagem e limpeza seletiva validada.
+
+## Diagnóstico da incompatibilidade do receptor v2 (26/10/2026)
+
+O job plan de 40419393923 foi interrompido com 'Command not allowed' quando
+consultou 'contract:v2'. O receptor SSH na VPS ainda não aceita o contrato de
+dois serviços; o deploy foi barrado antes de build/transferência. No run
+40413155240, anterior à proteção, a ativação falhou com
+'No such image: softload-sandbox:366eed8...'.
+
+O código real do receptor instalado no host da VPS não pertence a este repositório.
+Não desligar o handshake, não recriar a imagem removida e não falsificar tags.
+
+O Painel possui um Terminal VPS administrativo. Após login autorizado, esta
+consulta é apenas leitura e localiza candidatos sem mostrar chaves privadas:
+
+    linux find /usr/local/bin /usr/local/sbin /opt/softload-infra /opt/softload /srv -maxdepth 3 -type f -iname '*deploy*' -print
+
+Com acesso ao host e após localizar o receptor, é possível executar localmente
+scripts/vps/inspect-receiver-readonly.sh (se o script estiver no host). Ele mostra
+caminhos e indicadores estáticos da compatibilidade v2, sem ler variáveis Env
+nem imprimir o conteúdo de authorized_keys. Não instala nem executa o receptor.
+
+**Não aplicar atualização automática do receptor desconhecido.** Um operador
+autorizado deve revisar o arquivo efetivo apontado pela regra SSH, fazer backup
+da configuração, da revisão ativa e do Compose, adaptar apenas app/agent
+(finish, reuse, deploy e rollback), e validar a resposta exata de
+'contract:v2': 'softload-deploy:v2:app,agent'. Após testes e saúde pública,
+retirar serviços antigos e imagens especificamente auditadas, sem prune.
+
+A atualização do código no GitHub não equivale à migração da VPS.
+
+
+## Bloqueio persistente identificado em 27/10/2026
+
+As execuções #40476530713, #40476647309 e #40476919428 aprovaram o job
+`verify`, porém o job `plan` terminou com `Command not allowed` ao
+consultar via SSH `contract:v2`. Nesse estado, **nenhuma imagem é enviada**
+e **nenhuma ativação é feita**. A limpeza de Sandbox/Embeddings no Docker
+não altera o receptor SSH instalado, por isso novos commits seguem falhando.
+
+Para reduzir custos de GitHub Actions até a atualização administrativa do
+receptor na VPS, a ordem agora é **`plan` (preflight somente-leitura) →
+`verify` (testes e build) → `build_and_transfer` → `activate`**. A
+verificação independente de TypeScript continua em seu próprio workflow.
+O reconciliador agendado passa a reconhecer a falha conhecida no contrato
+do receptor e não solicitar novamente o mesmo deploy sem intervenção.
+
+**Recuperação:** o administrador deve acessar a VPS pelo Terminal SSH
+autenticado do Painel (não pela chave SSH restrita do Actions), verificar o
+script receptor real apontado pelo forced-command, salvar backup e migrar
+seus comandos `finish`, `reuse`, `deploy` e rollback para apenas
+`app`/`agent`. O comando `contract:v2` deve então retornar **exatamente**
+`softload-deploy:v2:app,agent`. Confirme a identidade SSH e o comportamento
+do rollback num ambiente controlado. Somente após essa migração,
+acionar manualmente **Actions → Deploy Softload VPS → Run workflow** e
+verificar se o SHA público de `/health` corresponde ao commit.
+
+**Não remover o preflight e não criar imagens falsas de sandbox/embeddings**
+para contornar o receptor.
+
+## Recuperação confirmada no host — 27/10/2026
+
+O operador confirmou a execução no Terminal VPS administrativo do utilitário
+`scripts/vps/migrate_receiver_v2.py`, com os seguintes resultados:
+
+- Download conferido por SHA-256;
+- `PREFLIGHT_OK`: Compose ativo contém `app` e `agent`, sem `sandbox`/`embeddings`;
+- `MIGRACAO_OK`: comando `contract:v2` devolve `softload-deploy:v2:app,agent`;
+- `BACKUP_OK`: backup local do receptor original criado antes da troca;
+- `NENHUM_CONTAINER_ALTERADO`: atualização apenas do receptor SSH.
+
+Esses resultados são confirmações da execução administrativa, **não** prova de
+deploy completo. O próximo push aciona a validação real pelo SSH restrito do
+GitHub Actions; só considere resolvido depois dos jobs `plan`, `verify`,
+`build_and_transfer`, `activate` e da confirmação de SHA em
+`https://softload.analysepro.com/health`. Em caso de erro, preservar backup
+e imagens de rollback, sem limpeza automática de Docker.

@@ -108,3 +108,31 @@ test('blocos de código TypeScript preservam linguagem e rótulo na conversa', (
   assert.match(source, /ts: 'TypeScript'/);
   assert.match(source, /typescript: 'TypeScript'/);
 });
+
+
+test('Solaris e Blogger separam seleção de histórico e exclusão em botões irmãos',()=>{
+  for (const file of ['frontend/pages/Chat.tsx','frontend/pages/Solaris.tsx']) {
+    const source=fs.readFileSync(path.join(root,file),'utf8');
+    const row=source.slice(source.indexOf('sl-conversation__history-row'));
+    assert.ok(row.includes('aria-label={`Abrir conversa: ${title}`}'),file);
+    assert.ok(row.includes('aria-label={`Excluir conversa: ${title}`}'),file);
+    assert.ok(row.includes("aria-current={sessionId === s.sessionId ? 'page' : undefined}"),file);
+    assert.ok(row.indexOf('</button>') < row.indexOf('className="sl-conversation__history-delete'),file);
+    assert.doesNotMatch(row,/role="button"|tabIndex={0}|onKeyDown=\{\(e\) =>/);
+    assert.ok(source.includes('sl-conversation__history-drawer'),file);
+  }
+  for(const selector of ['.sl-conversation__history-row','.sl-conversation__history-select',
+    '.sl-conversation__history-delete','.sl-conversation__credit']) {
+    assert.ok(css.includes(selector),selector);
+  }
+});
+test('cabeçalhos dos dois chats são compactos e rotulam seus créditos',()=>{
+  const solaris=fs.readFileSync(path.join(root,'frontend/pages/Solaris.tsx'),'utf8');
+  const blogger=fs.readFileSync(path.join(root,'frontend/pages/Chat.tsx'),'utf8');
+  assert.ok(solaris.includes('Solaris Code</span>'));
+  assert.doesNotMatch(solaris,/>v3 IA</);
+  assert.ok(solaris.includes("aria-label={saldoFonte === 'indisponivel'"));
+  assert.ok(blogger.includes('Créditos Gemini disponíveis:'));
+  assert.ok(solaris.includes('sl-conversation__heading'));
+  assert.ok(blogger.includes('sl-conversation__heading'));
+});

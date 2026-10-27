@@ -2,51 +2,56 @@ import React from 'react';
 
 export default function PublicFooter(): React.JSX.Element {
     return (
-        <footer className="sl-footer">
+        <footer className="sl-footer" aria-label="Informações e links da Softload">
             <div className="container-xl">
                 <div className="row g-4 mb-4">
-                    <div className="col-12 col-md-6">
+                    <div className="col-12 col-lg-4">
                         <a href="/" className="fw-black text-white text-decoration-none d-block mb-3 sl-brand" style={{ fontSize: '1.25rem' }}>
                             SOFTLOAD<span className="sl-accent"> V4</span>
                         </a>
-                        <p className="mb-0 small" style={{ color: 'var(--sl-text-400)', maxWidth: 360, lineHeight: 1.7 }}>
-                            Ferramentas de inteligência artificial para desenvolvimento de software, assistência especializada em Blogger e criação de templates.
+                        <p className="mb-0 small" style={{ color: 'var(--sl-text-400)', maxWidth: 340, lineHeight: 1.7 }}>
+                            Solaris Code para desenvolver e revisar código, IA Especialista Blogger e Workspace para projetos e templates XML.
                         </p>
                     </div>
 
-                    <div className="col-6 col-md-3">
-                        <h6 className="text-white fw-black text-uppercase mb-3" style={{ fontSize: 11, letterSpacing: '0.15em' }}>Explore</h6>
+                    <div className="col-6 col-sm-4 col-lg-3">
+                        <h2 className="sl-footer-heading">Ferramentas</h2>
                         <ul className="list-unstyled small fw-semibold mb-0">
-                            <li className="mb-2"><a href="/register" className="sl-footer-link">Registre-se</a></li>
-                            <li className="mb-2"><a href="/login" className="sl-footer-link">Painel de Controle</a></li>
-                            <li className="mb-2"><a href="/#solucoes" className="sl-footer-link">Ferramentas</a></li>
+                            <li className="mb-2"><a href="/#demo-solaris" className="sl-footer-link">Solaris Code</a></li>
+                            <li className="mb-2"><a href="/#ia-pode" className="sl-footer-link">Especialista Blogger</a></li>
+                            <li className="mb-2"><a href="/#features" className="sl-footer-link">Workspace XML</a></li>
+                            <li className="mb-2"><a href="/#solucoes" className="sl-footer-link">Todas as ferramentas</a></li>
                         </ul>
                     </div>
 
-                    <div className="col-6 col-md-3">
-                        <h6 className="text-white fw-black text-uppercase mb-3" style={{ fontSize: 11, letterSpacing: '0.15em' }}>Protocolos</h6>
+                    <div className="col-6 col-sm-4 col-lg-2">
+                        <h2 className="sl-footer-heading">Sua conta</h2>
+                        <ul className="list-unstyled small fw-semibold mb-0">
+                            <li className="mb-2"><a href="/register" className="sl-footer-link">Criar conta grátis</a></li>
+                            <li className="mb-2"><a href="/login" className="sl-footer-link">Entrar</a></li>
+                            <li className="mb-2"><a href="/dashboard" className="sl-footer-link">Painel de controle</a></li>
+                        </ul>
+                    </div>
+
+                    <div className="col-12 col-sm-4 col-lg-3">
+                        <h2 className="sl-footer-heading">Ajuda e políticas</h2>
                         <ul className="list-unstyled small fw-semibold mb-0">
                             <li className="mb-2"><a href="/contato" className="sl-footer-link">Contato</a></li>
-                            <li className="mb-2"><a href="https://suporte.analysepro.com/" className="sl-footer-link" target="_blank" rel="noopener">Blog e Dúvidas</a></li>
+                            <li className="mb-2"><a href="https://suporte.analysepro.com/" className="sl-footer-link" target="_blank" rel="noopener noreferrer">Blog e dúvidas <span aria-hidden="true">↗</span></a></li>
                             <li className="mb-2"><a href="/termos-de-uso" className="sl-footer-link">Termos de Uso</a></li>
-                            <li className="mb-2"><a href="/privacidade" className="sl-footer-link">Privacidade de Dados</a></li>
+                            <li className="mb-2"><a href="/privacidade" className="sl-footer-link">Política de Privacidade</a></li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 pt-3"
+                <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 pt-3"
                      style={{ borderTop: '1px solid var(--sl-bg-800)' }}>
-                    <p className="mb-0 font-monospace text-uppercase"
-                       style={{ fontSize: 11, color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>
+                    <p className="mb-0 small" style={{ color: 'var(--sl-text-500)' }}>
                         &copy; 2026 Softload V4. Todos os direitos reservados.
                     </p>
-                    <div className="d-flex align-items-center gap-2 px-3 py-2 rounded"
-                         style={{ background: 'var(--sl-bg-900)', border: '1px solid var(--sl-bg-800)' }}>
-                        <span className="rounded-circle sl-pulse"
-                              style={{ width: 8, height: 8, background: '#22c55e', display: 'inline-block', boxShadow: '0 0 8px rgba(34,197,94,0.8)' }}></span>
-                        <span className="font-monospace text-uppercase"
-                              style={{ fontSize: 10, color: 'var(--sl-text-300)', letterSpacing: '0.15em' }}>Sistemas Operacionais</span>
-                    </div>
+                    <span className="small" style={{ color: 'var(--sl-text-400)' }}>
+                        Solaris Code · Blogger · Workspace
+                    </span>
                 </div>
             </div>
         </footer>

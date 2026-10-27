@@ -16,6 +16,9 @@ permissions:
 
 jobs:
   verify:
+    # Somente roda a suíte pesada depois que o receptor SSH v2 estiver pronto.
+    # O plan é estritamente de leitura e não envia/ativa imagens.
+    needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -64,7 +67,9 @@ jobs:
         run: node scripts/check-frontend-branding.js
 
   plan:
-    needs: verify
+    # Preflight rápido e sem efeitos colaterais: se a VPS rejeita contract:v2,
+    # evita instalar dependências/testes pesados a cada push. A CI independente
+    # Softload - Gate TypeScript continua verificando o frontend.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:

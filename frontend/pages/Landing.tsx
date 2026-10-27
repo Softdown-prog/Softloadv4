@@ -21,12 +21,12 @@ const FEATURES = [
     {
         cor: '#4ade80', bg: 'rgba(74,222,128,.1)', titulo: 'Compilador XML de Templates',
         path: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
-        desc: <>Motor Node.js que monta e valida o XML em milissegundos. Gera um arquivo <code style={{ color: '#4ade80', background: 'rgba(74,222,128,.08)', padding: '1px 4px', borderRadius: 3 }}>.xml</code> pronto para importar no Blogspot — com módulos, grid e tipografia customizáveis.</>,
+        desc: <>Motor Node.js que monta a estrutura XML do template. Gera um arquivo <code style={{ color: '#4ade80', background: 'rgba(74,222,128,.08)', padding: '1px 4px', borderRadius: 3 }}>.xml</code> pronto para importar no Blogspot — com módulos, grid e tipografia customizáveis.</>,
     },
     {
-        cor: '#fb923c', bg: 'rgba(251,146,60,.1)', titulo: 'SEO + AdSense Automático',
+        cor: '#fb923c', bg: 'rgba(251,146,60,.1)', titulo: 'SEO e espaços de anúncios',
         path: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
-        desc: 'Meta tags, Open Graph, Schema.org e posicionamento estratégico de anúncios AdSense embutidos no template. Seu blog nasce SEO-ready.',
+        desc: 'Recursos para configurar metadados e áreas de anúncios no template. Revise o conteúdo e as políticas da rede de anúncios antes de publicar.',
     },
     {
         cor: '#818cf8', bg: 'rgba(129,140,248,.1)', titulo: 'Gadgets e Automação de Widgets',
@@ -39,9 +39,9 @@ const FEATURES = [
         desc: 'Editor visual, histórico com download, preview mobile em tempo real, chat IA e gestão de armazenamento — tudo em um painel unificado.',
     },
     {
-        cor: '#22d3ee', bg: 'rgba(34,211,238,.1)', titulo: 'Templates Testados em Produção',
+        cor: '#22d3ee', bg: 'rgba(34,211,238,.1)', titulo: 'Estruturas e prévias de templates',
         path: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z',
-        desc: 'Chassis (Boutique, MagTech, MegaGame) construídos sobre estrutura Blogger real. Core Web Vitals aprovado, responsivos e prontos para monetização.',
+        desc: 'Exemplos de estruturas Blogger para criar e pré-visualizar temas. A qualidade, a velocidade e a monetização precisam ser verificadas no blog publicado.',
     },
 ];
 
@@ -70,7 +70,7 @@ function AccountDeletedToast(): React.JSX.Element | null {
                 <CircleCheckBig size={16} className="flex-shrink-0" />
                 <div>
                     <p className="fw-bold mb-0 small">Conta excluída com sucesso.</p>
-                    <p className="mb-0" style={{ fontSize: 11, opacity: .7 }}>Todos os seus dados foram removidos permanentemente.</p>
+                    <p className="mb-0" style={{ fontSize: 11, opacity: .7 }}>Para informações sobre seus dados, consulte a Política de Privacidade.</p>
                 </div>
                 <button onClick={() => setVisivel(false)} className="btn btn-link p-0 ms-auto" style={{ color: '#4ade80', lineHeight: 1 }} aria-label="Fechar">
                     <X size={16} />
@@ -184,7 +184,7 @@ export default function Landing(): React.JSX.Element {
                                                     <div className="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
                                                          style={{ width: 30, height: 30, background: 'linear-gradient(135deg,#38bdf8,#6366f1)', fontSize: 10, color: 'white', fontFamily: 'monospace' }}>IA</div>
                                                     <div className="rounded-3 px-3 py-2 flex-fill" style={{ background: 'rgba(56,189,248,.07)', border: '1px solid rgba(56,189,248,.15)' }}>
-                                                        <p className="mb-0" style={{ fontSize: 11.5, color: 'var(--sl-text-300)', lineHeight: 1.6 }}>Template <strong style={{ color: '#38bdf8' }}>Tech Blog Pro</strong> gerado. SEO ativo, 4 slots AdSense, sidebar com gadgets.<span className="cursor" style={{ color: '#38bdf8', fontSize: 10 }}> ▌</span></p>
+                                                        <p className="mb-0" style={{ fontSize: 11.5, color: 'var(--sl-text-300)', lineHeight: 1.6 }}>Exemplo de <strong style={{ color: '#38bdf8' }}>Tech Blog Pro</strong>: XML, widgets e áreas de anúncios configuráveis.<span className="cursor" style={{ color: '#38bdf8', fontSize: 10 }}> ▌</span></p>
                                                     </div>
                                                 </div>
                                                 <div className="d-flex gap-2 align-items-start justify-content-end">
@@ -196,29 +196,33 @@ export default function Landing(): React.JSX.Element {
                                             <div className="col-12 col-sm-5">
                                                 <div className="d-flex flex-column gap-2 h-100 justify-content-center">
                                                     <div className="d-flex align-items-center justify-content-between rounded-3 px-3 py-2" style={{ background: 'rgba(74,222,128,.05)', border: '1px solid rgba(74,222,128,.15)' }}>
-                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>SEO Score</span>
-                                                        <span className="fw-bold font-monospace" style={{ color: '#4ade80', fontSize: '1rem' }}>98</span>
+                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>SEO</span>
+                                                        <span className="fw-bold font-monospace" style={{ color: '#4ade80', fontSize: '1rem' }}>Config.</span>
                                                     </div>
                                                     <div className="d-flex align-items-center justify-content-between rounded-3 px-3 py-2" style={{ background: 'rgba(251,146,60,.05)', border: '1px solid rgba(251,146,60,.15)' }}>
-                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>AdSense</span>
-                                                        <span className="fw-bold font-monospace" style={{ color: '#fb923c', fontSize: '1rem' }}>4 slots</span>
+                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>Anúncios</span>
+                                                        <span className="fw-bold font-monospace" style={{ color: '#fb923c', fontSize: '1rem' }}>Opcional</span>
                                                     </div>
                                                     <div className="d-flex align-items-center justify-content-between rounded-3 px-3 py-2" style={{ background: 'rgba(129,140,248,.05)', border: '1px solid rgba(129,140,248,.15)' }}>
-                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>LCP</span>
-                                                        <span className="fw-bold font-monospace" style={{ color: '#818cf8', fontSize: '1rem' }}>0.8s</span>
+                                                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontFamily: 'monospace' }}>Prévia</span>
+                                                        <span className="fw-bold font-monospace" style={{ color: '#818cf8', fontSize: '1rem' }}>Mobile</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center gap-3 px-4 py-3" style={{ borderTop: '1px solid rgba(255,255,255,.05)', background: 'rgba(255,255,255,.01)' }}>
-                                        <span className="font-monospace" style={{ fontSize: 10, color: '#4ade80' }}>✓ Compilado em 320ms</span>
+                                        <span className="font-monospace" style={{ fontSize: 10, color: '#4ade80' }}>Prévia ilustrativa</span>
                                         <div className="ms-auto d-flex gap-2">
                                             <span className="rounded-2 px-2 py-1 font-monospace" style={{ fontSize: 9, background: 'rgba(56,189,248,.08)', color: '#38bdf8', border: '1px solid rgba(56,189,248,.15)' }}>Preview</span>
                                             <span className="rounded-2 px-2 py-1 font-monospace" style={{ fontSize: 9, background: 'rgba(74,222,128,.08)', color: '#4ade80', border: '1px solid rgba(74,222,128,.15)' }}>↓ Baixar .xml</span>
                                         </div>
                                     </div>
                                 </div>
+
+                                <p className="small text-center mb-0 mt-3" style={{ color: 'var(--sl-text-500)' }}>
+                                    Interface ilustrativa; indicadores não são resultados de auditoria ou medições reais.
+                                </p>
 
                                 {/* Floating mobile frame */}
                                 <div className="position-absolute d-none d-xl-block" style={{ bottom: -24, right: -52, width: 110, zIndex: 2 }}>
