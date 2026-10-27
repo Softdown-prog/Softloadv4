@@ -95,6 +95,7 @@ function apiHarness({ approved = true, failTransaction = false } = {}) {
             Preference: class {},
         },
         'tools/projectStorage': {}, 'rag/ragSearchService': {},
+        'rag/ragLocalSearch': { buscarCatalogoLocal: async () => ({ resultados: [] }) },
         'codeCorpus/codeSearchService': {}, 'knowledge/ragNamespaces': {},
     };
     const harness = loadRoute('apiRoutes.js', dependencies, env);
