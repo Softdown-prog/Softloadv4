@@ -1,0 +1,98 @@
+name: Stage Softload images in verified PRIVATE GHCR (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: softload-ghcr-stage
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        include:
+          - service: app
+            context: .
+            dockerfile: Dockerfile
+          - service: agent
+            context: agent
+            dockerfile: agent/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require current main SHA (no obsolete publishing)
+        run: |
+          set -euo pipefail
+          latest="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ "$latest" != "$GITHUB_SHA" ]; then
+            echo "::error::Selected revision is obsolete; dispatch against current main."
+            exit 1
+          fi
+      - name: Require package privacy BEFORE building or publishing code
+        env:
+          GH_TOKEN: \${{ github.token }}
+          OWNER: \${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          package="softloadv4-production-\${{ matrix.service }}"
+          if visibility="$(gh api "orgs/$OWNER/packages/container/$package" --jq .visibility 2>/dev/null)"; then
+            :
+          elif visibility="$(gh api "users/$OWNER/packages/container/$package" --jq .visibility 2>/dev/null)"; then
+            :
+          else
+            echo "::error::GHCR package not yet provisioned or cannot read its visibility. Run private bootstrap canary first."
+            exit 1
+          fi
+          if [ "$visibility" != private ]; then
+            echo "::error::Refusing to publish Softload image: GHCR package $package visibility is $visibility, not private."
+            exit 1
+          fi
+          echo "REGISTRY=ghcr.io/\${OWNER,,}/$package" >> "$GITHUB_ENV"
+      - name: Prepare and compile Agent native/TypeScript sources
+        if: matrix.service == 'agent'
+        run: |
+          set -euo pipefail
+          node agent/scripts/vendorPowerUp.js
+          npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+          npm run typecheck:agent
+          npm run build:agent:capabilities
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: \${{ github.actor }}
+          password: \${{ secrets.GITHUB_TOKEN }}
+      - name: Build and upload image only to confirmed private package
+        env:
+          SERVICE: \${{ matrix.service }}
+          CONTEXT: \${{ matrix.context }}
+          DOCKERFILE: \${{ matrix.dockerfile }}
+        run: |
+          set -euo pipefail
+          stamp="$(git show -s --format=%cI "$GITHUB_SHA")"
+          extra=()
+          if [ "$SERVICE" = app ]; then
+            extra+=(--build-arg "GIT_SHA=$GITHUB_SHA" --build-arg "GIT_DATE=$stamp")
+          fi
+          docker buildx build --push --platform linux/amd64 \
+            --cache-from "type=gha,scope=softload-$SERVICE" \
+            --cache-to "type=gha,scope=softload-$SERVICE,mode=max,ignore-error=true" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            "\${extra[@]}" -t "$REGISTRY:sha-$GITHUB_SHA" -f "$DOCKERFILE" "$CONTEXT"
+      - name: Report immutable SHA-256 for review (DO NOT activate VPS)
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "$REGISTRY:sha-$GITHUB_SHA"
+          echo "Image staged: $REGISTRY:sha-$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "NOT DEPLOYED: no SSH, Docker daemon access, or VPS change performed." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,56 @@
+name: Bootstrap private GHCR packages (inert images only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  private-canary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [app, agent]
+    steps:
+      - name: Prepare registry name and harmless Docker image
+        env:
+          OWNER: \${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          echo "REGISTRY=ghcr.io/\${OWNER,,}/softloadv4-production-\${{ matrix.service }}" >> "$GITHUB_ENV"
+          printf '%s\n' 'FROM scratch' 'LABEL org.opencontainers.image.description="Inert privacy canary - NO Softload application or secrets"' > "$RUNNER_TEMP/Dockerfile"
+      - name: Login to registry (no PAT in repository)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: \${{ github.actor }}
+          password: \${{ secrets.GITHUB_TOKEN }}
+      - name: Publish ONLY empty canary to establish package settings
+        run: |
+          set -euo pipefail
+          docker build -f "$RUNNER_TEMP/Dockerfile" -t "$REGISTRY:visibility-check" "$RUNNER_TEMP"
+          docker push "$REGISTRY:visibility-check"
+      - name: Fail unless GitHub confirms package is private
+        env:
+          GH_TOKEN: \${{ github.token }}
+          OWNER: \${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          package="softloadv4-production-\${{ matrix.service }}"
+          if visibility="$(gh api "orgs/$OWNER/packages/container/$package" --jq .visibility 2>/dev/null)"; then
+            :
+          elif visibility="$(gh api "users/$OWNER/packages/container/$package" --jq .visibility 2>/dev/null)"; then
+            :
+          else
+            echo "::error::Unable to inspect GHCR package visibility. No application image was published."
+            exit 1
+          fi
+          if [ "$visibility" != private ]; then
+            echo "::error::GHCR package is NOT private ($visibility). DO NOT publish application images; adjust registry strategy."
+            exit 1
+          fi
+          echo "[GHCR] Private package confirmed: $package"
