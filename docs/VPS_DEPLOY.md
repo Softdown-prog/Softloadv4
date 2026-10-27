@@ -91,3 +91,32 @@ da configuração, da revisão ativa e do Compose, adaptar apenas app/agent
 retirar serviços antigos e imagens especificamente auditadas, sem prune.
 
 A atualização do código no GitHub não equivale à migração da VPS.
+
+
+## Bloqueio persistente identificado em 27/10/2026
+
+As execuções #40476530713, #40476647309 e #40476919428 aprovaram o job
+`verify`, porém o job `plan` terminou com `Command not allowed` ao
+consultar via SSH `contract:v2`. Nesse estado, **nenhuma imagem é enviada**
+e **nenhuma ativação é feita**. A limpeza de Sandbox/Embeddings no Docker
+não altera o receptor SSH instalado, por isso novos commits seguem falhando.
+
+Para reduzir custos de GitHub Actions até a atualização administrativa do
+receptor na VPS, a ordem agora é **`plan` (preflight somente-leitura) →
+`verify` (testes e build) → `build_and_transfer` → `activate`**. A
+verificação independente de TypeScript continua em seu próprio workflow.
+O reconciliador agendado passa a reconhecer a falha conhecida no contrato
+do receptor e não solicitar novamente o mesmo deploy sem intervenção.
+
+**Recuperação:** o administrador deve acessar a VPS pelo Terminal SSH
+autenticado do Painel (não pela chave SSH restrita do Actions), verificar o
+script receptor real apontado pelo forced-command, salvar backup e migrar
+seus comandos `finish`, `reuse`, `deploy` e rollback para apenas
+`app`/`agent`. O comando `contract:v2` deve então retornar **exatamente**
+`softload-deploy:v2:app,agent`. Confirme a identidade SSH e o comportamento
+do rollback num ambiente controlado. Somente após essa migração,
+acionar manualmente **Actions → Deploy Softload VPS → Run workflow** e
+verificar se o SHA público de `/health` corresponde ao commit.
+
+**Não remover o preflight e não criar imagens falsas de sandbox/embeddings**
+para contornar o receptor.
