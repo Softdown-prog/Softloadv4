@@ -533,6 +533,35 @@ html[data-font-family="legivel"] .sl-dash-wrapper {
 }
 .sl-footer-link:hover { color: var(--sl-primary-light); }
 
+/* Navegação pública: mesma hierarquia visual no React e nas páginas EJS. */
+.sl-footer-heading {
+    font-size: 0.72rem;
+    color: var(--sl-text-300);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 1rem;
+}
+.sl-navbar :is(a, button):focus-visible,
+.sl-footer a:focus-visible {
+    outline: 2px solid var(--sl-primary-light);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+.sl-navbar .nav-link[aria-current="page"] {
+    color: var(--sl-primary-light);
+}
+@media (max-width: 767.98px) {
+    .sl-navbar .navbar-collapse {
+        flex-basis: 100%;
+        padding-bottom: 0.75rem;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sl-navbar .nav-link,
+    .sl-footer-link { transition: none; }
+}
+
 /* ── 10. Form controls — override Bootstrap no dark mode ─────────────────── */
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select {

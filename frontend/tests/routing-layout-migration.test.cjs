@@ -539,3 +539,41 @@ test('sitemap público anunciado por robots.txt tem somente rotas indexáveis', 
   }
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
 });
+
+
+test('rodapés React e EJS expõem os mesmos destinos públicos sem status fictício', () => {
+  const react = source('frontend/components/PublicFooter.tsx');
+  const ejs = source('views/partials/footer.ejs');
+  const landing = source('frontend/pages/Landing.tsx');
+  for (const href of ['/#demo-solaris', '/#ia-pode', '/#features', '/#solucoes',
+                      '/register', '/login', '/dashboard', '/contato', '/termos-de-uso', '/privacidade']) {
+    assert.ok(react.includes('href="'+href+'"'), 'React: '+href);
+    assert.ok(ejs.includes('href="'+href+'"'), 'EJS: '+href);
+  }
+  for (const section of ['demo-solaris', 'ia-pode', 'features', 'solucoes']) {
+    assert.ok(landing.includes('id="'+section+'"'), 'Âncora '+section+' ausente');
+  }
+  assert.ok(react.includes('rel="noopener noreferrer"'));
+  assert.ok(ejs.includes('rel="noopener noreferrer"'));
+  assert.doesNotMatch(react+ejs, /Sistemas Operacionais|sl-pulse/);
+  assert.ok(react.includes('Solaris Code · Blogger · Workspace'));
+  assert.ok(ejs.includes('Solaris Code · Blogger · Workspace'));
+  assert.ok(source('public/css/softload.css').includes('.sl-footer-heading'));
+});
+
+test('menu React responde ao Escape, restaura foco e indica início ativo', () => {
+  const nav = source('frontend/components/PublicNavbar.tsx');
+  assert.ok(nav.includes('menuButtonRef.current?.focus()'));
+  assert.ok(nav.includes("event.key === 'Escape'"));
+  assert.ok(nav.includes("window.removeEventListener('keydown', onKeyDown)"));
+  assert.ok(nav.includes('location.pathname, location.hash'));
+  assert.ok(nav.includes('aria-current='));
+});
+
+test('landing identifica demonstração ilustrativa e não promete métricas não medidas', () => {
+  const landing = source('frontend/pages/Landing.tsx');
+  assert.ok(landing.includes('Interface ilustrativa; indicadores não são resultados de auditoria'));
+  assert.doesNotMatch(landing, /SEO Score|>98<\/span>|0\.8s|Core Web Vitals aprovado|Compilado em 320ms/);
+  assert.match(landing, /recursos para configurar metadados/i);
+  assert.ok(landing.includes('funcionalidades variam conforme o plano') || landing.includes('Funcionalidades variam conforme o plano'));
+});
