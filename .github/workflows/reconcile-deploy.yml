@@ -43,7 +43,15 @@ jobs:
               core.warning('Public health check failed: ' + error.message);
             }
 
-            if (/^[a-f0-9]{7,40}$/.test(live) && expected.startsWith(live)) {
+            // Um App parado por scale-to-zero pode tornar /health inacessivel.
+            // Nao converter indisponibilidade/503 em um novo deploy: isso cria
+            // retries caros e nao conserta a rota de wake-up do proxy.
+            if (!/^[a-f0-9]{7,40}$/.test(live)) {
+              core.warning('Public /health unavailable or without valid SHA; skipping deployment retry. Verify Caddy wake routing and App container state separately.');
+              return;
+            }
+
+            if (expected.startsWith(live)) {
               core.info('VPS is current: ' + expected);
               return;
             }

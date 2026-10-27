@@ -175,3 +175,29 @@ de verificacao/rollback deve acabar sem interrupcoes externas.
 Isso evita ficar enviando centenas de MB a cada revisao intermediaria.
 O upload da revisao mais nova ainda precisa de transporte mais eficiente
 para superar a banda observada de aproximadamente 30-50 KB/s.
+
+## 27/10/2026 — Falhas reproduzidas do upload e reconciliação com scale-to-zero
+
+O run `40562901405` falhou depois de o `rsync` indicar **0 bytes** a
+transferir para um arquivo remoto do mesmo tamanho (386.858.773 bytes).
+O receptor recusou as quatro chamadas `finish` com `Archive checksum
+mismatch`. Teste local reproduziu que `--append-verify` pode ignorar um
+arquivo remoto do mesmo comprimento mas conteúdo divergente. Para
+corrigir **esse caso específico**, o workflow passa a usar
+`--checksum --inplace --partial`: compara conteúdo e corrige blocos
+mesmo quando o tamanho coincide. O receptor conserva a validação SHA-256
+final e bloqueia a ativação se o arquivo não bater.
+
+Isso **não** resolve a baixa banda de SSH nem prova compatibilidade do
+receptor restrito com novas flags. Testar uma transferência controlada e
+manter o fallback/revisão ativa até validar o fluxo GHCR.
+
+Outro defeito era confundir `/health` indisponível (inclusive 503 ao
+parar o App por scale-to-zero) com `main` diferente da VPS. O reconciliador
+agora não dispara deploy com base em HTTP falho/sem SHA válido; só
+reconcilia quando recebe revisão pública válida e divergente.
+A correção **não reconfigura o wake-up**: a rota real do Caddy deve
+encaminhar acessos ao componente que inicia o App e aguarda saúde antes
+de fazer proxy. Caso o Caddy aponte direto ao App desligado, o site
+continuará sujeito a 503. Auditar no host Caddy ativo, wake e política
+de parada antes de alterar containers ou regras de produção.
