@@ -1,0 +1,74 @@
+name: Release obsolete transfer lock (one-time, guarded)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/unstick-obsolete-vps-deploy.yml
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  release-stale-run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Cancel only the known stale image-upload run, never activation
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          id=40516512626
+          known_sha=01e394fabc7bd4abd80ad1c6d2d34a71e1872587
+          run_json="$(gh api "repos/$repo/actions/runs/$id")"
+          actual_sha="$(jq -r '.head_sha' <<< "$run_json")"
+          if [ "$actual_sha" != "$known_sha" ]; then
+            echo "::warning::Run SHA differs; refusing to cancel."
+            exit 0
+          fi
+          main_sha="$(gh api "repos/$repo/commits/main" --jq '.sha')"
+          if [ "$main_sha" = "$known_sha" ]; then
+            echo "::warning::Run is not obsolete; refusing to cancel."
+            exit 0
+          fi
+          status="$(jq -r '.status' <<< "$run_json")"
+          if [ "$status" = completed ]; then
+            echo "[UNSTICK] Already finished: no action necessary."
+            exit 0
+          fi
+          jobs="$(gh api "repos/$repo/actions/runs/$id/jobs?per_page=100")"
+          if jq -e '[.jobs[] | select(.name == "activate" and (.status == "in_progress" or .status == "completed"))] | length > 0' <<< "$jobs" >/dev/null; then
+            echo "::error::Activation has started; NEVER interrupt it."
+            exit 1
+          fi
+          if ! jq -e '[.jobs[] | select(.name | startswith("build_and_transfer (app")) | .steps[]? | select(.name == "Transfer resumable image to VPS" and .status == "in_progress")] | length > 0' <<< "$jobs" >/dev/null; then
+            echo "::warning::Stale transfer not observed; refusing to cancel."
+            exit 0
+          fi
+          echo "[UNSTICK] Safe to stop obsolete upload $known_sha. New main: $main_sha."
+          gh api -X POST "repos/$repo/actions/runs/$id/cancel"
+          echo "[UNSTICK] Cancellation requested for run $id."
+
+  inspect-vps-network-read-only:
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Inventory process names and VPS free space without elevated rights
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(id -un)" = softloadrunner
+          if sudo -n true >/dev/null 2>&1; then exit 1; fi
+          echo "[DIAG] VPS capacity"
+          df -h /
+          df -i /
+          free -m
+          echo "[DIAG] rsync/SSH process names, elapsed times and users (no arguments)"
+          ps -eo user,comm,etime,stat | grep -E '(rsync|sshd|docker)' | head -45 || true
+          echo "[DIAG] done; no Docker calls or configuration changes"

@@ -5,8 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# A VPS recebe uma revisão por vez. A execução ativa publica sua revisão mesmo
-# se main avançar; o próximo run pendente publica o commit mais recente.
+# A VPS recebe uma revisão por vez. Revisoes obsoletas sao ignoradas antes
+# de teste/build/transferencia/ativacao; upload em curso pode ser interrompido
+# somente no limite de uma tentativa, para evitar ativar um commit ultrapassado.
 concurrency:
   group: softload-vps-production
   cancel-in-progress: false
@@ -16,9 +17,10 @@ permissions:
 
 jobs:
   verify:
-    # Somente roda a suíte pesada depois que o receptor SSH v2 estiver pronto.
-    # O plan é estritamente de leitura e não envia/ativa imagens.
+    # So roda os testes pesados se o contrato SSH passou e este SHA
+    # ainda e o mais recente em main.
     needs: plan
+    if: needs.plan.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -86,9 +88,11 @@ jobs:
           set -euo pipefail
           latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
-          echo 'proceed=true' >> "$GITHUB_OUTPUT"
           if [ "$latest" != "$GITHUB_SHA" ]; then
-            echo "::notice::Main advanced to $latest; this serialized run will publish $GITHUB_SHA and the next queued run will catch up."
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Main advanced to $latest; skip obsolete revision $GITHUB_SHA before running tests/build."
+          else
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
       - name: Configure restricted SSH key
         if: steps.latest.outputs.proceed == 'true'
@@ -168,9 +172,11 @@ jobs:
           set -euo pipefail
           latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
-          echo 'proceed=true' >> "$GITHUB_OUTPUT"
           if [ "$latest" != "$GITHUB_SHA" ]; then
-            echo "::notice::Main advanced to $latest; continuing the active serialized run $GITHUB_SHA."
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Main advanced to $latest; skip building obsolete revision $GITHUB_SHA."
+          else
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
       - name: Determine whether this service changed
         if: steps.latest_before_build.outputs.proceed == 'true'
@@ -262,9 +268,11 @@ jobs:
           set -euo pipefail
           latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
-          echo 'proceed=true' >> "$GITHUB_OUTPUT"
           if [ "$latest" != "$GITHUB_SHA" ]; then
-            echo "::notice::Main advanced to $latest; transferring the active serialized run $GITHUB_SHA."
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Main advanced to $latest; do not upload obsolete revision $GITHUB_SHA."
+          else
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
       - name: Configure restricted SSH key
         if: steps.latest_before_transfer.outputs.proceed == 'true'
@@ -290,6 +298,13 @@ jobs:
           echo "Transferência comprimida: **$packed_bytes bytes**" >> "$GITHUB_STEP_SUMMARY"
           echo "O rsync envia o arquivo completo em um novo SHA (exceto retomadas do mesmo arquivo); isso não é medição oficial de tráfego Locacloud." >> "$GITHUB_STEP_SUMMARY"
           for attempt in $(seq 1 24); do
+            # Pare antes de reiniciar rsync se um commit novo ja substituiu
+            # esta revisao; o receptor nao ativou container algum neste ponto.
+            latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+            if [ "$latest" != "$GITHUB_SHA" ]; then
+              echo "::notice::Main advanced to $latest; stop retries for obsolete image $GITHUB_SHA."
+              exit 0
+            fi
             echo "[DEPLOY] Enviando ${{ matrix.service }} com retomada (tentativa $attempt/24)"
             if timeout --signal=TERM --kill-after=10s 180s rsync --append-verify --partial --timeout=90 --no-compress --progress --stats \
                 -e "ssh -i $HOME/.ssh/softload_deploy -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
@@ -352,9 +367,11 @@ jobs:
             "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main" \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
           [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
-          echo 'proceed=true' >> "$GITHUB_OUTPUT"
           if [ "$latest" != "$GITHUB_SHA" ]; then
-            echo "::notice::Main advanced to $latest; activating $GITHUB_SHA and leaving the newer commit queued."
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Main advanced to $latest; skip activating obsolete revision $GITHUB_SHA."
+          else
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/setup-node@v4
         if: steps.latest.outputs.proceed == 'true'

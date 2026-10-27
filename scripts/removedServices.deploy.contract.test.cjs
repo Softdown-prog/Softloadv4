@@ -110,3 +110,13 @@ test('reconciliador nao cria retries inuteis se o receiver v2 esta bloqueando', 
   assert.ok(stopBlock > 0 && nextDispatch > stopBlock);
   assert.match(file, /Corrija o receptor no host/);
 });
+
+test('revisoes obsoletas nao consomem recursos nem ativam imagens antigas', () => {
+  assert.match(workflow, /if: needs.plan.outputs.proceed == 'true'/);
+  assert.match(workflow, /skip obsolete revision/);
+  assert.match(workflow, /skip building obsolete revision/);
+  assert.match(workflow, /do not upload obsolete revision/);
+  assert.match(workflow, /stop retries for obsolete image/);
+  assert.match(workflow, /skip activating obsolete revision/);
+  assert.doesNotMatch(workflow, /this serialized run will publish/);
+});

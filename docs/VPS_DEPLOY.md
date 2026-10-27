@@ -138,3 +138,27 @@ GitHub Actions; só considere resolvido depois dos jobs `plan`, `verify`,
 `build_and_transfer`, `activate` e da confirmação de SHA em
 `https://softload.analysepro.com/health`. Em caso de erro, preservar backup
 e imagens de rollback, sem limpeza automática de Docker.
+
+## Travamento de transferencia obsoleta — 27/10/2026
+
+O deploy do SHA `01e394fabc7bd4abd80ad1c6d2d34a71e1872587` passou
+por `plan` (contrato SSH v2) e `verify`, mas permaneceu na etapa
+`Transfer resumable image to VPS` da imagem `app`. Enquanto a
+transferencia nao termina, a concorrencia `softload-vps-production`
+impede a proxima revisao de executar. O `rsync` permitia ate 24
+tentativas de 180 segundos para cada imagem, mesmo com `main` avancada.
+
+O fluxo agora verifica o SHA atual de `main` **antes** de testes, build,
+transferencia, novas tentativas de rsync e ativacao, encerrando com
+sucesso as etapas obsoletas sem mudar os containers. A transferencia em
+curso nao e interrompida a meio de uma tentativa; e verificada entre
+tentativas. A revisao mais recente continua na fila serializada.
+
+A workflow de recuperacao pontual
+`.github/workflows/unstick-obsolete-vps-deploy.yml` so solicita
+cancelamento do run acima apos confirmar: SHA conhecido, nova `main`,
+a etapa exata de upload `app` em execucao e **nenhum** job de ativacao
+iniciado. Ela tambem consulta estado de disco e nomes dos processos
+no runner VPS somente-leitura. Nenhuma limpeza Docker e realizada.
+Se o cancelamento falhar por permissao, o operador pode cancelar aquele
+run pelo Actions, apos repetir as mesmas verificacoes.
