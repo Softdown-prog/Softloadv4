@@ -61,3 +61,33 @@ A franquia da Locacloud pode seguir outra metodologia de medição.
 A retirada dos serviços pesados introduz um contrato novo. Antes de qualquer build ou transferência, o job `plan` chama pelo SSH restrito o comando de consulta `contract:v2` e exige resposta exata `softload-deploy:v2:app,agent`. Resposta ausente/incorreta **interrompe o deploy antes de enviar as imagens**; não ativa app/agent parcialmente. A implementação do receptor da VPS ainda precisa ser migrada fora deste repositório (issue #20). O handshake não libera espaço em disco por si só.
 
 Para provas de regressão, a CI compila a imagem do Agent em runner GitHub e executa o smoke real do Asset Forge com base Debian slim. Os valores de tamanho antes/depois devem ser medidos no Docker de produção após a troca da imagem e limpeza seletiva validada.
+
+## Diagnóstico da incompatibilidade do receptor v2 (26/10/2026)
+
+O job plan de 40419393923 foi interrompido com 'Command not allowed' quando
+consultou 'contract:v2'. O receptor SSH na VPS ainda não aceita o contrato de
+dois serviços; o deploy foi barrado antes de build/transferência. No run
+40413155240, anterior à proteção, a ativação falhou com
+'No such image: softload-sandbox:366eed8...'.
+
+O código real do receptor instalado no host da VPS não pertence a este repositório.
+Não desligar o handshake, não recriar a imagem removida e não falsificar tags.
+
+O Painel possui um Terminal VPS administrativo. Após login autorizado, esta
+consulta é apenas leitura e localiza candidatos sem mostrar chaves privadas:
+
+    linux find /usr/local/bin /usr/local/sbin /opt/softload-infra /opt/softload /srv -maxdepth 3 -type f -iname '*deploy*' -print
+
+Com acesso ao host e após localizar o receptor, é possível executar localmente
+scripts/vps/inspect-receiver-readonly.sh (se o script estiver no host). Ele mostra
+caminhos e indicadores estáticos da compatibilidade v2, sem ler variáveis Env
+nem imprimir o conteúdo de authorized_keys. Não instala nem executa o receptor.
+
+**Não aplicar atualização automática do receptor desconhecido.** Um operador
+autorizado deve revisar o arquivo efetivo apontado pela regra SSH, fazer backup
+da configuração, da revisão ativa e do Compose, adaptar apenas app/agent
+(finish, reuse, deploy e rollback), e validar a resposta exata de
+'contract:v2': 'softload-deploy:v2:app,agent'. Após testes e saúde pública,
+retirar serviços antigos e imagens especificamente auditadas, sem prune.
+
+A atualização do código no GitHub não equivale à migração da VPS.
