@@ -120,3 +120,21 @@ verificar se o SHA público de `/health` corresponde ao commit.
 
 **Não remover o preflight e não criar imagens falsas de sandbox/embeddings**
 para contornar o receptor.
+
+## Recuperação confirmada no host — 27/10/2026
+
+O operador confirmou a execução no Terminal VPS administrativo do utilitário
+`scripts/vps/migrate_receiver_v2.py`, com os seguintes resultados:
+
+- Download conferido por SHA-256;
+- `PREFLIGHT_OK`: Compose ativo contém `app` e `agent`, sem `sandbox`/`embeddings`;
+- `MIGRACAO_OK`: comando `contract:v2` devolve `softload-deploy:v2:app,agent`;
+- `BACKUP_OK`: backup local do receptor original criado antes da troca;
+- `NENHUM_CONTAINER_ALTERADO`: atualização apenas do receptor SSH.
+
+Esses resultados são confirmações da execução administrativa, **não** prova de
+deploy completo. O próximo push aciona a validação real pelo SSH restrito do
+GitHub Actions; só considere resolvido depois dos jobs `plan`, `verify`,
+`build_and_transfer`, `activate` e da confirmação de SHA em
+`https://softload.analysepro.com/health`. Em caso de erro, preservar backup
+e imagens de rollback, sem limpeza automática de Docker.
