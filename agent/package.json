@@ -29,7 +29,7 @@
     "diff": "^7.0.0",
     "dotenv": "^17.2.1",
     "execa": "^9.6.0",
-    "express": "^4.22.2",
+    "express": "^4.22.3",
     "fast-glob": "^3.3.3",
     "html-to-text": "^10.0.0",
     "ignore": "^7.0.3",
