@@ -56,6 +56,10 @@ jobs:
             exit 1
           fi
           echo "REGISTRY=ghcr.io/${OWNER,,}/$package" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
       - name: Prepare and compile Agent native/TypeScript sources
         if: matrix.service == 'agent'
         run: |
