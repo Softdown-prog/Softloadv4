@@ -1,0 +1,39 @@
+name: Diagnose current release and registry bandwidth (read-only)
+
+on:
+  push:
+    branches: [diagnostics/transport-capacity-20261027]
+    paths: [.github/workflows/transport-capacity-readonly.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  public-version:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Check public release identity (omit full payload)
+        shell: bash
+        run: |
+          set -u
+          for url in 'https://softload.analysepro.com/health' 'https://softload.analysepro.com/'; do
+            echo "URL=$url"
+            curl --no-progress-meter --fail --silent --show-error --max-time 12 -o /dev/null -w 'HTTP=%{http_code} SECONDS=%{time_total}\n' "$url" || true
+          done
+          curl --no-progress-meter --fail --silent --show-error --max-time 12 'https://softload.analysepro.com/health' | python3 -c 'import json,sys; d=json.load(sys.stdin); print("HEALTH_STATUS="+str(d.get("status"))); print("LIVE_SHA="+str(d.get("deploy",{}).get("gitSha","absent")))' || true
+
+  vps-bandwidth:
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 4
+    steps:
+      - name: Test HTTPS reachability and 4 MiB downstream without root
+        shell: bash
+        run: |
+          set -u
+          test "$(id -un)" = softloadrunner || exit 1
+          echo "VPS_NETWORK"
+          curl --no-progress-meter --silent --show-error --max-time 10 -o /dev/null -w 'GHCR_HTTP=%{http_code} SECONDS=%{time_total}\n' 'https://ghcr.io/v2/' || true
+          curl --no-progress-meter --silent --show-error --max-time 35 -o /dev/null -w 'CLOUDFLARE_HTTP=%{http_code} DOWNLOAD_BYTES=%{size_download} SPEED_BPS=%{speed_download} SECONDS=%{time_total}\n' 'https://speed.cloudflare.com/__down?bytes=4194304' || true
+          curl --no-progress-meter --silent --show-error --max-time 20 -o /dev/null -w 'GITHUB_HTTP=%{http_code} DOWNLOAD_BYTES=%{size_download} SPEED_BPS=%{speed_download} SECONDS=%{time_total}\n' 'https://raw.githubusercontent.com/Softdown-prog/Softloadv4/main/package-lock.json' || true
+          echo "DIAG_DONE: no deployment or Docker changes"
