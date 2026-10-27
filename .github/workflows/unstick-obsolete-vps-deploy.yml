@@ -1,74 +1,48 @@
-name: Release obsolete transfer lock (one-time, guarded)
+name: Supersede obsolete VPS deploys safely
 
 on:
   push:
     branches: [main]
-    paths:
-      - .github/workflows/unstick-obsolete-vps-deploy.yml
 
 permissions:
   actions: write
   contents: read
 
 jobs:
-  release-stale-run:
+  release-stale-transfer:
     runs-on: ubuntu-24.04
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
-      - name: Cancel only the known stale image-upload run, never activation
+      - name: Cancel outdated runs before activation only
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          id=40516512626
-          known_sha=01e394fabc7bd4abd80ad1c6d2d34a71e1872587
-          run_json="$(gh api "repos/$repo/actions/runs/$id")"
-          actual_sha="$(jq -r '.head_sha' <<< "$run_json")"
-          if [ "$actual_sha" != "$known_sha" ]; then
-            echo "::warning::Run SHA differs; refusing to cancel."
+          latest="$(gh api "repos/$repo/commits/main" --jq '.sha')"
+          [[ "$latest" =~ ^[0-9a-f]{40}$ ]]
+          runs="$(gh api "repos/$repo/actions/workflows/deploy.yml/runs?per_page=30")"
+          mapfile -t stale < <(jq -r --arg latest "$latest" '.workflow_runs[] | select(.head_sha != $latest and .status != "completed") | .id' <<< "$runs")
+          if [ "${#stale[@]}" -eq 0 ]; then
+            echo "[SUPERSEDE] No obsolete active deploy found."
             exit 0
           fi
-          main_sha="$(gh api "repos/$repo/commits/main" --jq '.sha')"
-          if [ "$main_sha" = "$known_sha" ]; then
-            echo "::warning::Run is not obsolete; refusing to cancel."
-            exit 0
-          fi
-          status="$(jq -r '.status' <<< "$run_json")"
-          if [ "$status" = completed ]; then
-            echo "[UNSTICK] Already finished: no action necessary."
-            exit 0
-          fi
-          jobs="$(gh api "repos/$repo/actions/runs/$id/jobs?per_page=100")"
-          if jq -e '[.jobs[] | select(.name == "activate" and (.status == "in_progress" or .status == "completed"))] | length > 0' <<< "$jobs" >/dev/null; then
-            echo "::error::Activation has started; NEVER interrupt it."
-            exit 1
-          fi
-          if ! jq -e '[.jobs[] | select(.name | startswith("build_and_transfer (app")) | .steps[]? | select(.name == "Transfer resumable image to VPS" and .status == "in_progress")] | length > 0' <<< "$jobs" >/dev/null; then
-            echo "::warning::Stale transfer not observed; refusing to cancel."
-            exit 0
-          fi
-          echo "[UNSTICK] Safe to stop obsolete upload $known_sha. New main: $main_sha."
-          gh api -X POST "repos/$repo/actions/runs/$id/cancel"
-          echo "[UNSTICK] Cancellation requested for run $id."
-
-  inspect-vps-network-read-only:
-    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    steps:
-      - name: Inventory process names and VPS free space without elevated rights
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(id -un)" = softloadrunner
-          if sudo -n true >/dev/null 2>&1; then exit 1; fi
-          echo "[DIAG] VPS capacity"
-          df -h /
-          df -i /
-          free -m
-          echo "[DIAG] rsync/SSH process names, elapsed times and users (no arguments)"
-          ps -eo user,comm,etime,stat | grep -E '(rsync|sshd|docker)' | head -45 || true
-          echo "[DIAG] done; no Docker calls or configuration changes"
+          for id in "${stale[@]}"; do
+            echo "[SUPERSEDE] Checking outdated deploy run $id"
+            job_list="$(gh api "repos/$repo/actions/runs/$id/jobs?per_page=100")"
+            # Never terminate a run once the deployment/rollback operation
+            # has started, even if main advances during activation.
+            if jq -e '[.jobs[] | select(.name == "activate" and (.status == "in_progress" or .status == "completed"))] | length > 0' <<< "$job_list" >/dev/null; then
+              echo "[SUPERSEDE] Run $id already reached activation; leave it untouched."
+              continue
+            fi
+            # Double-check the run is still active before requesting cancellation.
+            state="$(gh api "repos/$repo/actions/runs/$id" --jq '.status')"
+            if [ "$state" = "completed" ]; then
+              echo "[SUPERSEDE] Run $id already finished."
+              continue
+            fi
+            echo "[SUPERSEDE] Cancel obsolete run $id before activation; newest is $latest."
+            gh api -X POST "repos/$repo/actions/runs/$id/cancel"
+          done

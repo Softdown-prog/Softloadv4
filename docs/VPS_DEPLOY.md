@@ -162,3 +162,16 @@ iniciado. Ela tambem consulta estado de disco e nomes dos processos
 no runner VPS somente-leitura. Nenhuma limpeza Docker e realizada.
 Se o cancelamento falhar por permissao, o operador pode cancelar aquele
 run pelo Actions, apos repetir as mesmas verificacoes.
+
+## Convergencia de uploads obsoletos no Actions
+
+O workflow `.github/workflows/unstick-obsolete-vps-deploy.yml` agora e
+acionado em cada push para `main`, com permissao limitada a Actions,
+para procurar runs anteriores de `deploy.yml` ainda pendentes/ativos.
+Somente quando a SHA for diferente da atual e quando o job `activate`
+ainda **nao tiver iniciado**, solicita o cancelamento do run ultrapassado.
+Se `activate` estiver em andamento/concluido, nao interfere: o mecanismo
+de verificacao/rollback deve acabar sem interrupcoes externas.
+Isso evita ficar enviando centenas de MB a cada revisao intermediaria.
+O upload da revisao mais nova ainda precisa de transporte mais eficiente
+para superar a banda observada de aproximadamente 30-50 KB/s.
