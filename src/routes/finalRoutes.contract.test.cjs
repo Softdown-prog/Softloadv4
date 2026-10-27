@@ -94,7 +94,7 @@ function apiHarness({ approved = true, failTransaction = false } = {}) {
             Payment: class { async get({ id }) { calls.push(['payment', id]); return details; } },
             Preference: class {},
         },
-        'tools/projectStorage': {}, 'rag/ragSearchService': {},
+        'tools/projectStorage': {}, 'rag/ragLocalSearch': { buscarCatalogoLocal: async () => ({ query: '', resultados: [] }) },
         'codeCorpus/codeSearchService': {}, 'knowledge/ragNamespaces': {},
     };
     const harness = loadRoute('apiRoutes.js', dependencies, env);
