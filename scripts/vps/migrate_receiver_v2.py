@@ -101,7 +101,7 @@ def main():
         try:
             with os.fdopen(fd, 'wb') as f:
                 os.fchmod(f.fileno(), stat.S_IMODE(stat_before.st_mode))
-                os.fchown(f.fileno(), stat_before.st_gid, stat_before.st_gid)
+                os.fchown(f.fileno(), stat_before.st_uid, stat_before.st_gid)
                 f.write(patched)
                 f.flush()
                 os.fsync(f.fileno())
