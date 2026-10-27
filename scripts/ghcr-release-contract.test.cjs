@@ -20,7 +20,7 @@ test('bootstrap publishes only inert images, and checks privacy before app stagi
   assert.doesNotMatch(bootstrap, /COPY\s+.*\.|softload-app/);
   assert.match(bootstrap, /\[ "\$visibility" != private \]/);
   const check=stage.indexOf('Require package privacy BEFORE building or publishing code');
-  const build=stage.indexOf('Build and upload image only to confirmed private package');
+  const build=stage.indexOf('Build image locally (no publish yet)');
   assert.ok(check>0 && build>check);
   assert.match(stage, /\[ "\$visibility" != private \]/);
   assert.match(stage, /org\.opencontainers\.image\.revision=/);
