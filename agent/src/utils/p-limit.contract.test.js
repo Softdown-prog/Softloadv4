@@ -1,6 +1,6 @@
 'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
 test('p-limit 7 serializes concurrent Agent tasks without losing order', async () => {
   const { default: pLimit } = await import('p-limit');
