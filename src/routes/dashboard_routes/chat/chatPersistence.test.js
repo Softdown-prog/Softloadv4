@@ -25,6 +25,7 @@ function createHarness({saveGate=null,debitGate=null,failSave=false,failDebit=fa
     '../../services/chatStorageService':storage,
     '../../services/chatRequestGate':{async registrarRequisicaoChat(){return 'accepted';}},
     '../../services/firebase':{db:{collection(){return {add(){return Promise.resolve();}}}},admin:{firestore:{FieldValue:{serverTimestamp(){return 0}}}}},
+    'firebase-admin/firestore': { FieldValue: { serverTimestamp: () => 0, delete: () => 'deleted' } },
     '../../services/creditService':{async debitarCreditos(...args){if(debitGate)await debitGate;calls.push(['debit',args]);if(failDebit)throw Error('sem Firestore');}},
     './chat/chatGenerationFlow':{async gerarComPossivelTemplate({sendEvent,tokensRef}){
       tokensRef.input=4;tokensRef.output=6;
