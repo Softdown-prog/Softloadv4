@@ -24,7 +24,9 @@ test("smoke real: HTTP -> criar projeto -> detectar erro -> corrigir -> compilar
     }),
     commandPolicy: new CommandPolicy({
       allowedCommands: ["node"],
-      allowedPrefixes: ["node --check", "node --test"],
+      // node --test aninhado sob NODE_TEST_CONTEXT=child e ignorado pelo Node.
+      // Executar o arquivo diretamente testa o processo real e seu exitCode.
+      allowedPrefixes: ["node --check", "node calc.test.mjs"],
     }),
   });
   let server;
@@ -104,7 +106,7 @@ test("smoke real: HTTP -> criar projeto -> detectar erro -> corrigir -> compilar
     assert.notEqual(failedSyntax.action?.result?.exitCode, 0, "Erro de sintaxe passou sem ser detectado");
     steps.push("sintaxe: rejeitou codigo com erro real usando node --check");
 
-    const failedTest = await send("test", "run", { command: "node --test calc.test.mjs", timeout_ms: 30000 });
+    const failedTest = await send("test", "run", { command: "node calc.test.mjs", timeout_ms: 30000 });
     assert.equal(failedTest.action?.ok, true);
     assert.notEqual(failedTest.action?.result?.exitCode, 0);
     steps.push("testes: reprovou projeto quebrado");
@@ -123,7 +125,7 @@ test("smoke real: HTTP -> criar projeto -> detectar erro -> corrigir -> compilar
     const validSyntax = await send("build", "run", { command: "node --check calc.mjs", timeout_ms: 30000 });
     assert.equal(validSyntax.action?.ok, true);
     assert.equal(validSyntax.action?.result?.exitCode, 0);
-    const validTests = await send("test", "run", { command: "node --test calc.test.mjs", timeout_ms: 30000 });
+    const validTests = await send("test", "run", { command: "node calc.test.mjs", timeout_ms: 30000 });
     assert.equal(validTests.action?.ok, true);
     assert.equal(validTests.action?.result?.exitCode, 0);
     steps.push("revalidar: sintaxe e teste unitario passam de verdade");
