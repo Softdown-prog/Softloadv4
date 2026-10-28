@@ -7,20 +7,19 @@ on:
       - .github/workflows/vps-artifact-transport-check.yml
   workflow_dispatch:
 
-# A VPS recebe uma revisão por vez. Revisoes obsoletas sao ignoradas antes
-# de teste/build/transferencia/ativacao; upload em curso pode ser interrompido
-# somente no limite de uma tentativa, para evitar ativar um commit ultrapassado.
+# Uma revisão por vez. Build no GitHub; artefato autenticado/criptografado
+# por HTTPS para o runner sem Docker/sudo; SSH somente local para o receptor v2.
 concurrency:
   group: softload-vps-production
   cancel-in-progress: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   verify:
-    # So roda os testes pesados se o contrato SSH passou e este SHA
-    # ainda e o mais recente em main.
+    # Testes antes de construir/publicar qualquer artefato de produção.
     needs: plan
     if: needs.plan.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
@@ -34,7 +33,7 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
       - name: Verify image metadata and deploy cache contracts
-        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs scripts/artifactDelivery.test.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -71,6 +70,7 @@ jobs:
         run: node scripts/check-frontend-branding.js
 
   plan:
+    if: github.repository == 'Softdown-prog/Softloadv4' && github.ref == 'refs/heads/main'
     # Preflight rápido e sem efeitos colaterais: se a VPS rejeita contract:v2,
     # evita instalar dependências/testes pesados a cada push. A CI independente
     # Softload - Gate TypeScript continua verificando o frontend.
@@ -152,10 +152,10 @@ jobs:
     needs: [verify, plan]
     if: needs.plan.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: true
-      # A VPS tem uma conexao limitada; transferencias simultaneas derrubam o SSH.
+      # Limita o uso de disco/build; entrega externa acontece por HTTPS.
       max-parallel: 1
       matrix:
         include:
@@ -276,86 +276,315 @@ jobs:
           else
             echo 'proceed=true' >> "$GITHUB_OUTPUT"
           fi
-      - name: Configure restricted SSH key
-        if: steps.latest_before_transfer.outputs.proceed == 'true'
-        env:
-          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
-        run: |
-          test -n "$DEPLOY_KEY"
-          install -m 700 -d "$HOME/.ssh"
-          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/softload_deploy"
-          chmod 600 "$HOME/.ssh/softload_deploy"
-          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/known_hosts"
-      - name: Transfer resumable image to VPS
+      - name: Encrypt and authenticate image for HTTPS delivery
         if: steps.latest_before_transfer.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
         shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+          SERVICE: ${{ matrix.service }}
         run: |
           set -euo pipefail
+          test -n "$DEPLOY_KEY"
+          umask 077
+          dir="$RUNNER_TEMP/release"
+          install -m 700 -d "$dir"
           archive="$RUNNER_TEMP/softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"
+          trap 'rm -f "$archive"' EXIT
           docker save 'softload-${{ matrix.service }}:${{ github.sha }}' | gzip -1 > "$archive"
-          digest="$(sha256sum "$archive" | cut -d' ' -f1)"
-          packed_bytes="$(stat -c '%s' "$archive")"
-          echo "[IMAGE] Comprimida para transferência (${{ matrix.service }}): $packed_bytes bytes"
-          echo "Transferência comprimida: **$packed_bytes bytes**" >> "$GITHUB_STEP_SUMMARY"
-          echo "O rsync envia o arquivo completo em um novo SHA (exceto retomadas do mesmo arquivo); isso não é medição oficial de tráfego Locacloud." >> "$GITHUB_STEP_SUMMARY"
-          for attempt in $(seq 1 24); do
-            # Pare antes de reiniciar rsync se um commit novo ja substituiu
-            # esta revisao; o receptor nao ativou container algum neste ponto.
-            latest="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          export ARTIFACT_PASSWORD="softload-artifact-v1:$DEPLOY_KEY"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:ARTIFACT_PASSWORD -in "$archive" -out "$dir/image.enc"
+          # Encrypt-then-MAC, key/domain separated from encryption. Bind to
+          # this repository, run, revision and service; never publish plaintext.
+          python3 - "$dir" <<'PYMAC'
+          import hashlib, hmac, os, pathlib, sys
+          folder = pathlib.Path(sys.argv[1])
+          key = hashlib.sha256(b'softload-artifact-mac-v1\0' + os.environ['DEPLOY_KEY'].encode()).digest()
+          context = '/'.join(os.environ[k] for k in ('GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_SHA', 'SERVICE'))
+          mac = hmac.new(key, context.encode() + b'\0', hashlib.sha256)
+          with (folder / 'image.enc').open('rb') as stream:
+              for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                  mac.update(chunk)
+          (folder / 'image.mac').write_text(mac.hexdigest() + '\n')
+          PYMAC
+          echo "[DELIVERY] $SERVICE encrypted bytes: $(stat -c '%s' "$dir/image.enc")"
+      - name: Upload encrypted image only
+        if: steps.latest_before_transfer.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-${{ matrix.service }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/release/image.enc
+            ${{ runner.temp }}/release/image.mac
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+          overwrite: true
+      - name: Clean builder release material
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/release"
+
+  receive:
+    needs: [plan, build_and_transfer]
+    if: needs.plan.outputs.proceed == 'true' && github.repository == 'Softdown-prog/Softloadv4' && github.ref == 'refs/heads/main'
+    # No checkout, npm, application code, Docker socket or sudo on the host.
+    # Only authenticated encrypted bytes and the existing restricted receiver.
+    runs-on: [self-hosted, Linux, X64, softload-vps-deploy]
+    timeout-minutes: 60
+    steps:
+      - name: Check isolated VPS runner and prepare local receiver
+        id: local
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test "$(id -un)" = softloadrunner
+          ! id -nG | tr ' ' '\n' | grep -qx docker
+          ! sudo -n true >/dev/null 2>&1
+          for tool in openssl python3 rsync ssh curl; do command -v "$tool" >/dev/null; done
+          # Do not silently fall back to the slow public network SSH upload.
+          ip route get 164.163.9.7 | grep -q '^local '
+          available="$(df -PB1 "$RUNNER_TEMP" | awk 'NR==2 {print $4}')"
+          test "$available" -ge 3221225472 || { echo '::error::Need 3 GiB free for encrypted delivery and Docker staging.'; exit 1; }
+          latest="$(curl --fail --silent --show-error --max-time 20 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
+          if [ "$latest" != "$GITHUB_SHA" ]; then
+            echo 'proceed=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Main advanced; do not upload obsolete revision $GITHUB_SHA."
+            exit 0
+          fi
+          test -n "$DEPLOY_KEY"
+          umask 077
+          dir="$(mktemp -d "$RUNNER_TEMP/softload-delivery.XXXXXX")"
+          echo "DELIVERY_DIR=$dir" >> "$GITHUB_ENV"
+          printf '%s\n' "$DEPLOY_KEY" > "$dir/key"
+          printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$dir/known_hosts"
+          chmod 600 "$dir/key" "$dir/known_hosts"
+          contract="$(ssh -i "$dir/key" -o UserKnownHostsFile="$dir/known_hosts" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"
+          test "$contract" = 'softload-deploy:v2:app,agent'
+          echo 'proceed=true' >> "$GITHUB_OUTPUT"
+      - name: Download encrypted images through parallel HTTPS ranges
+        if: steps.local.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
+        run: |
+          set -euo pipefail
+          for service in app agent; do
+            if [ "$service" = agent ] && [ "$AGENT_CHANGED" = false ]; then continue; fi
+            export ARTIFACT_NAME="softload-$service-$GITHUB_SHA"
+            export OUTPUT_DIR="$DELIVERY_DIR/$service"
+            python3 - <<'PYHTTPS'
+          """Download one same-run encrypted artifact with bounded parallel HTTPS ranges.
+
+          Embedded verbatim in the workflow: the VPS runner never checks out repository code.
+          Only the two expected non-executable files are extracted. Never log signed URLs.
+          """
+          import concurrent.futures
+          import json
+          import math
+          import os
+          from pathlib import Path
+          import shutil
+          import tempfile
+          import time
+          import urllib.error
+          import urllib.request
+          import zipfile
+
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+
+          def api_request(path):
+              return urllib.request.Request(
+                  'https://api.github.com/repos/' + os.environ['GITHUB_REPOSITORY'] + path,
+                  headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+                           'Accept': 'application/vnd.github+json'})
+
+
+          def signed_artifact_url(artifact_id):
+              # Do not forward the API Authorization header to the blob host.
+              opener = urllib.request.build_opener(NoRedirect)
+              try:
+                  with opener.open(api_request('/actions/artifacts/' + str(artifact_id) + '/zip'), timeout=30):
+                      raise RuntimeError('Expected artifact redirect')
+              except urllib.error.HTTPError as error:
+                  if error.code != 302:
+                      raise RuntimeError('Artifact redirect HTTP ' + str(error.code)) from None
+                  url = error.headers.get('Location', '')
+                  if not url.startswith('https://'):
+                      raise RuntimeError('Invalid artifact redirect')
+                  return url
+
+
+          def download_range(url, target, start, end, total, refresh_url=None):
+              for attempt in range(4):
+                  try:
+                      request = urllib.request.Request(url, headers={'Range': f'bytes={start}-{end}'})
+                      with urllib.request.urlopen(request, timeout=60) as response:
+                          expected = f'bytes {start}-{end}/{total}'
+                          if response.status != 206 or response.headers.get('Content-Range') != expected:
+                              raise RuntimeError('Server did not honor bounded HTTP range')
+                          remaining = end - start + 1
+                          with target.open('wb') as output:
+                              while remaining:
+                                  chunk = response.read(min(1024 * 1024, remaining))
+                                  if not chunk:
+                                      raise RuntimeError('Incomplete artifact range')
+                                  output.write(chunk)
+                                  remaining -= len(chunk)
+                      return target
+                  except (OSError, RuntimeError, urllib.error.URLError):
+                      target.unlink(missing_ok=True)
+                      if attempt == 3:
+                          # urllib exceptions may include a signed URL. Do not print them.
+                          raise RuntimeError('Artifact range failed after four attempts') from None
+                      time.sleep(attempt + 1)
+                      if refresh_url is not None:
+                          url = refresh_url()
+
+
+          def receive(url, folder, refresh_url=None):
+              with urllib.request.urlopen(urllib.request.Request(url, method='HEAD'), timeout=30) as response:
+                  total = int(response.headers.get('Content-Length', '0'))
+              if not 0 < total <= 8 * 1024**3:
+                  raise RuntimeError('Unexpected artifact size')
+              folder.mkdir(mode=0o700, parents=True, exist_ok=True)
+              with tempfile.TemporaryDirectory(prefix='ranges-', dir=folder) as temporary:
+                  scratch = Path(temporary)
+                  chunk_size = max(512 * 1024, min(8 * 1024**2, math.ceil(total / 12)))
+                  ranges = [(start, min(start + chunk_size, total) - 1) for start in range(0, total, chunk_size)]
+                  started = time.monotonic()
+                  with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
+                      tasks = [pool.submit(download_range, url, scratch / str(i), start, end, total, refresh_url)
+                               for i, (start, end) in enumerate(ranges)]
+                      for completed, task in enumerate(concurrent.futures.as_completed(tasks), 1):
+                          task.result()
+                          print(f'[HTTPS] Range {completed}/{len(tasks)} received', flush=True)
+                  archive = scratch / 'artifact.zip'
+                  with archive.open('wb') as output:
+                      for i in range(len(ranges)):
+                          with (scratch / str(i)).open('rb') as source:
+                              shutil.copyfileobj(source, output)
+                          (scratch / str(i)).unlink()
+                  with zipfile.ZipFile(archive) as zipped:
+                      if sorted(zipped.namelist()) != ['image.enc', 'image.mac']:
+                          raise RuntimeError('Unexpected artifact entries')
+                      for name in ('image.enc', 'image.mac'):
+                          info = zipped.getinfo(name)
+                          if info.file_size > total or (name == 'image.mac' and info.file_size > 128):
+                              raise RuntimeError('Unexpected artifact member size')
+                          with zipped.open(name) as source, (folder / name).open('wb') as output:
+                              shutil.copyfileobj(source, output)
+                  elapsed = max(time.monotonic() - started, 0.001)
+                  print(f'[HTTPS] {total} encrypted bytes in {elapsed:.1f}s ({total / elapsed / 1024**2:.2f} MiB/s)', flush=True)
+
+
+          def main():
+              request = api_request('/actions/runs/' + os.environ['GITHUB_RUN_ID'] + '/artifacts?per_page=100')
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.load(response)
+              matches = [a for a in data['artifacts']
+                         if a['name'] == os.environ['ARTIFACT_NAME'] and not a['expired']]
+              if len(matches) != 1:
+                  raise RuntimeError('Expected exactly one same-run artifact')
+              artifact = matches[0]
+              run = artifact.get('workflow_run', {})
+              if run.get('head_sha') != os.environ['GITHUB_SHA']:
+                  raise RuntimeError('Artifact revision differs from workflow revision')
+              refresh = lambda: signed_artifact_url(artifact['id'])
+              receive(refresh(), Path(os.environ['OUTPUT_DIR']), refresh)
+
+
+          if __name__ == '__main__':
+              try:
+                  main()
+              except Exception:
+                  raise SystemExit('HTTPS artifact delivery failed; no activation. Check range/download step.') from None
+          PYHTTPS
+          done
+      - name: Authenticate encrypted artifacts before decryption
+        if: steps.local.outputs.proceed == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PYVERIFY'
+          import hashlib, hmac, os, pathlib
+          key = hashlib.sha256(b'softload-artifact-mac-v1\0' + os.environ['DEPLOY_KEY'].encode()).digest()
+          services = ['app', 'agent'] if os.environ['AGENT_CHANGED'] == 'true' else ['app']
+          for service in services:
+              folder = pathlib.Path(os.environ['DELIVERY_DIR']) / service
+              context = '/'.join([os.environ[k] for k in ('GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_SHA')] + [service])
+              mac = hmac.new(key, context.encode() + b'\0', hashlib.sha256)
+              with (folder / 'image.enc').open('rb') as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      mac.update(chunk)
+              expected = (folder / 'image.mac').read_text().strip()
+              if not hmac.compare_digest(mac.hexdigest(), expected):
+                  raise SystemExit('Artifact authentication failed: ' + service)
+              print('[DELIVERY] Authenticated', service)
+          PYVERIFY
+      - name: Load both images through local restricted SSH
+        if: steps.local.outputs.proceed == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
+          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export ARTIFACT_PASSWORD="softload-artifact-v1:$DEPLOY_KEY"
+          ssh_options=(-i "$DELIVERY_DIR/key" -o UserKnownHostsFile="$DELIVERY_DIR/known_hosts"
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          for service in app agent; do
+            latest="$(curl --fail --silent --show-error --max-time 20 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main" \
+              | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
             if [ "$latest" != "$GITHUB_SHA" ]; then
-              echo "::notice::Main advanced to $latest; stop retries for obsolete image $GITHUB_SHA."
+              echo "::notice::Main advanced; stop retries for obsolete image $GITHUB_SHA."
               exit 0
             fi
-            echo "[DEPLOY] Enviando ${{ matrix.service }} com retomada (tentativa $attempt/24)"
-            # --append-verify ignora arquivos remotos do mesmo tamanho, mesmo se divergirem.
-            # --checksum detecta essa divergencia; --inplace reaproveita blocos validos.
-            # finish:service:sha:digest ainda faz a validacao SHA-256 no receptor.
-            if timeout --signal=TERM --kill-after=10s 180s rsync --checksum --inplace --partial --timeout=90 --no-compress --progress --stats \
-                -e "ssh -i $HOME/.ssh/softload_deploy -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
-                "$archive" "root@164.163.9.7:softload-${{ matrix.service }}-${{ github.sha }}.tar.gz"; then
-              break
+            if [ "$service" = agent ] && [ "$AGENT_CHANGED" = false ]; then
+              ssh "${ssh_options[@]}" root@164.163.9.7 "reuse:$service:$GITHUB_SHA"
+              continue
             fi
-            if [ "$attempt" -eq 24 ]; then
-              echo "::error::Falha ao enviar a imagem ${{ matrix.service }} apos 24 tentativas"
-              exit 1
-            fi
-            sleep 5
+            archive="$DELIVERY_DIR/softload-$service-$GITHUB_SHA.tar.gz"
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+              -pass env:ARTIFACT_PASSWORD -in "$DELIVERY_DIR/$service/image.enc" -out "$archive"
+            digest="$(sha256sum "$archive" | cut -d' ' -f1)"
+            # Local kernel route confirmed above; no WAN upload here.
+            # Checksum/inplace repairs a stale same-size staged file too.
+            printf -v remote_shell '%q ' ssh "${ssh_options[@]}"
+            timeout --signal=TERM --kill-after=10s 300s \
+              rsync --checksum --inplace --partial --timeout=90 --no-compress --stats \
+              -e "$remote_shell" "$archive" "root@164.163.9.7:softload-$service-$GITHUB_SHA.tar.gz"
+            timeout --signal=TERM --kill-after=10s 300s \
+              ssh "${ssh_options[@]}" root@164.163.9.7 "finish:$service:$GITHUB_SHA:$digest"
+            rm -f "$archive" "$DELIVERY_DIR/$service/image.enc"
           done
-          for attempt in 1 2 3 4; do
-            if ssh -i "$HOME/.ssh/softload_deploy" \
-                -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-                -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
-                root@164.163.9.7 'finish:${{ matrix.service }}:${{ github.sha }}:'"$digest"; then
-              exit 0
-            fi
-            if [ "$attempt" -lt 4 ]; then sleep $((attempt * 10)); fi
-          done
-          echo "::error::Falha ao validar e carregar a imagem ${{ matrix.service }}"
-          exit 1
-      - name: Reuse unchanged VPS image
-        if: steps.latest_before_transfer.outputs.proceed == 'true' && steps.changes.outputs.changed == 'false'
+      - name: Remove decrypted images and temporary credentials
+        if: always()
         shell: bash
         run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4; do
-            if ssh -i "$HOME/.ssh/softload_deploy" \
-                -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-                -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
-                root@164.163.9.7 'reuse:${{ matrix.service }}:${{ github.sha }}'; then
-              exit 0
-            fi
-            if [ "$attempt" -lt 4 ]; then sleep $((attempt * 10)); fi
-          done
-          exit 1
+          if [[ "${DELIVERY_DIR:-}" == "$RUNNER_TEMP"/softload-delivery.* ]]; then
+            rm -rf -- "$DELIVERY_DIR"
+          fi
 
   activate:
-    needs: build_and_transfer
-    # O upload das imagens já usa GitHub-hosted + SSH restrito com sucesso.
-    # A ativação não precisa de Docker/sudo no runner da VPS; quando
-    # o self-hosted ficou indisponível, ela terminou sem executar steps.
-    # Executar daqui mantém a mesma allowlist de comandos SSH e evita
-    # um deploy incompleto após transferir todas as imagens.
+    needs: receive
+    # Ativação pelo receptor existente, depois das duas imagens carregadas.
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -436,7 +665,7 @@ jobs:
                       const payload = JSON.parse(raw);
                       const live = String(payload?.deploy?.gitSha || "");
                       const expected = process.env.EXPECTED_SHA;
-                      if (/^[a-f0-9]{7,40}$/.test(live) && expected.startsWith(live)) {
+                      if (payload.status === "ok" && /^[a-f0-9]{40}$/.test(live) && expected === live) {
                         console.log("[DEPLOY] Confirmed live git SHA:", live);
                         return;
                       }

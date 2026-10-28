@@ -2,11 +2,14 @@
 
 Cada push na branch `main` executa `.github/workflows/deploy.yml`. O workflow
 valida o projeto, cria imagens Docker identificadas pelo SHA do commit, envia
-as imagens alteradas à VPS com retomada de transferência e ativa a revisão
-somente após as verificações de saúde. O domínio público é
+as imagens alteradas à VPS por HTTPS e ativa a revisão somente após carregar
+ambos os serviços. O sucesso exige saúde pública e o SHA completo esperado. O domínio público é
 `https://softload.analysepro.com`.
 
-Validação, build e ativação usam runners hospedados no GitHub. O job
+Validação, build e ativação usam runners hospedados no GitHub. A entrega
+`receive` usa o runner `softloadrunner` na VPS, sem checkout, sudo ou Docker: ele
+baixa bytes criptografados e usa a rota SSH **local**, confirmada por `ip route`,
+para entregar os arquivos ao receptor v2 já instalado. O job
 `activate` **não** executa dentro da VPS: utiliza a chave SSH restrita
 para falar com o receptor de deploy instalado no servidor. A chave é
 apagada do diretório temporário ao fim do job; o runner não recebe socket
@@ -38,7 +41,7 @@ A imagem `app` ainda é reconstruída e enviada em toda revisão publicada,
 pois o SHA exposto por `/health` precisa corresponder ao commit ativo.
 Antes das melhorias de cache, exemplos reais em 26/10 registraram um
 `docker save | gzip -1` do app com cerca de **401 MB** por revisão.
-O rsync retoma uploads interrompidos, mas um arquivo de imagem com SHA
+O rsync é usado apenas na cópia **local** na VPS. Um arquivo de imagem com SHA
 novo não é uma transferência incremental de camadas.
 
 O workflow agora usa BuildKit com cache separado por serviço nos runners
@@ -201,3 +204,49 @@ encaminhar acessos ao componente que inicia o App e aguarda saúde antes
 de fazer proxy. Caso o Caddy aponte direto ao App desligado, o site
 continuará sujeito a 503. Auditar no host Caddy ativo, wake e política
 de parada antes de alterar containers ou regras de produção.
+
+
+## Transporte HTTPS autenticado (28/10/2026)
+
+Causa confirmada no deploy `40650681576`: testes/build passaram, mas o envio
+externo por SSH de ~386 MB ficou em ~30 KB/s, terminando após 24 tentativas.
+A revisão ativa continuou `65769cb`; aumentar timeout não corrige o transporte.
+
+O novo fluxo mantém o receptor v2 e a configuração de containers:
+
+1. `plan` verifica contrato v2 e SHA atual; `verify` roda os gates existentes.
+2. `build_and_transfer` constrói no GitHub e criptografa a imagem (AES-256-CBC,
+   PBKDF2/200.000 iterações, salt aleatório) antes de criar o artefato.
+   Um HMAC-SHA256 independente autentica o ciphertext e o contexto
+   repositório/run/SHA/serviço. O segredo vem de `SOFTLOAD_VPS_SSH_KEY` com
+   separação de domínio; nunca é gravado no artefato, argumento ou log.
+   Os artefatos expiram em um dia e contêm somente `image.enc` e `image.mac`.
+3. `receive` exige runner sem sudo/grupo Docker, rota local para o endereço da
+   VPS e pelo menos 3 GiB livres. O download usa 12 conexões HTTPS limitadas
+   a ranges de até 8 MiB, com quatro tentativas por range. Não repete o download
+   inteiro quando só um bloco falha. URLs assinadas e tokens não são exibidos.
+   A listagem é do mesmo run e exige SHA idêntico. A extração aceita apenas
+   os dois nomes esperados; não executa conteúdo do artefato.
+4. Todos os HMACs são verificados **antes** de descriptografar/carregar imagens.
+   `rsync --checksum --inplace --partial` copia pelo kernel local; `finish`
+   verifica SHA-256 e carrega a imagem pelo receptor restrito. Agent sem mudanças
+   usa `reuse`. Arquivos temporários/chaves são removidos em `always()`.
+5. `activate` depende da entrega dos dois serviços e reconfirma contrato e ponta
+   da main. O receptor conserva sua lógica de ativação/rollback. O job só passa
+   quando `/health` tem `status=ok` e o SHA **completo** da revisão publicada;
+   o bundle público também é validado.
+
+Não há fallback automático para SSH externo, nova credencial, permissão sudo,
+Docker socket, mudança do receptor, Caddy, DNS ou softload-wake. GHCR permanece
+como otimização futura de camadas, não como pré-requisito deste transporte.
+
+O workflow `Check encrypted HTTPS delivery to VPS` permite testar a rota com
+4 MiB aleatórios sem carregar imagens nem alterar containers. Testes offline:
+`node --test scripts/artifactDelivery.test.cjs` cobrem corrupção, contexto
+incorreto, roundtrip real OpenSSL, ranges, retry, ZIP malformado e path traversal.
+
+Teste real do transporte: execução `40667259154`, runner sem privilégios,
+4.194.582 bytes criptografados recebidos em 6,2 segundos (0,65 MiB/s),
+com integridade/descriptografia e contrato local v2 aprovados. O teste anterior
+de download sequencial levou ~42 s para 4 MiB. Esse teste pequeno não substitui
+a confirmação do deploy completo nem mede oficialmente o tráfego da VPS.

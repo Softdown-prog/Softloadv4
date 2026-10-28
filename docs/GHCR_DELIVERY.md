@@ -1,5 +1,12 @@
 # Recuperação do deploy Softload V4 sem enviar centenas de MB por SSH
 
+## Estado em 28/10/2026
+
+O deploy padrão agora usa artefatos **criptografados e autenticados**, baixados
+por HTTPS em paralelo na VPS, com cópia SSH local para o receptor v2. Ver
+`VPS_DEPLOY.md`. GHCR continua manual e opcional: a migração de receptor v3
+descrita abaixo não é necessária para o transporte HTTPS atual.
+
 ## Diagnóstico comprovado em 27/10/2026
 
 - `main`: `206c8492fbd453c90d28e829050b096951989617`.

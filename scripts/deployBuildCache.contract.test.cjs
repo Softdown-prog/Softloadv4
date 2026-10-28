@@ -21,7 +21,7 @@ test('image excludes Git metadata and receives truthful release SHA in final lay
   assert.match(workflow, /test "\$actual" = "\$GITHUB_SHA"/);
 });
 
-test('GitHub-hosted BuildKit caches layers and preserves signed/resumable transfer flow', () => {
+test('GitHub-hosted BuildKit caches layers and preserves authenticated local transfer', () => {
   assert.match(workflow, /docker\/setup-buildx-action@v3/);
   assert.match(workflow, /docker buildx build --load/);
   assert.match(workflow, /--cache-from 'type=gha,scope=softload-\$\{\{ matrix.service \}\}'/);
@@ -30,5 +30,5 @@ test('GitHub-hosted BuildKit caches layers and preserves signed/resumable transf
   assert.match(workflow, /rsync --checksum --inplace --partial/);
   assert.doesNotMatch(workflow, /rsync --append-verify/);
   assert.match(workflow, /sha256sum "\$archive"/);
-  assert.match(workflow, /'reuse:\$\{\{ matrix.service \}\}:\$\{\{ github.sha \}\}'/);
+  assert.match(workflow, /"reuse:\$service:\$GITHUB_SHA"/);
 });
