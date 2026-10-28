@@ -45,7 +45,7 @@
     "archiver": "^7.0.1",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
-    "ejs": "^3.1.10",
+    "ejs": "^7.0.2",
     "express": "^4.22.3",
     "express-rate-limit": "^8.7.1",
     "express-session": "^1.19.0",
