@@ -4,6 +4,7 @@ import type { RouteRequest, RouteResponse, RouteHandler, RouteRouter, RouteFailu
 import type { Firestore } from '@google-cloud/firestore';
 interface RouteBody { nome?: string; compilacaoId?: string; xmlPath?: string; gcPath?: string; siteName?: string; colorPreset?: string; nichoTema?: string }
 declare function require(name: string): unknown;
+const { FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 const express = require('express') as { Router(): RouteRouter<RouteBody> };
 const router  = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard') as { exigirLogin: RouteHandler<RouteBody> };
@@ -30,7 +31,7 @@ async function _resolverManifestoDoDoc(d: WorkspaceRecord): Promise<WorkspaceMan
     return null;
 }
 
-const FV = admin.firestore.FieldValue;
+const FV = FieldValue;
 
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -507,7 +508,7 @@ router.post('/api/workspace/projetos/:pid/sessoes/:sid/reverter', exigirLogin, a
         const { downloadUrl, xmlPath, gcPath, manifesto } = await reverterParaVersao(manifestoAntigo, user, () => {}, pid, sid);
 
         const novoSnapshot = _snapshotDeManifesto(downloadUrl, manifesto as WorkspaceManifest, xmlPath, gcPath);
-        await sessaoRef.update({ snapshot: novoSnapshot, edicaoPendente: admin.firestore.FieldValue.delete() });
+        await sessaoRef.update({ snapshot: novoSnapshot, edicaoPendente: FieldValue.delete() });
 
         res.json({ downloadUrl, snapshot: { ...novoSnapshot, snapshotEmFmt: 'agora' } });
     } catch (errCaught) {

@@ -4,6 +4,7 @@ import type { RouteRequest, RouteResponse, RouteHandler, RouteRouter, RouteFailu
 import type { Firestore } from '@google-cloud/firestore';
 interface RouteBody { message?: string; history?: unknown; sessionId?: string; requestId?: unknown; model?: unknown }
 declare function require(name: string): unknown;
+const { FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 const express   = require('express') as { Router(): RouteRouter<RouteBody> };
 const router    = express.Router();
 
@@ -178,7 +179,7 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
                 por:       'sistema',
                 tipo:      isGpt ? 'erro_gpt' : 'erro_gemini',
                 detalhes:  { email: email || 'desconhecido', status: httpStatus, erro: err.message?.slice(0, 300), categoria: isChave ? 'chave' : isModelo ? 'modelo' : 'parametro' },
-                criado_em: admin.firestore.FieldValue.serverTimestamp(),
+                criado_em: FieldValue.serverTimestamp(),
             }).catch(() => {});
         }
 

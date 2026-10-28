@@ -4,6 +4,7 @@ import type { RouteRequest, RouteResponse, RouteHandler, RouteRouter, RouteFailu
 import type { Firestore } from '@google-cloud/firestore';
 interface RouteBody { ativo?: unknown; plano: string; gemini?: string; nichoTema?: unknown; pedido?: unknown; mensagem?: unknown; historico?: import('../ai/solAgent').SolConversationMessage[]; sessionId?: string }
 declare function require(name: string): unknown;
+const { FieldValue, Timestamp, FieldPath } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 const express = require('express') as { Router(): RouteRouter<RouteBody> };
 const router = express.Router();
 const rateLimit = require('express-rate-limit') as RouteRateLimit;
@@ -18,7 +19,7 @@ const chatStorage = require('../services/chatStorageService') as typeof import('
 
 const SOL_SESSION_TYPE = 'sol';
 
-const FV = admin.firestore.FieldValue;
+const FV = FieldValue;
 
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -584,7 +585,7 @@ router.get('/eu/api/logs', exigirSuperAdmin, async (req, res) => {
 
 async function calcularAnalyticsCreditos(diasAtras = 30) {
     const corte = new Date(Date.now() - diasAtras * 24 * 60 * 60 * 1000);
-    const ts    = admin.firestore.Timestamp.fromDate(corte);
+    const ts    = Timestamp.fromDate(corte);
 
     // 1 — Todos os billing_logs do período via collection group.
     // Requer índice Firestore para o collection group 'billing_logs'.
@@ -623,7 +624,7 @@ async function calcularAnalyticsCreditos(diasAtras = 30) {
     for (let i = 0; i < emails.length; i += 30) {
         const lote = emails.slice(i, i + 30);
         const snap = await db.collection('clientes_premium')
-            .where(admin.firestore.FieldPath.documentId(), 'in', lote)
+            .where(FieldPath.documentId(), 'in', lote)
             .select('plano')
             .get();
         snap.docs.forEach(d => { planoPorEmail[d.id] = (d.data() as AccountRecord).plano || 'free'; });

@@ -9,6 +9,7 @@ interface MulterFactory {
     memoryStorage(): unknown;
 }
 declare function require(name: string): unknown;
+const { FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 const express = require('express') as { Router(): RouteRouter<RouteBody> };
 const router  = express.Router();
 const fs      = require('fs') as typeof import('fs');
@@ -343,7 +344,7 @@ router.post('/dashboard/solaris/visual-review', exigirLogin, (req, res, next) =>
 // do Gemini vira um evento "chunk" assim que chega.
 // ──────────────────────────────────────────────────────────────────────────
 const depsChatSolaris = {
-    chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador,
+    chatStorage, db, admin: { firestore: { FieldValue } }, debitarCreditos, solarisChat, modelRouter, orquestrador,
     carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo,
     criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador,
 };
