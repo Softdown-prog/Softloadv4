@@ -24,6 +24,11 @@ function loadRoute(file, dependencies, env = {}) {
         require(id) {
             if (id === 'express') return { Router: () => router };
             if (id === 'express-rate-limit') return () => limiter;
+            if (id === 'firebase-admin/firestore') return {
+                FieldValue: { serverTimestamp: () => 'server-time', delete: () => 'deleted' },
+                Timestamp: { fromDate: date => date },
+                FieldPath: { documentId: () => '__name__' },
+            };
             if (/middlewares\/(authGuard|adminGuard)$/.test(id)) return guards;
             if (['crypto', 'fs', 'os', 'path'].includes(id)) return require(id);
             const suffix = Object.keys(dependencies).find(key => id.endsWith(key));
