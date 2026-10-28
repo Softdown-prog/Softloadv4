@@ -23,6 +23,8 @@ jobs:
         run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs
       - name: Contratos das rotas finais e RAG local (sem servicos externos)
         run: node --test src/routes/finalRoutes.contract.test.cjs src/solaris/rag/ragLocalSearch.test.js
+      - name: Contratos de segurança do estágio GHCR privado
+        run: node --test scripts/ghcr-release-contract.test.cjs
       - name: Python para ferramentas 2D
         uses: actions/setup-python@v5
         with:
