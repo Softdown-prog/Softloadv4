@@ -68,9 +68,9 @@ export default function Configuracoes(): React.JSX.Element {
         <div className="sl-dashboard-page p-3 p-md-5" style={{ maxWidth: '800px' }}>
             <div className="sl-dashboard-page-header mb-5">
                 <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
-                    Configurações da Conta
+                    Configurações da conta
                 </h1>
-                <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Gerencie suas credenciais, preferências e status da assinatura Softload.</p>
+                <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Atualize seus dados, escolha suas preferências e consulte seu plano.</p>
             </div>
 
             {saved && (
@@ -135,7 +135,7 @@ export default function Configuracoes(): React.JSX.Element {
                             </div>
                             <div className="form-text text-secondary mt-1" style={{ fontSize: '11px' }}>O e-mail não pode ser alterado diretamente. Contate o suporte se necessário.</div>
                         </div>
-                        <button type="submit" className="btn btn-sl-primary btn-sm fw-bold">Salvar Alterações</button>
+                        <button type="submit" className="btn btn-sl-primary btn-sm fw-bold">Salvar alterações</button>
                     </form>
                 </div>
             )}
@@ -149,10 +149,10 @@ export default function Configuracoes(): React.JSX.Element {
                         <div>
                             <p className="fw-bold mb-1 text-capitalize">Plano atual: {user?.plano || 'Gratuito'}</p>
                             <p className="small mb-0 text-secondary">
-                                {user?.is_active ? 'Assinatura ativa com acesso total aos recursos premium.' : 'Plano gratuito com recursos limitados.'}
+                                {user?.is_active ? 'Assinatura ativa. Os recursos disponíveis dependem do plano contratado.' : 'Plano gratuito com recursos limitados.'}
                             </p>
                         </div>
-                        <Link to="/dashboard/upgrade" className="btn btn-sl-outline btn-sm fw-bold">Gerenciar / Upgrade</Link>
+                        <Link to="/dashboard/upgrade" className="btn btn-sl-outline btn-sm fw-bold">Ver planos e assinatura</Link>
                     </div>
                 </div>
             )}
