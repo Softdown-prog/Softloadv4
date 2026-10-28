@@ -255,7 +255,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
   try {
     const escreve = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r1",
         task: "execute",
@@ -273,7 +273,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
 
     const diffResp = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r2",
         task: "execute",
@@ -294,7 +294,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
 
     const patchResp = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r3",
         task: "execute",
