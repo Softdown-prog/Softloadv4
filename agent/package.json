@@ -18,7 +18,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@google-cloud/artifact-registry": "^1.0.0",
+    "@google-cloud/artifact-registry": "^5.2.0",
     "@google-cloud/logging": "^11.2.0",
     "@google-cloud/secret-manager": "^6.0.0",
     "@google-cloud/storage": "^7.16.0",
