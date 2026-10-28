@@ -3,6 +3,8 @@ name: Deploy Softload VPS
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - .github/workflows/vps-artifact-transport-check.yml
   workflow_dispatch:
 
 # A VPS recebe uma revisão por vez. Revisoes obsoletas sao ignoradas antes
