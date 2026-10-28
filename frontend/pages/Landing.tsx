@@ -105,11 +105,11 @@ export default function Landing(): React.JSX.Element {
                                 SOFTLOAD V4 · FERRAMENTAS DE IA
                             </div>
                             <h1 className="fw-bolder text-white mb-4" style={{ fontSize: 'clamp(2rem,5vw,3.6rem)', letterSpacing: '-.03em', lineHeight: 1.15, fontWeight: 900 }}>
-                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>Desenvolva projetos</span></span>
-                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>e crie <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>com IA</span></span></span>
+                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>Crie seus projetos</span></span>
+                                <span className="hero-mask"><span className="hero-mask__inner" data-hero-line>com a ajuda da <span style={{ background: 'linear-gradient(90deg,#38bdf8,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>IA</span></span></span>
                             </h1>
                             <p data-hero="lead" className="mb-4" style={{ fontSize: '1.05rem', color: 'var(--sl-text-400)', lineHeight: 1.75, maxWidth: 480 }}>
-                                Solaris Code para desenvolvimento e revisão de código, IA especialista em Blogger e um Workspace para criar e organizar templates XML.
+                                Use o Solaris Code para desenvolver e revisar código, peça ajuda ao Especialista Blogger para personalizar seu blog e organize seus modelos em um só lugar.
                             </p>
                             <div data-hero="chips" className="d-flex flex-wrap gap-2 mb-5">
                                 {CHIPS.map((chip) => (
@@ -330,17 +330,17 @@ export default function Landing(): React.JSX.Element {
                         {[
                             {
                                 tag: 'DESENVOLVIMENTO', titulo: 'Solaris Code',
-                                desc: 'Converse sobre código, analise projetos e trabalhe com repositórios GitHub por meio das ferramentas de IA disponíveis.',
+                                desc: 'Peça ajuda para desenvolver código, revisar projetos e trabalhar com repositórios GitHub conectados.',
                                 href: '/register', link: 'Conhecer Solaris Code', cor: '#38bdf8',
                             },
                             {
                                 tag: 'BLOGGER E BLOGSPOT', titulo: 'Especialista Blogger',
-                                desc: 'Assistência para XML, widgets, CSS e SEO de templates Blogger, com exemplos de respostas da IA na demonstração.',
+                                desc: 'Receba ajuda para criar e personalizar modelos de blog, ajustar o visual e melhorar o SEO.',
                                 href: '/#ia-pode', link: 'Ver demonstração', cor: '#4ade80',
                             },
                             {
-                                tag: 'GERAÇÃO DE TEMPLATES', titulo: 'Workspace',
-                                desc: 'Organize seus projetos e crie templates XML com o compilador disponível nos planos compatíveis.',
+                                tag: 'ORGANIZAÇÃO DE PROJETOS', titulo: 'Projetos e modelos',
+                                desc: 'Organize arquivos, continue seus trabalhos e crie modelos XML do Blogger nos planos compatíveis.',
                                 href: '/#features', link: 'Explorar recursos', cor: '#f472b6',
                             },
                         ].map((solucao) => (
@@ -358,6 +358,35 @@ export default function Landing(): React.JSX.Element {
             </section>
 
             {/* ═══════════════════════════════════ FEATURES ═══════════════════════════════════ */}
+
+            {/* ═══════════════════ PRIMEIROS PASSOS ═══════════════════ */}
+            <section id="como-funciona" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', scrollMarginTop: '5rem' }} aria-labelledby="como-funciona-titulo">
+                <div className="container" style={{ maxWidth: 1120 }}>
+                    <div className="text-center mb-4">
+                        <h2 id="como-funciona-titulo" className="fw-bold text-white mb-2">Como começar na Softload</h2>
+                        <p className="mb-0" style={{ color: 'var(--sl-text-400)' }}>Três passos para conhecer as ferramentas sem precisar configurar um servidor.</p>
+                    </div>
+                    <ol className="row g-3 list-unstyled mb-4">
+                        {[
+                            { numero: '1', titulo: 'Crie sua conta', texto: 'Cadastre-se gratuitamente, sem informar cartão de crédito.' },
+                            { numero: '2', titulo: 'Escolha uma ferramenta', texto: 'Use o Solaris Code para código, o Especialista Blogger para blogs ou a área de projetos para seus modelos.' },
+                            { numero: '3', titulo: 'Acompanhe seu uso', texto: 'Veja seus projetos, o plano contratado e os créditos disponíveis no painel.' },
+                        ].map((passo) => (
+                            <li className="col-12 col-md-4" key={passo.numero}>
+                                <div className="rounded-4 border h-100 p-4" style={{ background: 'rgba(15,23,42,.5)', borderColor: 'var(--sl-bg-800)' }}>
+                                    <span className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold mb-3" style={{ width: 36, height: 36, color: '#fff', background: 'var(--sl-primary)' }} aria-hidden="true">{passo.numero}</span>
+                                    <h3 className="h5 fw-semibold text-white mb-2">{passo.titulo}</h3>
+                                    <p className="mb-0 small" style={{ color: 'var(--sl-text-400)', lineHeight: 1.7 }}>{passo.texto}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ol>
+                    <div className="text-center">
+                        <a href="/register" className="btn btn-sl-primary fw-semibold px-4 py-3">Criar minha conta grátis</a>
+                    </div>
+                </div>
+            </section>
+
             <section id="features" className="py-5 border-top" style={{ borderColor: 'var(--sl-bg-900)', paddingTop: '5rem', paddingBottom: '5rem', scrollMarginTop: '5rem' }}>
                 <div className="container" style={{ maxWidth: 1200 }}>
                     <div className="text-center mb-5">

@@ -450,7 +450,7 @@ test('navegação EJS é responsiva e usa os mesmos links e marca da landing Rea
   const header=source('views/partials/header.ejs');
   const footer=source('views/partials/footer.ejs');
   const navbar=source('frontend/components/PublicNavbar.tsx');
-  for(const label of ['Início','Ferramentas','Demonstração','Contato']){
+  for(const label of ['Início','Ferramentas','Como funciona','Contato']){
     assert.ok(header.includes('>'+label+'</a>'),label);
     assert.ok(navbar.includes("label: '"+label+"'"),label);
   }
@@ -607,5 +607,22 @@ test('sidebar usa marca V4 e mantém navegação mobile acessível', () => {
   assert.ok(src.includes('aria-controls="sl-dashboard-mobile-menu"'));
   assert.ok(src.includes('aria-expanded={drawerOpen}'));
   assert.ok(src.includes('useFocusTrap(drawerRef, drawerOpen, fecharDrawer)'));
-  assert.ok(src.indexOf('label="Workspace"') < src.indexOf('>Projetos e conta</p>'));
+  assert.ok(src.indexOf('label="Projetos e modelos"') < src.indexOf('>Projetos e conta</p>'));
+});
+
+
+test('linguagem de cadastro e primeiros passos permanece clara para novos clientes', () => {
+  const register = source('frontend/pages/auth/Register.tsx');
+  const landing = source('frontend/pages/Landing.tsx');
+  const navbar = source('frontend/components/PublicNavbar.tsx');
+  const dashboard = source('frontend/layouts/DashboardLayout.tsx');
+  const history = source('frontend/pages/Historico.tsx');
+  assert.match(register, /Crie sua conta grátis/);
+  assert.match(register, /href="\/termos-de-uso"/);
+  assert.match(register, /href="\/privacidade"/);
+  assert.doesNotMatch(register, /Forjar Identidade|Fundição|protocolo de resgate/i);
+  assert.match(landing, /id="como-funciona"/);
+  assert.match(navbar, /href: '\/#como-funciona'/);
+  assert.match(dashboard, /label="Projetos e modelos"/);
+  assert.match(history, /Modelos gerados/);
 });

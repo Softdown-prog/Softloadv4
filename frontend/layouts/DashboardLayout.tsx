@@ -58,8 +58,8 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
                     <Link to="/dashboard" className="fw-black text-decoration-none sl-brand d-block" style={{ fontSize: '1.05rem', color: 'var(--bs-body-color)' }}>
                         SOFTLOAD<span className="sl-accent"> V4</span>
                     </Link>
-                    <p className="mb-0 text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.25em', marginTop: '2px' }}>
-                        Ferramentas de desenvolvimento com IA
+                    <p className="mb-0 text-uppercase font-monospace" style={{ fontSize: '11px', color: 'var(--sl-text-400)', letterSpacing: '0.03em', marginTop: '4px' }}>
+                        Crie e organize projetos com IA
                     </p>
                 </div>
                 {onClose && (
@@ -97,12 +97,12 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
             <nav className="sl-dashboard-nav flex-grow-1 px-3 py-3" aria-label="Navegação do painel" style={{ overflowY: 'auto' }}>
                 <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Visão geral" active={location.pathname === '/dashboard' || location.pathname === '/dashboard/'} onNavigate={onNavigate} />
                 <p className="fw-black text-uppercase mb-2 px-2 mt-3" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Ferramentas</p>
-                <SidebarItem to="/dashboard/chat" icon={MessageSquare} label="Especialista Blogger" badge="Gemini" badgeColor="primary" active={location.pathname === '/dashboard/chat'} onNavigate={onNavigate} />
+                <SidebarItem to="/dashboard/chat" icon={MessageSquare} label="Especialista Blogger" active={location.pathname === '/dashboard/chat'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/solaris" icon={Cpu} label="Solaris Code" active={location.pathname === '/dashboard/solaris'} onNavigate={onNavigate} />
-                <SidebarItem to="/dashboard/workspace" icon={FolderOpen} label="Workspace" active={location.pathname === '/dashboard/workspace' || location.pathname.startsWith('/dashboard/workspace/')} onNavigate={onNavigate} />
+                <SidebarItem to="/dashboard/workspace" icon={FolderOpen} label="Projetos e modelos" active={location.pathname === '/dashboard/workspace' || location.pathname.startsWith('/dashboard/workspace/')} onNavigate={onNavigate} />
 
                 <p className="fw-black text-uppercase mb-2 px-2 mt-4" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'var(--sl-text-400)' }}>Projetos e conta</p>
-                <SidebarItem to="/dashboard/historico" icon={History} label="Histórico XML" active={location.pathname === '/dashboard/historico'} onNavigate={onNavigate} />
+                <SidebarItem to="/dashboard/historico" icon={History} label="Modelos gerados" active={location.pathname === '/dashboard/historico'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/upgrade" icon={ShieldCheck} label="Planos e créditos" active={location.pathname === '/dashboard/upgrade'} onNavigate={onNavigate} />
                 <SidebarItem to="/dashboard/configuracoes" icon={Settings} label="Configurações" active={location.pathname === '/dashboard/configuracoes'} onNavigate={onNavigate} />
             </nav>
@@ -112,7 +112,7 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
                 <a href="/logout" className="sl-nav-item text-danger" style={{ color: '#f87171' }}>
                     <span className="sl-nav-label">
                         <LogOut size={18} className="sl-nav-icon me-2" />
-                        Encerrar Sessão
+                        Sair da conta
                     </span>
                 </a>
             </div>
@@ -143,8 +143,8 @@ export default function DashboardLayout(): React.JSX.Element | null {
 
     const user = config.user || { nome: 'Usuário', is_active: false, plano: 'Gratuito' };
 
-    const mobileSectionLabel = location.pathname.startsWith('/dashboard/workspace/chat') ? 'Editor do Workspace'
-        : location.pathname.startsWith('/dashboard/workspace') ? 'Workspace'
+    const mobileSectionLabel = location.pathname.startsWith('/dashboard/workspace/chat') ? 'Editor de projetos'
+        : location.pathname.startsWith('/dashboard/workspace') ? 'Projetos e modelos'
         : location.pathname.startsWith('/dashboard/solaris') ? 'Solaris Code'
         : location.pathname.startsWith('/dashboard/chat') ? 'Especialista Blogger'
         : location.pathname.startsWith('/dashboard/historico') ? 'Histórico'

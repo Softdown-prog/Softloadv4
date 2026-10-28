@@ -117,12 +117,12 @@ export default function Historico(): React.JSX.Element {
             <div className="sl-dashboard-page-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-5">
                 <div>
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
-                        Histórico de Compilações
+                        Modelos gerados
                     </h1>
-                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Últimas gerações e templates XML blindados no motor Softload.</p>
+                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Consulte, visualize e baixe os modelos XML criados para seus projetos Blogger.</p>
                 </div>
                 <button onClick={carregarHistorico} className="btn btn-sl-outline btn-sm d-flex align-items-center gap-1">
-                    <RefreshCw size={14} className={loading ? 'fa-spin' : ''} /> Atualizar Histórico
+                    <RefreshCw size={14} className={loading ? 'fa-spin' : ''} /> Atualizar lista
                 </button>
             </div>
 
@@ -140,7 +140,7 @@ export default function Historico(): React.JSX.Element {
                                 <History size={20} />
                             </div>
                             <div>
-                                <p className="small text-uppercase font-monospace mb-0" style={{ fontSize: '9px', color: 'var(--sl-text-400)' }}>Total no Histórico</p>
+                                <p className="small text-uppercase font-monospace mb-0" style={{ fontSize: '9px', color: 'var(--sl-text-400)' }}>Modelos no histórico</p>
                                 <p className="fw-bold mb-0 fs-4">{data.compilacoes.length} arquivos</p>
                             </div>
                         </div>

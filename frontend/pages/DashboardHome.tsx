@@ -147,13 +147,13 @@ export default function DashboardHome(): React.JSX.Element {
                         to="/dashboard/chat" icon={MessageSquare}
                         iconBg="rgba(14,165,233,.12)" iconColor="var(--sl-primary)"
                         title="Especialista Blogger"
-                        desc="Ajuda com XML, widgets, CSS e SEO para seus templates Blogger."
+                        desc="Crie e ajuste modelos para Blogger com ajuda para aparência, widgets e SEO."
                     />
                     <QuickAccessCard columnClassName="col-12 col-md-12 col-xl-4"
                         to="/dashboard/workspace" icon={FolderOpen}
                         iconBg="rgba(244,114,182,.12)" iconColor="#f472b6"
-                        title="Workspace"
-                        desc="Continue projetos salvos e use as ferramentas de templates disponíveis no seu plano."
+                        title="Projetos e modelos"
+                        desc="Organize seus projetos e trabalhe com os modelos Blogger disponíveis no seu plano."
                     />
                 </div>
             </section>
@@ -194,10 +194,10 @@ export default function DashboardHome(): React.JSX.Element {
                             <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <Zap size={18} style={{ color: '#eab308' }} />
-                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Compilações</span>
+                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Gerações iniciadas</span>
                                 </div>
                                 <p className="fw-bolder mb-1" style={{ fontSize: '1.1rem' }}>{stats.tentativasCompilacao}</p>
-                                <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>templates gerados no total</p>
+                                <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>tentativas de geração registradas</p>
                             </div>
                         </div>
 
@@ -258,14 +258,14 @@ export default function DashboardHome(): React.JSX.Element {
                 <section className="sl-card mb-4" aria-label="Créditos do Solaris e histórico de consumo">
                     <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <h2 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>
-                            {previaV2.modo === 'ativo' ? 'Créditos de IA — Solaris' : 'Prévia de créditos V2'}
+                            {previaV2.modo === 'ativo' ? 'Créditos de IA — Solaris' : 'Estimativa de créditos de IA'}
                         </h2>
                         {previaV2.modo !== 'ativo' && <Pill tone="indigo" size="sm">EXPERIMENTAL</Pill>}
                     </div>
                     <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
                         {previaV2.modo === 'ativo'
                             ? 'Créditos disponíveis e consumidos pelas chamadas do Solaris. Outras ferramentas ainda podem usar seus saldos próprios.'
-                            : 'Projeção do orçamento de IA por custo de modelo. Não substitui os créditos Gemini do plano atual.'}
+                            : 'Simulação de quanto cada chamada de IA pode consumir. Os créditos do seu plano continuam aparecendo separadamente.'}
                     </p>
                     <div className="row g-3">
                         <div className="col-6 col-lg-3">
@@ -426,8 +426,8 @@ export default function DashboardHome(): React.JSX.Element {
                         <QuickAccessCard
                             to="/dashboard/historico" icon={History}
                             iconBg="rgba(14,165,233,.1)" iconColor="var(--sl-primary)"
-                            title="Histórico de Compilações"
-                            desc="Consulte e baixe as compilações disponíveis no seu histórico."
+                            title="Modelos gerados"
+                            desc="Consulte e baixe os modelos XML que você criou."
                         />
                         <QuickAccessCard
                             to="/dashboard/configuracoes" icon={Settings}
