@@ -59,7 +59,7 @@ COPY package*.json ./
 # Mesmo motivo do stage frontend-build acima: o postinstall (vendorAssets.js)
 # precisa existir no disco no momento do `npm install`, antes do `COPY . .`.
 COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
-RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps
+RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
 COPY . .
 # A7 tools are available in the actual production image, with binary resources.
 RUN node agent/forge/verify-source.cjs && node agent/forge/smoke.cjs
