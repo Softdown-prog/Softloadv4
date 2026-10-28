@@ -450,9 +450,14 @@ test('navegação EJS é responsiva e usa os mesmos links e marca da landing Rea
   const header=source('views/partials/header.ejs');
   const footer=source('views/partials/footer.ejs');
   const navbar=source('frontend/components/PublicNavbar.tsx');
-  for(const label of ['Início','Ferramentas','Como funciona','Contato']){
+  for(const label of ['Início','Ferramentas','Demonstração','Como funciona','Contato']){
     assert.ok(header.includes('>'+label+'</a>'),label);
     assert.ok(navbar.includes("label: '"+label+"'"),label);
+  }
+  for (const anchor of ['solucoes','demo-solaris','como-funciona']) {
+    assert.ok(header.includes('href="/#'+anchor+'"'), anchor);
+    assert.ok(navbar.includes("href: '/#"+anchor+"'"), anchor);
+    assert.ok(source('frontend/pages/Landing.tsx').includes('id="'+anchor+'"'), anchor);
   }
   assert.match(header,/navbar-expand-md/);
   assert.match(header,/data-bs-toggle="collapse"/);
@@ -510,8 +515,10 @@ test('login e cadastro usam linguagem da Softload V4 em vez da interface antiga 
   assert.match(login, /Acesse sua conta/);
   assert.match(register, /Crie sua conta grátis/);
   assert.match(recover, /Recuperar senha/);
-  assert.match(register, /Após criar sua conta, entre com seu e-mail e senha/);
-  assert.match(register, /Criar conta\s*<\/button>/);
+  // Both wordings explicitly explain the next login; the newer first-person
+  // CTA does not change the native POST contract checked above.
+  assert.match(register, /(?:Após criar sua conta|Depois do cadastro), entre com seu e-mail e senha/);
+  assert.match(register, /Criar (?:minha )?conta\s*<\/button>/);
   assert.doesNotMatch(register, /Registrar e Entrar/);
 });
 
