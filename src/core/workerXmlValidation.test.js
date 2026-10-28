@@ -1,4 +1,12 @@
 'use strict';
+
+// Compilação testada sem gravações Firestore nem credenciais de produção.
+// A persistência é coberta separadamente por contratos de telemetria.
+const telemetryPath = require.resolve('./telemetria');
+require.cache[telemetryPath] = {
+    id: telemetryPath, filename: telemetryPath, loaded: true,
+    exports: { registrarCompilacao() {} },
+};
 const assert = require('node:assert/strict');
 const { validarXmlSaida } = require('./workerXmlValidation');
 const { validarXmlSaida: validarXmlSaidaNoWorker, executarCompilacao } = require('./compilerWorker');

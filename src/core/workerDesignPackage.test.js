@@ -1,4 +1,12 @@
 'use strict';
+
+// Compilação testada sem gravações Firestore nem credenciais de produção.
+// A persistência é coberta separadamente por contratos de telemetria.
+const telemetryPath = require.resolve('./telemetria');
+require.cache[telemetryPath] = {
+    id: telemetryPath, filename: telemetryPath, loaded: true,
+    exports: { registrarCompilacao() {} },
+};
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
