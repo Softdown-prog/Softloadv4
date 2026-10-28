@@ -72,3 +72,14 @@ jobs:
               print(f'rsync_route_{i}={stripped}')
           PY
           echo 'This diagnostic made no SSH transfer, Docker call, configuration edit, or restart.'
+
+      - name: Inspect active rsync process relationships and speed (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== rsync process relationships (no command-line arguments) ==='
+          ps -eo pid,ppid,etime,stat,comm | awk 'NR==1 || $5=="rsync" { print }' | head -n 30
+          echo '=== rsync process relationships after 4 seconds ==='
+          sleep 4
+          ps -eo pid,ppid,etime,stat,comm | awk 'NR==1 || $5=="rsync" { print }' | head -n 30
+          echo 'No files, process state, Docker resources, or networking were changed.'
