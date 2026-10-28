@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const { FieldValue } = require('firebase-admin/firestore');
 const express = require('express');
 const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard');
@@ -26,7 +27,7 @@ async function _resolverManifestoDoDoc(d) {
     }
     return null;
 }
-const FV = admin.firestore.FieldValue;
+const FV = FieldValue;
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
@@ -456,7 +457,7 @@ router.post('/api/workspace/projetos/:pid/sessoes/:sid/reverter', exigirLogin, a
         }
         const { downloadUrl, xmlPath, gcPath, manifesto } = await reverterParaVersao(manifestoAntigo, user, () => { }, pid, sid);
         const novoSnapshot = _snapshotDeManifesto(downloadUrl, manifesto, xmlPath, gcPath);
-        await sessaoRef.update({ snapshot: novoSnapshot, edicaoPendente: admin.firestore.FieldValue.delete() });
+        await sessaoRef.update({ snapshot: novoSnapshot, edicaoPendente: FieldValue.delete() });
         res.json({ downloadUrl, snapshot: { ...novoSnapshot, snapshotEmFmt: 'agora' } });
     }
     catch (errCaught) {

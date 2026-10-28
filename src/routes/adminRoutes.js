@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const { FieldValue, Timestamp, FieldPath } = require('firebase-admin/firestore');
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
@@ -12,7 +13,7 @@ const { resolverPeca } = require('../core/compilerEngine/pecaOrchestrator');
 const { perguntarAoSol } = require('../ai/solAgent');
 const chatStorage = require('../services/chatStorageService');
 const SOL_SESSION_TYPE = 'sol';
-const FV = admin.firestore.FieldValue;
+const FV = FieldValue;
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 60,
@@ -526,7 +527,7 @@ router.get('/eu/api/logs', exigirSuperAdmin, async (req, res) => {
 // ==========================================
 async function calcularAnalyticsCreditos(diasAtras = 30) {
     const corte = new Date(Date.now() - diasAtras * 24 * 60 * 60 * 1000);
-    const ts = admin.firestore.Timestamp.fromDate(corte);
+    const ts = Timestamp.fromDate(corte);
     // 1 — Todos os billing_logs do período via collection group.
     // Requer índice Firestore para o collection group 'billing_logs'.
     // Se o índice ainda não existe, cai na degradação abaixo.
@@ -564,7 +565,7 @@ async function calcularAnalyticsCreditos(diasAtras = 30) {
     for (let i = 0; i < emails.length; i += 30) {
         const lote = emails.slice(i, i + 30);
         const snap = await db.collection('clientes_premium')
-            .where(admin.firestore.FieldPath.documentId(), 'in', lote)
+            .where(FieldPath.documentId(), 'in', lote)
             .select('plano')
             .get();
         snap.docs.forEach(d => { planoPorEmail[d.id] = d.data().plano || 'free'; });

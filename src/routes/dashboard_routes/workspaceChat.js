@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const { FieldValue } = require('firebase-admin/firestore');
 const express = require('express');
 const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard');
@@ -52,7 +53,7 @@ router.get('/dashboard/workspace/chat', exigirLogin, async (req, res) => {
         // (acesso direto pela URL, refresh), onde o React nunca chega a
         // rodar pra chamar a API.
         try {
-            const agora = admin.firestore.FieldValue.serverTimestamp();
+            const agora = FieldValue.serverTimestamp();
             const nomeProjeto = `Chat IA — ${new Date().toLocaleDateString('pt-BR')}`;
             const projetoRef = await projetosRef(email).add({
                 nome: nomeProjeto,
@@ -87,7 +88,7 @@ router.get('/api/workspace/chat/info', exigirLogin, async (req, res) => {
         // sessão escolhidos) — cria um projeto + sessão vazios (sem snapshot) na
         // hora e retorna os novos IDs para o cliente redirecionar/carregar.
         try {
-            const agora = admin.firestore.FieldValue.serverTimestamp();
+            const agora = FieldValue.serverTimestamp();
             const nomeProjeto = `Chat IA — ${new Date().toLocaleDateString('pt-BR')}`;
             const projetoRef = await projetosRef(email).add({
                 nome: nomeProjeto,
@@ -409,7 +410,7 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
                 por: 'sistema',
                 tipo: isGpt ? 'erro_gpt' : 'erro_gemini',
                 detalhes: { email: email || 'desconhecido', status: httpStatus, erro: err.message?.slice(0, 300), categoria: isChave ? 'chave' : isModelo ? 'modelo' : 'parametro', origem: 'workspace-chat' },
-                criado_em: admin.firestore.FieldValue.serverTimestamp(),
+                criado_em: FieldValue.serverTimestamp(),
             }).catch(() => { });
         }
         sendEvent({

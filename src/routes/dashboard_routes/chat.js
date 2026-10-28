@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const { FieldValue } = require('firebase-admin/firestore');
 const express = require('express');
 const router = express.Router();
 const { exigirLogin, verificarSaldo } = require('../../middlewares/authGuard');
@@ -160,7 +161,7 @@ router.post('/dashboard/chat/stream', exigirLogin, somenteGemini, verificarSaldo
                 por: 'sistema',
                 tipo: isGpt ? 'erro_gpt' : 'erro_gemini',
                 detalhes: { email: email || 'desconhecido', status: httpStatus, erro: err.message?.slice(0, 300), categoria: isChave ? 'chave' : isModelo ? 'modelo' : 'parametro' },
-                criado_em: admin.firestore.FieldValue.serverTimestamp(),
+                criado_em: FieldValue.serverTimestamp(),
             }).catch(() => { });
         }
         sendEvent({
