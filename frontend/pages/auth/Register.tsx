@@ -34,23 +34,23 @@ export default function Register(): React.JSX.Element {
                      style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(24px)', border: '1px solid var(--sl-bg-800)' }}>
 
                     <div className="text-center mb-4">
-                        <h1 className="fw-black text-white text-uppercase mb-1" style={{ letterSpacing: '-0.03em' }}>Crie sua conta grátis</h1>
-                        <p className="fw-bold text-uppercase mb-0" style={{ fontSize: '11px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Comece na Softload V4, sem cartão de crédito.</p>
+                        <h1 className="fw-bold text-white mb-2" style={{ letterSpacing: '-0.02em', fontSize: '1.75rem' }}>Crie sua conta grátis</h1>
+                        <p className="mb-0" style={{ fontSize: '0.95rem', color: 'var(--sl-text-400)', lineHeight: 1.5 }}>Comece com o plano gratuito, sem precisar de cartão de crédito.</p>
                     </div>
 
                     <form action="/register" method="POST">
                         <div className="mb-3">
-                            <label htmlFor="name" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Nome completo</label>
+                            <label htmlFor="name" className="d-block mb-1 fw-semibold"
+                                   style={{ fontSize: '0.875rem', color: 'var(--sl-text-300)' }}>Nome completo</label>
                             <input type="text" name="name" id="name" autoComplete="name" required
-                                   placeholder="Ex: Rodrigo Silva"
+                                   placeholder="Seu nome e sobrenome"
                                    className="form-control"
                                    style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff' }} />
                         </div>
 
                         <div className="mb-3">
-                            <label htmlFor="email" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>E-mail</label>
+                            <label htmlFor="email" className="d-block mb-1 fw-semibold"
+                                   style={{ fontSize: '0.875rem', color: 'var(--sl-text-300)' }}>E-mail</label>
                             <input type="email" name="email" id="email" autoComplete="email" required
                                    placeholder="seu@email.com"
                                    className="form-control"
@@ -58,8 +58,8 @@ export default function Register(): React.JSX.Element {
                         </div>
 
                         <div className="mb-3">
-                            <label htmlFor="password" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Senha (mínimo de 8 caracteres)</label>
+                            <label htmlFor="password" className="d-block mb-1 fw-semibold"
+                                   style={{ fontSize: '0.875rem', color: 'var(--sl-text-300)' }}>Senha (mínimo de 8 caracteres)</label>
                             <input type="password" name="password" id="password" autoComplete="new-password" required minLength={8}
                                    placeholder="••••••••"
                                    className="form-control"
@@ -67,13 +67,13 @@ export default function Register(): React.JSX.Element {
                                    onChange={(e) => setPassword(e.target.value)}
                                    style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff' }} />
                             {senhaMuitoCurta && (
-                                <p className="mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', color: '#eab308' }}>A senha deve ter pelo menos 8 caracteres.</p>
+                                <p className="mt-1 mb-0 small" role="status" style={{ color: '#fbbf24' }}>Use pelo menos 8 caracteres para sua senha.</p>
                             )}
                         </div>
 
                         <div className="mb-4">
-                            <label htmlFor="confirm" className="d-block mb-1 fw-black text-uppercase"
-                                   style={{ fontSize: '10px', color: 'var(--sl-text-500)', letterSpacing: '0.15em' }}>Confirmar senha</label>
+                            <label htmlFor="confirm" className="d-block mb-1 fw-semibold"
+                                   style={{ fontSize: '0.875rem', color: 'var(--sl-text-300)' }}>Confirmar senha</label>
                             {/* Sem name= de propósito — confirmação é só validação client-side,
                                 o backend nunca recebe/espera este campo. */}
                             <input type="password" id="confirm" autoComplete="new-password" required
@@ -83,18 +83,25 @@ export default function Register(): React.JSX.Element {
                                    onChange={(e) => setConfirm(e.target.value)}
                                    style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'var(--sl-bg-800)', color: '#fff' }} />
                             {senhasDivergem && (
-                                <p className="mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', color: '#f87171' }}>As senhas não coincidem.</p>
+                                <p className="mt-1 mb-0 small" role="alert" style={{ color: '#f87171' }}>As senhas não coincidem.</p>
                             )}
                         </div>
 
                         <p className="small mb-3" style={{ color: 'var(--sl-text-400)', lineHeight: 1.6 }}>
-                            Após criar sua conta, entre com seu e-mail e senha para acessar a plataforma.
+                            Depois do cadastro, entre com seu e-mail e senha para acessar suas ferramentas.
                         </p>
-                        <button type="submit" disabled={!valido} className="btn btn-sl-primary w-100 fw-black text-uppercase"
+                        <button type="submit" disabled={!valido} className="btn btn-sl-primary w-100 fw-semibold"
                                 style={{ letterSpacing: '0.1em', height: '48px', opacity: valido ? 1 : 0.5, cursor: valido ? 'pointer' : 'not-allowed' }}>
-                            Criar conta
+                            Criar minha conta
                         </button>
                     </form>
+
+                    <p className="small text-center mt-3 mb-0" style={{ color: 'var(--sl-text-400)', lineHeight: 1.6 }}>
+                        Antes de começar, consulte os nossos{' '}
+                        <a href="/termos-de-uso" className="text-white">Termos de Uso</a>
+                        {' '}e a{' '}
+                        <a href="/privacidade" className="text-white">Política de Privacidade</a>.
+                    </p>
 
                     <div className="text-center mt-4">
                         <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>
