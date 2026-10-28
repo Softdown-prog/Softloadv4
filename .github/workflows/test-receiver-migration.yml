@@ -6,6 +6,15 @@ on:
     paths:
       - scripts/vps/migrate_receiver_v2.py
       - scripts/vps/test_migrate_receiver_v2.py
+      - scripts/vps/cleanup_staging.py
+      - scripts/vps/test_cleanup_staging.py
+      - .github/workflows/test-receiver-migration.yml
+  pull_request:
+    paths:
+      - scripts/vps/migrate_receiver_v2.py
+      - scripts/vps/test_migrate_receiver_v2.py
+      - scripts/vps/cleanup_staging.py
+      - scripts/vps/test_cleanup_staging.py
       - .github/workflows/test-receiver-migration.yml
   workflow_dispatch:
 
@@ -18,7 +27,8 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-      - name: Validate syntax and offline backup/rollback guards
+      - name: Validate receiver migration and safe staging cleanup offline
         run: |
-          python3 -m py_compile scripts/vps/migrate_receiver_v2.py
+          python3 -m py_compile scripts/vps/migrate_receiver_v2.py scripts/vps/cleanup_staging.py
           python3 -m unittest discover -s scripts/vps -p test_migrate_receiver_v2.py -v
+          python3 -m unittest discover -s scripts/vps -p test_cleanup_staging.py -v
