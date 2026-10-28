@@ -392,6 +392,7 @@ test('Solaris não perde histórico quando a cobrança falha', async () => {
 
 test('ferramenta Asset Forge 2D ativa contexto sem alterar mensagem armazenada', async () => {
   const { dependencies,calls }=fakeChatDeps();
+  dependencies.contextoForgeWorker=async()=> 'A7 Forge 2D: sprites disponíveis no Worker';
   let injectedPrompt='';
   dependencies.solarisChat.perguntarStream=async function*(message,_history,tokens) {
     injectedPrompt=message;
@@ -405,6 +406,33 @@ test('ferramenta Asset Forge 2D ativa contexto sem alterar mensagem armazenada',
   assert.match(injectedPrompt,/Pedido do usuário: quero um personagem/);
   assert.equal(calls.saved[0][3].messages.at(-2).content,'quero um personagem');
   assert.equal(response.events.at(-1).type,'done');
+});
+
+test('chat Assets consulta Worker HTTP autenticado real antes de enviar contexto ao modelo', {
+  skip: !require('fs').existsSync(require('path').resolve(__dirname,'../../../agent/node_modules/express')),
+}, async()=>{
+  const {createApp}=await import('../../../agent/src/server.js');
+  const snapshot={...process.env};
+  process.env.WORKER_SHARED_SECRET='integration-secret';
+  const {Agent}=await import('../../../agent/src/agent.js');
+  const agent=new Agent();
+  // Catalog is read-only: no workspace needs to be initialized or shared.
+  agent.running=true;
+  const server=createApp(agent).listen(0,'127.0.0.1');
+  await new Promise(resolve=>server.once('listening',resolve));
+  process.env.WORKER_AGENT_SERVICE_URL='http://127.0.0.1:'+server.address().port;
+  process.env.WORKER_AGENT_IAM_AUTH='false';
+  try {
+    const {dependencies,calls}=fakeChatDeps();
+    let prompt='';
+    dependencies.solarisChat.perguntarStream=async function*(message){prompt=message;yield 'Catálogo consultado; nenhum arquivo renderizado.';};
+    const response=fakeResponse();
+    await criarHandlerChatSolaris(dependencies)(req({message:'quais assets posso criar?',tool:'asset-forge-2d'}),response);
+    assert.match(prompt,/Catálogo consultado no Worker/);
+    assert.match(prompt,/recipeId/);
+    assert.equal(response.events.at(-1).type,'done');
+    assert.equal(calls.saved.length,1);
+  } finally {await new Promise(resolve=>server.close(resolve));process.env=snapshot;}
 });
 
 test('modo GitHub usa contexto do repositorio validado e preserva o texto original',async()=>{

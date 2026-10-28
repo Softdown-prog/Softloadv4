@@ -6,7 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { normalizarUsoTokensSolaris, calcularDebitoChatSolaris } = require('./solarisBilling');
 const { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } = require('./solarisHttpProtocol');
-const { validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico } = require('../tools/solarisToolModes');
+const { validarFerramentaSolaris, contextoForgeWorker, contextoRepositorioPublico } = require('../tools/solarisToolModes');
 const SOLARIS_CHAT_SESSION_TYPE = 'solaris-chat';
 function criarHandlerChatSolaris(deps) {
     const { chatStorage, db, admin, debitarCreditos, solarisChat, modelRouter, orquestrador, carregarProjeto, salvarProjeto, lerProjetoParaPersistir, deletarArquivo, criarArquivo, listarProjeto, criarZip, responderOuEditarProjeto, removerMarcadorTruncado, detectarMarcador } = deps;
@@ -80,7 +80,8 @@ function criarHandlerChatSolaris(deps) {
             // Seleção vem do servidor e nunca polui a mensagem salva no histórico.
             let mensagemModelo = msg;
             if (ferramenta.tool === 'asset-forge-2d') {
-                mensagemModelo = instrucoesForge() + '\n\nPedido do usuário: ' + msg;
+                sendEvent({ type: 'status', label: 'Consultando receitas de assets disponíveis...' });
+                mensagemModelo = await (deps.contextoForgeWorker || contextoForgeWorker)() + '\n\nPedido do usuário: ' + msg;
             }
             else if (ferramenta.tool === 'github' && ferramenta.repo) {
                 sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });

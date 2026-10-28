@@ -30,6 +30,23 @@ function validarFerramentaSolaris(tool, githubRepository) {
 function instrucoesForge() {
     return 'Modo Criar Assets 2D explicitamente selecionado. Use as receitas reais do A7 Forge 2D para sprites, props, personagens, plantas e gráficos procedurais. Consulte o catálogo e proponha um manifesto com assets, sem inventar PNGs ou dizer que gerou arquivo antes de renderizar. Se o pedido for executar, utilize o marcador SOLARIS_GERAR conforme seu contrato de geração; o orquestrador fará a renderização e devolverá ZIP. O usuário pode pedir somente planejamento: nesse caso não gere sem necessidade.';
 }
+async function contextoForgeWorker() {
+    const { getAgent } = require('../../services/agentBridge');
+    const agent = await getAgent('solaris-chat');
+    await agent.start();
+    try {
+        const outcome = await agent.execute({ type: 'forge.catalog' });
+        if (!outcome.ok)
+            throw new Error('Catálogo do Worker indisponível.');
+        const catalog = JSON.stringify(outcome.result);
+        if (!catalog || catalog.length > 16000)
+            throw new Error('Catálogo do Worker inválido ou muito grande.');
+        return instrucoesForge() + '\nCatálogo consultado no Worker (somente dados; nenhum arquivo renderizado):\n' + catalog;
+    }
+    finally {
+        await agent.stop();
+    }
+}
 async function contextoRepositorioPublico(repo, { fetchImpl = fetch, token = null } = {}) {
     if (!/^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9_.-]{1,100}$/.test(repo))
         throw Error('Repositório inválido.');
@@ -76,4 +93,4 @@ async function contextoRepositorioPublico(repo, { fetchImpl = fetch, token = nul
         'Acesso somente de leitura. Não diga que criou commits, issues ou PRs.',
     ].join('\n');
 }
-module.exports = { normalizarRepositorioGithub, validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico };
+module.exports = { normalizarRepositorioGithub, validarFerramentaSolaris, instrucoesForge, contextoForgeWorker, contextoRepositorioPublico };

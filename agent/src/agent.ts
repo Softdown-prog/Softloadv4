@@ -23,8 +23,6 @@ import { FileSystemCapability } from "./capabilities/filesystem.js";
 import { ShellCapability } from "./capabilities/shell.js";
 import { GitCapability } from "./capabilities/git.js";
 import { GithubCapability } from "./capabilities/github.js";
-import { StorageCapability } from "./capabilities/storage.js";
-import { ArtifactsCapability } from "./capabilities/artifacts.js";
 import { BuildCapability } from "./capabilities/build.js";
 import { TestCapability } from "./capabilities/test.js";
 import { PackageCapability } from "./capabilities/package.js";
@@ -140,14 +138,6 @@ export class Agent {
       // Github e Storage não recebem `workspace`: presumivelmente
       // operam via API remota, sem depender de arquivos locais.
       github: new GithubCapability({
-        permissions: this.permissions,
-      }),
-
-      storage: new StorageCapability({
-        permissions: this.permissions,
-      }),
-
-      artifacts: new ArtifactsCapability({
         permissions: this.permissions,
       }),
 

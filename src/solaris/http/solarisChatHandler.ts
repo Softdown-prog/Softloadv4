@@ -13,9 +13,9 @@ const os = require('node:os') as typeof import('node:os');
 const path = require('node:path') as typeof import('node:path');
 const { normalizarUsoTokensSolaris, calcularDebitoChatSolaris } = require('./solarisBilling') as typeof import('./solarisBilling');
 const { validarMensagemSolaris, validarSessaoSolaris, sanitizarHistoricoSolaris, historicoParaMotorSolaris, serializarEventoSseSolaris } = require('./solarisHttpProtocol') as typeof import('./solarisHttpProtocol');
-const { validarFerramentaSolaris, instrucoesForge, contextoRepositorioPublico } = require('../tools/solarisToolModes') as {
+const { validarFerramentaSolaris, contextoForgeWorker, contextoRepositorioPublico } = require('../tools/solarisToolModes') as {
   validarFerramentaSolaris(tool: unknown, repo: unknown): {ok: boolean; tool?: string; repo?: string; error?: string};
-  instrucoesForge(): string;
+  contextoForgeWorker(): Promise<string>;
   contextoRepositorioPublico(repo: string): Promise<string>;
 };
 
@@ -46,6 +46,7 @@ export interface SolarisChatHandlerDependencies {
   debitarCreditos(email: string, input: number, output: number, operacaoId?: string): Promise<unknown>;
   solarisChat: Pick<SolarisChat, 'perguntarStream'>;
   contextoRepositorioPublico?: (repo: string) => Promise<string>;
+  contextoForgeWorker?: () => Promise<string>;
   modelRouter: ProjectEditorRouter;
   orquestrador: Pick<OrquestradorSolaris, 'gerarProjeto'>;
   geracaoTokens?: { input: number; output: number };
@@ -143,7 +144,8 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         // Seleção vem do servidor e nunca polui a mensagem salva no histórico.
         let mensagemModelo = msg;
         if (ferramenta.tool === 'asset-forge-2d') {
-            mensagemModelo = instrucoesForge() + '\n\nPedido do usuário: ' + msg;
+            sendEvent({ type: 'status', label: 'Consultando receitas de assets disponíveis...' });
+            mensagemModelo = await (deps.contextoForgeWorker || contextoForgeWorker)() + '\n\nPedido do usuário: ' + msg;
         } else if (ferramenta.tool === 'github' && ferramenta.repo) {
             sendEvent({ type: 'status', label: 'Consultando repositório GitHub público...' });
             mensagemModelo = await buscarRepositorio(ferramenta.repo) + '\n\nPedido do usuário: ' + msg;

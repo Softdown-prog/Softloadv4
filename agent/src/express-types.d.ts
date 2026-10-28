@@ -16,7 +16,7 @@ declare module "express" {
   export type NextFunction = () => void;
   export interface Application {
     use(middleware: unknown): void;
-    get(path: string, handler: (req: Request, res: Response) => unknown): void;
+    get(path: string, ...handlers: Array<(req: Request, res: Response, next: NextFunction) => unknown>): void;
     post(
       path: string,
       ...handlers: Array<(req: Request, res: Response, next: NextFunction) => unknown>

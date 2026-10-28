@@ -15,6 +15,7 @@ type HttpError = Error & { code?: string; type?: string };
 declare const process: { env: Record<string, string | undefined> };
 
 import express from "express";
+import { timingSafeEqual } from "node:crypto";
 import { parseTaskRequest, getSupportedOperations, ProtocolError } from "./protocol/protocol.js";
 import { requestToTasks } from "./protocol/protocol-adapter.js";
 import { createLogger } from "./utils/logger.js";
@@ -63,8 +64,10 @@ export function createApp(agent: WorkerAgent) {
   // Introspecção: lista capability/operação suportada -- útil pra
   // quem monta o payload de /run saber o que está disponível sem
   // precisar ler o código-fonte do protocolo.
-  app.get("/capabilities", (req, res) => {
-    res.status(200).json(getSupportedOperations());
+  app.get("/capabilities", requireSharedSecret, (req, res) => {
+    const operations = getSupportedOperations();
+    for (const name of ['storage', 'artifacts', 'web-sandbox', 'archive']) delete operations[name];
+    res.status(200).json(operations);
   });
 
   // Segredo compartilhado simples entre quem despacha tasks e este
@@ -73,18 +76,23 @@ export function createApp(agent: WorkerAgent) {
   // do app principal (SOLARIS_RAG_SEARCH_SECRET etc.): defesa em
   // profundidade mínima, não a única camada (o ideal em produção é
   // também restringir por IAM/rede do Cloud Run).
-  const sharedSecret = process.env.WORKER_SHARED_SECRET;
+  const sharedSecret = process.env.WORKER_SHARED_SECRET?.trim();
+  const allowUnauthenticated = process.env.WORKER_ALLOW_UNAUTHENTICATED === 'true' &&
+    ['development', 'test'].includes(process.env.NODE_ENV || '');
   if (!sharedSecret) {
     logger.warn(
-      "WORKER_SHARED_SECRET não configurado -- endpoint /run aceita qualquer chamador. " +
-        "Configure a variável de ambiente antes de expor este serviço fora de um ambiente totalmente confiável.",
+      "Autenticação do Worker não configurada; ações protegidas indisponíveis, salvo opt-in explícito em desenvolvimento/teste.",
     );
   }
 
   function requireSharedSecret(req: Request, res: Response, next: NextFunction) {
-    if (!sharedSecret) return next(); // aviso já emitido na subida
+    if (!sharedSecret) {
+      if (allowUnauthenticated) return next();
+      return res.status(503).json({ error: 'worker_auth_not_configured' });
+    }
     const provided = req.get("x-worker-secret");
-    if (provided !== sharedSecret) {
+    if (typeof provided !== 'string' || Buffer.byteLength(provided, 'utf8') !== Buffer.byteLength(sharedSecret, 'utf8') ||
+        !timingSafeEqual(Buffer.from(provided, 'utf8'), Buffer.from(sharedSecret, 'utf8'))) {
       return res.status(401).json({ error: "unauthorized" });
     }
     return next();
@@ -106,6 +114,9 @@ export function createApp(agent: WorkerAgent) {
     }
 
     const tasks = requestToTasks(request);
+    if (request.actions.some(action => ['storage', 'artifacts'].includes(action.capability))) {
+      return res.status(400).json({ error: 'capability_unavailable' });
+    }
     const results: Array<Record<string, unknown>> = [];
 
     for (const { actionId, task } of tasks) {
@@ -204,10 +215,10 @@ export function createApp(agent: WorkerAgent) {
   // alguns setups. Mesmo padrão de sandbox-efemoro/src/server.js.
   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
     if (err.type === "entity.parse.failed" || err.type === "entity.too.large") {
-      return res.status(400).json({ error: "invalid_request", message: err.message });
+      return res.status(400).json({ error: "invalid_request", message: "Corpo JSON inválido ou acima do limite." });
     }
     logger.error("Erro não tratado em /run", { error: err.message, stack: err.stack });
-    return res.status(500).json({ error: "internal_error", message: err.message });
+    return res.status(500).json({ error: "internal_error", message: "Não foi possível executar a solicitação." });
   });
 
   return app;

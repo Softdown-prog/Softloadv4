@@ -6,7 +6,7 @@ interface BridgeAgentAction { id: string; capability: string; operation: string;
 interface BridgeTask { type: string; [property: string]: unknown }
 interface BridgeResult { actionId: string; [property: string]: unknown }
 interface BridgeResponse { ok: boolean; status: number; json(): Promise<{ message?: string; error?: string; results?: BridgeResult[] }> }
-interface BridgeRequest { method: 'POST'; headers: Record<string, string>; body: string }
+interface BridgeRequest { method: 'POST'; headers: Record<string, string>; body: string; signal: unknown }
 type BridgeFetch = (url: string, options: BridgeRequest) => Promise<BridgeResponse>;
 interface BridgeOptions {
     role?: string;
@@ -17,6 +17,7 @@ interface BridgeOptions {
 declare const require: (id: string) => unknown;
 declare const module: { exports: unknown };
 declare const fetch: BridgeFetch;
+declare const AbortSignal: { timeout(ms: number): unknown };
 declare const process: { env: Record<string, string | undefined> };
 declare const URL: new(url: string) => { origin: string };
 
@@ -27,6 +28,7 @@ const { GoogleAuth } = require('google-auth-library') as { GoogleAuth: new () =>
 const googleAuth = new GoogleAuth();
 
 const CAPABILIDADE_POR_PREFIXO: Record<string, string> = {
+    forge: 'forge',
     file: 'filesystem', shell: 'shell', git: 'git', github: 'github', storage: 'storage',
     artifact: 'artifacts', build: 'build', test: 'test', package: 'package', process: 'process',
     'code.analyze': 'code-analysis', 'code.search': 'code-search', project: 'project-inspector',
@@ -98,7 +100,7 @@ class RemoteAgent {
 
         const actionId = this.idGenerator();
         const response = await this.fetchImpl(`${url}/run`, {
-            method: 'POST', headers,
+            method: 'POST', headers, signal: AbortSignal.timeout(15000),
             body: JSON.stringify({ request_id: this.idGenerator(), task: 'execute', actions: [_taskParaAcao(task, actionId)] }),
         });
         const body = await response.json().catch(() => ({} as { message?: string; error?: string; results?: BridgeResult[] }));
