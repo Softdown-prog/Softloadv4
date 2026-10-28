@@ -66,7 +66,7 @@ export function createApp(agent: WorkerAgent) {
   // precisar ler o código-fonte do protocolo.
   app.get("/capabilities", requireSharedSecret, (req, res) => {
     const operations = getSupportedOperations();
-    for (const name of ['storage', 'artifacts', 'web-sandbox', 'archive']) delete operations[name];
+    for (const name of ['storage', 'artifacts', 'web-sandbox', 'archive', 'web-search']) delete operations[name];
     res.status(200).json(operations);
   });
 
@@ -114,6 +114,11 @@ export function createApp(agent: WorkerAgent) {
     }
 
     const tasks = requestToTasks(request);
+    // The HTTP contract has no user-scoped budget reservation yet. Never bill
+    // the shared Gemini key from a caller-controlled task identifier.
+    if (request.actions.some(action => action.capability === 'web-search')) {
+      return res.status(503).json({ error: 'paid_capability_budget_unavailable' });
+    }
     if (request.actions.some(action => ['storage', 'artifacts'].includes(action.capability))) {
       return res.status(400).json({ error: 'capability_unavailable' });
     }

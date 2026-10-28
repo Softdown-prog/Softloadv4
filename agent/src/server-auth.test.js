@@ -24,3 +24,29 @@ test('Worker only permits explicit unauthenticated development; production alway
     }
   } finally { process.env=snapshot; }
 });
+
+test('HTTP refuses unmetered paid search and placeholders before executing any batch action',async()=>{
+  const snapshot={...process.env};
+  process.env.WORKER_SHARED_SECRET='budget-test-secret';
+  let calls=0;
+  const server=createApp({execute:async()=>{calls++;return {ok:true};}}).listen(0,'127.0.0.1');
+  await new Promise(resolve=>server.once('listening',resolve));
+  const url='http://127.0.0.1:'+server.address().port;
+  const headers={'Content-Type':'application/json','x-worker-secret':'budget-test-secret'};
+  try {
+    const caps=await (await fetch(url+'/capabilities',{headers})).json();
+    for(const name of ['web-search','storage','artifacts'])assert.equal(caps[name],undefined);
+    for(const [capability,operation,input,status] of [
+      ['web-search','search',{query:'teste'},503],
+      ['storage','list',{bucket:'test'},400],
+    ]) {
+      const response=await fetch(url+'/run',{method:'POST',headers,body:JSON.stringify({
+        request_id:'budget',task:'execute',actions:[
+          {id:'first',capability:'filesystem',operation:'list',input:{}},
+          {id:'blocked',capability,operation,input}
+        ]})});
+      assert.equal(response.status,status);
+    }
+    assert.equal(calls,0);
+  }finally{await new Promise(resolve=>server.close(resolve));process.env=snapshot;}
+});

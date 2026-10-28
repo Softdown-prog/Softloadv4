@@ -48,7 +48,9 @@ ignora o mapa granular. A coluna chat descreve o fluxo realmente conectado.
    O processo padrão tem `/workspace` compartilhado. Não ligar file/shell/git
    do chat a esse root. É necessária uma identidade delegada pelo App e
    sandbox por projeto antes de executar código de cliente.
-2. `web-search` chama Gemini diretamente sem reserva no ledger do App. O
+2. `web-search` chama Gemini diretamente sem reserva no ledger do App. O HTTP
+   agora a bloqueia com 503 antes de executar qualquer action do lote e não
+   a anuncia em capabilities; o código interno permanece para futura integração. O
    `_taskId` é controlável e não representa orçamento de usuário/ciclo.
    Não disponibilizar pesquisa paga pelo Worker até integrar reserva/settlement.
 3. O ledger existente protege Flash apenas quando flags V2 estão ativas. O
