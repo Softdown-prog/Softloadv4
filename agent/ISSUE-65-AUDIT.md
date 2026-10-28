@@ -71,3 +71,26 @@ e Agent passaram; espelhos raiz verificados. Suíte completa Agent executada:
 shell/quoting Unix e privilégios de symlink); CI Ubuntu é o gate de publicação.
 Logs locais fora do repositório em `../backups/issue65-*-tests.log`.
 Nenhum merge/deploy automático autorizado nesta etapa; revisão e CI exigidos.
+
+Também executados: suíte raiz (`npm test`/`scripts/runTests.js`), 230/231
+arquivos passaram; falha de `assetForge.test.js` por `unzip` ausente no
+Windows. Os 62 testes existentes de ledger/custos/V2 passaram. O smoke real
+`agent/forge/smoke.cjs` foi tentado e falhou no audit hook Python ao acessar
+`os.devnull` no Windows; não é prova de render concluído. Docker Desktop não
+tem daemon ativo, impedindo medir imagem local antes/depois. Nada foi limpo
+ou removido para tentar contornar isso.
+
+## Aceites dos cinco fluxos
+
+| Fluxo | Evidência atual | Restante (não concluído) |
+| --- | --- | --- |
+| Entender projeto | contexto GitHub do App e testes de handler existentes | smoke OAuth por usuário e upload isolado real |
+| Corrigir erro | editor do App tem proposta/diff/confirmação e testes | integrar Worker com identidade/workspace por projeto, validar execução isolada |
+| Criar site | orquestrador/ZIP do App e testes existentes | smoke de geração com orçamento/credencial de teste e download real |
+| Assets 2D | catálogo Worker real agora alcançado pelo chat | smoke render/ZIP em runtime Linux, com modelo real somente após crédito reservado |
+| Verificar antes de publicar | detect/run locais existem; execução negada no perfil padrão | sandbox isolado e autorização de comandos por projeto; relatório integrado ao chat |
+
+Os quatro primeiros itens de bloqueio acima distinguem infraestrutura/credenciais
+externas da implementação pendente: tenancy, delegação de orçamento e UI de
+validação ainda precisam de código. A issue #65 permanece aberta; estes PRs
+não tornam seguro habilitar shell ou subagentes em conta de cliente.
