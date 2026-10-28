@@ -4,6 +4,7 @@ const { randomUUID } = require('crypto');
 const { GoogleAuth } = require('google-auth-library');
 const googleAuth = new GoogleAuth();
 const CAPABILIDADE_POR_PREFIXO = {
+    forge: 'forge',
     file: 'filesystem', shell: 'shell', git: 'git', github: 'github', storage: 'storage',
     artifact: 'artifacts', build: 'build', test: 'test', package: 'package', process: 'process',
     'code.analyze': 'code-analysis', 'code.search': 'code-search', project: 'project-inspector',
@@ -65,7 +66,7 @@ class RemoteAgent {
             headers.Authorization = await this.obterTokenIdentidade(url);
         const actionId = this.idGenerator();
         const response = await this.fetchImpl(`${url}/run`, {
-            method: 'POST', headers,
+            method: 'POST', headers, signal: AbortSignal.timeout(15000),
             body: JSON.stringify({ request_id: this.idGenerator(), task: 'execute', actions: [_taskParaAcao(task, actionId)] }),
         });
         const body = await response.json().catch(() => ({}));

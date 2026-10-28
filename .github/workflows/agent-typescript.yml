@@ -81,3 +81,5 @@ jobs:
       - name: Testar Worker Agent com JavaScript gerado do TypeScript
         working-directory: agent
         run: npm test
+      - name: Validar chat SSE integrado ao Worker HTTP real
+        run: node --test src/solaris/http/solarisHttpHandlers.test.js src/services/agentBridge.test.js src/services/agentBridge.contract.test.js

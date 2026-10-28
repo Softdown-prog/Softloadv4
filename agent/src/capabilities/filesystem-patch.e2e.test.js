@@ -230,7 +230,14 @@ async function startTestServer() {
   const agent = new Agent({ workspaceRoot, permissions: new Permissions({ mode: "full" }) });
   await agent.start();
 
-  const app = createApp(agent);
+  const previousSecret = process.env.WORKER_SHARED_SECRET;
+  process.env.WORKER_SHARED_SECRET = 'patch-test-secret';
+  let app;
+  try { app = createApp(agent); }
+  finally {
+    if (previousSecret === undefined) delete process.env.WORKER_SHARED_SECRET;
+    else process.env.WORKER_SHARED_SECRET = previousSecret;
+  }
   server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   const port = server.address().port;
@@ -248,7 +255,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
   try {
     const escreve = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r1",
         task: "execute",
@@ -266,7 +273,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
 
     const diffResp = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r2",
         task: "execute",
@@ -287,7 +294,7 @@ test("POST /run: filesystem.diff + filesystem.patch ponta a ponta via protocolo 
 
     const patchResp = await fetch(`${baseUrl}/run`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-worker-secret": "patch-test-secret" },
       body: JSON.stringify({
         request_id: "r3",
         task: "execute",

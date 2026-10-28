@@ -53,12 +53,14 @@ test("GET /health responde 200 sem autenticação", async () => {
   }
 });
 
-test("GET /capabilities responde 200 sem autenticação e lista operações conhecidas", async () => {
+test("GET /capabilities autenticado lista operações reais", async () => {
   const { baseUrl: url } = await startTestServer({ sharedSecret: "segredo-teste" });
   try {
-    const resp = await fetch(`${url}/capabilities`);
+    const resp = await fetch(`${url}/capabilities`, {headers:{'x-worker-secret':'segredo-teste'}});
     assert.equal(resp.status, 200);
     const body = await resp.json();
+    assert.equal(body.storage, undefined);
+    assert.equal(body.artifacts, undefined);
     assert.ok(Array.isArray(body.filesystem));
     assert.ok(body.filesystem.includes("edit"));
     assert.deepEqual(body.mcp, ["list_servers", "list_tools", "call_tool"]);
@@ -369,7 +371,7 @@ test("POST /run com secret errado -> 401", async () => {
   }
 });
 
-test("POST /run sem WORKER_SHARED_SECRET configurado aceita qualquer chamador (dev)", async () => {
+test("POST /run sem WORKER_SHARED_SECRET falha fechado", async () => {
   const { baseUrl: url } = await startTestServer({ sharedSecret: null });
   try {
     const resp = await fetch(`${url}/run`, {
@@ -381,7 +383,7 @@ test("POST /run sem WORKER_SHARED_SECRET configurado aceita qualquer chamador (d
         actions: [{ id: "a1", capability: "filesystem", operation: "list", input: {} }],
       }),
     });
-    assert.equal(resp.status, 200);
+    assert.equal(resp.status, 503);
   } finally {
     await stopTestServer();
   }
