@@ -58,7 +58,9 @@ test("smoke real: HTTP -> criar projeto -> detectar erro -> corrigir -> compilar
 
     const check = await fetch(base + "/health");
     assert.equal(check.status, 200);
-    const capabilities = await (await fetch(base + "/capabilities")).json();
+    const capabilitiesResponse = await fetch(base + "/capabilities", { headers: { "x-worker-secret": SECRET } });
+    assert.equal(capabilitiesResponse.status, 200);
+    const capabilities = await capabilitiesResponse.json();
     assert.ok(capabilities.filesystem.includes("edit"));
     assert.ok(capabilities.build.includes("run"));
     assert.ok(capabilities.test.includes("run"));
@@ -149,7 +151,8 @@ test("smoke real: HTTP -> criar projeto -> detectar erro -> corrigir -> compilar
     steps.push("Forge: renderizacao negada ao perfil sem permissao");
 
     const placeholder = await send("storage", "list", { bucket: "teste", path: "arquivo" });
-    assert.equal(placeholder.action?.ok, false);
+    assert.ok(placeholder.action?.ok === false ||
+      (placeholder.status === 400 && placeholder.body?.error === "capability_unavailable"));
     steps.push("limite encontrado: storage ainda nao e operacao funcional");
 
     assert.equal((await fs.readFile(path.join(dir, "calc.mjs"), "utf8")), correct);
