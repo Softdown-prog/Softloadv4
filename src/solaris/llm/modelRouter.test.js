@@ -18,7 +18,7 @@ const { criarModelRouter, MODEL_FLASH, MODEL_PRO } = require('./modelRouter');
 
 // Teto real de saída do Gemini 2.5 é 65.536 — o cap calibrado pelo dono do
 // produto (60.000) fica abaixo disso de propósito, não é o teto real.
-const MAX_OUTPUT_TOKENS_ESPERADO = 60000;
+const MAX_OUTPUT_TOKENS_ESPERADO = 8192;
 
 let passed = 0;
 let failed = 0;
@@ -119,7 +119,7 @@ async function run() {
         assert('executarTriagem retorna o texto da resposta', texto === 'ok-flash');
         assert('executarTriagem usa MODEL_FLASH', factory.chamadas[0].model === MODEL_FLASH);
         assert('executarTriagem usa temperature 0.2', factory.chamadas[0].config.temperature === 0.2);
-        assert('executarTriagem respeita o cap de maxOutputTokens (60k, abaixo do teto real de 65.536)', factory.chamadas[0].config.maxOutputTokens === MAX_OUTPUT_TOKENS_ESPERADO);
+        assert('executarTriagem usa teto econômico de 2048 tokens', factory.chamadas[0].config.maxOutputTokens === 2048);
         assert('executarTriagem sem responseSchema não seta responseMimeType', !factory.chamadas[0].config.responseMimeType);
     }
 
@@ -141,7 +141,7 @@ async function run() {
         assert('executarTarefaArquitetura retorna response', resp.text === 'ok-pro');
         assert('executarTarefaArquitetura usa MODEL_PRO', factory.chamadas[0].model === MODEL_PRO);
         assert('executarTarefaArquitetura usa temperature 0.7', factory.chamadas[0].config.temperature === 0.7);
-        assert('executarTarefaArquitetura respeita o cap de maxOutputTokens (60k)', factory.chamadas[0].config.maxOutputTokens === MAX_OUTPUT_TOKENS_ESPERADO);
+        assert('executarTarefaArquitetura usa teto conservador de 8192 tokens', factory.chamadas[0].config.maxOutputTokens === MAX_OUTPUT_TOKENS_ESPERADO);
         assert('thinkingConfig.thinkingBudget default 2048', factory.chamadas[0].config.thinkingConfig.thinkingBudget === 2048);
     }
 

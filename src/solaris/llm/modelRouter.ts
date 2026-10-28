@@ -108,7 +108,10 @@ export const MODEL_PRO   = process.env.SOLARIS_PRO_MODEL   || 'gemini-2.5-pro';
 // nativa do modelo, sem parâmetro pra encolher; um prompt maior que isso
 // simplesmente falha na chamada). MAX_OUTPUT_TOKENS é um cap deliberado
 // abaixo do teto real, calibrado pelo dono do produto (custo/latência).
-const MAX_OUTPUT_TOKENS = Number(process.env.SOLARIS_MAX_OUTPUT_TOKENS) || 60000;
+const configuredOutput = Number(process.env.SOLARIS_MAX_OUTPUT_TOKENS);
+const MAX_OUTPUT_TOKENS = Number.isSafeInteger(configuredOutput) && configuredOutput >= 256
+    && configuredOutput <= 16384 ? configuredOutput : 8192;
+const MAX_TRIAGE_OUTPUT_TOKENS = Math.min(2048, MAX_OUTPUT_TOKENS);
 
 // Telemetria agregada: custo estimado por operação, sem prompts ou dados pessoais.
 // Não debita créditos, não bloqueia solicitações e nunca substitui a fatura Google.
@@ -150,7 +153,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
             if (!prompt || typeof prompt !== 'string') {
                 throw new Error('[SOLARIS-LLM] executarTriagem: prompt é obrigatório.');
             }
-            const config: GeminiGenerationConfig = { temperature: 0.2, maxOutputTokens: MAX_OUTPUT_TOKENS, systemInstruction };
+            const config: GeminiGenerationConfig = { temperature: 0.2, maxOutputTokens: MAX_TRIAGE_OUTPUT_TOKENS, systemInstruction };
             if (responseSchema) {
                 config.responseMimeType = 'application/json';
                 config.responseSchema = responseSchema;
@@ -220,7 +223,7 @@ export function criarModelRouter(clientFactory: SolarisClientFactory = getClient
             if (!prompt || typeof prompt !== 'string') {
                 throw new Error('[SOLARIS-LLM] executarTriagemStream: prompt é obrigatório.');
             }
-            const config: GeminiGenerationConfig = { temperature: 2.0, maxOutputTokens: MAX_OUTPUT_TOKENS, systemInstruction };
+            const config: GeminiGenerationConfig = { temperature: 2.0, maxOutputTokens: MAX_TRIAGE_OUTPUT_TOKENS, systemInstruction };
             const stream = await clientFactory().models.generateContentStream({ model: MODEL_FLASH, contents: prompt, config });
 
             // usageMetadata só vem completo no(s) último(s) chunk(s) — não
