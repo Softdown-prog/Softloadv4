@@ -14,6 +14,26 @@
  * Execute: node src/core/telemetria.test.js
  */
 
+// Isola o teste de Firestore: nenhum acesso de rede ou credencial Google.
+const recorded = [];
+const firebasePath = require.resolve('../services/firebase');
+require.cache[firebasePath] = {
+    id: firebasePath, filename: firebasePath, loaded: true,
+    exports: {
+        db: {
+            collection(name) {
+                return { add(event) {
+                    recorded.push({ name, event });
+                    return Promise.resolve();
+                } };
+            },
+        },
+        admin: {
+            firestore: { FieldValue: { serverTimestamp: () => 'local-test-time' } },
+        },
+    },
+};
+
 const { registrarCompilacao, _agregarEventos } = require('./telemetria');
 
 let passed = 0;
@@ -36,6 +56,8 @@ function assert(label, condition, extra = '') {
     let lancou = false;
     try { registrarCompilacao({ nichoTema: 'teste-telemetria', validadoresPassaram: { x: true } }); } catch (e) { lancou = true; }
     assert('registrarCompilacao(evento válido) não lança', lancou === false);
+    assert('grava somente na coleção local simulada', recorded.length === 2 && recorded.every(x => x.name === 'telemetria_compilacoes'));
+    assert('usa timestamp simulado sem rede', recorded.every(x => x.event.criadoEm === 'local-test-time'));
 }
 
 // B. _agregarEventos — mesma cobertura que o teste anterior tinha
