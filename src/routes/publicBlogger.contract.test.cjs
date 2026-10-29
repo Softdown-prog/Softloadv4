@@ -114,6 +114,16 @@ test('usuário autenticado usa a rota protegida e os benefícios da conta',async
 
 test('view EJS pública funciona sem conta e não anuncia Forge',async()=>{
   const file=path.resolve(__dirname,'../../views/pages/gerador-blogger.ejs');
-  const locals={gitSha:'testing',user:null,activePage:null,guestMode:true,downloadPath:'/criar/download',
-    guestToken:'a'.repeat(48),nichos:[{id:'noticias-mag-news',nome:'Notícias',aviso:null}],\n    cores:[{id:'tech-blue',nome:'Azul'}],fontes:[{id:'inter',nome:'Inter'}],gratuitoLimite:2};\n  const html=await new Promise((resolve,reject)=>ejs.renderFile(file,locals,{},(err,out)=>err?reject(err):resolve(out)));\n  assert.match(html,/criar\\/download/);\n  assert.match(html,/2 XML por sessão/);\n  assert.doesNotMatch(html,/A7 Forge|forge-2d|react-root/);\n});
+  const locals={
+    gitSha:'testing',user:null,activePage:null,guestMode:true,downloadPath:'/criar/download',
+    guestToken:'a'.repeat(48),
+    nichos:[{id:'noticias-mag-news',nome:'Notícias',aviso:null}],
+    cores:[{id:'tech-blue',nome:'Azul'}],fontes:[{id:'inter',nome:'Inter'}],
+    gratuitoLimite:2
+  };
+  const html=await new Promise((resolve,reject)=>
+    ejs.renderFile(file,locals,{},(err,out)=>err?reject(err):resolve(out)));
+  assert.match(html,/criar[/]download/);
+  assert.match(html,/2 XML por sessão/);
+  assert.doesNotMatch(html,/A7 Forge|forge-2d|react-root/);
 });
