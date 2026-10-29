@@ -68,7 +68,7 @@ router.get('/dashboard/historico', exigirLogin, async (req, res) => {
                 id: doc.id,
                 nome: data.siteName || data.arquivo || 'Template anterior',
                 arquivo: data.arquivo || 'template.zip',
-                tamanhoBytes: Number.isSafeInteger(data.tamanhoBytes) && data.tamanhoBytes > 0
+                tamanhoBytes: typeof data.tamanhoBytes === 'number' && Number.isSafeInteger(data.tamanhoBytes) && data.tamanhoBytes > 0
                     ? data.tamanhoBytes : 0,
                 criadoEm: date && !Number.isNaN(date.getTime())
                     ? date.toLocaleDateString('pt-BR') : 'Data indisponível'
@@ -78,7 +78,7 @@ router.get('/dashboard/historico', exigirLogin, async (req, res) => {
             activePage: 'historico', user, arquivos
         });
     } catch (err) {
-        console.error('[HISTORICO] Pagina EJS indisponivel:', err.message);
+        console.error('[HISTORICO] Pagina EJS indisponivel:', (err as Error).message);
         return res.status(503).send('Não foi possível carregar seu histórico. Tente novamente.');
     }
 });
