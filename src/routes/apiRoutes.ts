@@ -15,10 +15,7 @@ const { STORAGE_LIMITS_MB }               = require('../services/storageService'
 const { enviarPlanoAtivado }              = require('../services/emailService') as typeof import('../services/emailService');
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago') as typeof import('mercadopago');
 const { exigirLogin } = require('../middlewares/authGuard') as { exigirLogin: RouteHandler<RouteBody> };
-const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage') as typeof import('../solaris/tools/projectStorage');
-const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch') as typeof import('../solaris/rag/ragLocalSearch');
 
-const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces') as typeof import('../knowledge/ragNamespaces');
 
 // Rate limit por IP nas rotas de iniciar pagamento — já exigem login
 // (exigirLogin), mas sem limite um usuário autenticado podia disparar
@@ -458,6 +455,7 @@ router.post('/internal/solaris/limpar-projetos-expirados', async (req, res) => {
     }
 
     try {
+        const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage') as typeof import('../solaris/tools/projectStorage');
         const diasArg = Number(req.query.dias);
         const opcoes = Number.isFinite(diasArg) && diasArg > 0 ? { diasParaExpirar: diasArg } : {};
         const resultado = await apagarProjetosExpirados(opcoes);
@@ -507,6 +505,7 @@ router.post('/internal/solaris/rag/buscar', async (req, res) => {
     // O endpoint do Agent é exclusivo do Solaris. Nunca roteia para o
     // conhecimento filesystem do Especialista Blogger.
     try {
+        const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces') as typeof import('../knowledge/ragNamespaces');
         normalizeSolarisCorpus(corpus);
     } catch (errorCaught) {
         const error = errorCaught as RouteFailure;
@@ -518,6 +517,7 @@ router.post('/internal/solaris/rag/buscar', async (req, res) => {
         return res.status(503).json({ erro: 'Busca vetorial de código desativada: serviço de embeddings retirado.' });
     }
     try {
+        const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch') as typeof import('../solaris/rag/ragLocalSearch');
         const resultado = await buscarCatalogoLocal({ query, topK });
         res.status(200).json(resultado);
     } catch (errCaught) {
