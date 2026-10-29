@@ -40,6 +40,8 @@ jobs:
         run: npm test
       - name: Validar Blogger sem conta (cota, CSRF e XML)
         run: node --test src/routes/publicBlogger.contract.test.cjs
+      - name: Conferir layout público EJS e navegação antes de mesclar
+        run: npm run test:frontend-layouts
       - name: Build React
         run: npm run build
       - name: Verificar imagem Docker de producao
