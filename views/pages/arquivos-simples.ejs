@@ -1,0 +1,101 @@
+<%- include('../partials/header', {pageTitle:'Meus arquivos | Softload',pageDescription:'Armazenamento pessoal de arquivos Blogger e A7 Forge 2D.',pageNoindex:true}) %>
+<style>
+.lite-files{max-width:1040px;margin:auto;padding:112px 16px 80px}
+.lite-files .panel{border-radius:18px;border:1px solid #334860;background:#111f31;padding:clamp(20px,4vw,32px)}
+.lite-files .muted{color:#bac8da;line-height:1.6}
+.lite-files .quota{height:12px;background:#334155;border-radius:10px;overflow:hidden}
+.lite-files .quota span{display:block;height:100%;background:#38bdf8;border-radius:10px}
+.lite-files input{color:#fff;background:#0b192a;border:1px solid #5c6f82;border-radius:8px;padding:12px;width:100%}
+.lite-files input:focus-visible,.lite-files button:focus-visible,.lite-files a:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+</style>
+<main class="lite-files">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div><p class="text-info small text-uppercase fw-bold mb-1">Softload · Armazenamento pessoal</p>
+      <h1 class="text-white fw-bolder mb-2">Meus arquivos</h1>
+      <p class="muted mb-0">Guarde seus templates XML e assets 2D em um lugar só.</p></div>
+    <a href="/dashboard" class="btn btn-outline-secondary">Voltar ao painel</a>
+  </div>
+  <% if (!enabled) { %>
+    <section class="panel" role="status">
+      <h2 class="h5 text-white">Área de arquivos em preparação</h2>
+      <p class="muted mb-2">As cotas planejadas são 5 MB gratuitos e 50 MB durante o plano Essencial ativo. Os uploads ainda estão desabilitados até a homologação.</p>
+      <p class="muted mb-0">Os arquivos que você já tinha continuam no <a href="/dashboard/historico">histórico anterior</a>. Nada será excluído por esta atualização.</p>
+    </section>
+  <% } else { %>
+    <section class="panel mb-4" aria-labelledby="cota">
+      <h2 id="cota" class="h5 text-white">Seu espaço na nuvem</h2>
+      <p class="muted mb-2"><strong class="text-white"><%= usedMb %> MB</strong> utilizados de <strong class="text-white"><%= limitMb %> MB</strong> disponíveis.</p>
+      <div class="quota mb-3" role="progressbar" aria-label="Espaço utilizado" aria-valuemin="0" aria-valuemax="<%= limitMb %>" aria-valuenow="<%= usedMb %>"><span style="width:<%= Math.max(0, Math.min(100, usedMb / Math.max(1,limitMb) * 100)) %>%"></span></div>
+      <p class="muted small">A conta gratuita tem 5 MB. O Essencial, R$ 5 por 30 dias, permite até 50 MB enquanto estiver ativo. Arquivos vinculados ao plano pago podem perder o acesso após o vencimento e mais cinco dias de recuperação, conforme os termos aceitos.</p>
+      <p class="muted small mb-0">Nesta versão, cada envio pode ter até 5 MB. Arquivos salvos aqui são contabilizados na mesma cota dos arquivos anteriores, evitando cobrança dupla de espaço.</p>
+    </section>
+    <section class="panel mb-4" aria-labelledby="envio">
+      <h2 id="envio" class="h5 text-white mb-3">Enviar arquivo</h2>
+      <form id="lite-upload" action="/dashboard/arquivos/upload" method="post" enctype="application/octet-stream">
+        <label for="lite-file" class="form-label text-white">Escolha um XML, PNG, JPG, WebP, GIF, JSON ou ZIP</label>
+        <input id="lite-file" name="file" type="file" accept=".xml,.png,.jpg,.jpeg,.webp,.gif,.json,.zip" required>
+        <button id="lite-upload-btn" type="submit" class="btn btn-sl-primary fw-bold mt-3">Salvar na nuvem</button>
+      </form>
+      <p id="lite-result" role="status" aria-live="polite" class="muted small mt-3 mb-0"></p>
+    </section>
+    <section class="panel" aria-labelledby="salvos">
+      <h2 id="salvos" class="h5 text-white mb-3">Arquivos salvos</h2>
+      <% if (!items.length) { %>
+        <p class="muted">Você ainda não enviou arquivos nesta área. Templates antigos estão disponíveis no <a href="/dashboard/historico">histórico anterior</a>.</p>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-dark table-borderless align-middle">
+            <thead><tr><th scope="col">Arquivo</th><th scope="col">Tamanho</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+            <tbody>
+              <% items.forEach(function(file) { %>
+                <tr>
+                  <td class="text-break"><%= file.name %></td>
+                  <td><%= (file.bytes/1024/1024).toFixed(2) %> MB</td>
+                  <td><%= file.state === 'ready' ? (file.canDownload ? 'Disponível' : 'Recuperação encerrada') : 'Em processamento' %></td>
+                  <td>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <% if (file.state === 'ready' && file.canDownload) { %>
+                        <a class="btn btn-outline-info btn-sm" href="/dashboard/arquivos/<%= file.id %>/download">Baixar</a>
+                      <% } %>
+                      <% if (file.state === 'ready' || file.state === 'deleting') { %>
+                        <form method="post" action="/dashboard/arquivos/<%= file.id %>/excluir">
+                          <input type="hidden" name="liteFilesCsrf" value="<%= csrfToken %>">
+                          <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+    <script>
+    (function(){
+      var form=document.getElementById('lite-upload');
+      if(!form)return;
+      var button=document.getElementById('lite-upload-btn'),message=document.getElementById('lite-result');
+      form.addEventListener('submit',async function(event){
+        event.preventDefault();
+        var file=document.getElementById('lite-file').files[0];
+        if(!file)return;
+        if(!file.size||file.size>5*1024*1024){message.textContent='O arquivo precisa ter até 5 MB.';return;}
+        button.disabled=true;message.textContent='Enviando arquivo...';
+        try{
+          var response=await fetch('/dashboard/arquivos/upload',{method:'POST',credentials:'same-origin',
+            headers:{'Content-Type':'application/octet-stream','X-Lite-CSRF':'<%= csrfToken %>','X-File-Name':encodeURIComponent(file.name)},
+            body:file});
+          var reply=await response.json();
+          if(!response.ok)throw new Error(reply.erro||'Não foi possível salvar.');
+          message.textContent='Arquivo salvo. Atualizando a lista...';
+          window.location.reload();
+        }catch(e){message.textContent=e.message||'Não foi possível enviar.';button.disabled=false;}
+      });
+    })();
+    </script>
+  <% } %>
+  <p class="muted mt-4 small">Os arquivos antigos são separados desta área. <a href="/dashboard/historico">Consultar histórico anterior</a> · <a href="/termos-de-uso">Termos de Uso</a> · <a href="/privacidade">Privacidade</a></p>
+</main>
+<%- include('../partials/footer-blogger') %>
