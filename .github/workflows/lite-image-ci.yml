@@ -36,7 +36,8 @@ jobs:
             test -s /usr/src/app/public/vendor/bootstrap/css/bootstrap.min.css
             test -s /usr/src/app/public/vendor/bootstrap/js/bootstrap.bundle.min.js
             test -s /usr/src/app/views/pages/gerador-blogger.ejs
-            test -s /usr/src/app/views/pages/forge-2d.ejs
+            test ! -e /usr/src/app/views/pages/forge-2d.ejs
+            test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
             test -s /usr/src/app/views/pages/arquivos-simples.ejs
             test -s /usr/src/app/GIT_SHA
           '
