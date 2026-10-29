@@ -16,7 +16,7 @@ export function mensagemErroChat(status: number, payload?: ChatErrorBody | null)
   if (status === 408 || status === 504) return 'A conexão com o chat demorou demais. Confira a rede antes de tentar novamente.';
   if (status === 409) return explicacao || 'Esta mensagem já está sendo processada. Confira o histórico antes de reenviar.';
   if (status === 429) return 'O serviço de IA atingiu o limite de solicitações. Aguarde e tente novamente mais tarde. Não enviamos tentativas automáticas.';
-  if (status === 500 || status === 502 || status === 503) return 'O serviço de chat está temporariamente indisponível. Seus dados não foram alterados por esta mensagem; confira o histórico antes de tentar novamente.';
+  if (status === 500 || status === 502 || status === 503) return 'O serviço de chat está temporariamente indisponível. Confira o histórico antes de tentar novamente.';
   return explicacao || 'Não foi possível enviar a mensagem. Confira sua conexão ou entre em contato com o suporte.';
 }
 
