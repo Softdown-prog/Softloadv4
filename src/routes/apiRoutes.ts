@@ -267,7 +267,7 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         const paymentBody = {
             ...formData,
             transaction_amount: PRICES_CENTS[plano as keyof typeof PRICES_CENTS] / 100,
-            description:        'Softload Blogger — Acesso de 30 dias'
+            description:        'Softload Blogger — Acesso de 30 dias',
             external_reference: user.email.toLowerCase(),
         };
 
