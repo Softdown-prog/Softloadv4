@@ -1,0 +1,55 @@
+<%- include('../partials/header', {pageTitle:'Início | Softload Blogger',pageDescription:'Crie e personalize templates Blogger XML de forma simples.',pageNoindex:true}) %>
+<style>
+.sl-home{max-width:1000px;margin:0 auto;padding:110px 16px 80px}
+.sl-home .eyebrow{color:#7dd3fc;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem;font-weight:750}
+.sl-home .lead-text{max-width:640px;color:#b6c5d8;line-height:1.7}
+.sl-home .primary-panel{border:1px solid #31617e;background:linear-gradient(120deg,#112b42,#111b2f);border-radius:20px;padding:clamp(24px,5vw,44px)}
+.sl-home .secondary-panel{border:1px solid #30445d;background:#111c2d;border-radius:16px;padding:22px;height:100%}
+.sl-home .secondary-panel p{color:#b8c5d7}
+.sl-home a:focus-visible,.sl-home summary:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+.sl-home details{border-top:1px solid #334155;margin-top:32px;padding-top:18px;color:#b6c5d8}
+.sl-home summary{cursor:pointer;font-weight:600;color:#e2e8f0}
+.sl-home details a{color:#7dd3fc}
+@media(max-width:600px){.sl-home{padding-top:94px}.sl-home .primary-panel{padding:22px}}
+</style>
+<main class="sl-home">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <p class="eyebrow mb-2">Softload Blogger</p>
+      <h1 class="text-white fw-bolder mb-2">O que vamos criar hoje?</h1>
+      <p class="lead-text mb-0">Monte um template para seu blog, personalize as opções e baixe o arquivo XML. Você não precisa programar.</p>
+    </div>
+    <a href="/logout" class="btn btn-outline-secondary btn-sm">Sair da conta</a>
+  </div>
+
+  <section class="primary-panel mb-4" aria-labelledby="criar-titulo">
+    <p class="eyebrow mb-2">Comece por aqui</p>
+    <h2 id="criar-titulo" class="h3 fw-bolder text-white">Criar um template Blogger</h2>
+    <p class="lead-text">Escolha um dos 15 estilos de partida ou comece do zero. Ajuste as cores, fontes, colunas e a barra lateral. Confira a prévia ilustrativa antes de gerar seu XML.</p>
+    <a href="/dashboard/gerador-blogger" class="btn btn-sl-primary fw-bold px-4 py-3">Criar meu template</a>
+    <p class="small mt-3 mb-0" style="color:#b8c5d7">Você pode testar com até 2 downloads gratuitos por conta. A prévia é ilustrativa; a aparência final deve ser conferida no Blogger.</p>
+  </section>
+
+  <div class="row g-3">
+    <section class="col-12 col-md-6" aria-labelledby="arquivos-titulo">
+      <div class="secondary-panel">
+        <h2 id="arquivos-titulo" class="h5 text-white fw-bold">Meus arquivos anteriores</h2>
+        <p class="mb-3">Acesse o histórico que você já tinha na Softload. Seus arquivos antigos não são apagados nesta mudança.</p>
+        <a href="/dashboard/historico" class="btn btn-outline-info">Ver meu histórico</a>
+      </div>
+    </section>
+    <section class="col-12 col-md-6" aria-labelledby="conta-titulo">
+      <div class="secondary-panel">
+        <h2 id="conta-titulo" class="h5 text-white fw-bold">Minha conta</h2>
+        <p class="mb-3">Confira suas preferências e os dados da conta. A autenticação continua no Firebase.</p>
+        <a href="/dashboard/configuracoes" class="btn btn-outline-info">Abrir configurações</a>
+      </div>
+    </section>
+  </div>
+  <details>
+    <summary>Precisa acessar um projeto antigo?</summary>
+    <p class="small mt-3 mb-2">Os recursos da plataforma anterior serão migrados gradualmente. Seus projetos existentes continuam acessíveis.</p>
+    <a href="/dashboard/workspace">Abrir meus projetos anteriores</a>
+  </details>
+</main>
+<%- include('../partials/footer') %>
