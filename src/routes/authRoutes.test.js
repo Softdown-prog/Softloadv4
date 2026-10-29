@@ -46,13 +46,13 @@ function harness({ identity = {}, record = {}, resetReject = null } = {}) {
     return { routes, limiters, redirects, rendered, writes, emails, sessions, providerRequests, ref, user, invoke, request, response };
 }
 
-test('rotas GET mantêm bridge React e bloqueiam usuário autenticado', async () => {
+test('rotas GET renderizam EJS simples e bloqueiam usuário autenticado', async () => {
     const h=harness();
     for (const p of ['/login', '/register', '/recover']) {
         await h.invoke('GET',p,h.request());
         await h.invoke('GET',p,h.request({}, { user: {email: 'person@example.com'}}));
     }
-    assert.deepEqual(h.rendered,['pages/react-public','pages/react-public','pages/react-public']);
+    assert.deepEqual(h.rendered,['pages/auth-simples','pages/auth-simples','pages/auth-simples']);
     assert.deepEqual(h.redirects,['/dashboard','/dashboard','/dashboard']);
     assert.deepEqual(h.limiters.map(x=>x.max),[10,5,5]);
     assert.deepEqual(h.limiters.map(x=>x.windowMs),[900000,3600000,900000]);
