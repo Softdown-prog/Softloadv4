@@ -354,8 +354,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                             return { invalidIntent: true };
                         }
                     }
-                    const plan = approvedPlanForPayment(paymentDetails,
-                        intentRef ? intentData?.plano : userData.plano_pendente);
+                    const plan = approvedPlanForPayment(paymentDetails, intentRef ? intentData?.plano : userData.plano_pendente);
                     if (!plan)
                         return { invalidPlanOrAmount: true };
                     // Uma renovação Essencial soma 30 dias ao vencimento vigente,
