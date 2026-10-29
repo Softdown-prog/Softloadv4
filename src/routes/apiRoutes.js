@@ -32,6 +32,25 @@ const client = new MercadoPagoConfig({
 });
 const payment = new Payment(client);
 const preference = new Preference(client);
+async function criarIntencaoBlogger(user, canal) {
+    if (!user?.email || !user.uid)
+        return null;
+    const email = user.email.toLowerCase();
+    const query = await db.collection('clientes_premium').where('email', '==', email).limit(1).get();
+    if (query.empty || query.docs[0].data()?.uid !== user.uid)
+        return null;
+    const id = crypto.randomUUID();
+    const aceiteEm = new Date().toISOString();
+    // Não grava no campo mutável plano_pendente: duas compras simultâneas
+    // precisam continuar independentes até serem liquidadas.
+    await db.collection('softload_mp_intents').doc(id).create({
+        version: 1, email, uid: user.uid, plano: 'essencial',
+        precoCentavos: PRICES_CENTS.essencial, canal,
+        aceiteEm, status: 'created',
+        criadoEm: aceiteEm,
+    });
+    return { id, externalReference: 'slb:' + id };
+}
 // Contract: Provides the React frontend with context previously injected via res.locals
 router.get('/api/app-config', (req, res) => {
     res.json({
@@ -118,22 +137,17 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             return res.status(410).json({ erro: 'Os planos antigos com IA não estão mais à venda. Use o Essencial Blogger.' });
         }
         const planoConfig = PLANOS[plano];
-        // O cadastro existente deve ser localizado pelo email, pois contas antigas
-        // podem ter documento com ID = UID. NUNCA criar um documento fantasma.
+        // Cria a intenção vinculada ao UID ANTES de emitir o link de pagamento.
+        // Se o Firestore falhar, nenhuma preferência externa será criada.
+        let intent;
         try {
-            const query = await db.collection('clientes_premium')
-                .where('email', '==', user.email.toLowerCase()).limit(1).get();
-            if (query.empty || query.docs[0].data()?.uid !== user.uid) {
+            intent = await criarIntencaoBlogger(user, 'checkout-pro');
+            if (!intent)
                 return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
-            }
-            await query.docs[0].ref.update({
-                plano_pendente: plano,
-                essencial_storage_aceite_em: new Date().toISOString(),
-            });
         }
         catch (eCaught) {
             const e = eCaught;
-            console.warn('[MP] Falha ao registrar checkout:', e.message);
+            console.warn('[MP] Falha ao criar intenção:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
         // Base URL: deriva do próprio request (Cloud Run → https + domínio real).
@@ -154,7 +168,7 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
                 email: user.email,
                 name: user.nome || 'Cliente'
             },
-            external_reference: user.email, // Para identificar o usuário no webhook
+            external_reference: intent.externalReference, // Identificador único desta tentativa
             back_urls: {
                 success: process.env.CALLBACK_URL_SUCCESS || `${baseUrl}/dashboard/upgrade?status=success`,
                 failure: process.env.CALLBACK_URL_FAILURE || `${baseUrl}/dashboard/upgrade?status=failure`,
@@ -219,29 +233,22 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         if (!formData || typeof formData !== 'object') {
             return res.status(400).json({ erro: 'Dados de pagamento inválidos.' });
         }
-        // Confirma a identidade da conta antes de pedir pagamento (sem cobrança
-        // se o Firestore não conseguir persistir a proposta).
+        let intent;
         try {
-            const query = await db.collection('clientes_premium')
-                .where('email', '==', user.email.toLowerCase()).limit(1).get();
-            if (query.empty || query.docs[0].data()?.uid !== user.uid) {
+            intent = await criarIntencaoBlogger(user, 'bricks');
+            if (!intent)
                 return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
-            }
-            await query.docs[0].ref.update({
-                plano_pendente: plano,
-                essencial_storage_aceite_em: new Date().toISOString(),
-            });
         }
         catch (eCaught) {
             const e = eCaught;
-            console.warn('[MP] Falha ao persistir proposta Bricks:', e.message);
+            console.warn('[MP] Falha ao criar intenção Bricks:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
         const paymentBody = {
             ...formData,
             transaction_amount: PRICES_CENTS[plano] / 100,
             description: 'Softload Blogger — Acesso de 30 dias',
-            external_reference: user.email.toLowerCase(),
+            external_reference: intent.externalReference,
         };
         const result = await payment.create({ body: paymentBody });
         console.log(`[MP-BRICKS] Pagamento criado: id=${result.id} status=${result.status} plano=${plano} email=${user.email}`);
@@ -284,10 +291,27 @@ router.post('/webhook/mercado-pago', async (req, res) => {
             // Consulta back-channel — nunca confia no body
             const paymentDetails = await payment.get({ id: paymentId });
             if (paymentDetails.status === 'approved') {
-                const emailCliente = paymentDetails.external_reference?.trim().toLowerCase();
-                if (!emailCliente) {
-                    console.warn('[MP] Pagamento aprovado mas sem external_reference (e-mail).');
-                    return res.status(200).send('OK');
+                const externalReference = String(paymentDetails.external_reference || '').trim();
+                const novaIntencao = externalReference.startsWith('slb:');
+                const intentId = novaIntencao ? externalReference.slice(4) : null;
+                if (novaIntencao && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(intentId || '')) {
+                    console.error('[MP] Referência de compra Blogger inválida.');
+                    return res.status(503).send('Pagamento requer conciliação');
+                }
+                const intentRef = intentId ? db.collection('softload_mp_intents').doc(intentId) : null;
+                // Compatibilidade: pagamentos iniciados ANTES desta migração
+                // continuam referenciando diretamente o email do comprador.
+                const intentSnapshot = intentRef ? await intentRef.get() : null;
+                if (intentRef && !intentSnapshot?.exists) {
+                    console.error('[MP] Intenção da compra não localizada; manter retry.');
+                    return res.status(503).send('Pagamento requer conciliação');
+                }
+                const emailCliente = intentRef
+                    ? String(intentSnapshot?.data()?.email || '').toLowerCase()
+                    : externalReference.toLowerCase();
+                if (!emailCliente || !emailCliente.includes('@')) {
+                    console.warn('[MP] Pagamento aprovado sem referência de conta válida.');
+                    return res.status(503).send('Pagamento requer conciliação');
                 }
                 console.log(`[MP] Pagamento aprovado: ${emailCliente}`);
                 // Busca o usuário pelo campo email (compatível com doc ID = email ou UID)
@@ -311,13 +335,26 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                 // Webhooks repetidos ou simultâneos não podem renovar o plano de novo.
                 const receiptRef = db.collection('softload_mp_payments').doc(id);
                 const result = await db.runTransaction(async (tx) => {
-                    const [receipt, user] = await Promise.all([tx.get(receiptRef), tx.get(userRef)]);
+                    // Todas as leituras precedem as escritas na transação Firestore.
+                    const receipt = await tx.get(receiptRef);
+                    const user = await tx.get(userRef);
+                    const liveIntent = intentRef ? await tx.get(intentRef) : null;
                     if (receipt.exists || user.data()?.mp_payment_id === id)
                         return { duplicate: true };
                     if (!user.exists)
                         return { missingUser: true };
                     const userData = user.data();
-                    const plan = approvedPlanForPayment(paymentDetails, userData.plano_pendente);
+                    const intentData = liveIntent?.data();
+                    if (intentRef) {
+                        // Nunca aprovar com plano, valor ou usuário de outra tentativa.
+                        if (!liveIntent?.exists || intentData?.status !== 'created' ||
+                            intentData?.uid !== userData.uid || intentData?.email !== emailCliente ||
+                            intentData?.plano !== 'essencial' ||
+                            intentData?.precoCentavos !== PRICES_CENTS.essencial) {
+                            return { invalidIntent: true };
+                        }
+                    }
+                    const plan = approvedPlanForPayment(paymentDetails, intentRef ? intentData?.plano : userData.plano_pendente);
                     if (!plan)
                         return { invalidPlanOrAmount: true };
                     // Uma renovação Essencial soma 30 dias ao vencimento vigente,
@@ -334,6 +371,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         amount: paymentDetails.transaction_amount,
                         currency: paymentDetails.currency_id,
                         processed_at: new Date().toISOString(),
+                        ...(intentRef ? { intent_id: intentId } : {}),
                     });
                     tx.update(userRef, {
                         plano: plan,
@@ -342,7 +380,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         premium_ate: expiresAt,
                         ...(plan === 'essencial' ? { essencial_storage_expira_em: expiresAt } : {}),
                         mp_payment_id: id,
-                        plano_pendente: null,
+                        // Fluxo novo não interfere em pagamentos legados pendentes.
+                        ...(intentRef ? { essencial_storage_aceite_em: intentData.aceiteEm } : { plano_pendente: null }),
                         ultima_atualizacao: new Date().toISOString(),
                         creditos: PLAN_CREDITS[plan],
                         creditos_ciclo_total: PLAN_CREDITS[plan],
@@ -354,6 +393,10 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         creditos_bloggerai_ciclo_total: BLOGGERAI_PLAN_CREDITS[plan],
                         creditos_bloggerai_expira_em: expiresAt,
                     });
+                    if (intentRef)
+                        tx.update(intentRef, {
+                            status: 'approved', mp_payment_id: id, processadoEm: new Date().toISOString(),
+                        });
                     return { activated: true, plan, name: userData.nome || '', expiresAt };
                 });
                 if (result.duplicate) {
@@ -361,8 +404,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     return res.status(200).send('OK');
                 }
                 if (!result.activated) {
-                    console.error(`[MP] Pagamento ${id} sem usuário, plano ou valor válido; não ativado.`);
-                    return res.status(200).send('OK');
+                    console.error(`[MP] Pagamento ${id} sem vínculo válido; requer conciliação.`);
+                    return res.status(503).send('Pagamento requer conciliação');
                 }
                 const planoAtivado = result.plan;
                 enviarPlanoAtivado(emailCliente, result.name, planoAtivado, PLAN_CREDITS[planoAtivado], result.expiresAt)

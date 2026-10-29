@@ -11,19 +11,30 @@ const source=fs.readFileSync(path.join(__dirname,'../routes/apiRoutes.js'),'utf8
 const DAY=86400000;
 function setup(options={}){
   const routes={get:new Map(),post:new Map()};
-  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0};
+  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[]};
+  const intents=new Map();
+  const paymentById=options.paymentById||{};
   const account=options.account||{email:'buyer@example.test',uid:'firebase-user-123',plano:'free',
     is_active:false,plano_pendente:'essencial',nome:'Cliente'};
   const matches=options.missingAccount?[]:[{ref:{kind:'user',update:async data=>{calls.usersUpdated++;Object.assign(account,data)}},data:()=>account}];
   const db={
     collection:name=>({
       where:()=>({limit:()=>({get:async()=>({empty:matches.length===0,docs:matches})}),get:async()=>({empty:true,docs:[]})}),
-      doc:id=>({kind:name==='softload_mp_payments'?'receipt':'other',id})
+      doc:id=>name==='softload_mp_intents'?{
+        kind:'intent',id,
+        async create(data){calls.intentCreates++;intents.set(id,{...data})},
+        async get(){return{exists:intents.has(id),data:()=>intents.get(id)}}
+      }:{kind:name==='softload_mp_payments'?'receipt':'other',id}
     }),
     runTransaction:async task=>task({
-      get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists}:{exists:true,data:()=>account},
+      get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists}:
+        ref.kind==='intent'?{exists:intents.has(ref.id),data:()=>intents.get(ref.id)}:
+        {exists:true,data:()=>account},
       create:()=>{calls.receipts++},
-      update:(ref,update)=>{calls.usersUpdated++;Object.assign(account,update)}
+      update:(ref,update)=>{
+        if(ref.kind==='intent'){Object.assign(intents.get(ref.id),update);return}
+        calls.usersUpdated++;Object.assign(account,update)
+      }
     }),
     batch:()=>({update(){},async commit(){}})
   };
@@ -45,10 +56,12 @@ function setup(options={}){
     '../middlewares/authGuard':{exigirLogin:()=>{}},
     mercadopago:{
       MercadoPagoConfig:class{},
-      Preference:class{async create(){calls.preferences++;return{id:'pref-1',init_point:'https://mercadopago.com.br/checkout'}}},
+      Preference:class{async create({body}){calls.preferences++;calls.externalRefs.push(body.external_reference);
+        return{id:'pref-'+calls.preferences,init_point:'https://mercadopago.com.br/checkout'}}},
       Payment:class{
-        async create(){calls.payments++;return {id:123,status:'pending',payment_method_id:'pix'};}
-        async get(){calls.payments++;return options.paymentDetails||{status:'approved',currency_id:'BRL',transaction_amount:5,external_reference:'buyer@example.test'};}
+        async create({body}){calls.payments++;calls.externalRefs.push(body.external_reference);return {id:123,status:'pending',payment_method_id:'pix'};}
+        async get({id}){calls.payments++;return paymentById[String(id)]||options.paymentDetails||
+          {status:'approved',currency_id:'BRL',transaction_amount:5,external_reference:'buyer@example.test'};}
       }
     }
   };
@@ -74,7 +87,7 @@ function setup(options={}){
       query:{'data.id':id},headers:{'x-signature':'ts='+ts+',v1='+signature,'x-request-id':requestId}
     });
   }
-  return{post,request,signedRequest,calls,account,env};
+  return{post,request,signedRequest,calls,account,env,intents,paymentById};
 }
 test('legacy AI plans cannot be purchased by either checkout',async()=>{
   const f=setup({checkoutEnabled:true});
@@ -93,11 +106,15 @@ test('Essencial cannot charge before feature enablement or if account missing',a
   assert.equal((await f.post('/dashboard/payment/process',f.request({plano:'essencial',formData:{},aceitePoliticaArmazenamento:true}))).code,503);
   assert.equal(f.calls.preferences,0);assert.equal(f.calls.payments,0);
 });
-test('Essencial valid checkout records pending plan on existing Firebase account',async()=>{
+test('Essencial checkout creates an immutable intent without overwriting legacy pending plan',async()=>{
   const f=setup({checkoutEnabled:true});
   const out=await f.post('/dashboard/checkout-create',f.request({plano:'essencial',aceitePoliticaArmazenamento:true}));
-  assert.equal(out.code,200);assert.equal(f.calls.preferences,1);assert.equal(f.calls.usersUpdated,1);
+  assert.equal(out.code,200);assert.equal(f.calls.preferences,1);
+  assert.equal(f.calls.usersUpdated,0);assert.equal(f.calls.intentCreates,1);
   assert.equal(f.account.plano_pendente,'essencial');
+  assert.match(f.calls.externalRefs[0],/^slb:[0-9a-f-]{36}$/);
+  const [intent]=f.intents.values();
+  assert.equal(intent.uid,'firebase-user-123');assert.equal(intent.precoCentavos,500);
 });
 test('unsigned webhook and mismatched signed payment resource are refused',async()=>{
   const f=setup();
@@ -133,4 +150,61 @@ test('disabled Essencial view has no payment button',async()=>{
   assert.doesNotMatch(disabled,/id="pagarEssencial"/);
   const enabled=await ejs.renderFile(file,{gitSha:'test',user:{email:'buyer@example.test'},checkoutEnabled:true});
   assert.match(enabled,/id="pagarEssencial"/);
+});
+
+test('two independent purchases for one user settle against their own intent and add 60 days',async()=>{
+  const initial=Date.now()+5*DAY;
+  const f=setup({checkoutEnabled:true,account:{
+    email:'buyer@example.test',uid:'firebase-user-123',plano:'essencial',is_active:true,
+    premium_ate:new Date(initial).toISOString(),plano_pendente:null,nome:'Cliente'
+  }});
+  for(let i=0;i<2;i++){
+    const result=await f.post('/dashboard/checkout-create',
+      f.request({plano:'essencial',aceitePoliticaArmazenamento:true}));
+    assert.equal(result.code,200);
+  }
+  assert.equal(f.calls.intentCreates,2);
+  assert.notEqual(f.calls.externalRefs[0],f.calls.externalRefs[1]);
+  assert.equal(f.account.plano_pendente,null);
+  for(let i=0;i<2;i++){
+    f.paymentById[String(500+i)]={
+      external_reference:f.calls.externalRefs[i],status:'approved',currency_id:'BRL',transaction_amount:5
+    };
+    assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest(String(500+i)))).code,200);
+  }
+  assert.equal(f.calls.receipts,2);
+  assert.ok(Math.abs(Date.parse(f.account.premium_ate)-initial-60*DAY)<50);
+  assert.equal([...f.intents.values()].filter(i=>i.status==='approved').length,2);
+});
+test('webhook cannot transfer a paid intent to another UID or change its value',async()=>{
+  const f=setup({checkoutEnabled:true});
+  assert.equal((await f.post('/dashboard/checkout-create',
+    f.request({plano:'essencial',aceitePoliticaArmazenamento:true}))).code,200);
+  const intentRef=f.calls.externalRefs[0];
+  f.paymentById['801']={external_reference:intentRef,status:'approved',currency_id:'BRL',transaction_amount:5.01};
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest('801'))).code,503);
+  assert.equal(f.calls.receipts,0);
+  f.paymentById['802']={external_reference:intentRef,status:'approved',currency_id:'BRL',transaction_amount:5};
+  f.account.uid='other-uid';
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest('802'))).code,503);
+  assert.equal(f.calls.receipts,0);
+});
+test('a completed intent cannot be reused by another approved payment',async()=>{
+  const f=setup({checkoutEnabled:true});
+  assert.equal((await f.post('/dashboard/checkout-create',
+    f.request({plano:'essencial',aceitePoliticaArmazenamento:true}))).code,200);
+  for(const id of ['901','902']){
+    f.paymentById[id]={external_reference:f.calls.externalRefs[0],status:'approved',currency_id:'BRL',transaction_amount:5};
+  }
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest('901'))).code,200);
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest('902'))).code,503);
+  assert.equal(f.calls.receipts,1);
+});
+test('Bricks payment creates its own intent rather than reusing the last Checkout Pro intent',async()=>{
+  const f=setup({checkoutEnabled:true});
+  const result=await f.post('/dashboard/payment/process',
+    f.request({plano:'essencial',aceitePoliticaArmazenamento:true,formData:{token:'fake-token',transaction_amount:999}}));
+  assert.equal(result.code,200);assert.equal(f.calls.intentCreates,1);
+  assert.match(f.calls.externalRefs[0],/^slb:[0-9a-f-]{36}$/);
+  assert.equal([...f.intents.values()][0].canal,'bricks');
 });

@@ -26,7 +26,9 @@ test('Mercado Pago reconhece preço R$5, protege o checkout até homologação e
   assert.match(api,/essencial: \{ titulo: 'Softload Blogger — Acesso 30 dias', preco: PRICES_CENTS\.essencial \/ 100, creditos: 0 \}/);
   assert.match(api,/BLOGGER_ESSENCIAL_CHECKOUT_ENABLED/);
   assert.match(js,/BLOGGER_ESSENCIAL_CHECKOUT_ENABLED/);
-  assert.match(api,/approvedPlanForPayment\(paymentDetails, userData\.plano_pendente\)/);
+  assert.match(api,/intentRef \? intentData\?\.plano : userData\.plano_pendente/);
+  assert.match(api,/softload_mp_intents/);
+  assert.match(api,/external_reference: intent\.externalReference/);
   assert.match(api,/softload_mp_payments/);
   const html=read('views/pages/plano-essencial.ejs');
   assert.match(html,/R\$ 5,00/);

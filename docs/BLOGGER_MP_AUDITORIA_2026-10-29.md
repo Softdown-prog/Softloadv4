@@ -27,9 +27,9 @@ A oferta pública é **compilador procedural de temas XML para Blogger**, cadast
 
 ## Pendências de homologação — não declarar cobrança real validada
 - Não foi possível conferir as credenciais, status da aplicação MP, configuração de assinatura no painel do Mercado Pago, `notification_url` registrada, nem executar compra Pix/Checkout Pro ponta a ponta com credenciais de teste. Esses pontos exigem teste no ambiente externo e conta de comerciante.
-- `plano_pendente` é único por conta: duas compras iniciadas simultaneamente ou antes da liquidação podem concorrer. **Ainda é necessário criar um registro de intenção por preferência/pagamento**, vinculado ao usuário, para resolver essa situação antes de ativar a flag para clientes.
+- **Correção proposta no PR #102:** novas tentativas usam `softload_mp_intents/<UUID>` e `external_reference=slb:<UUID>`, vinculados ao UID, plano, preço e aceite de armazenamento. A aprovação e o recibo são transacionais; duas compras distintas podem somar 30 dias cada sem sobrescrever o estado uma da outra. Pagamentos legados que referenciam email continuam usando `plano_pendente` para compatibilidade e conciliação.
 - O pós-pagamento precisa de homologação end-to-end: simular retry e duplicata do webhook, falha de banco, reconciliação manual, estorno/chargeback, e checar conta com ID histórico (UID).
 - Não editar dados dos clientes, não iniciar cobrança real, não habilitar checkout automaticamente, não executar deleção de arquivos e não remover volumes nesta etapa.
 
 ### Plano recomendado
-Homologar MP em ambiente de teste e corrigir intents concorrentes; após isso habilitar o Essencial manualmente, monitorar os primeiros pedidos e só então retirar módulos antigos do Agent e APIs Solaris em PR próprio.
+Aprovar testes de intents independentes no GitHub, homologar MP em ambiente de teste e verificar a conciliação; só depois habilitar o Essencial manualmente, monitorar os primeiros pedidos e só então retirar módulos antigos do Agent e APIs Solaris em PR próprio.
