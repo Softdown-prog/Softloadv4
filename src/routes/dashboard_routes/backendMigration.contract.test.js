@@ -12,6 +12,7 @@ function loadRouter(file) {
     const sandbox = {
         exports: {},
         module: { exports: {} },
+        process: {env:{BLOGGER_ESSENCIAL_CHECKOUT_ENABLED:'false'}},
         require(spec) {
             if (spec === 'express') return { Router: () => router };
             if (spec === '../../middlewares/authGuard') return { exigirLogin };
@@ -68,6 +69,7 @@ for (const [file, url, page, viewExpected] of [
           essential.handlers[1]({session:{user}},{render(view,locals){views.push({view,locals});}});
           assert.equal(views[0].view,'pages/plano-essencial');
           assert.equal(views[0].locals.user,user);
+          assert.equal(views[0].locals.checkoutEnabled,false);
         }
     });
 }

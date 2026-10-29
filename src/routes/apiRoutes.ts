@@ -61,15 +61,10 @@ router.get('/api/app-config', (req, res) => {
 // ==========================================
 function verificarAssinaturaMP(req: RouteRequest<RouteBody>) {
     const secret = process.env.MP_WEBHOOK_SECRET;
+    // Nenhum ambiente recebe webhook sem assinatura válida (inclusive staging).
     if (!secret) {
-        // Sem secret configurado, recusa por padrão (fail-closed) em produção
-        if (process.env.NODE_ENV === 'production') {
-            console.warn('[MP] MP_WEBHOOK_SECRET não configurado — webhook recusado em produção.');
-            return false;
-        }
-        // Em dev/staging, sem secret, aceita para não quebrar testes locais
-        console.warn('[MP] MP_WEBHOOK_SECRET não configurado — verificação de assinatura desativada.');
-        return true;
+        console.warn('[MP] Webhook secret ausente; notificação rejeitada.');
+        return false;
     }
 
     const signature = req.headers['x-signature'];
@@ -88,8 +83,11 @@ function verificarAssinaturaMP(req: RouteRequest<RouteBody>) {
     if (!ts || !v1) return false;
 
     // O id no manifesto é o data.id passado na query string (?data.id=...) ou no body
-    const dataId = req.query?.['data.id'] || req.body?.data?.id || req.body?.id;
-    const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
+    const dataId = req.query?.['data.id'] || req.body?.data?.id;
+    const normalizedId = String(dataId ?? '');
+    if (!/^\d{1,30}$/.test(normalizedId) || typeof requestId !== 'string' || !requestId.trim()) return false;
+    if (req.body?.data?.id != null && String(req.body.data.id) !== normalizedId) return false;
+    const manifest = `id:${normalizedId};request-id:${requestId};ts:${ts};`;
     const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
 
     try {
@@ -130,19 +128,29 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         if (plano === 'essencial' && process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED !== 'true') {
             return res.status(503).json({ erro: 'O plano Essencial está em homologação. Os testes gratuitos continuam disponíveis.' });
         }
+        // A oferta atual vende somente Blogger. Preservar os planos antigos na
+        // tabela APENAS para reconhecimento de pagamentos já iniciados.
+        if (plano !== 'essencial') {
+            return res.status(410).json({ erro: 'Os planos antigos com IA não estão mais à venda. Use o Essencial Blogger.' });
+        }
         const planoConfig = PLANOS[plano];
 
-        // Salva o plano pendente para o webhook recuperar após pagamento aprovado.
-        // set+merge cria o doc se não existir — .update() lançaria NOT_FOUND para usuários novos.
+        // O cadastro existente deve ser localizado pelo email, pois contas antigas
+        // podem ter documento com ID = UID. NUNCA criar um documento fantasma.
         try {
-            await db.collection('clientes_premium').doc(user.email.toLowerCase()).set({
+            const query = await db.collection('clientes_premium')
+                .where('email', '==', user.email.toLowerCase()).limit(1).get();
+            if (query.empty || query.docs[0].data()?.uid !== user.uid) {
+                return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
+            }
+            await query.docs[0].ref.update({
                 plano_pendente: plano,
-                ...(plano === 'essencial' ? { essencial_storage_aceite_em: new Date().toISOString() } : {}),
-            }, { merge: true });
+                essencial_storage_aceite_em: new Date().toISOString(),
+            });
         } catch (eCaught) {
         const e = eCaught as RouteFailure;
-            console.warn('[MP] Falha ao salvar plano_pendente:', e.message);
-            if (plano === 'essencial') return res.status(503).json({ erro: 'Não foi possível registrar o aceite do armazenamento. Tente novamente.' });
+            console.warn('[MP] Falha ao registrar checkout:', e.message);
+            return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
 
         // Base URL: deriva do próprio request (Cloud Run → https + domínio real).
@@ -204,7 +212,7 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             || error?.message
             || 'erro desconhecido';
         console.error('[MP] Erro ao criar preferência:', detalheMp, '| status:', error?.status || error?.statusCode || '');
-        res.status(500).json({ erro: `Falha ao gerar pagamento: ${detalheMp}` });
+        res.status(503).json({ erro: 'Não foi possível iniciar o Mercado Pago. Tente novamente.' });
     }
 });
 
@@ -225,6 +233,10 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         }
         const user = req.session.user;
 
+        if (plano !== 'essencial' && typeof plano === 'string' && Object.hasOwn(PRICES_CENTS, plano)) {
+            return res.status(410).json({ erro: 'Os planos antigos com IA não estão mais à venda.' });
+        }
+
         // Fonte única de preços, compartilhada com checkout-create e webhook.
         // Object.hasOwn impede aceitar chaves herdadas (constructor, toString etc.).
         if (typeof plano !== 'string' || !Object.hasOwn(PRICES_CENTS, plano)) {
@@ -234,21 +246,28 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
             return res.status(400).json({ erro: 'Dados de pagamento inválidos.' });
         }
 
-        // Persiste plano_pendente para o webhook ler após confirmação
+        // Confirma a identidade da conta antes de pedir pagamento (sem cobrança
+        // se o Firestore não conseguir persistir a proposta).
         try {
-            await db.collection('clientes_premium').doc(user.email.toLowerCase()).update({
+            const query = await db.collection('clientes_premium')
+                .where('email', '==', user.email.toLowerCase()).limit(1).get();
+            if (query.empty || query.docs[0].data()?.uid !== user.uid) {
+                return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
+            }
+            await query.docs[0].ref.update({
                 plano_pendente: plano,
-                ...(plano === 'essencial' ? { essencial_storage_aceite_em: new Date().toISOString() } : {}),
+                essencial_storage_aceite_em: new Date().toISOString(),
             });
         } catch (eCaught) {
         const e = eCaught as RouteFailure;
-            console.warn('[MP] Falha ao salvar plano_pendente:', e.message);
+            console.warn('[MP] Falha ao persistir proposta Bricks:', e.message);
+            return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
 
         const paymentBody = {
             ...formData,
             transaction_amount: PRICES_CENTS[plano as keyof typeof PRICES_CENTS] / 100,
-            description:        `Softload Engine — Plano ${plano.charAt(0).toUpperCase() + plano.slice(1)}`,
+            description:        'Softload Blogger — Acesso de 30 dias',
             external_reference: user.email.toLowerCase(),
         };
 
@@ -293,7 +312,9 @@ router.post('/webhook/mercado-pago', async (req, res) => {
         const { action, type, data } = req.body;
 
         if (action === 'payment.created' || type === 'payment' || action === 'payment.updated') {
-            const paymentId = data ? data.id : req.body.id;
+            // Usa somente o ID assinado; o id da notificação no body não
+            // é necessariamente o ID do pagamento.
+            const paymentId = String(req.query?.['data.id'] || data?.id || '');
 
             console.log(`[MP] Verificando pagamento: ${paymentId}`);
 
@@ -318,7 +339,9 @@ router.post('/webhook/mercado-pago', async (req, res) => {
 
                 if (query.empty) {
                     console.warn(`[MP] Usuário ${emailCliente} não encontrado na base.`);
-                    return res.status(200).send('OK');
+                    // Sem conta, não podemos descartar uma cobrança aprovada.
+                    // HTTP 5xx permite o reenvio pelo Mercado Pago.
+                    return res.status(503).send('Conta não encontrada para conciliação');
                 }
 
                 const userRef = query.docs[0].ref;
@@ -331,9 +354,6 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                 // O recibo e os três saldos são gravados na MESMA transação.
                 // Webhooks repetidos ou simultâneos não podem renovar o plano de novo.
                 const receiptRef = db.collection('softload_mp_payments').doc(id);
-                const premiumAte = new Date();
-                premiumAte.setDate(premiumAte.getDate() + 30);
-                const expiresAt = premiumAte.toISOString();
                 const result = await db.runTransaction(async (tx) => {
                     const [receipt, user] = await Promise.all([tx.get(receiptRef), tx.get(userRef)]);
                     if (receipt.exists || user.data()?.mp_payment_id === id) return { duplicate: true };
@@ -342,6 +362,13 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     const userData = user.data() as AccountRecord;
                     const plan = approvedPlanForPayment(paymentDetails, userData.plano_pendente);
                     if (!plan) return { invalidPlanOrAmount: true };
+                    // Uma renovação Essencial soma 30 dias ao vencimento vigente,
+                    // em vez de apagar os dias já pagos. Tudo ocorre dentro da transação.
+                    const currentExpiry = Date.parse(userData.premium_ate || '');
+                    const base = plan === 'essencial' && userData.plano === 'essencial' &&
+                        userData.is_active === true && Number.isFinite(currentExpiry) && currentExpiry > Date.now()
+                        ? currentExpiry : Date.now();
+                    const expiresAt = new Date(base + 30 * 24 * 60 * 60 * 1000).toISOString();
 
                     tx.create(receiptRef, {
                         payment_id: id,
@@ -370,7 +397,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         creditos_bloggerai_ciclo_total: BLOGGERAI_PLAN_CREDITS[plan],
                         creditos_bloggerai_expira_em: expiresAt,
                     });
-                    return { activated: true, plan, name: userData.nome || '' };
+                    return { activated: true, plan, name: userData.nome || '', expiresAt };
                 });
 
                 if (result.duplicate) {
@@ -383,7 +410,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                 }
 
                 const planoAtivado = result.plan;
-                enviarPlanoAtivado(emailCliente, result.name, planoAtivado, PLAN_CREDITS[planoAtivado], expiresAt)
+                enviarPlanoAtivado(emailCliente, result.name, planoAtivado, PLAN_CREDITS[planoAtivado], result.expiresAt)
                     .catch(e => console.error('[EMAIL] Plano ativado falhou:', e.message));
 
                 // Atualiza qualquer sessão ativa do usuário no Firestore — UX:
@@ -399,7 +426,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                             if (sess && sess.user) {
                                 sess.user.plano = planoAtivado;
                                 sess.user.is_active = true;
-                                sess.user.premium_ate = expiresAt;
+                                sess.user.premium_ate = result.expiresAt;
                                 batch.update(sDoc.ref, { sess });
                             }
                         });
@@ -410,7 +437,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     console.warn('[MP] Falha ao atualizar sessões ativas:', sessErr.message);
                 }
 
-                console.log(`[MP] ${emailCliente} ativado como ${planoAtivado.toUpperCase()} até ${premiumAte.toDateString()}`);
+                console.log(`[MP] ${emailCliente} ativado como ${planoAtivado.toUpperCase()} até ${new Date(result.expiresAt).toDateString()}`);
             }
         }
 

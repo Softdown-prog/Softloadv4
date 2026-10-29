@@ -14,6 +14,7 @@ function routeFile(moduleName){
   const mod={exports:{}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,moduleName+'.js'),'utf8'),{
     module:mod,exports:mod.exports,
+    process:{env:{BLOGGER_ESSENCIAL_CHECKOUT_ENABLED:'false'}},
     require(name){
       if(name==='express')return{Router:()=>router};
       if(name==='../../middlewares/authGuard')return{exigirLogin:guard};
@@ -37,6 +38,7 @@ test('configurações e upgrade EJS preservam autenticação e URL de checkout',
     route.h({session:{user}},{render(path,values){actual={path,values};}});
     assert.equal(actual.path,view);
     assert.equal(actual.values.user,user);
+    if(moduleName==='upgrade')assert.equal(actual.values.checkoutEnabled,false);
   }
 });
 

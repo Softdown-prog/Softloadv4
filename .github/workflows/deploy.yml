@@ -69,6 +69,8 @@ jobs:
           # Pillow usa fontes do sistema; sinaliza caso o runner as perca.
           test -r /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: npm test
+      - name: Validar Mercado Pago sem emitir cobranças
+        run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
       - name: Validar Blogger sem conta (cota, CSRF e XML)
         run: node --test src/routes/publicBlogger.contract.test.cjs
       - run: npm run test:quality
