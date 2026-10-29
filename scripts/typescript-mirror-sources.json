@@ -223,5 +223,6 @@
   "src/routes/dashboard_routes/chat.ts",
   "src/routes/dashboard_routes/solaris.ts",
   "src/routes/dashboard_routes/workspace.ts",
-  "src/routes/dashboard_routes/workspaceChat.ts"
+  "src/routes/dashboard_routes/workspaceChat.ts",
+  "src/services/essentialStoragePolicy.ts"
 ]
