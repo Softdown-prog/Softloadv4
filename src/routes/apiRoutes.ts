@@ -277,7 +277,7 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
             external_reference: intent.externalReference,
         };
 
-        const result = await payment.create({ body: paymentBody });
+        const result = await payment.create({ body: paymentBody, requestOptions: { idempotencyKey: intent.id } });
 
         console.log(`[MP-BRICKS] Pagamento criado: id=${result.id} status=${result.status} plano=${plano} email=${user.email}`);
 

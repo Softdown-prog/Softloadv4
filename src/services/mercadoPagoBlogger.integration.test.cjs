@@ -11,7 +11,7 @@ const source=fs.readFileSync(path.join(__dirname,'../routes/apiRoutes.js'),'utf8
 const DAY=86400000;
 function setup(options={}){
   const routes={get:new Map(),post:new Map()};
-  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[]};
+  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[],idempotencyKeys:[]};
   const intents=new Map();
   const paymentById=options.paymentById||{};
   const account=options.account||{email:'buyer@example.test',uid:'firebase-user-123',plano:'free',
@@ -59,7 +59,9 @@ function setup(options={}){
       Preference:class{async create({body}){calls.preferences++;calls.externalRefs.push(body.external_reference);
         return{id:'pref-'+calls.preferences,init_point:'https://mercadopago.com.br/checkout'}}},
       Payment:class{
-        async create({body}){calls.payments++;calls.externalRefs.push(body.external_reference);return {id:123,status:'pending',payment_method_id:'pix'};}
+        async create({body,requestOptions}){calls.payments++;calls.externalRefs.push(body.external_reference);
+          calls.idempotencyKeys.push(requestOptions?.idempotencyKey);
+          return {id:123,status:'pending',payment_method_id:'pix'};}
         async get({id}){calls.payments++;return paymentById[String(id)]||options.paymentDetails||
           {status:'approved',currency_id:'BRL',transaction_amount:5,external_reference:'buyer@example.test'};}
       }
@@ -207,4 +209,24 @@ test('Bricks payment creates its own intent rather than reusing the last Checkou
   assert.equal(result.code,200);assert.equal(f.calls.intentCreates,1);
   assert.match(f.calls.externalRefs[0],/^slb:[0-9a-f-]{36}$/);
   assert.equal([...f.intents.values()][0].canal,'bricks');
+});
+
+test('Bricks binds Mercado Pago idempotency keys to distinct persisted payment intents',async()=>{
+  const f=setup({checkoutEnabled:true});
+  for(let i=0;i<2;i++){
+    const result=await f.post('/dashboard/payment/process',f.request({
+      plano:'essencial',aceitePoliticaArmazenamento:true,
+      formData:{payment_method_id:'pix',payer:{email:'buyer@example.test'}}
+    }));
+    assert.equal(result.code,200);
+  }
+  assert.equal(f.calls.idempotencyKeys.length,2);
+  assert.equal(new Set(f.calls.idempotencyKeys).size,2);
+  for(let i=0;i<2;i++){
+    const key=f.calls.idempotencyKeys[i];
+    assert.match(key,/^[0-9a-f]{8}-[0-9a-f-]{27}$/);
+    assert.equal(f.calls.externalRefs[i],'slb:'+key);
+    assert.ok(f.intents.has(key));
+    assert.equal(f.intents.get(key).canal,'bricks');
+  }
 });
