@@ -126,6 +126,10 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             return res.status(400).json({ erro: 'Plano inválido. Escolha o plano essencial de R$ 5 ou um plano legado.' });
         }
 
+        // O preço de R$5 só será oferecido após validar cota procedural e webhook.
+        if (plano === 'essencial' && process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED !== 'true') {
+            return res.status(503).json({ erro: 'O plano Essencial está em homologação. Os testes gratuitos continuam disponíveis.' });
+        }
         const planoConfig = PLANOS[plano];
 
         // Salva o plano pendente para o webhook recuperar após pagamento aprovado.
@@ -209,6 +213,9 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
 router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (req, res) => {
     try {
         const { formData, plano } = req.body || {};
+        if (plano === 'essencial' && process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED !== 'true') {
+            return res.status(503).json({ erro: 'O plano Essencial está em homologação.' });
+        }
         const user = req.session.user;
 
         // Fonte única de preços, compartilhada com checkout-create e webhook.
