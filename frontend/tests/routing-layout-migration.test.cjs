@@ -634,3 +634,28 @@ test('linguagem de cadastro e primeiros passos permanece clara para novos client
   assert.match(dashboard, /label="Projetos e modelos"/);
   assert.match(history, /Modelos gerados/);
 });
+
+test('os três chats tratam erro HTTP do backend sem reenviar automaticamente',()=>{
+  const files=['frontend/pages/Chat.tsx','frontend/pages/WorkspaceChat.tsx','frontend/pages/Solaris.tsx'];
+  for(const file of files){
+    const content=source(file);
+    assert.match(content,/extrairErroRespostaChat\(response\)/,file);
+    assert.doesNotMatch(content,/if \(response\.status === 404\)[\s\S]*?fetch\(/,'Não repetir chamadas sob falha de rota: '+file);
+  }
+  const vm=require('node:vm');
+  const module={exports:{}};
+  const code=ts.transpileModule(source('frontend/services/chatHttpErrors.ts'),{
+    compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},
+    reportDiagnostics:true
+  });
+  assert.equal(code.diagnostics?.length||0,0);
+  vm.runInNewContext(code.outputText,{module,exports:module.exports});
+  const {mensagemErroChat}=module.exports;
+  assert.match(mensagemErroChat(404),/serviço de chat/i);
+  assert.doesNotMatch(mensagemErroChat(404),/modelo não encontrado/i);
+  assert.match(mensagemErroChat(429),/limite de solicitações/i);
+  assert.match(mensagemErroChat(401),/sessão expirou/i);
+  assert.match(mensagemErroChat(402),/créditos/i);
+  assert.match(mensagemErroChat(409),/histórico/i);
+  assert.ok(mensagemErroChat(503).includes('temporariamente indisponível'));
+});
