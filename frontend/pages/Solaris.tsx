@@ -7,7 +7,7 @@ import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
-    Paperclip, History, Plus, Trash2, X, Clipboard, Check, Camera, 
+    History, Plus, Trash2, X, Clipboard, Check, 
     ArrowRight, ArrowDown, RefreshCw, FileArchive, Zap, StopCircle, HelpCircle, Wrench, GitBranch, Shapes
 } from 'lucide-react';
 import type { AppUser } from '../services/api';
@@ -26,9 +26,6 @@ interface ChatStreamEvent {
     zip?: ZipFile; preview?: PreviewFile; lang?: string;
 }
 interface ChatCredits { creditos: number; creditosTotal: number; creditsTotal?: number }
-interface UploadCandidate { score: number; framework: string; evidencias: string[] }
-interface VisualStatus { enabled: boolean; origins: string[]; maxRequestsPerTenMinutes: number }
-interface VisualResponse { ok?: boolean; analise?: string; error?: string; tokens?: { input: number; output: number } }
 interface GithubProposal {
  state:'none'|'pending'|'applying'|'completed'|'cancelled'|'failed'|'expired';
  repository?:string; title?:string; branch?:string; expiresAt?:number;
@@ -42,10 +39,6 @@ interface SolarisGithubStatus {
     mcpEnabled?: boolean;
     account: string | null;
     repository: string | null;
-}
-interface UploadResponse {
-    ok?: boolean; sessionId?: string; framework?: string; totalArquivos?: number;
-    candidatos?: UploadCandidate[]; analiseIA?: string; temProjeto?: boolean; error?: string;
 }
 
 
@@ -62,12 +55,6 @@ export default function Solaris(): React.JSX.Element {
     const [sessionsList, setSessionsList] = useState<ChatSession[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [copiedId, setCopiedId] = useState<number | null>(null);
-    const [uploading, setUploading] = useState(false);
-    const [visualOpen, setVisualOpen] = useState(false);
-    const [visualUrl, setVisualUrl] = useState('');
-    const [visualDevice, setVisualDevice] = useState<'desktop' | 'android-mobile'>('desktop');
-    const [visualStatus, setVisualStatus] = useState<VisualStatus | null>(null);
-    const [visualBusy, setVisualBusy] = useState(false);
     const [quickMenuOpen, setQuickMenuOpen] = useState(false);
     const [toolsOpen, setToolsOpen] = useState(false);
     const [activeTool, setActiveTool] = useState<'none' | 'asset-forge-2d' | 'github'>('none');
@@ -88,7 +75,6 @@ export default function Solaris(): React.JSX.Element {
     const shouldFollowRef = useRef(true);
     const quickMenuRef = useRef<HTMLDivElement | null>(null);
     const quickTriggerRef = useRef<HTMLButtonElement | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,7 +95,6 @@ export default function Solaris(): React.JSX.Element {
         const closeMenu = (): void => {
             setQuickMenuOpen(false);
             setToolsOpen(false);
-            setVisualOpen(false);
         };
         const onOutside = (event: PointerEvent): void => {
             if (!quickMenuRef.current?.contains(event.target as Node)) closeMenu();
@@ -242,10 +227,6 @@ export default function Solaris(): React.JSX.Element {
                 ? 'A conexão GitHub precisa ser configurada pelo administrador da Softload.'
                 : 'A autorização do GitHub não foi concluída. Você pode tentar novamente.');
         }
-        fetch('/dashboard/solaris/visual-review/status')
-            .then(async r => r.ok ? await r.json() as VisualStatus : null)
-            .then(status => setVisualStatus(status))
-            .catch(() => setVisualStatus(null));
     }, []);
 
     // Rolar até a mensagem mais recente
@@ -336,123 +317,10 @@ export default function Solaris(): React.JSX.Element {
         });
     };
 
-    const handleUploadClick = (): void => {
-        if (loading || uploading) return;
-        fileInputRef.current?.click();
-    };
-
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!/\.zip$/i.test(file.name)) {
-            alert('Por favor, envie um arquivo .zip válido.');
-            return;
-        }
-
-        setUploading(true);
-        setStatusText('Analisando o arquivo do projeto...');
-        setMessages(prev => [...prev, { role: 'user', content: `Enviei o arquivo "${file.name}" para análise.` }]);
-
-        try {
-            const formData = new FormData();
-            formData.append('arquivo', file);
-            if (sessionId) {
-                formData.append('sessionId', sessionId);
-            }
-
-            const res = await fetch('/dashboard/solaris/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await res.json() as UploadResponse;
-            if (res.ok && data.ok !== false) {
-                if (data.sessionId) setSessionId(data.sessionId);
-
-                // Formatar o resultado do upload
-                let md = '';
-                if (data.framework) {
-                    md += `Analisei o projeto enviado — parece ser **${data.framework.toUpperCase()}**.\n\n`;
-                } else {
-                    md += 'Analisei o projeto enviado, mas os sinais de framework ficaram empatados.\n\n';
-                }
-                md += `Total de arquivos: ${data.totalArquivos}.\n`;
-                
-                const candidatos = (data.candidatos || []).filter(c => c.score > 0);
-                if (candidatos.length) {
-                    md += '\n**Candidatos avaliados:**\n';
-                    candidatos.forEach(c => {
-                        md += `- ${c.framework.toUpperCase()} (score ${c.score}): ${c.evidencias.join('; ')}\n`;
-                    });
-                }
-                if (data.analiseIA) {
-                    md += `\n\n${data.analiseIA}`;
-                }
-                if (data.temProjeto) {
-                    md += '\n\n_Pode perguntar sobre arquivos específicos do projeto daqui pra frente!_';
-                }
-
-                setMessages(prev => [...prev, { role: 'assistant', content: md }]);
-                carregarHistorico();
-            } else {
-                setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ Erro ao analisar projeto: ${data.error || 'Falha no processamento.'}` }]);
-            }
-        } catch (err) {
-            console.error('Erro no upload:', err);
-            setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Falha na conexão ao enviar o arquivo.' }]);
-        } finally {
-            setUploading(false);
-            setStatusText('');
-            e.target.value = '';
-        }
-    };
-
-    const handleVisualReview = async (): Promise<void> => {
-        const url = visualUrl.trim();
-        if (!url || !visualStatus?.enabled || visualBusy || loading || uploading) return;
-        try {
-            const target = new URL(url);
-            if (!['http:', 'https:'].includes(target.protocol)) throw new Error('Endereço inválido');
-        } catch {
-            setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Digite uma URL HTTP ou HTTPS válida para auditar.' }]);
-            return;
-        }
-        setVisualBusy(true);
-        setStatusText('O Solaris está abrindo o site no navegador isolado e analisando o layout...');
-        setMessages(prev => [...prev, { role: 'user', content: `Auditar visualmente ${url} (${visualDevice === 'desktop' ? 'desktop' : 'Android'}).` }]);
-        try {
-            const response = await fetch('/dashboard/solaris/visual-review', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url, device: visualDevice }),
-            });
-            const data = await response.json() as VisualResponse;
-            if (!response.ok || !data.ok || !data.analise) {
-                const problema = data.error || (response.status === 402 ? 'Saldo insuficiente para análise visual.' : 'A auditoria não pôde ser concluída.');
-                throw new Error(problema);
-            }
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: `**Auditoria visual — ${visualDevice === 'desktop' ? 'Desktop' : 'Android'}**\n\n${data.analise}\n\n_Imagem analisada pelo Gemini Flash. O relatório pode ser utilizado nesta conversa para pedir ajustes; nenhum código foi alterado automaticamente._`,
-            }]);
-            setVisualOpen(false);
-            setQuickMenuOpen(false);
-            carregarCreditos();
-        } catch (error) {
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: `⚠️ A auditoria visual não foi concluída: ${error instanceof Error ? error.message : 'falha de conexão'}`,
-            }]);
-        } finally {
-            setVisualBusy(false);
-            setStatusText('');
-        }
-    };
-
     const handleSend = async (e?: React.FormEvent<HTMLFormElement> | null, textToSend: string | null = null): Promise<void> => {
         if (e) e.preventDefault();
         const msg = (textToSend || input).trim();
-        if (!msg || loading || visualBusy) return;
+        if (!msg || loading) return;
         if (activeTool === 'github' && !/^(?:https:\/\/github\.com\/)?[A-Za-z0-9-]{1,39}\/[A-Za-z0-9_.-]{1,100}(?:\.git)?\/?$/.test(githubRepository.trim())) {
             setToolError('Cole o link do repositório: https://github.com/dono/repositorio');
             return;
@@ -868,13 +736,6 @@ export default function Solaris(): React.JSX.Element {
                         {quickMenuOpen && (
                             <div id="solaris-actions-menu" className="sl-conversation__actions-popover" role="group" aria-label="Opções e ferramentas do Solaris">
                                 <div className="sl-conversation__actions-title">Opções e ferramentas</div>
-                                <button type="button"
-                                    className="sl-conversation__action-item"
-                                    disabled={loading || uploading || visualBusy}
-                                    onClick={() => { setQuickMenuOpen(false); handleUploadClick(); }}
-                                >
-                                    <Paperclip size={17} aria-hidden="true" /> Anexar projeto ZIP
-                                </button>
                     <div className="sl-conversation__actions-sections">
                         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                             <button
@@ -883,7 +744,7 @@ export default function Solaris(): React.JSX.Element {
                                 aria-expanded={toolsOpen}
                                 aria-controls="solaris-tools-panel"
                                 onClick={() => setToolsOpen(open => !open)}
-                                disabled={loading || uploading || visualBusy}
+                                disabled={loading}
                             >
                                 <Wrench size={15} /> Ferramentas
                             </button>
@@ -900,20 +761,20 @@ export default function Solaris(): React.JSX.Element {
                                 <div className="d-flex flex-wrap gap-2">
                                     <button type="button" className={`btn btn-sm ${activeTool === 'asset-forge-2d' ? 'btn-info' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'asset-forge-2d'}
-                                        disabled={loading || uploading}
+                                        disabled={loading}
                                         onClick={() => { setActiveTool('asset-forge-2d'); setToolError(''); setQuickMenuOpen(false); setToolsOpen(false); }}>
                                         <Shapes size={14} className="me-1" /> Criar Assets 2D
                                     </button>
                                     <button type="button" className={`btn btn-sm ${activeTool === 'github' ? 'btn-info' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'github'}
-                                        disabled={loading || uploading}
+                                        disabled={loading}
                                         onClick={() => { setActiveTool('github'); setToolError(''); }}>
                                         <GitBranch size={14} className="me-1" /> GitHub
                                     </button>
                                     <button type="button" className={`btn btn-sm ${activeTool === 'none' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                                         aria-pressed={activeTool === 'none'}
                                         onClick={() => { setActiveTool('none'); setToolError(''); setQuickMenuOpen(false); setToolsOpen(false); }}
-                                        disabled={loading || uploading}>
+                                        disabled={loading}>
                                         Sem ferramenta
                                     </button>
                                 </div>
@@ -932,7 +793,7 @@ export default function Solaris(): React.JSX.Element {
                                             value={githubRepository}
                                             maxLength={240}
                                             onChange={e => { setGithubRepository(e.target.value); setToolError(''); }}
-                                            disabled={loading || uploading} />
+                                            disabled={loading} />
                                         {githubStatus?.connected && (
                                             <div className="d-flex flex-column gap-2">
                                                 <button type="button" className="btn btn-outline-info btn-sm align-self-start"
@@ -1005,58 +866,6 @@ export default function Solaris(): React.JSX.Element {
                                 {toolError && <p className="small text-warning mb-0" role="alert">{toolError}</p>}
                             </div>
                         )}
-                        <button
-                            type="button"
-                            className="btn btn-outline-info btn-sm d-flex align-items-center gap-2"
-                            aria-expanded={visualOpen}
-                            onClick={() => setVisualOpen(open => !open)}
-                            disabled={loading || uploading || visualBusy}
-                        >
-                            <Camera size={15} />
-                            Auditar visualmente um site
-                        </button>
-                        {visualOpen && (
-                            <div className="rounded-3 border border-secondary bg-black bg-opacity-50 p-3 mt-2 d-flex flex-column gap-2">
-                                <label htmlFor="solaris-visual-url" className="small text-secondary">URL pública do site ou da prévia</label>
-                                <input
-                                    id="solaris-visual-url"
-                                    type="url"
-                                    maxLength={2048}
-                                    className="form-control bg-dark text-light border-secondary"
-                                    placeholder={visualStatus?.origins?.[0] || 'https://softload.analysepro.com/'}
-                                    value={visualUrl}
-                                    onChange={e => setVisualUrl(e.target.value)}
-                                    disabled={visualBusy}
-                                />
-                                <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                                    <select
-                                        aria-label="Dispositivo da captura"
-                                        className="form-select bg-dark text-light border-secondary w-auto"
-                                        value={visualDevice}
-                                        onChange={e => setVisualDevice(e.target.value as 'desktop' | 'android-mobile')}
-                                        disabled={visualBusy}
-                                    >
-                                        <option value="desktop">Desktop</option>
-                                        <option value="android-mobile">Android</option>
-                                    </select>
-                                    <button
-                                        type="button"
-                                        className="btn btn-info btn-sm fw-semibold"
-                                        onClick={handleVisualReview}
-                                        disabled={!visualStatus?.enabled || !visualUrl.trim() || visualBusy || loading || uploading}
-                                    >
-                                        {visualBusy ? 'Analisando...' : 'Auditar agora (usa créditos)'}
-                                    </button>
-                                </div>
-                                <div className="text-secondary" style={{fontSize:'0.7rem'}}>
-                                    {visualStatus === null
-                                        ? 'Consultando disponibilidade do navegador de testes...'
-                                        : !visualStatus.enabled
-                                            ? 'Análise visual indisponível: confira a configuração do sandbox e da chave Gemini no servidor.'
-                                            : `Origens autorizadas: ${visualStatus.origins.join(', ')}. Somente URLs públicas; o relatório não altera os arquivos automaticamente.`}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                             </div>
@@ -1076,14 +885,6 @@ export default function Solaris(): React.JSX.Element {
                             <Plus size={21} aria-hidden="true" />
                             {activeTool !== 'none' && <span className="sl-conversation__active-dot" aria-hidden="true" />}
                         </button>
-                        <input 
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".zip"
-                            hidden
-                            onChange={handleFileUpload}
-                        />
-
                         <div className="flex-grow-1 position-relative">
                             <textarea 
                                 className="sl-conversation__input form-control pe-5 py-2"
