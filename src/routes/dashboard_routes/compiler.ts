@@ -72,11 +72,25 @@ function compilarSemIa(body: any) {
 async function debitarTesteGratuito(user: any) {
   const email = typeof user?.email === 'string' ? user.email.trim().toLowerCase() : '';
   if(!email) throw new Error('Conta não identificada. Entre novamente.');
-  const ref = db.collection('clientes_premium').doc(email);
+  const uid = typeof user?.uid === 'string' ? user.uid.trim() : '';
+  if (!uid) throw new Error('Identidade da conta inválida. Entre novamente.');
+  // Contas antigas podem usar o UID como ID do documento; nunca criar
+  // clientes_premium/{email} artificialmente ao cobrar cota.
+  const accounts = await db.collection('clientes_premium')
+    .where('email', '==', email).limit(10).get();
+  const matches = accounts.docs.filter((doc: any) => doc.data()?.uid === uid);
+  const legacy = accounts.docs.length === 1 && !accounts.docs[0].data()?.uid
+    ? accounts.docs[0] : null;
+  const account = matches.length === 1 ? matches[0] : (matches.length === 0 ? legacy : null);
+  if (!account) throw new Error('Conta não localizada ou ambígua. Entre novamente.');
+  const ref = account.ref;
   const hoje = Date.now();
   return db.runTransaction(async (tx: any) => {
     const snap = await tx.get(ref);
     const dados = snap.exists ? snap.data() || {} : {};
+    if (!snap.exists || String(dados.email || '').toLowerCase() !== email ||
+        (dados.uid && dados.uid !== uid))
+      throw new Error('Dados da conta divergentes. Entre novamente.');
     const venc = Date.parse(dados.premium_ate || '');
     const pago = dados.is_active === true && Number.isFinite(venc) && venc >= hoje &&
       dados.plano !== 'free';
