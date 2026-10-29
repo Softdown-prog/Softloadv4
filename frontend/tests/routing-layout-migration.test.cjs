@@ -634,3 +634,15 @@ test('linguagem de cadastro e primeiros passos permanece clara para novos client
   assert.match(dashboard, /label="Projetos e modelos"/);
   assert.match(history, /Modelos gerados/);
 });
+
+test('Upgrade e documentos legais apresentam Workspace para todos os planos', () => {
+  const upgrade=source('frontend/pages/Upgrade.tsx');
+  const termos=source('views/pages/termos-de-uso.ejs');
+  const priv=source('views/pages/privacidade.ejs');
+  assert.ok((upgrade.match(/Workspace/g)||[]).length>=5,'Workspace deve aparecer em todos os planos e resumo');
+  assert.doesNotMatch(upgrade,/Workspace[^\n]*ok: false/);
+  assert.doesNotMatch(termos,/não inclui o Workspace|exclusiva do plano Studio|único plano com acesso ao compilador/i);
+  assert.match(termos,/todos os planos/i);
+  assert.match(priv,/LGPD/);
+  assert.match(priv,/28 de outubro de 2026/);
+});

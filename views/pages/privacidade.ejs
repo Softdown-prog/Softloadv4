@@ -4,11 +4,11 @@
         <div class="mx-auto" style="max-width:760px">
             <p class="text-uppercase fw-bolder mb-2" style="font-size:11px;letter-spacing:0.18em;color:var(--sl-primary)">Documento de Privacidade</p>
             <h1 class="fw-bold text-white mb-2" style="letter-spacing:-0.02em">Política de Privacidade</h1>
-            <p class="small mb-4" style="color:var(--sl-text-500)">Última atualização: 26 de outubro de 2026</p>
+            <p class="small mb-4" style="color:var(--sl-text-500)">Última atualização: 28 de outubro de 2026</p>
             <p style="color:var(--sl-text-400);line-height:1.8">
                 A Softload V4 reúne Solaris Code, Especialista Blogger e Workspace. Esta política descreve
-                as categorias de dados utilizadas para operar essas ferramentas, proteger contas, processar
-                solicitações de IA, fornecer suporte e viabilizar pagamentos.
+                quais dados podem ser utilizados para operar essas ferramentas, proteger contas, processar
+                solicitações de IA, fornecer suporte e viabilizar pagamentos, de acordo com a finalidade e a necessidade.
             </p>
 
             <section class="sl-card mt-4" aria-labelledby="priv-dados">
@@ -18,7 +18,7 @@
                     <li><strong class="text-white">Uso e segurança:</strong> informações de sessão, registros técnicos, consumo de créditos e eventos necessários à operação e à prevenção de abuso.</li>
                     <li><strong class="text-white">Conteúdo das ferramentas:</strong> mensagens de chat, trechos de código, projetos ou arquivos enviados, resultados de compilações e histórico, quando armazenados.</li>
                     <li><strong class="text-white">Atendimento:</strong> nome, e-mail e mensagem enviados pelo formulário de contato.</li>
-                    <li><strong class="text-white">Pagamentos:</strong> identificação e estado de transações e do plano; os dados do checkout são processados pelo provedor de pagamento.</li>
+                    <li><strong class="text-white">Pagamentos:</strong> identificação e estado de transações, créditos e plano; o checkout é processado pelo provedor de pagamento.</li>
                 </ul>
             </section>
 
@@ -30,18 +30,19 @@
                     Evite incluir senhas, chaves de API e outros segredos nos conteúdos compartilhados com as ferramentas.
                 </p>
                 <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    Conversas, compilações, projetos e arquivos associados à conta podem ser armazenados
-                    para histórico, continuidade das sessões, recuperação e controle de uso, conforme o recurso utilizado.
+                    Conversas, compilações, projetos e arquivos vinculados à conta podem ser armazenados
+                    em serviços de banco de dados e armazenamento para histórico, continuidade das sessões, entrega de arquivos e controle de uso.
+                    As ferramentas disponíveis variam por implantação: por exemplo, anexar ZIP de terceiros e auditoria visual via Chromium não estão disponíveis no chat quando o sandbox isolado não estiver ativado.
                 </p>
             </section>
 
             <section class="sl-card mt-3" aria-labelledby="priv-github">
                 <h2 id="priv-github" class="h6 fw-bolder text-white text-uppercase mb-3">Integração com GitHub</h2>
                 <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    A conexão com GitHub é opcional. Após autorização, a plataforma pode usar dados da integração
-                    e acessar os repositórios permitidos para listar, consultar ou executar ações solicitadas
-                    pelo usuário, dentro das permissões concedidas. As demais áreas da plataforma não exigem
-                    conexão a uma conta GitHub.
+                    A conexão com GitHub é opcional. Após autorização, a plataforma pode receber dados da conta e
+                    acessar metadados, arquivos e repositórios expressamente autorizados para consultas e propostas de
+                    alterações solicitadas. A publicação de alterações depende da confirmação exigida pela ferramenta;
+                    desconectar a conta impede novas ações autorizadas pela integração, sem garantir exclusão de registros sujeitos a conservação legal.
                 </p>
             </section>
 
@@ -49,8 +50,19 @@
                 <h2 id="priv-terceiros" class="h6 fw-bolder text-white text-uppercase mb-3">Serviços de terceiros</h2>
                 <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
                     As funcionalidades podem depender de Firebase Authentication, Firestore e Google Cloud Storage,
-                    provedores de IA, GitHub, Mercado Pago e serviços de hospedagem. Cada integração trata
-                    as informações necessárias à execução de sua função segundo as condições aplicáveis.
+                    Google Gemini, GitHub, Mercado Pago e serviços de hospedagem na VPS. Os dados necessários à
+                    prestação do serviço podem ser processados nesses sistemas e, conforme o provedor e sua infraestrutura,
+                    em outros países, observadas as regras aplicáveis de proteção de dados e transferência internacional.
+                </p>
+            </section>
+
+            <section class="sl-card mt-3" aria-labelledby="priv-seguranca">
+                <h2 id="priv-seguranca" class="h6 fw-bolder text-white text-uppercase mb-3">Finalidades e proteção</h2>
+                <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
+                    Os dados são tratados para autenticar usuários, cumprir a prestação do serviço e de pagamentos,
+                    manter histórico quando aplicável, prevenir abusos e incidentes e atender obrigações legais.
+                    O acesso a recursos é controlado por sessões e permissões; nenhuma plataforma é imune a falhas
+                    ou incidentes. Não envie senhas, chaves de API ou dados sensíveis desnecessários aos chats.
                 </p>
             </section>
 
@@ -66,13 +78,17 @@
             <section class="sl-card mt-3" aria-labelledby="priv-direitos">
                 <h2 id="priv-direitos" class="h6 fw-bolder text-white text-uppercase mb-3">Acesso, correção e exclusão</h2>
                 <p style="color:var(--sl-text-400);line-height:1.8">
-                    Para solicitar acesso, correção ou exclusão de informações pessoais, use o
-                    <a href="/contato">formulário de contato</a>. Usuários autenticados também podem
-                    solicitar a exclusão da conta em Configurações.
+                    Para solicitar confirmação e acesso a dados pessoais, correção, informação sobre compartilhamentos,
+                    portabilidade quando aplicável, anonimização, bloqueio ou eliminação nas hipóteses legais,
+                    ou exercer outros direitos previstos na LGPD, use o <a href="/contato">formulário de contato</a>.
+                    Usuários autenticados também podem solicitar a exclusão da conta em Configurações.
+                    Pedidos serão avaliados e respondidos conforme a legislação aplicável; exclusão pode não abranger
+                    dados que devam ser conservados para obrigações legais ou defesa de direitos.
                 </p>
                 <p class="mb-0" style="color:var(--sl-text-400);line-height:1.8">
-                    Os períodos de conservação podem variar conforme a finalidade, as necessidades operacionais
-                    e obrigações legais aplicáveis. Não há um único prazo de retenção para todas as categorias de dados.
+                    Os períodos de conservação dependem da finalidade, da necessidade técnica de operação, das solicitações
+                    de exclusão e das obrigações legais aplicáveis. Não existe um único prazo para todas as categorias.
+                    O usuário pode solicitar esclarecimentos sobre retenção de seus dados pelo canal de contato.
                 </p>
             </section>
 
