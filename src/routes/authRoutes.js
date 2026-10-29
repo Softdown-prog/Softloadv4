@@ -52,26 +52,23 @@ async function buscarUsuarioPorEmail(email) {
 // ==========================================
 // 1. ROTAS VISUAIS (GET)
 // ==========================================
-// Login/registro/recuperação foram migrados pro app React (frontend/pages/auth/*.jsx)
-// — 'pages/react-public' é a bridge pública (com header+footer completos,
-// diferente de 'pages/react-test' usada pelo dashboard, que omite o footer
-// de propósito). erro/sucesso continuam chegando via query string
-// (?erro=.../?sucesso=...), lidos client-side com useSearchParams() — não
-// precisam mais ser passados como locals do EJS.
+// Telas públicas de autenticação renderizadas com EJS sem bundle React.
+// O POST e os controles do Firebase permanecem compatíveis. Feedback
+// ?erro= e ?sucesso= é exibido via textContent no HTML, sem injeção de conteúdo.
 router.get('/login', (req, res) => {
     if (req.session && req.session.user)
         return res.redirect('/dashboard');
-    res.render('pages/react-public');
+    res.render('pages/auth-simples', { authMode: 'login' });
 });
 router.get('/register', (req, res) => {
     if (req.session && req.session.user)
         return res.redirect('/dashboard');
-    res.render('pages/react-public');
+    res.render('pages/auth-simples', { authMode: 'register' });
 });
 router.get('/recover', (req, res) => {
     if (req.session && req.session.user)
         return res.redirect('/dashboard');
-    res.render('pages/react-public');
+    res.render('pages/auth-simples', { authMode: 'recover' });
 });
 // ==========================================
 // 2. REGISTRO MANUAL

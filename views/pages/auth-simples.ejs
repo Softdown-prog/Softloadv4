@@ -1,0 +1,61 @@
+<%- include('../partials/header', {pageTitle: authMode === 'register' ? 'Criar conta | Softload' : authMode === 'recover' ? 'Recuperar senha | Softload' : 'Entrar | Softload',pageDescription:'Acesse o gerador Blogger e o A7 Forge 2D.',pageNoindex:true}) %>
+<style>
+.sl-auth{max-width:520px;margin:0 auto;padding:120px 18px 84px}
+.sl-auth .panel{border:1px solid #35506b;border-radius:20px;padding:clamp(24px,5vw,40px);background:linear-gradient(140deg,#11243a,#101b2d)}
+.sl-auth .eyebrow{color:#7dd3fc;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:.77rem}
+.sl-auth .copy{color:#b7c6d8;line-height:1.65}
+.sl-auth label{font-weight:650;color:#f1f5f9}
+.sl-auth input{background-color:#0d1a2b;color:#fff;border-color:#44576a;min-height:44px}
+.sl-auth input:focus{background-color:#111e30;color:#fff;border-color:#7dd3fc}
+.sl-auth a:focus-visible,.sl-auth button:focus-visible,.sl-auth input:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+</style>
+<main class="sl-auth">
+  <p class="eyebrow mb-2">Softload · Blogger e A7 Forge 2D</p>
+  <section class="panel" aria-labelledby="auth-title">
+    <% if(authMode === 'register') { %>
+      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Crie sua conta grátis</h1>
+      <p class="copy">Comece com dois downloads gratuitos de XML para Blogger. A área de arquivos com até 5 MB gratuitos está em preparação.</p>
+      <form action="/register" method="post">
+        <div class="mb-3"><label class="form-label" for="name">Seu nome</label><input class="form-control" id="name" name="name" autocomplete="name" minlength="2" maxlength="100" required></div>
+        <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+        <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+        <p class="copy small">Ao criar a conta, você aceita nossos <a href="/termos-de-uso">Termos de Uso</a> e a <a href="/privacidade">Política de Privacidade</a>. A contratação de armazenamento pago exige aceite próprio.</p>
+        <button class="btn btn-sl-primary w-100 fw-bold" type="submit">Criar conta</button>
+      </form>
+      <p class="copy small mt-4 mb-0">Já tem conta? <a href="/login">Entrar</a></p>
+    <% } else if (authMode === 'recover') { %>
+      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Recuperar senha</h1>
+      <p class="copy">Informe seu e-mail. Se houver uma conta vinculada a ele, enviaremos instruções de recuperação.</p>
+      <form action="/recover" method="post">
+        <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+        <button class="btn btn-sl-primary w-100 fw-bold" type="submit">Enviar instruções</button>
+      </form>
+      <p class="copy small mt-4 mb-0"><a href="/login">Voltar para entrar</a></p>
+    <% } else { %>
+      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Entre na sua conta</h1>
+      <p class="copy">Continue criando templates e imagens 2D. Sua conta segue protegida pelo Firebase.</p>
+      <form action="/login" method="post">
+        <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+        <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required></div>
+        <div class="text-end mb-3"><a class="small" href="/recover">Esqueci minha senha</a></div>
+        <button class="btn btn-sl-primary w-100 fw-bold" type="submit">Entrar na Softload</button>
+      </form>
+      <p class="copy small mt-4 mb-0">Ainda não tem conta? <a href="/register">Criar conta grátis</a></p>
+    <% } %>
+    <p id="auth-status" role="status" aria-live="polite" class="rounded-3 p-3 mt-3 mb-0" hidden></p>
+  </section>
+</main>
+<script>
+(function() {
+  var query = new URLSearchParams(window.location.search);
+  var erro = query.get('erro');
+  var sucesso = query.get('sucesso');
+  var message = erro || sucesso;
+  if(!message)return;
+  var box = document.getElementById('auth-status');
+  box.textContent = message.slice(0, 300);
+  box.classList.add(erro ? 'alert-danger' : 'alert-success');
+  box.hidden = false;
+})();
+</script>
+<%- include('../partials/footer-blogger') %>
