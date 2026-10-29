@@ -6,6 +6,7 @@ import ChatHeaderActions from '../components/ChatHeaderActions';
 import Pill from '../components/Pill';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
+import { extrairErroRespostaChat } from '../services/chatHttpErrors';
 import { 
     Layers, ArrowLeft, Cpu, Sparkles, Send, History, 
     X, Clipboard, Check, HelpCircle, StopCircle, Eye, ArrowRight, ArrowDown, Zap, RefreshCw
@@ -292,12 +293,7 @@ export default function WorkspaceChat(): React.JSX.Element {
             });
 
             if (!response.ok) {
-                if (response.status === 402) {
-                    const err402 = await response.json().catch(() => ({})) as ChatApiError;
-                    throw new Error(err402.error || err402.erro || 'Seus créditos de IA acabaram.');
-                }
-                const err = await response.json().catch(() => ({})) as ChatApiError;
-                throw new Error(err.error || err.erro || 'Erro ao processar mensagem.');
+                throw new Error(await extrairErroRespostaChat(response));
             }
 
             const reader = response.body?.getReader();
