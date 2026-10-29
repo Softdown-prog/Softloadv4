@@ -43,7 +43,8 @@ router.get('/dashboard/historico', exigirLogin, async (req, res) => {
         return res.render('pages/historico-simples', {
             activePage: 'historico', user, arquivos
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error('[HISTORICO] Pagina EJS indisponivel:', err.message);
         return res.status(503).send('Não foi possível carregar seu histórico. Tente novamente.');
     }
