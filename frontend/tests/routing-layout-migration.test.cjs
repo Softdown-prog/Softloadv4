@@ -489,18 +489,19 @@ test('templates EJS das páginas externas compilam', () => {
   }
 });
 
-test('documentos legais descrevem Solaris, GitHub, conteúdo e limites reais de créditos',()=>{
+test('documentos legais informam Blogger/Forge, armazenamento e expiração',()=>{
   const terms=source('views/pages/termos-de-uso.ejs');
   const privacy=source('views/pages/privacidade.ejs');
-  assert.match(terms,/Solaris Code/);
-  assert.match(terms,/GitHub/);
-  assert.match(terms,/saldo de créditos e limites de uso/);
-  assert.doesNotMatch(terms,/Créditos funcionam como contadores de uso analítico/);
-  for(const required of ['Conteúdo das ferramentas','Inteligência artificial e arquivos',
-                         'Integração com GitHub','Google Gemini','Acesso, correção e exclusão']){
+  assert.match(terms,/A7 Forge 2D/);
+  assert.match(terms,/R\$ 5,00/);
+  assert.match(terms,/50 MB/);
+  assert.match(terms,/5 MB/);
+  assert.match(terms,/cinco dias/i);
+  assert.match(terms,/Contratos anteriores|contratos anteriores|planos antigos/);
+  for(const required of ['Firebase Authentication','Mercado Pago','LGPD','50 MB','5 MB']){
     assert.ok(privacy.includes(required),required);
   }
-  assert.match(privacy,/pageCanonical: '\/privacidade'/);
+  assert.match(privacy,/pageCanonical:'\/privacidade'/);
 });
 
 
@@ -635,14 +636,14 @@ test('linguagem de cadastro e primeiros passos permanece clara para novos client
   assert.match(history, /Modelos gerados/);
 });
 
-test('Upgrade e documentos legais apresentam Workspace para todos os planos', () => {
+test('tela de upgrade legada continua consistente, mas termos explicam a transição', () => {
   const upgrade=source('frontend/pages/Upgrade.tsx');
   const termos=source('views/pages/termos-de-uso.ejs');
   const priv=source('views/pages/privacidade.ejs');
-  assert.ok((upgrade.match(/Workspace/g)||[]).length>=5,'Workspace deve aparecer em todos os planos e resumo');
+  assert.ok((upgrade.match(/Workspace/g)||[]).length>=5,'A tela legada deve preservar os direitos antigos');
   assert.doesNotMatch(upgrade,/Workspace[^\n]*ok: false/);
-  assert.doesNotMatch(termos,/não inclui o Workspace|exclusiva do plano Studio|único plano com acesso ao compilador/i);
-  assert.match(termos,/todos os planos/i);
+  assert.match(termos,/contratos anteriores|planos antigos/i);
+  assert.match(termos,/30 dias/);
   assert.match(priv,/LGPD/);
-  assert.match(priv,/28 de outubro de 2026/);
+  assert.match(priv,/29 de outubro de 2026/);
 });
