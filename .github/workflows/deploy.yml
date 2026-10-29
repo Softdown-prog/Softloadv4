@@ -69,6 +69,8 @@ jobs:
           # Pillow usa fontes do sistema; sinaliza caso o runner as perca.
           test -r /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: npm test
+      - name: Validar Blogger sem conta (cota, CSRF e XML)
+        run: node --test src/routes/publicBlogger.contract.test.cjs
       - run: npm run test:quality
       - run: npm run build
       - name: Proibir referências ao ChatGPT no frontend e no bundle
