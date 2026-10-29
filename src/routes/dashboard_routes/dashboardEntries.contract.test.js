@@ -26,9 +26,9 @@ function loadRouter(file) {
     assert.equal(sandbox.module.exports, router);
     return { routes, middlewares, exigirLogin };
 }
-test('dashboard mounts existing route modules in their original order', () => {
+test('dashboard mounts only Blogger, Forge and compatibility account/history routes', () => {
     const { middlewares } = loadRouter('index.js');
-    assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './chat', './workspace', './workspaceChat', './solaris', './reactTest']);
+    assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './reactTest']);
 });
 test('dashboard home requires login and passes session to simplified EJS view', () => {
     const { routes, exigirLogin } = loadRouter('home.js');

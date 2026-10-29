@@ -41,7 +41,8 @@ test('home EJS renderiza sem bundle React, protege dados e facilita o acesso ao 
   assert.match(html,/href="\/dashboard\/gerador-blogger"/);
   assert.match(html,/href="\/dashboard\/historico"/);
   assert.match(html,/href="\/dashboard\/configuracoes"/);
-  assert.match(html,/href="\/dashboard\/workspace"/);
+  assert.match(html,/href="\/dashboard\/forge-2d"/);
+  assert.doesNotMatch(html,/href="\/dashboard\/workspace"/);
   assert.doesNotMatch(html,/react-root|\/dist\/assets\/main\.js/);
   assert.match(html,/cookie-engine/);
 });

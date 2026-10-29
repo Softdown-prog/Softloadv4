@@ -1,0 +1,40 @@
+<%- include('../partials/header', {pageTitle:'Softload | Blogger e A7 Forge 2D',pageDescription:'Crie templates Blogger e imagens 2D sem inteligência artificial.',pageCanonical:'/'}) %>
+<style>
+.sl-lite{max-width:1100px;margin:0 auto;padding:120px 16px 76px}
+.sl-lite .tag{font-size:.78rem;color:#7dd3fc;letter-spacing:.13em;text-transform:uppercase;font-weight:800}
+.sl-lite .hero{padding:clamp(26px,5vw,60px);background:linear-gradient(120deg,#152b48,#101c31);border-radius:24px;border:1px solid #285b7a}
+.sl-lite .subtitle{color:#bdcad9;max-width:630px;line-height:1.7}
+.sl-lite .tool{height:100%;padding:25px;border-radius:17px;background:#111e30;border:1px solid #34465b}
+.sl-lite .tool p,.sl-lite .info{color:#b6c3d5;line-height:1.65}
+.sl-lite .price{font-size:2.2rem;font-weight:800;color:#fff}
+</style>
+<main class="sl-lite">
+  <section class="hero mb-4" aria-labelledby="titulo">
+    <p class="tag mb-2">Softload · criação sem IA</p>
+    <h1 id="titulo" class="text-white fw-bolder display-5 mb-3">Crie seu blog e suas imagens 2D.</h1>
+    <p class="subtitle mb-4">Duas ferramentas simples. Escolha um modelo, personalize e baixe o resultado. Sem chat, sem depender de inteligência artificial e sem créditos por geração.</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a href="<%= user ? '/dashboard' : '/register' %>" class="btn btn-sl-primary fw-bold px-4">Começar agora</a>
+      <a href="/login" class="btn btn-outline-light">Entrar na conta</a>
+    </div>
+  </section>
+  <div class="row g-3 mb-4" id="ferramentas">
+    <section class="col-12 col-md-6" aria-labelledby="blogger-title"><div class="tool">
+      <p class="tag">1. Blogger</p><h2 id="blogger-title" class="h4 fw-bold text-white">Criar templates XML</h2>
+      <p>Mais de 15 estilos de partida e criação do zero, com escolha de cores, fontes, colunas, barra lateral e download direto do XML.</p>
+      <a class="btn btn-outline-info" href="/dashboard/gerador-blogger">Abrir gerador Blogger</a>
+    </div></section>
+    <section class="col-12 col-md-6" aria-labelledby="forge-title"><div class="tool">
+      <p class="tag">2. A7 Forge 2D</p><h2 id="forge-title" class="h4 fw-bold text-white">Criar imagens 2D</h2>
+      <p>Gere sprites, personagens e elementos de cenários a partir de receitas procedurais, com download em ZIP.</p>
+      <a class="btn btn-outline-info" href="/dashboard/forge-2d">Abrir A7 Forge 2D</a>
+    </div></section>
+  </div>
+  <section class="tool" aria-labelledby="preco">
+    <h2 id="preco" class="h4 text-white">Acesso simples, sem créditos de IA</h2>
+    <p class="info mb-2">Conta gratuita: 2 downloads de teste XML e 5 MB de armazenamento. Plano Essencial: R$ 5 a cada 30 dias contratados, gerações ilimitadas com proteção contra abuso e 50 MB de armazenamento enquanto o plano estiver ativo.</p>
+    <p class="info small mb-3">Renovação manual. Após vencer, há cinco dias para recuperar arquivos abrangidos pela nova política. A contratação e a área de arquivos dependem da conclusão da homologação.</p>
+    <a href="/termos-de-uso" class="link-info">Consultar condições e política de armazenamento</a>
+  </section>
+</main>
+<%- include('../partials/footer-blogger') %>

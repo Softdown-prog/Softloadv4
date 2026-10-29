@@ -126,5 +126,9 @@ router.post('/dashboard/gerador-blogger/download', exigirLogin, limite, async (r
 });
 router.get('/dashboard/compiler', exigirLogin, (_req: any,res: any) => res.redirect(302,'/dashboard/gerador-blogger'));
 router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req: any,res: any) => res.redirect(302,'/dashboard/gerador-blogger'));
+const forgeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 2, standardHeaders: 'draft-8', legacyHeaders: false,
+  message: 'Muitas gerações de assets em pouco tempo. Tente novamente mais tarde.' });
+router.get('/dashboard/forge-2d', exigirLogin, (req: any,res: any) => require('./forgeStandalone.cjs').show(req,res));
+router.post('/dashboard/forge-2d/download', exigirLogin, forgeLimiter, (req: any,res: any) => require('./forgeStandalone.cjs').download(req,res));
 module.exports = router;
 export {};

@@ -203,7 +203,7 @@ app.use((req: ServerRequest, res: ServerResponse, next: () => void) => {
 // já usado nas outras bridges: o único local que a landing dependia
 // (query.conta === 'apagada', pro toast de conta excluída) é lido
 // client-side via useSearchParams em vez de vir do EJS.
-app.get('/', (req, res) => res.render('pages/react-landing'));
+app.get('/', (req, res) => res.render('pages/landing-blogger'));
 app.get('/termos-de-uso', (req, res) => res.render('pages/termos-de-uso'));
 app.get('/privacidade', (req, res) => res.render('pages/privacidade'));
 app.use('/', authRoutes);
