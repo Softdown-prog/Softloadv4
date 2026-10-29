@@ -15,6 +15,36 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Diagnosticar API publica e Firestore na VPS (somente leitura)
+        shell: bash
+        run: |
+          node <<'NODE'
+          (async () => {
+            const url = 'https://softload.analysepro.com/health?ci_backend_diagnostic=1';
+            const response = await fetch(url, {
+              headers: {'Cache-Control': 'no-cache'},
+              signal: AbortSignal.timeout(20000),
+            });
+            const body = await response.json();
+            const sha = String(body?.deploy?.gitSha || 'ausente');
+            const firestore = body?.firestore === true;
+            const appStatus = String(body?.status || 'ausente');
+            const line = 'HTTP ' + response.status + ', SHA ' + sha +
+              ', app=' + appStatus + ', Firestore=' + (firestore ? 'OK' : 'FALHOU');
+            console.log('[PROD-BACKEND] ' + line);
+            if (!firestore || !response.ok) {
+              console.log('::warning::Backend degradado: checar Firestore, credenciais da VPS e ID da base.');
+            }
+            const fs = require('node:fs');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '\n### Diagnostico backend publico (sem credenciais)\n' +
+              '- ' + line + '\n');
+          })().catch(error => {
+            const description = String(error?.message || error).slice(0, 180);
+            console.log('::warning::Consulta de saude publica falhou: ' + description);
+            require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              '\n### Diagnostico backend publico\n- Consulta indisponivel (sem alterar VPS)\n');
+          });
+          NODE
       - name: Instalar dependencias
         run: npm ci --legacy-peer-deps
       - name: Verificar contratos TypeScript
