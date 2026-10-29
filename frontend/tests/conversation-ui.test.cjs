@@ -87,10 +87,17 @@ test('ações dos três chats ficam em menu compacto com saída acessível',()=>
   for(const token of [
     'sl-conversation__actions-scope','sl-conversation__actions-popover',
     'sl-conversation__plus-button','aria-label="Abrir opções e ferramentas"',
-    'onClick={handleVisualReview}','ref={fileInputRef}','handleUploadClick()',
     "event.key === 'Escape'",'setQuickMenuOpen(false)',
-    'id="solaris-tools-panel"','id="solaris-visual-url"'
+    'id="solaris-tools-panel"','Criar Assets 2D','Conectar GitHub'
   ]) assert.ok(solaris.includes(token),'Solaris perdeu opção de ferramenta: '+token);
+  // Sandbox retirado da VPS: não mostrar upload de ZIP ou navegador desativados.
+  for (const obsolete of [
+    'Anexar projeto ZIP', 'Auditar visualmente um site',
+    'handleFileUpload', 'handleVisualReview', 'fileInputRef',
+    '/dashboard/solaris/upload', '/dashboard/solaris/visual-review',
+  ]) assert.ok(!solaris.includes(obsolete),'Solaris ainda anuncia opção sem sandbox: '+obsolete);
+  assert.ok(solaris.includes('m.zip.base64'),'Download de ZIP gerado não depende de extrator externo');
+  assert.ok(solaris.includes('download={m.zip.nome}'),'Download de ZIP gerado deve permanecer');
   const originalPanelPosition=solaris.indexOf('sl-conversation__actions-popover');
   const chatFormPosition=solaris.indexOf('<form onSubmit={handleSend}',originalPanelPosition);
   assert.ok(originalPanelPosition>0 && chatFormPosition>originalPanelPosition,'Menu precisa ficar antes do formulário');
