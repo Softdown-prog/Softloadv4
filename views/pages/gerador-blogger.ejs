@@ -1,0 +1,148 @@
+<%- include('../partials/header', {pageTitle:'Criador de Templates Blogger | Softload',pageDescription:'Gere templates XML Blogger sem inteligência artificial',pageNoindex:true}) %>
+<style>
+.sl-generator{max-width:1240px;margin:0 auto;padding:100px 16px 64px;color:var(--sl-text-300)}
+.sl-generator .panel{background:#111c31;border:1px solid #31425d;border-radius:16px;padding:24px}
+.sl-generator .eyebrow{text-transform:uppercase;letter-spacing:.14em;color:#38bdf8;font-size:.72rem;font-weight:750}
+.sl-generator label{font-weight:650;font-size:.875rem;margin-bottom:6px;color:#e2e8f0}
+.sl-generator select,.sl-generator input{background:#081322!important;border:1px solid #415673!important;color:#e2e8f0!important}
+.sl-generator select:focus,.sl-generator input:focus{border-color:#38bdf8!important;box-shadow:0 0 0 2px #0ea5e944!important}
+.sl-generator .hint{color:#94a3b8;font-size:.83rem}
+.sl-generator .fake-blog{background:#f8fafc;color:#1e293b;border-radius:13px;overflow:hidden;border:1px solid #334155}
+.sl-generator .fake-header{background:#0f172a;color:white;padding:18px 20px;border-bottom:4px solid #0ea5e9}
+.sl-generator .fake-nav{background:#e2e8f0;color:#475569;padding:9px 20px;font-size:.78rem}
+.sl-generator .fake-body{display:grid;grid-template-columns:minmax(0,2fr) minmax(130px,1fr);gap:14px;padding:14px}
+.sl-generator .fake-body.no-sidebar{grid-template-columns:1fr}
+.sl-generator .fake-body.sidebar-left{grid-template-columns:minmax(130px,1fr) minmax(0,2fr)}
+.sl-generator .fake-body.sidebar-left .fake-aside{order:-1}
+.sl-generator .fake-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sl-generator .fake-card{background:white;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;min-width:0}
+.sl-generator .fake-thumb{height:38px;background:linear-gradient(135deg,#bae6fd,#dbeafe)}
+.sl-generator .fake-title{font-size:.66rem;font-weight:700;padding:7px}
+.sl-generator .fake-aside{background:white;border:1px solid #cbd5e1;border-radius:7px;padding:10px;font-size:.7rem}
+.sl-generator .fake-footer{background:#0f172a;padding:13px 20px;color:#e2e8f0;font-size:.7rem}
+.sl-generator #form-message{min-height:22px}
+@media(max-width:1024px){.sl-generator .fake-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.sl-generator .panel{padding:17px}.sl-generator .fake-body,.sl-generator .fake-body.sidebar-left{grid-template-columns:1fr}.sl-generator .fake-grid{grid-template-columns:1fr}.sl-generator .fake-aside{order:2!important}}
+</style>
+<main class="sl-generator">
+  <div class="mb-4 d-flex justify-content-between align-items-start gap-2 flex-wrap">
+    <div>
+      <p class="eyebrow mb-1">Softload · sem Gemini · sem React</p>
+      <h1 class="fw-bolder mb-2 text-white">Criador de templates Blogger</h1>
+      <p class="hint mb-0">Comece do zero ou escolha um dos <%= nichos.length %> nichos e personalize. Gere um XML real e baixe sem API de IA.</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="/dashboard">Voltar ao painel</a>
+  </div>
+  <div class="row g-3">
+    <section class="col-12 col-xl-5" aria-label="Configurar template">
+      <div class="panel">
+        <h2 class="h5 fw-bold text-white mb-3">1. Monte seu template</h2>
+        <form id="generator-form" method="post" action="/dashboard/gerador-blogger/download" autocomplete="off">
+          <fieldset class="mb-3">
+            <legend class="fs-6 fw-bold">Como deseja começar?</legend>
+            <label class="form-check mb-2"><input class="form-check-input" type="radio" name="modo" value="novo" checked/> <span class="form-check-label">Criar do zero (estrutura-base Blogger)</span></label>
+            <label class="form-check"><input class="form-check-input" type="radio" name="modo" value="modelo"/> <span class="form-check-label">Personalizar um nicho existente</span></label>
+          </fieldset>
+          <div id="nicho-wrapper" class="mb-3" hidden>
+            <label for="nichoTema" class="form-label">Nicho de partida</label>
+            <select class="form-select" id="nichoTema" name="nichoTema" disabled>
+              <% nichos.forEach(function(n) { %>
+                <option value="<%= n.id %>" data-aviso="<%= n.aviso || '' %>"><%= n.nome %></option>
+              <% }); %>
+            </select>
+            <p id="nicho-aviso" class="hint mt-1 mb-0"></p>
+          </div>
+          <div class="mb-3">
+            <label for="siteName" class="form-label">Nome do blog</label>
+            <input class="form-control" id="siteName" name="siteName" maxlength="60" minlength="2" value="Meu Blog Azul" required/>
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6"><label for="colorPreset">Paleta de cores</label>
+              <select id="colorPreset" name="colorPreset" class="form-select">
+                <% cores.forEach(function(c) { %><option value="<%= c.id %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
+              </select>
+            </div>
+            <div class="col-12 col-md-6"><label for="typography">Fonte</label>
+              <select id="typography" name="typography" class="form-select">
+                <% fontes.forEach(function(f) { %><option value="<%= f.id %>" <%= f.id==='inter'?'selected':'' %>><%= f.nome %></option><% }); %>
+              </select>
+            </div>
+            <div class="col-12 col-md-6"><label for="gridLayout">Postagens na página</label>
+              <select id="gridLayout" name="gridLayout" class="form-select">
+                <option value="revista" selected>3 colunas no desktop</option>
+                <option value="dupla">2 colunas</option>
+                <option value="lista">Lista</option>
+                <option value="quadrado">Mosaico</option>
+                <option value="mural">Mural compacto</option>
+                <option value="coluna-unica">Uma coluna</option>
+                <option value="zigzag">Zigue-zague</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6"><label for="sidebarPosition">Barra lateral</label>
+              <select id="sidebarPosition" name="sidebarPosition" class="form-select">
+                <option value="right" selected>Direita</option>
+                <option value="left">Esquerda</option>
+                <option value="none">Sem barra lateral</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4 p-3 rounded-3" style="background:#0b2538">
+            <p class="small fw-bold mb-1 text-white">Teste gratuito: <%= gratuitoLimite %> downloads por conta.</p>
+            <p class="hint mb-0">A compilação não utiliza Gemini. O plano de R$ 5/mês está sendo preparado e a assinatura antiga permanece válida durante a migração.</p>
+          </div>
+          <button type="submit" class="btn btn-sl-primary fw-bold w-100 mt-3" id="download-template">2. Gerar e baixar XML</button>
+          <p id="form-message" class="hint mt-2 mb-0" role="status">O arquivo será validado antes do download. Nenhum crédito de IA será usado.</p>
+        </form>
+      </div>
+    </section>
+    <section class="col-12 col-xl-7" aria-label="Prévia aproximada do visual">
+      <div class="panel">
+        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+          <div><h2 class="h5 fw-bold text-white mb-1">Prévia do layout</h2><p class="hint mb-0">Simulação visual; não substitui importar o XML no Blogger para validar a renderização real.</p></div>
+          <span class="badge rounded-pill border border-info text-info">Sem navegador na VPS</span>
+        </div>
+        <div class="fake-blog">
+          <div class="fake-header"><strong id="preview-title">Meu Blog Azul</strong><div style="font-size:.74rem;opacity:.75">Seu conteúdo começa aqui</div></div>
+          <div class="fake-nav">Início&nbsp; · &nbsp;Categorias&nbsp; · &nbsp;Sobre&nbsp; · &nbsp;Contato</div>
+          <div class="fake-body" id="fake-body">
+            <div class="fake-grid" id="fake-grid">
+              <% for(var i=0;i<6;i++){ %><div class="fake-card"><div class="fake-thumb"></div><div class="fake-title">Exemplo de postagem <%= i+1 %></div></div><% } %>
+            </div>
+            <div class="fake-aside" id="fake-aside"><strong>Barra lateral</strong><hr/>Categorias<br/>Postagens populares<br/>Arquivo do blog</div>
+          </div>
+          <div class="fake-footer">© Meu Blog · Blogger</div>
+        </div>
+        <p class="hint mt-3 mb-0">O XML produzido inclui o widget de postagens do Blogger, CSS responsivo e as opções selecionadas.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+(function() {
+  const form=document.getElementById('generator-form');
+  const mode=()=>form.querySelector('input[name="modo"]:checked').value;
+  const niche=document.getElementById('nichoTema');
+  const wrapper=document.getElementById('nicho-wrapper');
+  const body=document.getElementById('fake-body');
+  const grid=document.getElementById('fake-grid');
+  const aside=document.getElementById('fake-aside');
+  const palette={ 'tech-blue':'#0ea5e9', 'tech-blue-royal':'#2563eb', 'tech-blue-ice':'#7dd3fc', 'tech-blue-cobalt':'#1d4ed8','tech-blue-midnight':'#1e3a8a' };
+  function refresh() {
+    const useNiche=mode()==='modelo';
+    wrapper.hidden=!useNiche;niche.disabled=!useNiche;
+    document.getElementById('nicho-aviso').textContent=useNiche ? (niche.selectedOptions[0].dataset.aviso||'Este nicho utiliza componentes existentes do compilador.') : '';
+    document.getElementById('preview-title').textContent=document.getElementById('siteName').value||'Meu blog';
+    const side=document.getElementById('sidebarPosition').value;
+    body.classList.toggle('no-sidebar',side==='none');
+    body.classList.toggle('sidebar-left',side==='left');
+    aside.hidden=side==='none';
+    const layout=document.getElementById('gridLayout').value;
+    grid.style.gridTemplateColumns=layout==='coluna-unica'||layout==='lista'?'1fr':layout==='dupla'?'repeat(2,minmax(0,1fr))':layout==='mural'?'repeat(4,minmax(0,1fr))':'';
+    document.querySelector('.fake-header').style.borderBottomColor=palette[document.getElementById('colorPreset').value]||'#0ea5e9';
+  }
+  form.addEventListener('change',refresh);document.getElementById('siteName').addEventListener('input',refresh);
+  form.addEventListener('submit',()=>{document.getElementById('form-message').textContent='Gerando XML... confira a pasta Downloads do navegador. Se a geração falhar, a resposta exibirá uma mensagem.';});
+  refresh();
+})();
+</script>
+<%- include('../partials/footer') %>
