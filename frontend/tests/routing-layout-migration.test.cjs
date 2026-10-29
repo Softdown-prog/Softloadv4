@@ -447,26 +447,24 @@ test('arquivos aprovados do vídeo Solaris são MP4 e PNG válidos e leves', () 
 });
 
 // Regressão de identidade e responsividade nas páginas EJS fora do React Router.
-test('navegação EJS é responsiva e usa os mesmos links e marca da landing React', () => {
+test('navegação EJS promove somente Blogger e A7 Forge 2D', () => {
   const header=source('views/partials/header.ejs');
-  const footer=source('views/partials/footer.ejs');
-  const navbar=source('frontend/components/PublicNavbar.tsx');
-  for(const label of ['Início','Ferramentas','Demonstração','Como funciona','Contato']){
+  const landing=source('views/pages/landing-blogger.ejs');
+  const footer=source('views/partials/footer-blogger.ejs');
+  for(const label of ['Início','Ferramentas','Blogger','A7 Forge 2D','Contato']){
     assert.ok(header.includes('>'+label+'</a>'),label);
-    assert.ok(navbar.includes("label: '"+label+"'"),label);
   }
-  for (const anchor of ['solucoes','demo-solaris','como-funciona']) {
-    assert.ok(header.includes('href="/#'+anchor+'"'), anchor);
-    assert.ok(navbar.includes("href: '/#"+anchor+"'"), anchor);
-    assert.ok(source('frontend/pages/Landing.tsx').includes('id="'+anchor+'"'), anchor);
+  for(const href of ['/','/#ferramentas','/dashboard/gerador-blogger','/dashboard/forge-2d','/contato']){
+    assert.ok(header.includes('href="'+href+'"'),'link público: '+href);
   }
+  assert.match(landing,/id="ferramentas"/);
+  assert.match(landing,/Crie seu blog e suas imagens 2D/);
   assert.match(header,/navbar-expand-md/);
   assert.match(header,/data-bs-toggle="collapse"/);
   assert.match(header,/aria-controls="sl-nav-collapse"/);
-  assert.match(header,/SOFTLOAD<span class="sl-accent"> V4<\/span>/);
-  assert.match(footer,/SOFTLOAD<span class="sl-accent"> V4<\/span>/);
-  assert.doesNotMatch(header+footer,/Softload Engine v3|>ENGINE<\/span>/);
+  assert.doesNotMatch(header+footer,/#demo-solaris|href="\/dashboard\/chat"|Solaris Code/);
 });
+
 
 test('contato não altera pontuação inserida e valida o limite de 100 palavras', () => {
   const contact=source('views/pages/contato.ejs');
@@ -550,25 +548,19 @@ test('sitemap público anunciado por robots.txt tem somente rotas indexáveis', 
 });
 
 
-test('rodapés React e EJS expõem os mesmos destinos públicos sem status fictício', () => {
-  const react = source('frontend/components/PublicFooter.tsx');
-  const ejs = source('views/partials/footer.ejs');
-  const landing = source('frontend/pages/Landing.tsx');
-  for (const href of ['/#demo-solaris', '/#ia-pode', '/#features', '/#solucoes',
-                      '/register', '/login', '/dashboard', '/contato', '/termos-de-uso', '/privacidade']) {
-    assert.ok(react.includes('href="'+href+'"'), 'React: '+href);
-    assert.ok(ejs.includes('href="'+href+'"'), 'EJS: '+href);
+test('rodapé Blogger é EJS e mantém destinos legais, sem marketing Solaris', () => {
+  const entry=source('views/partials/footer.ejs');
+  const footer=source('views/partials/footer-blogger.ejs');
+  const landing=source('views/pages/landing-blogger.ejs');
+  assert.match(entry,/footer-blogger/);
+  for (const href of ['/contato','/termos-de-uso','/privacidade']) {
+    assert.ok(footer.includes('href="'+href+'"'), 'EJS: '+href);
   }
-  for (const section of ['demo-solaris', 'ia-pode', 'features', 'solucoes']) {
-    assert.ok(landing.includes('id="'+section+'"'), 'Âncora '+section+' ausente');
-  }
-  assert.ok(react.includes('rel="noopener noreferrer"'));
-  assert.ok(ejs.includes('rel="noopener noreferrer"'));
-  assert.doesNotMatch(react+ejs, /Sistemas Operacionais|sl-pulse/);
-  assert.ok(react.includes('Solaris Code · Blogger · Workspace'));
-  assert.ok(ejs.includes('Solaris Code · Blogger · Workspace'));
-  assert.ok(source('public/css/softload.css').includes('.sl-footer-heading'));
+  assert.match(footer,/templates XML para Blogger/);
+  assert.match(landing,/A7 Forge 2D/);
+  assert.doesNotMatch(entry+footer,/#demo-solaris|#ia-pode|Solaris Code · Blogger · Workspace/);
 });
+
 
 test('menu React responde ao Escape, restaura foco e indica início ativo', () => {
   const nav = source('frontend/components/PublicNavbar.tsx');
