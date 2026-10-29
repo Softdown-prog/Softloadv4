@@ -309,12 +309,10 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                 const emailCliente = intentRef
                     ? String(intentSnapshot?.data()?.email || '').toLowerCase()
                     : externalReference.toLowerCase();
-
                 if (!emailCliente || !emailCliente.includes('@')) {
                     console.warn('[MP] Pagamento aprovado sem referência de conta válida.');
                     return res.status(503).send('Pagamento requer conciliação');
                 }
-
                 console.log(`[MP] Pagamento aprovado: ${emailCliente}`);
                 // Busca o usuário pelo campo email (compatível com doc ID = email ou UID)
                 const query = await db.collection('clientes_premium')
