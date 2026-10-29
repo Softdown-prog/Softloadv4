@@ -59,6 +59,8 @@ COPY package*.json ./
 COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
 RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
 COPY . .
+# App comercial não deve incluir assets e receitas A7 Forge.
+RUN test ! -d /usr/src/app/agent/forge
 # O A7 Forge saiu do App de produção. Conteúdo legado permanece no repositório para rollback.
 # Sobrescreve o public/dist/ copiado do repo (que pode estar desatualizado
 # — é só uma conveniência pra rodar `node server.js` localmente sem buildar
