@@ -11,7 +11,7 @@ const { COLOR_PRESETS, TYPOGRAPHY_PRESETS } = require('../../core/presets');
 const { NICHO_PAGE_TYPE_MAP, PAGE_TYPES_SEM_CHASSIS_DEDICADO } = require('../../core/nichoTaxonomy');
 const { db } = require('../../services/firebase');
 
-const NICHO_NOMES = Object.freeze({
+const NICHO_NOMES: Readonly<Record<string, string>> = Object.freeze({
   'gamer-playerone': 'Games e reviews', 'pop-retro-pixel': 'Cultura pop e retrô',
   'culinaria-boutique-gourmet': 'Culinária e receitas', 'natureza-bulma-vegan': 'Vegano e natureza',
   'noticias-mag-news': 'Notícias e jornalismo', 'tecnologia-mag-tech': 'Tecnologia e análises',
