@@ -697,7 +697,8 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --max-time 40 \
+          curl --fail --silent --show-error --compressed \
+            --connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors \
             -H 'Cache-Control: no-cache' \
             "https://softload.analysepro.com/dist/assets/main.js?v=${EXPECTED_SHA}&audit=1" \
             -o "$RUNNER_TEMP/softload-live-main.js"
