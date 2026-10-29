@@ -726,6 +726,9 @@ jobs:
           }
           console.log('[DEPLOY] Landing Blogger e editor público verificados no domínio.');
           NODE
+      - name: Confirm live Blogger XML compilation after activation
+        if: steps.latest.outputs.proceed == 'true'
+        run: node scripts/livePublicCompilerSmoke.cjs
       - name: Remove temporary deploy key
         if: always()
         run: rm -f "$RUNNER_TEMP/softload-ssh/deploy_key" "$RUNNER_TEMP/softload-ssh/known_hosts"
