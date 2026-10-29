@@ -33,6 +33,7 @@ function verificarEspelhos({ root = ROOT, sources = SOURCES, write = false, file
             diagnosticsErrors.push(relative);
             continue;
         }
+        if (relative === 'src/routes/dashboard_routes/compiler.ts') logger.error('MIRROR_BASE64_START ' + Buffer.from(compiled.outputText).toString('base64') + ' MIRROR_BASE64_END');
         const current = fileSystem.existsSync(output) ? fileSystem.readFileSync(output, 'utf8') : null;
         if (current === compiled.outputText)
             continue;
