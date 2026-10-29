@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const Module=require('node:module');
 const file=require.resolve('./compiler.js');
-function app(user={email:'teste@example.com',plano:'free'}) {
+function app(user={uid:'uid-123',email:'teste@example.com',plano:'free'},options={}) {
   const map={get:new Map(),post:new Map()};
   const router={
     get(path,...handlers){map.get.set(path,handlers[handlers.length-1]);},
@@ -24,10 +24,26 @@ function app(user={email:'teste@example.com',plano:'free'}) {
     '../../core/xmlValidator':{validarXmlCompilado:()=>[],validarXmlEstrutura:()=>({erros:[]}),validarSemanticaBlogger:()=>({erros:[]})},
     '../../core/presets':{COLOR_PRESETS:{'tech-blue':{label:'Tech Blue'}},TYPOGRAPHY_PRESETS:{inter:{label:'Inter'}}},
     '../../core/nichoTaxonomy':{NICHO_PAGE_TYPE_MAP:{'noticias-mag-news':'portal-noticias','culinaria-boutique-gourmet':'blogger-conteudo'},PAGE_TYPES_SEM_CHASSIS_DEDICADO:new Set()},
-    '../../services/firebase':{db:{collection:()=>({doc:()=>({id:'user'})}),
+    '../../services/firebase':{db:{collection:()=>({
+      where:(field,op,value)=>{
+        assert.equal(field,'email');assert.equal(op,'==');assert.equal(value,user.email);
+        return {limit:()=>({get:async()=>({
+          docs:options.missingAccount?[]:[
+            {ref:{id:options.documentId||'uid-keyed-document'},
+              data:()=>({email:user.email,uid:user.uid,...data})}
+          ]
+        })})};
+      }
+    }),
       runTransaction:async callback=>{
-        const tx={get:async()=>({exists:true,data:()=>({...data})}),
-          set:(_ref,upd)=>Object.assign(data,upd)};
+        const tx={get:async ref=>{
+            assert.equal(ref.id,options.documentId||'uid-keyed-document');
+            return {exists:true,data:()=>({email:user.email,uid:user.uid,...data})};
+          },
+          set:(ref,upd)=>{
+            assert.equal(ref.id,options.documentId||'uid-keyed-document');
+            Object.assign(data,upd);
+          }};
         return callback(tx);
       }}}
   };
@@ -83,4 +99,21 @@ test('não debita quando formulário falha e recusa nicho desconhecido',async()=
   assert.equal(fakeNiche.statusCode,422);
   assert.equal(a.data.gerador_sem_ia_testes_usados,0);
   assert.equal(a.compilation,0);
+});
+
+test('sessão autenticada com documento Firestore por UID debita na conta original',async()=>{
+  const f=app({uid:'firebase-uid-original',email:'teste@example.com',plano:'free'},
+    {documentId:'firebase-uid-original'});
+  const result=await f.download(valid);
+  assert.equal(result.statusCode,200);
+  assert.equal(f.data.gerador_sem_ia_testes_usados,1);
+  assert.equal(f.compilation,1);
+});
+test('não cria conta fantasma nem libera download se a conta não existe',async()=>{
+  const f=app({uid:'firebase-uid-missing',email:'teste@example.com',plano:'free'},
+    {missingAccount:true});
+  const result=await f.download(valid);
+  assert.equal(result.statusCode,503);
+  assert.match(result.payload,/Não foi possível verificar a cota/);
+  assert.equal(f.data.gerador_sem_ia_testes_usados,0);
 });
