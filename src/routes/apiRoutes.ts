@@ -314,7 +314,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
         if (action === 'payment.created' || type === 'payment' || action === 'payment.updated') {
             // Usa somente o ID assinado; o id da notificação no body não
             // é necessariamente o ID do pagamento.
-            const paymentId = req.query?.['data.id'] || data?.id;
+            const paymentId = String(req.query?.['data.id'] || data?.id || '');
 
             console.log(`[MP] Verificando pagamento: ${paymentId}`);
 
