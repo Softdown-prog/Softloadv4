@@ -1,6 +1,6 @@
 'use strict';
 interface DashboardRequest { session: { user?: unknown } }
-interface DashboardResponse { render(view: string, locals: { activePage: string; user?: unknown }): unknown }
+interface DashboardResponse { render(view: string, locals: { activePage: string; user?: unknown; checkoutEnabled: boolean }): unknown }
 type RouteHandler = (req: DashboardRequest, res: DashboardResponse, next: () => void) => unknown;
 interface DashboardRouter { get(path: string, ...handlers: RouteHandler[]): void }
 declare const require: (id: string) => unknown;
@@ -11,14 +11,16 @@ const { exigirLogin } = require('../../middlewares/authGuard') as { exigirLogin:
 router.get('/dashboard/upgrade', exigirLogin, (req: DashboardRequest, res: DashboardResponse) => {
     res.render('pages/plano-essencial', {
         activePage: 'plano-essencial',
-        user: req.session.user
+        user: req.session.user,
+        checkoutEnabled: process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true'
     });
 });
 
 router.get('/dashboard/plano-essencial', exigirLogin, (req: DashboardRequest, res: DashboardResponse) => {
     res.render('pages/plano-essencial', {
         activePage: 'plano-essencial',
-        user: req.session.user
+        user: req.session.user,
+        checkoutEnabled: process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true'
     });
 });
 
