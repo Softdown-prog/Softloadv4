@@ -127,6 +127,7 @@ async function recuperarCobrancasPendentes(maxResults = 25) {
 // Créditos Gemini por plano por ciclo de 30 dias
 exports.PLAN_CREDITS = {
     free: 5,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 150,
     pro: 600,
     studio: 1200,
@@ -136,6 +137,7 @@ exports.PLAN_CREDITS = {
 // Manter o contrato para registros legados, mas não conceder novas cotas.
 exports.GPT_PLAN_CREDITS = {
     free: 0,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 0,
     pro: 0,
     studio: 0,
@@ -146,6 +148,7 @@ exports.GPT_PLAN_CREDITS = {
 // Free = 0 (gerador exige plano pago)
 exports.BLOGGERAI_PLAN_CREDITS = {
     free: 0,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 150,
     premium: 600,
     pro: 600,

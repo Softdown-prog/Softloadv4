@@ -23,6 +23,7 @@ const { bucket, db } = require('./firebase') as { bucket: Bucket; db: Firestore 
 // Limite de armazenamento GCS por plano (em MB)
 export const STORAGE_LIMITS_MB: Readonly<Record<string, number>> = {
     free:    5,
+    essencial: 0, // XML é entregue diretamente; armazenamento opcional ainda não contratado
     starter: 100,
     start:   100, // backward compat
     pro:     100,

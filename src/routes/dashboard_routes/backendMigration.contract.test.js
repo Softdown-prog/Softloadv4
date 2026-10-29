@@ -51,14 +51,23 @@ for (const [file, url, page] of [
 ]) {
     test('rota protegida ' + file + ' preserva a view React e usuário de sessão', () => {
         const { registrations, exigirLogin } = loadRouter(file);
-        assert.equal(registrations.length, 1);
-        assert.equal(registrations[0].route, url);
-        assert.equal(registrations[0].handlers[0], exigirLogin);
+        const selected=registrations.find(x=>x.route===url);
+        assert.ok(selected);
+        assert.equal(selected.handlers[0], exigirLogin);
         const results = [];
         const user = { uid: 'id-de-teste' };
-        registrations[0].handlers[1]({ session: { user } }, { render(view, locals) { results.push({ view, locals }); } });
+        selected.handlers[1]({ session: { user } }, { render(view, locals) { results.push({ view, locals }); } });
         assert.equal(results[0].view, 'pages/react-test');
         assert.equal(results[0].locals.activePage, page);
         assert.equal(results[0].locals.user, user);
+        if (file === 'upgrade.js') {
+          const essential=registrations.find(x=>x.route==='/dashboard/plano-essencial');
+          assert.ok(essential,'Nova rota de pagamento EJS não encontrada');
+          assert.equal(essential.handlers[0],exigirLogin);
+          const views=[];
+          essential.handlers[1]({session:{user}},{render(view,locals){views.push({view,locals});}});
+          assert.equal(views[0].view,'pages/plano-essencial');
+          assert.equal(views[0].locals.user,user);
+        }
     });
 }

@@ -173,6 +173,7 @@ export async function recuperarCobrancasPendentes(maxResults = 25): Promise<{ pr
 // Créditos Gemini por plano por ciclo de 30 dias
 export const PLAN_CREDITS: Record<string, number> = {
     free:    5,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 150,
     pro:     600,
     studio:  1200,
@@ -183,6 +184,7 @@ export const PLAN_CREDITS: Record<string, number> = {
 // Manter o contrato para registros legados, mas não conceder novas cotas.
 export const GPT_PLAN_CREDITS: Record<string, number> = {
     free:    0,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 0,
     pro:     0,
     studio:  0,
@@ -194,6 +196,7 @@ export const GPT_PLAN_CREDITS: Record<string, number> = {
 // Free = 0 (gerador exige plano pago)
 export const BLOGGERAI_PLAN_CREDITS: Record<string, number> = {
     free:    0,
+    essencial: 0, // Blogger procedural: não fornece créditos de IA
     starter: 150,
     premium: 600,
     pro:     600,

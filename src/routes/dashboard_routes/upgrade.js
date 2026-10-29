@@ -9,4 +9,10 @@ router.get('/dashboard/upgrade', exigirLogin, (req, res) => {
         user: req.session.user
     });
 });
+router.get('/dashboard/plano-essencial', exigirLogin, (req, res) => {
+    res.render('pages/plano-essencial', {
+        activePage: 'plano-essencial',
+        user: req.session.user
+    });
+});
 module.exports = router;
