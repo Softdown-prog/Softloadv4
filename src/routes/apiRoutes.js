@@ -103,9 +103,10 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             starter: { titulo: 'Plano Starter — Softload Engine', preco: PRICES_CENTS.starter / 100, creditos: PLAN_CREDITS.starter },
             pro: { titulo: 'Plano Pro — Softload Engine', preco: PRICES_CENTS.pro / 100, creditos: PLAN_CREDITS.pro },
             studio: { titulo: 'Plano Studio — Softload Engine', preco: PRICES_CENTS.studio / 100, creditos: PLAN_CREDITS.studio },
+            essencial: { titulo: 'Softload Blogger — Acesso 30 dias', preco: PRICES_CENTS.essencial / 100, creditos: 0 },
         };
         if (!PLANOS[plano]) {
-            return res.status(400).json({ erro: 'Plano inválido. Use "starter", "pro" ou "studio".' });
+            return res.status(400).json({ erro: 'Plano inválido. Escolha o plano essencial de R$ 5 ou um plano legado.' });
         }
         const planoConfig = PLANOS[plano];
         // Salva o plano pendente para o webhook recuperar após pagamento aprovado.
@@ -126,7 +127,7 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             items: [
                 {
                     title: planoConfig.titulo,
-                    description: `${planoConfig.creditos} créditos de IA por mês. Válido por 30 dias.`,
+                    description: plano === 'essencial' ? 'Gerador de templates Blogger sem IA. Acesso por 30 dias.' : `${planoConfig.creditos} créditos de IA por mês. Válido por 30 dias.`,
                     quantity: 1,
                     unit_price: planoConfig.preco,
                 }
