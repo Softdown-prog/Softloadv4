@@ -28,7 +28,7 @@ function loadRouter(file) {
 }
 test('dashboard mounts only Blogger, Forge and compatibility account/history routes', () => {
     const { middlewares } = loadRouter('index.js');
-    assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './reactTest']);
+    assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './liteFiles', './reactTest']);
 });
 test('dashboard home requires login and passes session to simplified EJS view', () => {
     const { routes, exigirLogin } = loadRouter('home.js');
