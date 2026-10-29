@@ -150,7 +150,6 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             console.warn('[MP] Falha ao criar intenção:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
-
         // Base URL: deriva do próprio request (Cloud Run → https + domínio real).
         // Remove dependência de BASE_URL e evita localhost ser enviado ao MP.
         const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
@@ -245,7 +244,6 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
             console.warn('[MP] Falha ao criar intenção Bricks:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
         }
-
         const paymentBody = {
             ...formData,
             transaction_amount: PRICES_CENTS[plano] / 100,
