@@ -62,6 +62,7 @@
     "frontend/services/dashboardStats.ts",
     "frontend/services/creditsV2.ts",
     "frontend/services/solarisCredits.ts",
+    "frontend/services/chatHttpErrors.ts",
     "frontend/components/ChatHeaderActions.tsx"
   ],
   "exclude": [
