@@ -41,12 +41,12 @@ RUN test ! -d /usr/src/app/frontend \
     && test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
 RUN node scripts/vendorTemplateRefs.js \
     && node src/core/vendorStaticPolicy.test.js
-RUN node -e "require('./src/services/envBoot');require('./src/services/firebase');require('./src/middlewares/security');require('./src/routes/authRoutes');require('./src/routes/dashboardRoutes');require('./src/routes/contatoRoutes');require('./src/routes/apiRoutes');require('./src/routes/adminRoutes');require('./src/routes/workersRoutes');require('./src/services/sentinelWorker');require('./src/services/errorLogWorker');require('./src/services/buildInfo');console.log('[LITE] Grafo de boot carregado em ' + process.version)"
+RUN node -e "require('./src/services/envBoot');require('./src/services/firebase');require('./src/middlewares/security');require('./src/routes/authRoutes');require('./src/routes/dashboardRoutes');require('./src/routes/contatoRoutes');require('./src/routes/apiRoutes');require('./src/routes/adminRoutes');require('./src/routes/workersRoutes');require('./src/services/sentinelWorker');require('./src/services/errorLogWorker');require('./src/services/buildInfo');console.log('[BLOGGER] Grafo de boot carregado em ' + process.version)"
 
 ARG GIT_SHA=dev-local
 ARG GIT_DATE=unknown
-RUN printf '%s\n' "$GIT_SHA"  > /usr/src/app/GIT_SHA \
-    && printf '%s\n' "$GIT_DATE"  > /usr/src/app/GIT_DATE \
+RUN printf '%s\n' "$GIT_SHA" > /usr/src/app/GIT_SHA \
+    && printf '%s\n' "$GIT_DATE" > /usr/src/app/GIT_DATE \
     && date -u +"%Y-%m-%dT%H:%M:%SZ" > /usr/src/app/BUILD_TIME
 EXPOSE 8080
 CMD ["node", "server.js"]
