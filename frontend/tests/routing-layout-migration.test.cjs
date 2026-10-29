@@ -332,10 +332,11 @@ test('workspace TSX mantém projetos, sessões, versões e reversão sem apagar 
   assert.ok(ws.includes('/dashboard/workspace/chat'));
 });
 
-test('Solaris TSX preserva importação ZIP, créditos, streaming e downloads', () => {
+test('Solaris TSX preserva chat, créditos e download de ZIP gerado, sem upload legado', () => {
   const code = source('frontend/pages/Solaris.tsx');
-  assert.ok(code.includes("fetch('/dashboard/solaris/upload'"));
-  assert.ok(code.includes("formData.append('arquivo', file)"));
+  assert.ok(!code.includes("fetch('/dashboard/solaris/upload'"));
+  assert.ok(!code.includes("formData.append('arquivo', file)"));
+  assert.ok(!code.includes("fetch('/dashboard/solaris/visual-review'"));
   assert.ok(code.includes("fetch('/dashboard/solaris/chat/stream'"));
   assert.ok(code.includes('response.body?.getReader()'));
   assert.ok(code.includes('parseSseJsonFrame<ChatStreamEvent>(frame)'));
