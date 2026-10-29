@@ -96,6 +96,9 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
     try {
         const user = req.session.user;
         const { plano } = req.body;
+        if (plano === 'essencial' && req.body?.aceitePoliticaArmazenamento !== true) {
+            return res.status(400).json({ erro: 'Confirme a política de armazenamento e exclusão antes de pagar.' });
+        }
         if (!user || !user.email) {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
         }
@@ -116,11 +119,15 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         // Salva o plano pendente para o webhook recuperar após pagamento aprovado.
         // set+merge cria o doc se não existir — .update() lançaria NOT_FOUND para usuários novos.
         try {
-            await db.collection('clientes_premium').doc(user.email.toLowerCase()).set({ plano_pendente: plano }, { merge: true });
+            await db.collection('clientes_premium').doc(user.email.toLowerCase()).set({
+                plano_pendente: plano,
+                ...(plano === 'essencial' ? { essencial_storage_aceite_em: new Date().toISOString() } : {}),
+            }, { merge: true });
         }
         catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao salvar plano_pendente:', e.message);
+            if (plano === 'essencial') return res.status(503).json({ erro: 'Não foi possível registrar o aceite do armazenamento. Tente novamente.' });
         }
         // Base URL: deriva do próprio request (Cloud Run → https + domínio real).
         // Remove dependência de BASE_URL e evita localhost ser enviado ao MP.
@@ -187,6 +194,9 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
 router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (req, res) => {
     try {
         const { formData, plano } = req.body || {};
+        if (plano === 'essencial' && req.body?.aceitePoliticaArmazenamento !== true) {
+            return res.status(400).json({ erro: 'Confirme a política de armazenamento e exclusão antes de pagar.' });
+        }
         if (plano === 'essencial' && process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED !== 'true') {
             return res.status(503).json({ erro: 'O plano Essencial está em homologação.' });
         }
@@ -201,7 +211,10 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         }
         // Persiste plano_pendente para o webhook ler após confirmação
         try {
-            await db.collection('clientes_premium').doc(user.email.toLowerCase()).update({ plano_pendente: plano });
+            await db.collection('clientes_premium').doc(user.email.toLowerCase()).update({
+                plano_pendente: plano,
+                ...(plano === 'essencial' ? { essencial_storage_aceite_em: new Date().toISOString() } : {}),
+            });
         }
         catch (eCaught) {
             const e = eCaught;
@@ -302,6 +315,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         is_active: true,
                         status: 'ativo',
                         premium_ate: expiresAt,
+                        ...(plan === 'essencial' ? { essencial_storage_expira_em: expiresAt } : {}),
                         mp_payment_id: id,
                         plano_pendente: null,
                         ultima_atualizacao: new Date().toISOString(),
