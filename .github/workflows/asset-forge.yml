@@ -2,9 +2,9 @@ name: Solaris Asset Forge
 on:
   push:
     branches: [main]
-    paths: ['agent/**', 'src/solaris/**', 'src/routes/dashboard_routes/solaris.js', 'Dockerfile', '.github/workflows/asset-forge.yml']
+    paths: ['agent/**', 'src/solaris/**', 'src/routes/dashboard_routes/solaris.js', '.github/workflows/asset-forge.yml']
   pull_request:
-    paths: ['agent/**', 'src/solaris/**', 'src/routes/dashboard_routes/solaris.js', 'Dockerfile', '.github/workflows/asset-forge.yml']
+    paths: ['agent/**', 'src/solaris/**', 'src/routes/dashboard_routes/solaris.js', '.github/workflows/asset-forge.yml']
   workflow_dispatch:
 jobs:
   verify:
