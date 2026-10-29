@@ -7,7 +7,7 @@ function safeMessage(value: unknown): string | null {
     : null;
 }
 export function mensagemErroChat(status: number, payload?: ChatErrorBody | null): string {
-  const body = payload && typeof payload === 'object' ? payload : {};
+  const body: ChatErrorBody = payload && typeof payload === 'object' ? payload : {};
   const explicacao = safeMessage(body.error) || safeMessage(body.erro);
   if (status === 401) return 'Sua sessão expirou. Entre novamente e reenvie a mensagem.';
   if (status === 402) return explicacao || 'Seus créditos de IA não são suficientes para esta operação.';
