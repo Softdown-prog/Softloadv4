@@ -15,6 +15,13 @@ router.get('/dashboard/upgrade', exigirLogin, (req: DashboardRequest, res: Dashb
     });
 });
 
+router.get('/dashboard/plano-essencial', exigirLogin, (req: DashboardRequest, res: DashboardResponse) => {
+    res.render('pages/plano-essencial', {
+        activePage: 'plano-essencial',
+        user: req.session.user
+    });
+});
+
 declare const module: { exports: unknown };
 module.exports = router;
 export {};
