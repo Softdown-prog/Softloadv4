@@ -130,9 +130,9 @@ function harness(initial = {}) {
 
 test('planos e cálculo dos créditos permanecem iguais, GPT sem novas cotas', () => {
     const {api}=harness();
-    assert.deepEqual({...api.PLAN_CREDITS},{free:5,starter:150,pro:600,studio:1200,premium:600});
-    assert.deepEqual({...api.BLOGGERAI_PLAN_CREDITS},{free:0,starter:150,premium:600,pro:600,studio:1200});
-    assert.deepEqual({...api.GPT_PLAN_CREDITS},{free:0,starter:0,pro:0,studio:0,premium:0});
+    assert.deepEqual({...api.PLAN_CREDITS},{free:5,essencial:0,starter:150,pro:600,studio:1200,premium:600});
+    assert.deepEqual({...api.BLOGGERAI_PLAN_CREDITS},{free:0,essencial:0,starter:150,premium:600,pro:600,studio:1200});
+    assert.deepEqual({...api.GPT_PLAN_CREDITS},{free:0,essencial:0,starter:0,pro:0,studio:0,premium:0});
     assert.equal(api.calcularCreditos(0,0),0);
     assert.equal(api.calcularCreditos(999,0),1);
     assert.equal(api.calcularCreditos(1000,0),1);
