@@ -38,3 +38,10 @@ Aprovar testes de intents independentes no GitHub, homologar MP em ambiente de t
 - Cada chamada Bricks usa o UUID da intenção já persistida como `requestOptions.idempotencyKey` ao enviar `Payment.create` ao SDK Mercado Pago. Assim, repetições **da mesma operação no SDK** usam a chave vinculada à intenção, sem depender da geração automática.
 - **Limite atual:** um novo POST ao checkout cria uma nova intenção e nova chave. Não afirmar deduplicação de solicitações HTTP distintas; isso exigirá fluxo de reuso controlado da intenção sem reutilizar cartão/token ou liberar cobranças indevidas.
 - A alteração é apenas de código/testes; a flag `BLOGGER_ESSENCIAL_CHECKOUT_ENABLED` permanece desligada até a homologação externa.
+
+### Próxima etapa — registro de estornos e contestações (PR posterior ao #103)
+- O webhook valida HMAC e consulta `Payment.get` antes de tratar `refunded`, `charged_back`, `in_mediation` ou `approved/partially_refunded`.
+- O estado é registrado de forma idempotente em `softload_mp_reconciliations/<paymentId>`, com `status`, `status_detail`, presença de recibo, timestamps e marcador de revisão manual. Quando o status muda, o mesmo registro é atualizado; notificações idênticas não reescrevem o registro.
+- O registro **não** aciona reembolso, **não** modifica assinatura, créditos, sessões nem arquivos do usuário. Desfazer automaticamente 30 dias é inseguro quando existem múltiplas compras. A conciliação e eventual ajuste de dias continuam como procedimento manual a definir.
+- Falha de persistência retorna HTTP 500 para possibilitar retry. Testes usam SDK e Firestore simulados, sem credenciais nem cobranças.
+- Ainda falta homologação com pagamentos MP de teste, visualização administrativa de casos, reconciliação de reembolsos parciais e procedimento de encerramento da revisão.
