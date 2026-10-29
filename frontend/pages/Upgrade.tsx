@@ -47,7 +47,7 @@ const PLANOS: Plan[] = [
             { texto: 'Acesso ao painel', ok: true },
             { texto: '5 créditos Gemini', ok: true },
             { texto: 'Ferramentas premium', ok: false },
-            { texto: 'Workspace (geração de templates)', ok: false },
+            { texto: 'Workspace (com créditos disponíveis)', ok: true },
         ],
     },
     {
@@ -61,7 +61,7 @@ const PLANOS: Plan[] = [
             { texto: 'Chat IA Especialista completo', ok: true },
             { texto: 'Histórico de conversas', ok: true },
             { texto: '100 MB armazenamento', ok: true },
-            { texto: 'Workspace (geração de templates)', ok: false },
+            { texto: 'Workspace: projetos e chat com IA', ok: true },
         ],
     },
     {
@@ -75,7 +75,7 @@ const PLANOS: Plan[] = [
             { texto: 'Chat IA Especialista completo', ok: true },
             { texto: 'Histórico de conversas', ok: true },
             { texto: '100 MB armazenamento', ok: true },
-            { texto: 'Workspace (geração de templates)', ok: false },
+            { texto: 'Workspace: projetos e chat com IA', ok: true },
         ],
     },
     {
@@ -88,7 +88,7 @@ const PLANOS: Plan[] = [
         destaque: true,
         recursos: [
             { texto: 'Tudo do Pro', ok: true },
-            { texto: 'Workspace — geração e compilação de templates', ok: true, forte: true },
+            { texto: 'Workspace: projetos e chat com IA', ok: true, forte: true },
             { texto: '500 MB armazenamento', ok: true },
             { texto: 'Suporte prioritário', ok: true },
         ],
@@ -161,7 +161,7 @@ export default function Upgrade(): React.JSX.Element {
                     Escolha seu Plano
                 </h1>
                 <p className="small text-secondary" style={{ maxWidth: '500px', margin: '0 auto' }}>
-                    Créditos de IA renovados mensalmente. Sem fidelidade — cancele quando quiser.
+                    Todos os planos incluem Workspace. O uso da IA depende dos créditos disponíveis. Sem fidelidade — cancele quando quiser.
                 </p>
             </div>
 
@@ -226,7 +226,7 @@ export default function Upgrade(): React.JSX.Element {
             </div>
 
             <p className="text-center small text-secondary mt-5 mb-0">
-                Créditos não utilizados expiram ao final do ciclo de 30 dias e são renovados com o próximo pagamento.
+                O Workspace organiza projetos em todos os planos. Geração e edição com IA consomem créditos disponíveis; créditos mensais não utilizados expiram ao final do ciclo, conforme as regras da conta.
             </p>
         </div>
     );
