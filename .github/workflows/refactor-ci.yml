@@ -38,6 +38,8 @@ jobs:
 
       - name: Testar motor Blogger e servicos
         run: npm test
+      - name: Validar Blogger sem conta (cota, CSRF e XML)
+        run: node --test src/routes/publicBlogger.contract.test.cjs
       - name: Build React
         run: npm run build
       - name: Verificar imagem Docker de producao

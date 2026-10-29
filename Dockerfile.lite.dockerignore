@@ -11,10 +11,7 @@ npm-debug.log*
 .DS_Store
 # Não publicar a interface React/Vite e o Agent antigo nesta imagem de teste.
 /frontend
-/agent/src
-/agent/native
-/agent/package.json
-/agent/package-lock.json
+/agent
 /docs
 /examples
 /Power-up

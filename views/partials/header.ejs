@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Softload | Blogger e imagens 2D' %></title>
-    <meta name="description" content="<%= typeof pageDescription !== 'undefined' ? pageDescription : 'Crie templates Blogger XML e imagens 2D pelo A7 Forge, sem IA.' %>">
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Softload Blogger | Templates XML' %></title>
+    <meta name="description" content="<%= typeof pageDescription !== 'undefined' ? pageDescription : 'Crie e personalize templates XML para Blogger, com cadastro opcional.' %>">
     <meta name="robots" content="<%= typeof pageNoindex !== 'undefined' && pageNoindex ? 'noindex, follow' : 'index, follow' %>">
     <% if (typeof pageCanonical !== 'undefined' && pageCanonical) { %>
     <link rel="canonical" href="https://softload.analysepro.com<%= pageCanonical %>">
@@ -49,7 +49,7 @@
     <div class="container-xl">
 
         <a href="/" class="navbar-brand sl-brand fw-black text-white text-decoration-none me-4">
-            SOFTLOAD<span class="sl-accent"> V4</span>
+            SOFTLOAD<span class="sl-accent"> Blogger</span>
         </a>
 
         <%# Links centrais — apenas em páginas públicas, desktop %>
@@ -57,9 +57,10 @@
         <div class="collapse navbar-collapse order-3 order-md-2" id="sl-nav-collapse">
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item"><a href="/" class="nav-link">Início</a></li>
-                <li class="nav-item"><a href="/#ferramentas" class="nav-link">Ferramentas</a></li>
-                <li class="nav-item"><a href="/dashboard/gerador-blogger" class="nav-link">Blogger</a></li>
-                <li class="nav-item"><a href="/dashboard/forge-2d" class="nav-link">A7 Forge 2D</a></li>
+                <li class="nav-item"><a href="/#recursos" class="nav-link">Ferramentas</a></li>
+                <li class="nav-item"><a href="/criar" class="nav-link">Criar template</a></li>
+                <li class="nav-item"><a href="/#como-funciona" class="nav-link">Como funciona</a></li>
+                <li class="nav-item"><a href="/#planos" class="nav-link">Planos</a></li>
                 <li class="nav-item"><a href="/contato" class="nav-link">Contato</a></li>
             </ul>
 
@@ -69,8 +70,8 @@
                     <a href="/dashboard" class="btn btn-sl-primary fw-bold">Painel de Controle</a>
                     <a href="/logout" class="btn btn-outline-secondary fw-bold">Sair</a>
                 <% } else { %>
-                    <a href="/login" class="btn btn-outline-secondary fw-bold">Acessar Conta</a>
-                    <a href="/register" class="btn btn-sl-primary fw-bold">Criar Conta</a>
+                    <a href="/login" class="btn btn-outline-secondary fw-bold">Entrar</a>
+                    <a href="/criar" class="btn btn-sl-primary fw-bold">Experimentar sem cadastro</a>
                 <% } %>
             </div>
         </div>
@@ -85,7 +86,7 @@
             <% } else { %>
                 <a href="/login" class="text-decoration-none fw-bold d-none d-md-inline"
                    style="color:var(--sl-text-300);font-size:0.875rem;">Acessar</a>
-                <a href="/register" class="btn btn-sl-primary btn-sm d-none d-md-inline-flex">Criar Conta</a>
+                <a href="/criar" class="btn btn-sl-primary btn-sm d-none d-md-inline-flex">Experimentar grátis</a>
             <% } %>
 
             <%# Hambúrguer — apenas em páginas públicas, mobile %>

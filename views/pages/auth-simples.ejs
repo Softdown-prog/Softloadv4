@@ -1,4 +1,4 @@
-<%- include('../partials/header', {pageTitle: authMode === 'register' ? 'Criar conta | Softload' : authMode === 'recover' ? 'Recuperar senha | Softload' : 'Entrar | Softload',pageDescription:'Acesse o gerador Blogger e o A7 Forge 2D.',pageNoindex:true}) %>
+<%- include('../partials/header', {pageTitle: authMode === 'register' ? 'Criar conta | Softload' : authMode === 'recover' ? 'Recuperar senha | Softload' : 'Entrar | Softload',pageDescription:'Conta opcional para ampliar os limites do criador Blogger.',pageNoindex:true}) %>
 <style>
 .sl-auth{max-width:520px;margin:0 auto;padding:120px 18px 84px}
 .sl-auth .panel{border:1px solid #35506b;border-radius:20px;padding:clamp(24px,5vw,40px);background:linear-gradient(140deg,#11243a,#101b2d)}
@@ -10,11 +10,11 @@
 .sl-auth a:focus-visible,.sl-auth button:focus-visible,.sl-auth input:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
 </style>
 <main class="sl-auth">
-  <p class="eyebrow mb-2">Softload · Blogger e A7 Forge 2D</p>
+  <p class="eyebrow mb-2">Softload · especializado em Blogger</p>
   <section class="panel" aria-labelledby="auth-title">
     <% if(authMode === 'register') { %>
-      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Crie sua conta grátis</h1>
-      <p class="copy">Comece com dois downloads gratuitos de XML para Blogger. A área de arquivos com até 5 MB gratuitos está em preparação.</p>
+      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Crie sua conta, se quiser</h1>
+      <p class="copy">Você pode experimentar o editor sem cadastro. Crie uma conta somente se quiser identificar seus downloads, ampliar seus limites de uso ou contratar o Essencial. A área de arquivos gratuitos está em preparação.</p>
       <form action="/register" method="post">
         <div class="mb-3"><label class="form-label" for="name">Seu nome</label><input class="form-control" id="name" name="name" autocomplete="name" minlength="2" maxlength="100" required></div>
         <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
@@ -22,7 +22,7 @@
         <p class="copy small">Ao criar a conta, você aceita nossos <a href="/termos-de-uso">Termos de Uso</a> e a <a href="/privacidade">Política de Privacidade</a>. A contratação de armazenamento pago exige aceite próprio.</p>
         <button class="btn btn-sl-primary w-100 fw-bold" type="submit">Criar conta</button>
       </form>
-      <p class="copy small mt-4 mb-0">Já tem conta? <a href="/login">Entrar</a></p>
+      <p class="copy small mt-4 mb-0">Prefere testar primeiro? <a href="/criar">Usar sem cadastro</a>. Já tem conta? <a href="/login">Entrar</a>.</p>
     <% } else if (authMode === 'recover') { %>
       <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Recuperar senha</h1>
       <p class="copy">Informe seu e-mail. Se houver uma conta vinculada a ele, enviaremos instruções de recuperação.</p>

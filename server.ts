@@ -207,6 +207,8 @@ app.get('/', (req, res) => res.render('pages/landing-blogger'));
 app.get('/termos-de-uso', (req, res) => res.render('pages/termos-de-uso'));
 app.get('/privacidade', (req, res) => res.render('pages/privacidade'));
 app.use('/', authRoutes);
+// Ferramenta Blogger pública; login só para ampliar a cota e acessar arquivos.
+app.use('/', require('./src/routes/publicBlogger.cjs'));
 app.use('/', dashboardRoutes);
 app.use('/', contatoRoutes);
 app.use('/', apiRoutes);

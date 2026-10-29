@@ -52,17 +52,16 @@ WORKDIR /usr/src/app
 # src/solaris/workers/pythonWorker.js e src/solaris/pipeline/orchestrator.js
 # pro racional completo).
 RUN apt-get update && apt-get install -y --no-install-recommends python3-minimal python3-venv ffmpeg fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
-COPY agent/forge/requirements.txt /tmp/forge-requirements.txt
-RUN python3 -m venv /opt/solaris-forge && /opt/solaris-forge/bin/pip install --no-cache-dir -r /tmp/forge-requirements.txt
-ENV SOLARIS_FORGE_PYTHON=/opt/solaris-forge/bin/python
+# O produto atual entrega somente XML Blogger: não instalar Pillow/Python Forge.
 COPY package*.json ./
 # Mesmo motivo do stage frontend-build acima: o postinstall (vendorAssets.js)
 # precisa existir no disco no momento do `npm install`, antes do `COPY . .`.
 COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
 RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
 COPY . .
-# A7 tools are available in the actual production image, with binary resources.
-RUN node agent/forge/verify-source.cjs && node agent/forge/smoke.cjs
+# App comercial não deve incluir assets e receitas A7 Forge.
+RUN test ! -d /usr/src/app/agent/forge
+# O A7 Forge saiu do App de produção. Conteúdo legado permanece no repositório para rollback.
 # Sobrescreve o public/dist/ copiado do repo (que pode estar desatualizado
 # — é só uma conveniência pra rodar `node server.js` localmente sem buildar
 # antes) pelo bundle fresco do stage frontend-build acima. A imagem de
