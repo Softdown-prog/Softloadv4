@@ -45,11 +45,11 @@ test('compilador integra SSR procedural e redirects legados protegidos', () => {
     }
 });
 
-for (const [file, url, page] of [
-    ['configuracoes.js', '/dashboard/configuracoes', 'configuracoes'],
-    ['upgrade.js', '/dashboard/upgrade', 'upgrade'],
+for (const [file, url, page, viewExpected] of [
+    ['configuracoes.js', '/dashboard/configuracoes', 'configuracoes', 'pages/configuracoes-simples'],
+    ['upgrade.js', '/dashboard/upgrade', 'plano-essencial', 'pages/plano-essencial'],
 ]) {
-    test('rota protegida ' + file + ' preserva a view React e usuário de sessão', () => {
+    test('rota protegida ' + file + ' renderiza EJS e preserva o usuário de sessão', () => {
         const { registrations, exigirLogin } = loadRouter(file);
         const selected=registrations.find(x=>x.route===url);
         assert.ok(selected);
@@ -57,7 +57,7 @@ for (const [file, url, page] of [
         const results = [];
         const user = { uid: 'id-de-teste' };
         selected.handlers[1]({ session: { user } }, { render(view, locals) { results.push({ view, locals }); } });
-        assert.equal(results[0].view, 'pages/react-test');
+        assert.equal(results[0].view, viewExpected);
         assert.equal(results[0].locals.activePage, page);
         assert.equal(results[0].locals.user, user);
         if (file === 'upgrade.js') {
