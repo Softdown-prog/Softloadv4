@@ -325,6 +325,7 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
         const isProjetoOcupado = (erroHttp as Error & {code?: string}).code === 'SOLARIS_PROJECT_BUSY';
         const isProjetoDesatualizado = (erroHttp as Error & {code?: string}).code === 'SOLARIS_PROJECT_STALE';
         const isCota      = httpStatus === 429 || allErrMsg.includes('429') || allErrMsg.includes('RESOURCE_EXHAUSTED') || allErrMsg.includes('quota');
+        const isModelo    = httpStatus === 404 || /model_not_found|models?\/.*not found/i.test(allErrMsg);
         const isSeguranca = allErrMsg.includes('SAFETY') || allErrMsg.includes('content_filter');
         const isChave     = httpStatus === 401 || allErrMsg.includes('API_KEY') || allErrMsg.includes('UNAUTHENTICATED') || allErrMsg.includes('não configurada');
 
@@ -341,8 +342,9 @@ export function criarHandlerChatSolaris(deps: SolarisChatHandlerDependencies) {
             type:    'error',
             message: isProjetoDesatualizado ? 'O projeto mudou enquanto eu preparava a edição. Nenhuma alteração foi salva. Reenvie o pedido para usar a versão mais recente.'
                    : isProjetoOcupado ? 'Este projeto está sendo atualizado em outra solicitação. Aguarde alguns instantes e tente novamente.'
-                   : isCota      ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
+                   : isCota      ? 'Limite de chamadas do Gemini atingido. Aguarde e tente mais tarde; se persistir, avise o suporte.'
                    : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
+                   : isModelo    ? 'O Gemini não encontrou o modelo ou recurso solicitado. Avise o suporte para conferir a configuração Gemini 2.5.'
                    : isChave     ? 'Chave de API inválida ou expirada. Verifique GEMINI_API_KEY no servidor.'
                    :               `Solaris temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
         });
