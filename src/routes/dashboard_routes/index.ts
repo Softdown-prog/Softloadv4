@@ -10,10 +10,6 @@ router.use(require('./historico'));
 router.use(require('./configuracoes'));
 router.use(require('./upgrade'));
 router.use(require('./conta'));
-router.use(require('./chat'));
-router.use(require('./workspace'));
-router.use(require('./workspaceChat'));
-router.use(require('./solaris'));
 
 router.use(require('./reactTest'));
 module.exports = router;
