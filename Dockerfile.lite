@@ -36,7 +36,9 @@ COPY --from=vendor /usr/src/app/public/vendor ./public/vendor
 # produção; nenhum endpoint externo ou job do Agent é executado.
 RUN test ! -d /usr/src/app/frontend \
     && test ! -d /usr/src/app/agent \
-    && test ! -e /usr/src/app/public/dist/assets/main.js
+    && test ! -e /usr/src/app/public/dist/assets/main.js \
+    && test ! -e /usr/src/app/views/pages/forge-2d.ejs \
+    && test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
 RUN node scripts/vendorTemplateRefs.js \
     && node src/core/vendorStaticPolicy.test.js
 RUN node -e "require('./src/services/envBoot');require('./src/services/firebase');require('./src/middlewares/security');require('./src/routes/authRoutes');require('./src/routes/dashboardRoutes');require('./src/routes/contatoRoutes');require('./src/routes/apiRoutes');require('./src/routes/adminRoutes');require('./src/routes/workersRoutes');require('./src/services/sentinelWorker');require('./src/services/errorLogWorker');require('./src/services/buildInfo');console.log('[LITE] Grafo de boot carregado em ' + process.version)"

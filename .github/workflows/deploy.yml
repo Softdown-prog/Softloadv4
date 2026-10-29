@@ -690,28 +690,39 @@ jobs:
           echo "::error::VPS public /health did not report commit ${EXPECTED_SHA} after activation"
           exit 1
 
-      # Além do SHA de /health, confirma que o React compilado no domínio
-      # público já não oferece o provedor temporariamente sem orçamento.
-      - name: Confirm public React bundle has no disabled provider
+      # Produto comercial agora é Blogger EJS. O deploy deve conferir a
+      # landing e o editor anônimo ao vivo, não o React legado.
+      - name: Confirm public Blogger landing and guest editor are live
         if: steps.latest.outputs.proceed == 'true'
         shell: bash
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --compressed \
-            --connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors \
-            -H 'Cache-Control: no-cache' \
-            "https://softload.analysepro.com/dist/assets/main.js?v=${EXPECTED_SHA}&audit=1" \
-            -o "$RUNNER_TEMP/softload-live-main.js"
-          node - "$RUNNER_TEMP/softload-live-main.js" <<'NODE'
+          for page in landing criar; do
+            url="https://softload.analysepro.com/"
+            if [ "$page" = criar ]; then url="https://softload.analysepro.com/criar"; fi
+            curl --fail --silent --show-error --compressed \
+              --connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors \
+              -H 'Cache-Control: no-cache' \
+              "$url?deploy_sha=${EXPECTED_SHA}&audit=blogger" \
+              -o "$RUNNER_TEMP/softload-${page}.html"
+          done
+          node - "$RUNNER_TEMP/softload-landing.html" "$RUNNER_TEMP/softload-criar.html" <<'NODE'
           const fs = require('node:fs');
-          const source = fs.readFileSync(process.argv[2], 'utf8');
-          if (/chat[\s_-]*gpt|IA\s+Avan[cç]ada|gpt-5\.4/i.test(source)) {
-            console.error('[DEPLOY] A interface publicada ainda anuncia um modelo sem saldo.');
+          const landing = fs.readFileSync(process.argv[2], 'utf8');
+          const editor = fs.readFileSync(process.argv[3], 'utf8');
+          if (!landing.includes('Experimentar gratuitamente') || !landing.includes('href="/criar"') ||
+              !editor.includes('id="generator-form"') || !editor.includes('action="/criar/download"') ||
+              !editor.includes('name="guestToken"')) {
+            console.error('[DEPLOY] Blogger público não está íntegro; verifique landing e editor.');
             process.exit(1);
           }
-          console.log('[DEPLOY] OK: bundle React público sem modelo indisponível.');
+          if (/A7 Forge|href="\/dashboard\/forge-2d"|\/dist\/assets\/main\.js/.test(landing+editor)) {
+            console.error('[DEPLOY] Artefatos da oferta antiga ainda aparecem nas páginas públicas.');
+            process.exit(1);
+          }
+          console.log('[DEPLOY] Landing Blogger e editor público verificados no domínio.');
           NODE
       - name: Remove temporary deploy key
         if: always()

@@ -4,7 +4,11 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - Dockerfile
+      - Dockerfile.dockerignore
       - Dockerfile.lite
+      - .github/workflows/deploy.yml
+      - scripts/deployFrontendGate.contract.test.cjs
       - Dockerfile.lite.dockerignore
       - .github/workflows/lite-image-ci.yml
       - scripts/liteImage.contract.test.cjs
@@ -36,10 +40,36 @@ jobs:
             test -s /usr/src/app/public/vendor/bootstrap/css/bootstrap.min.css
             test -s /usr/src/app/public/vendor/bootstrap/js/bootstrap.bundle.min.js
             test -s /usr/src/app/views/pages/gerador-blogger.ejs
-            test -s /usr/src/app/views/pages/forge-2d.ejs
+            test ! -e /usr/src/app/views/pages/forge-2d.ejs
+            test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
             test -s /usr/src/app/views/pages/arquivos-simples.ejs
             test -s /usr/src/app/GIT_SHA
           '
+
+      - name: Compilar a futura imagem de produção, sem publicar
+        run: |
+          docker build --progress plain -f Dockerfile --build-arg GIT_SHA="${{ github.sha }}" --tag softload-blogger-prod-ci:local .
+          docker run --rm --entrypoint sh softload-blogger-prod-ci:local -ec '
+            test ! -d /usr/src/app/frontend
+            test ! -d /usr/src/app/agent
+            test ! -d /usr/src/app/public/dist
+            test ! -e /usr/src/app/views/pages/forge-2d.ejs
+            test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
+            test -s /usr/src/app/public/vendor/bootstrap/css/bootstrap.min.css
+            test -s /usr/src/app/views/pages/landing-blogger.ejs
+            test -s /usr/src/app/views/pages/gerador-blogger.ejs
+          '
+          docker run --rm --entrypoint node softload-blogger-prod-ci:local -e '
+            const ejs=require("ejs");const path=require("path");
+            ejs.renderFile(path.resolve("views/pages/landing-blogger.ejs"),
+              {gitSha:"test",user:null},(err,html)=>{
+                if(err)throw err;
+                if(!html.includes("Experimentar gratuitamente") || !html.includes("href=\"/criar\"")
+                  || /A7 Forge|forge-2d|\/dist\/assets\/main\.js/.test(html)) process.exit(1);
+                console.log("[CI] Landing EJS Blogger sem React validada");
+              });
+          '
+          echo "[CI] Imagem Blogger pronta para homologação; nada enviado à VPS."
 
       - name: Medir tamanho descompactado (sem prometer economia na VPS)
         run: |
