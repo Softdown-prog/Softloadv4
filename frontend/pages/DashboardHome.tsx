@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { ShieldCheck, Cpu, FolderOpen, AlertTriangle, MessageSquare, History, Zap, HardDrive, MessageCircle, Settings, ArrowUpRight } from 'lucide-react';
-import { fetchAppConfig, type AppUser } from '../services/api';
+import { ShieldCheck, Cpu, FolderOpen, BookOpen, ArrowRight, RefreshCw, History, Zap, HardDrive, Settings, ArrowUpRight } from 'lucide-react';
+import type { AppUser } from '../services/api';
+import { normalizarDashboardStats, formatarDataConta, type DashboardStats } from '../services/dashboardStats';
 import type { LucideIcon } from 'lucide-react';
 import Pill from '../components/Pill';
 import { buscarPreviaCreditosV2, buscarExtratoCreditosV2, juntarPaginasExtratoV2, resumirSessoesCarregadasV2, type ExtratoCreditosV2, type ResumoCreditosV2 } from '../services/creditsV2';
 
 interface DashboardUser extends AppUser {
     premium_ate?: string | number;
-}
-
-interface DashboardStats {
-    tentativasCompilacao: number;
-    storageUsadoMb: number;
-    storageLimitMb: number;
-    creditos: number;
-    creditosCicloTotal: number;
-    creditosExpiraEm?: string | number | null;
-    totalProjetos: number;
 }
 
 interface QuickAccessCardProps {
@@ -30,9 +21,10 @@ interface QuickAccessCardProps {
     badgeTone?: string;
     desc: string;
     columnClassName?: string;
+    actionLabel?: string;
 }
 
-function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badgeTone, desc, columnClassName = 'col-12 col-md-6' }: QuickAccessCardProps): React.JSX.Element {
+function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badgeTone, desc, columnClassName = 'col-12 col-md-6', actionLabel = 'Abrir ferramenta' }: QuickAccessCardProps): React.JSX.Element {
     return (
         <div className={columnClassName}>
             <Link to={to} className="sl-card sl-dashboard-quicklink h-100 mb-0 text-decoration-none d-block sl-hover-lift">
@@ -46,7 +38,8 @@ function QuickAccessCard({ to, icon: Icon, iconBg, iconColor, title, badge, badg
                     </h3>
                     <ArrowUpRight size={18} className="sl-dashboard-quicklink-arrow ms-auto flex-shrink-0" aria-hidden="true" />
                 </div>
-                <p className="sl-dashboard-quicklink-description small mb-0" style={{ color: 'var(--sl-text-400)' }}>{desc}</p>
+                <p className="sl-dashboard-quicklink-description small mb-3" style={{ color: 'var(--sl-text-400)' }}>{desc}</p>
+                <span className="sl-dashboard-quicklink-action small fw-semibold">{actionLabel} <ArrowRight size={15} aria-hidden="true" /></span>
             </Link>
         </div>
     );
@@ -56,6 +49,7 @@ export default function DashboardHome(): React.JSX.Element {
     const { user } = useOutletContext<{ user: DashboardUser }>();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [erroStats, setErroStats] = useState(false);
+    const [tentativaStats, setTentativaStats] = useState(0);
     const [previaV2, setPreviaV2] = useState<ResumoCreditosV2 | null>(null);
     const [extratoV2, setExtratoV2] = useState<ExtratoCreditosV2 | null>(null);
     const [filtroSessaoV2, setFiltroSessaoV2] = useState('');
@@ -65,13 +59,21 @@ export default function DashboardHome(): React.JSX.Element {
 
     useEffect(() => {
         let montado = true;
-        void fetch('/api/dashboard/stats')
-            .then(res => {
+        setErroStats(false);
+        void fetch('/api/dashboard/stats', { credentials: 'same-origin', cache: 'no-store' })
+            .then(async res => {
                 if (!res.ok) throw new Error('Falha ao carregar indicadores');
-                return res.json() as Promise<DashboardStats>;
+                const statsRecebidos = normalizarDashboardStats(await res.json());
+                if (!statsRecebidos) throw new Error('Indicadores inválidos');
+                return statsRecebidos;
             })
             .then(data => { if (montado) setStats(data); })
-            .catch(() => { if (montado) setErroStats(true); });
+            .catch(() => { if (montado) { setStats(null); setErroStats(true); } });
+        return () => { montado = false; };
+    }, [tentativaStats]);
+
+    useEffect(() => {
+        let montado = true;
         void buscarPreviaCreditosV2().then(async preview => {
             if (!montado) return;
             setPreviaV2(preview);
@@ -102,7 +104,10 @@ export default function DashboardHome(): React.JSX.Element {
         }
         setCarregandoV2(false);
     }
-    const firstName = (user?.nome || 'Usuário').split(' ')[0];
+    const firstName = (user?.nome || 'Usuário').trim().split(/\s+/)[0] || 'Usuário';
+    const projetoExistente = !!stats && stats.totalProjetos > 0;
+    const validadePlano = formatarDataConta(user?.premium_ate);
+    const validadeCreditos = formatarDataConta(stats?.creditosExpiraEm);
     const percentualCreditos = stats && stats.creditosCicloTotal > 0
         ? Math.min(100, Math.max(0, (stats.creditos / stats.creditosCicloTotal) * 100))
         : 0;
@@ -119,7 +124,7 @@ export default function DashboardHome(): React.JSX.Element {
                     <h1 className="fw-bolder text-uppercase mb-1" style={{ fontSize: '1.4rem', letterSpacing: '-0.03em', fontWeight: 900 }}>
                         Bem-vindo, {firstName}
                     </h1>
-                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Escolha uma ferramenta para começar ou acompanhe seus créditos e projetos.</p>
+                    <p className="small mb-0" style={{ color: 'var(--sl-text-500)' }}>Aqui você cria, aprende e acompanha seus projetos. Sem precisar conhecer programação.</p>
                 </div>
                 <Link to="/dashboard/configuracoes" title="Configurações" className="mt-1" style={{ color: 'var(--sl-text-400)', textDecoration: 'none', transition: 'color 0.2s' }}>
                     <svg width="22" height="22" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -128,32 +133,60 @@ export default function DashboardHome(): React.JSX.Element {
                 </Link>
             </div>
 
+            <section className="sl-card sl-dashboard-get-started mb-4" aria-labelledby="dashboard-next-step-title">
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div className="sl-dashboard-get-started-copy">
+                        <span className="sl-dashboard-eyebrow">Seu próximo passo</span>
+                        <h2 id="dashboard-next-step-title" className="h4 fw-bold mb-2">
+                            {projetoExistente ? 'Vamos continuar o que você começou?' : 'Seu primeiro projeto começa aqui'}
+                        </h2>
+                        <p className="mb-0 small" style={{ color: 'var(--sl-text-400)' }}>
+                            {projetoExistente
+                                ? 'Abra seus projetos salvos ou peça ajuda para fazer a próxima alteração.'
+                                : 'Explique sua ideia em português. Você pode aprender aos poucos e conferir o resultado antes de usar.'}
+                        </p>
+                    </div>
+                    <Link to={projetoExistente ? '/dashboard/workspace' : '/dashboard/chat'} className="btn btn-sl-primary sl-dashboard-get-started-cta">
+                        {projetoExistente ? 'Abrir meus projetos' : 'Começar com Blogger'}
+                        <ArrowRight size={17} aria-hidden="true" />
+                    </Link>
+                </div>
+                <div className="sl-dashboard-steps mt-3 pt-3" aria-label="Como começar">
+                    <span><strong>1.</strong> Conte o que quer criar</span>
+                    <span><strong>2.</strong> Converse e ajuste com a IA</span>
+                    <span><strong>3.</strong> Revise antes de salvar ou publicar</span>
+                </div>
+            </section>
+
             <section aria-labelledby="dashboard-tools-title" className="sl-dashboard-primary-tools mb-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
                     <div>
                         <span className="sl-dashboard-eyebrow">Acesso rápido</span>
-                        <h2 id="dashboard-tools-title" className="h5 fw-bold mb-0">O que vamos criar hoje?</h2>
+                        <h2 id="dashboard-tools-title" className="h5 fw-bold mb-0">Escolha o que deseja fazer</h2>
                     </div>
                     <Link to="/dashboard/upgrade" className="small fw-semibold text-decoration-none">Planos e créditos <span aria-hidden="true">→</span></Link>
                 </div>
                 <div className="row g-3">
                     <QuickAccessCard columnClassName="col-12 col-md-6 col-xl-4"
-                        to="/dashboard/solaris" icon={Cpu}
-                        iconBg="rgba(99,102,241,.12)" iconColor="#818cf8"
-                        title="Solaris Code"
-                        desc="Converse sobre código, analise projetos e trabalhe com repositórios GitHub conectados."
+                        to="/dashboard/chat" icon={BookOpen}
+                        iconBg="rgba(14,165,233,.12)" iconColor="var(--sl-primary)"
+                        title="Criar meu primeiro blog"
+                        desc="Aprenda a usar o Blogger, peça um modelo e tire dúvidas, mesmo começando do zero."
+                        actionLabel="Conversar com o Especialista Blogger"
                     />
                     <QuickAccessCard columnClassName="col-12 col-md-6 col-xl-4"
-                        to="/dashboard/chat" icon={MessageSquare}
-                        iconBg="rgba(14,165,233,.12)" iconColor="var(--sl-primary)"
-                        title="Especialista Blogger"
-                        desc="Crie e ajuste modelos para Blogger com ajuda para aparência, widgets e SEO."
+                        to="/dashboard/solaris" icon={Cpu}
+                        iconBg="rgba(99,102,241,.12)" iconColor="#818cf8"
+                        title="Criar um site ou código"
+                        desc="Peça ajuda ao Solaris Code para criar páginas HTML, entender código e analisar um projeto."
+                        actionLabel="Abrir Solaris Code"
                     />
                     <QuickAccessCard columnClassName="col-12 col-md-12 col-xl-4"
                         to="/dashboard/workspace" icon={FolderOpen}
                         iconBg="rgba(244,114,182,.12)" iconColor="#f472b6"
-                        title="Projetos e modelos"
-                        desc="Organize seus projetos e trabalhe com os modelos Blogger disponíveis no seu plano."
+                        title="Continuar meus projetos"
+                        desc="Encontre seus projetos e modelos salvos para revisar, organizar e continuar trabalhando."
+                        actionLabel="Ver meus projetos"
                     />
                 </div>
             </section>
@@ -170,9 +203,9 @@ export default function DashboardHome(): React.JSX.Element {
                             <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>Plano</span>
                         </div>
                         <p className="fw-bolder mb-1 text-capitalize" style={{ fontSize: '1.1rem' }}>{user?.plano || 'Gratuito'}</p>
-                        {user?.is_active && user?.premium_ate && (
+                        {user?.is_active && validadePlano && (
                             <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>
-                                Expira em {new Date(user.premium_ate).toLocaleDateString('pt-BR')}
+                                Expira em {validadePlano}
                             </p>
                         )}
                         <Link to="/dashboard/upgrade" className="btn btn-sl-outline btn-sm w-100 mt-3" style={{ fontSize: '0.75rem' }}>
@@ -184,8 +217,13 @@ export default function DashboardHome(): React.JSX.Element {
                 {!stats && (
                     <div className="col-12" role={erroStats ? 'alert' : 'status'}>
                         <div className="sl-card sl-dashboard-stat mb-0 small" style={{ color: 'var(--sl-text-400)' }}>
-                            {erroStats ? 'Não foi possível carregar os indicadores. Atualize a página para tentar novamente.' : 'Carregando créditos, armazenamento e projetos...'}
+                            {erroStats ? 'Não foi possível consultar os dados da sua conta agora. Nenhum saldo foi presumido.' : 'Consultando créditos, armazenamento e projetos...'}
                         </div>
+                        {erroStats && (
+                            <button type="button" className="btn btn-sl-outline btn-sm mt-2" onClick={() => setTentativaStats(n => n + 1)}>
+                                <RefreshCw size={14} className="me-1" aria-hidden="true" /> Tentar novamente
+                            </button>
+                        )}
                     </div>
                 )}
                 {stats && (
@@ -221,7 +259,7 @@ export default function DashboardHome(): React.JSX.Element {
                             <div className="sl-card sl-dashboard-stat h-100 mb-0">
                                 <div className="d-flex justify-content-between align-items-start mb-3">
                                     <Cpu size={18} style={{ color: 'var(--sl-primary)' }} />
-                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>{previaV2?.modo === 'ativo' ? 'Créditos Gemini (outras ferramentas)' : 'Créditos Gemini'}</span>
+                                    <span className="fw-bolder text-uppercase font-monospace" style={{ fontSize: '9px', color: 'var(--sl-text-400)', letterSpacing: '0.2em' }}>{previaV2?.modo === 'ativo' ? 'Outras ferramentas (saldo legado)' : 'Créditos Gemini'}</span>
                                 </div>
                                 <p className="fw-bolder mb-1" style={{ fontSize: '1.1rem' }}>
                                     {stats.creditos.toLocaleString('pt-BR')} <span style={{ color: 'var(--sl-text-400)', fontSize: '0.8rem', fontWeight: 500 }}>/ {stats.creditosCicloTotal.toLocaleString('pt-BR')}</span>
@@ -230,9 +268,9 @@ export default function DashboardHome(): React.JSX.Element {
                                      style={{ height: '5px', background: 'var(--sl-bg-800)' }}>
                                     <div className="rounded-pill" style={{ height: '5px', background: percentualCreditos <= 20 ? '#eab308' : 'var(--sl-primary)', width: `${percentualCreditos}%` }}></div>
                                 </div>
-                                {stats.creditosExpiraEm ? (
+                                {validadeCreditos ? (
                                     <p className="small mb-0 text-truncate" style={{ color: 'var(--sl-text-400)' }}>
-                                        Renova em {new Date(stats.creditosExpiraEm).toLocaleDateString('pt-BR')}
+                                        Renova em {validadeCreditos}
                                     </p>
                                 ) : (
                                     <p className="small mb-0" style={{ color: 'var(--sl-text-400)' }}>Créditos avulsos / sem expiração</p>
@@ -255,7 +293,7 @@ export default function DashboardHome(): React.JSX.Element {
             </div>
 
             {previaV2 && (
-                <section className="sl-card mb-4" aria-label="Créditos do Solaris e histórico de consumo">
+                <section id="consumo-ia" className="sl-card mb-4" aria-label="Créditos do Solaris e histórico de consumo">
                     <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <h2 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>
                             {previaV2.modo === 'ativo' ? 'Créditos de IA — Solaris' : 'Estimativa de créditos de IA'}
@@ -285,6 +323,11 @@ export default function DashboardHome(): React.JSX.Element {
                             <strong>{previaV2.saldo.creditosDoCiclo.toLocaleString('pt-BR')}</strong>
                         </div>
                     </div>
+                    {previaV2.modo === 'ativo' && previaV2.saldo.creditosDoCiclo > 0 && previaV2.saldo.creditosDisponiveis / previaV2.saldo.creditosDoCiclo <= 0.2 && (
+                        <p className="small mt-3 mb-0" role="status" style={{ color: 'var(--bs-warning)' }}>
+                            Seus créditos do Solaris estão acabando. <Link to="/dashboard/upgrade">Consultar planos</Link>
+                        </p>
+                    )}
                     {previaV2.saldo.creditosExcedentes > 0 && (
                         <p className="small mb-0 mt-3" role="status" style={{ color: 'var(--bs-warning)' }}>
                             Excedente contábil: {previaV2.saldo.creditosExcedentes.toLocaleString('pt-BR')} crédito(s).
