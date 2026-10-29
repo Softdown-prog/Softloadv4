@@ -8,13 +8,21 @@ const path = require('node:path');
 function loadRouter(file) {
     const registrations = [];
     const exigirLogin = (_req, _res, next) => next();
-    const router = { get(route, ...handlers) { registrations.push({ route, handlers }); } };
+    const router = { get(route, ...handlers) { registrations.push({ route, handlers }); }, post(route,...handlers) { registrations.push({ route, handlers }); } };
     const sandbox = {
         exports: {},
         module: { exports: {} },
         require(spec) {
             if (spec === 'express') return { Router: () => router };
             if (spec === '../../middlewares/authGuard') return { exigirLogin };
+            if (file === 'compiler.js') {
+                if (spec === 'express-rate-limit') return () => (_req,_res,next)=>next();
+                if (spec === '../../core/compilerWorker') return { executarCompilacao: () => ({xmlFinal:'<html/>',slug:'teste'}) };
+                if (spec === '../../core/xmlValidator') return {validarXmlCompilado:()=>[],validarXmlEstrutura:()=>({erros:[]}),validarSemanticaBlogger:()=>({erros:[]})};
+                if (spec === '../../core/presets') return {COLOR_PRESETS:{'tech-blue':{label:'Azul'}},TYPOGRAPHY_PRESETS:{inter:{label:'Inter'}}};
+                if (spec === '../../core/nichoTaxonomy') return {NICHO_PAGE_TYPE_MAP:{'noticias-mag-news':'portal-noticias'},PAGE_TYPES_SEM_CHASSIS_DEDICADO:new Set()};
+                if (spec === '../../services/firebase') return {db:{}};
+            }
             throw new Error('Dependência inesperada: ' + spec);
         },
     };
@@ -23,14 +31,17 @@ function loadRouter(file) {
     return { registrations, exigirLogin };
 }
 
-test('compilador legado preserva dois redirects 301 protegidos', () => {
+test('compilador integra SSR procedural e redirects legados protegidos', () => {
     const { registrations, exigirLogin } = loadRouter('compiler.js');
-    assert.deepEqual(registrations.map(x => x.route), ['/dashboard/compiler', '/dashboard/compiler-blogger-xml']);
-    for (const registration of registrations) {
+    assert.ok(registrations.some(x=>x.route==='/dashboard/gerador-blogger'));
+    assert.ok(registrations.some(x=>x.route==='/dashboard/gerador-blogger/download'));
+    const legadas=registrations.filter(x=>['/dashboard/compiler','/dashboard/compiler-blogger-xml'].includes(x.route));
+    assert.equal(legadas.length,2);
+    for (const registration of legadas) {
         assert.equal(registration.handlers[0], exigirLogin);
-        const received = [];
-        registration.handlers[1]({}, { redirect(status, to) { received.push(status, to); } });
-        assert.deepEqual(received, [301, '/dashboard/chat']);
+        const received=[];
+        registration.handlers[1]({}, {redirect(status,to){received.push(status,to);}});
+        assert.deepEqual(received,[302,'/dashboard/gerador-blogger']);
     }
 });
 
@@ -40,8 +51,8 @@ for (const [file, url, page] of [
 ]) {
     test('rota protegida ' + file + ' preserva a view React e usuário de sessão', () => {
         const { registrations, exigirLogin } = loadRouter(file);
-        const selected = registrations.find(r=>r.route===url);
-        assert.ok(selected,'rota legada disponível');
+        const selected=registrations.find(x=>x.route===url);
+        assert.ok(selected);
         assert.equal(selected.handlers[0], exigirLogin);
         const results = [];
         const user = { uid: 'id-de-teste' };
@@ -49,12 +60,14 @@ for (const [file, url, page] of [
         assert.equal(results[0].view, 'pages/react-test');
         assert.equal(results[0].locals.activePage, page);
         assert.equal(results[0].locals.user, user);
-        if(file==='upgrade.js') {
-          const essential=registrations.find(r=>r.route==='/dashboard/plano-essencial');
-          assert.ok(essential,'novo plano SSR precisa de rota independente');
-          const outcome=[];
-          essential.handlers[1]({session:{user}},{render(view,locals){outcome.push({view,locals});}});
-          assert.equal(outcome[0].view,'pages/plano-essencial');
+        if (file === 'upgrade.js') {
+          const essential=registrations.find(x=>x.route==='/dashboard/plano-essencial');
+          assert.ok(essential,'Nova rota de pagamento EJS não encontrada');
+          assert.equal(essential.handlers[0],exigirLogin);
+          const views=[];
+          essential.handlers[1]({session:{user}},{render(view,locals){views.push({view,locals});}});
+          assert.equal(views[0].view,'pages/plano-essencial');
+          assert.equal(views[0].locals.user,user);
         }
     });
 }
