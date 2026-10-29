@@ -14,7 +14,7 @@ test('the production App and pilot both package Blogger without React/Forge/Pyth
   assert.doesNotMatch(deploy, /dockerfile:\s*Dockerfile\.lite\s*\n/);
   for(const [name,df] of [['production',prod],['pilot',pilot]]) {
     assert.match(df, /^FROM node:20-slim AS vendor$/m, name);
-    assert.match(df, /^COPY server\.js \.$/m, name);
+    assert.match(df, /^COPY server\.js \.\/$/m, name);
     assert.match(df, /^COPY src \.\/src$/m, name);
     assert.match(df, /^COPY views \.\/views$/m, name);
     assert.match(df, /^COPY --from=vendor \/usr\/src\/app\/public\/vendor \.\/public\/vendor$/m, name);
