@@ -1,0 +1,35 @@
+<%- include('../partials/header', {pageTitle:'Minha conta | Softload',pageDescription:'Configurações de sua conta e assinatura.',pageNoindex:true}) %>
+<main class="container-xl" style="max-width:860px;padding-top:112px;padding-bottom:78px">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div><p class="text-info fw-bold small text-uppercase mb-1">Softload · Minha conta</p><h1 class="text-white fw-bold">Configurações</h1></div>
+    <a class="btn btn-outline-secondary" href="/dashboard">Voltar ao início</a>
+  </div>
+  <section class="border rounded-4 p-4 mb-3" style="background:#111d30;border-color:#334155!important">
+    <h2 class="text-white h5 mb-3">Seu cadastro</h2>
+    <dl class="row text-white mb-0">
+      <dt class="col-sm-4">Nome</dt><dd class="col-sm-8 text-break"><%= user && user.nome ? user.nome : 'Não informado' %></dd>
+      <dt class="col-sm-4">E-mail</dt><dd class="col-sm-8 text-break"><%= user && user.email ? user.email : 'Não informado' %></dd>
+      <dt class="col-sm-4">Plano registrado</dt><dd class="col-sm-8"><%= user && user.plano ? user.plano : 'Gratuito' %></dd>
+    </dl>
+    <p class="small text-secondary mb-0">Os dados acima vêm de sua sessão. Pagamentos e renovações dependem da confirmação do Mercado Pago no servidor.</p>
+  </section>
+  <section class="border rounded-4 p-4 mb-3" style="background:#111d30;border-color:#334155!important">
+    <h2 class="text-white h5">Assinatura e arquivos</h2>
+    <p class="text-secondary">Consulte o plano Essencial, seus arquivos pessoais e o histórico de projetos anteriores.</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-info" href="/dashboard/plano-essencial">Ver plano Essencial</a>
+      <a class="btn btn-outline-info" href="/dashboard/arquivos">Meus arquivos</a>
+      <a class="btn btn-outline-info" href="/dashboard/historico">Histórico anterior</a>
+    </div>
+  </section>
+  <section class="border rounded-4 p-4" style="background:#111d30;border-color:#334155!important">
+    <h2 class="text-white h5">Privacidade e ajuda</h2>
+    <p class="text-secondary">Se precisar exportar seus dados ou solicitar a exclusão da conta, entre em contato. A exclusão exige confirmação e tratamento seguro de arquivos e obrigações legais.</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a href="/contato">Solicitar suporte</a>
+      <a href="/privacidade">Política de Privacidade</a>
+      <a href="/termos-de-uso">Termos de Uso</a>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer-blogger') %>
