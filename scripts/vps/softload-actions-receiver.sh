@@ -98,10 +98,10 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
       exit 6
     fi
     # After a healthy activation, keep only images referenced by containers.
-    used="$(docker ps -aq | xargs -r docker inspect --format '{{.Image}}')"
+    used="$(docker ps -aq | xargs -r docker inspect --format '{{.Config.Image}}')"
     while read -r ref id; do
       case "$ref" in softload-app:*|softload-agent:*) ;; *) continue;; esac
-      if ! grep -Fxq "$id" <<< "$used"; then
+      if ! grep -Fxq "$ref" <<< "$used"; then
         docker image rm "$ref" >/dev/null || echo "Could not remove unused $ref" >&2
       fi
     done < <(docker image ls --no-trunc --format '{{.Repository}}:{{.Tag}} {{.ID}}')

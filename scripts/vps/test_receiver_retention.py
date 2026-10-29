@@ -86,6 +86,29 @@ exit 90
         self.assertNotIn('docker image prune',source)
         self.assertNotIn('docker system prune',source)
         self.assertIn('softload-app:*|softload-agent:*',source)
-        self.assertIn('grep -Fxq "$id"',source)
+        self.assertIn('grep -Fxq "$ref"',source)
+        self.assertIn('{{.Config.Image}}',source)
+
+    def test_healthy_deploy_removes_old_alias_but_keeps_current_refs_and_other_projects(self):
+        stack=self.root/'stack';stack.mkdir();(stack/'.env').write_text('SOFTLOAD_IMAGE_TAG='+('b'*40)+'\n')
+        source=self.script.read_text().replace('/opt/softload-infra/softload',str(stack))
+        self.script.write_text(source)
+        self.tool('curl','#!/bin/sh\nexit 0\n')
+        log=self.root/'removed'
+        self.tool('docker', f'''#!/bin/sh
+case "$1 $2" in
+ 'image inspect') exit 0;;
+ 'compose -f') if [ "$4" = ps ]; then echo container; fi; exit 0;;
+ 'ps -aq') echo container; exit 0;;
+ 'inspect -f') echo healthy; exit 0;;
+ 'inspect --format') printf '%s\\n' softload-app:{SHA} softload-agent:{SHA}; exit 0;;
+ 'image ls') printf '%s\\n' 'softload-app:{SHA} sha256:current' 'softload-agent:{SHA} sha256:shared' 'softload-agent:old sha256:shared' 'other-project:old sha256:other'; exit 0;;
+ 'image rm') echo "$3" >> '{log}'; exit 0;;
+esac
+exit 91
+''')
+        result=self.run_receiver('deploy:'+SHA)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(log.read_text().strip(),'softload-agent:old')
 
 if __name__=='__main__':unittest.main()
