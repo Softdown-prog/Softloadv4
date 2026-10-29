@@ -212,8 +212,8 @@ app.use('/', contatoRoutes);
 app.use('/', apiRoutes);
 app.use('/', adminRoutes);
 app.use('/', workersRoutes);
-// /dashboard/blogger-ai foi migrado para /dashboard/chat
-app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/chat'));
+// URL antiga agora leva ao gerador procedural Blogger, não a um chat removido.
+app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/gerador-blogger'));
 
 // Endpoint de diagnóstico — acesso público, sem dados sensíveis
 app.get('/health', async (req, res) => {

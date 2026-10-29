@@ -9,5 +9,4 @@ router.use(require('./configuracoes'));
 router.use(require('./upgrade'));
 router.use(require('./conta'));
 router.use(require('./liteFiles'));
-router.use(require('./reactTest'));
 module.exports = router;
