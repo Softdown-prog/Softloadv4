@@ -1,5 +1,16 @@
 # Solaris Code — auditoria visual com Gemini Flash
 
+> **Estado da interface (28/10/2026): recurso removido do menu do Solaris.**
+> A VPS publica somente `app` e `agent`; o antigo sandbox com Chromium
+> e extrator ZIP não está no deploy atual. Os endpoints abaixo documentam
+> uma integração legada, **não uma funcionalidade disponível ao assinante**.
+> O upload de projetos ZIP também saiu do chat. O download de ZIPs criados
+> pelo próprio Solaris permanece.
+> Para restaurar as operações seria necessário provisionar o sandbox isolado,
+> autenticar o serviço e validar limites, orçamento e testes de produção;
+> não extrair arquivos ZIP desconhecidos diretamente no App.
+
+
 ## Já integrado
 
 O chat do Solaris apresenta **Auditar visualmente um site** para fazer uma captura de uma prévia pública no sandbox Chromium, em desktop ou Android. O screenshot segue do **backend** ao Gemini Flash como `inlineData` PNG e só o diagnóstico textual é devolvido ao chat. O usuário não recebe nem opera um navegador remoto; o agente usa o navegador isolado.
