@@ -127,7 +127,8 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao salvar plano_pendente:', e.message);
-            if (plano === 'essencial') return res.status(503).json({ erro: 'Não foi possível registrar o aceite do armazenamento. Tente novamente.' });
+            if (plano === 'essencial')
+                return res.status(503).json({ erro: 'Não foi possível registrar o aceite do armazenamento. Tente novamente.' });
         }
         // Base URL: deriva do próprio request (Cloud Run → https + domínio real).
         // Remove dependência de BASE_URL e evita localhost ser enviado ao MP.

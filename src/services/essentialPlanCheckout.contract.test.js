@@ -18,7 +18,7 @@ test('plano Blogger custa exatamente R$5 por 30 dias, sem saldo de IA',()=>{
     assert.ok(block,'Tabela ausente: '+label);
     assert.match(block,/essencial:\s*0/,'Plano Essencial não deve fornecer créditos IA: '+label);
   }
-  assert.match(read('src/services/storageService.ts'),/essencial:\s*0/);
+  assert.match(read('src/services/storageService.ts'),/essencial:\s*50/);
 });
 test('Mercado Pago reconhece preço R$5, protege o checkout até homologação e preserva recibos legados',()=>{
   const api=read('src/routes/apiRoutes.ts');
@@ -32,5 +32,7 @@ test('Mercado Pago reconhece preço R$5, protege o checkout até homologação e
   assert.match(html,/R\$ 5,00/);
   assert.match(html,/30 dias/);
   assert.match(html,/plano:'essencial'/);
+  assert.match(html,/aceitePoliticaArmazenamento/);
+  assert.match(api,/essencial_storage_expira_em/);
   assert.doesNotMatch(html,/react-root|\/dist\/assets\/main\.js/);
 });

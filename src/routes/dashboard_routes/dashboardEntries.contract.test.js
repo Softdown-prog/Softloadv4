@@ -30,7 +30,7 @@ test('dashboard mounts existing route modules in their original order', () => {
     const { middlewares } = loadRouter('index.js');
     assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './chat', './workspace', './workspaceChat', './solaris', './reactTest']);
 });
-test('dashboard home requires login and passes session to React view', () => {
+test('dashboard home requires login and passes session to simplified EJS view', () => {
     const { routes, exigirLogin } = loadRouter('home.js');
     assert.equal(routes.length, 1);
     assert.equal(routes[0].route, '/dashboard');
@@ -38,7 +38,7 @@ test('dashboard home requires login and passes session to React view', () => {
     const user = { uid: 'test-user' };
     const values = [];
     routes[0].handlers[1]({ session: { user } }, { render(view, locals) { values.push({view, locals}); } });
-    assert.equal(values[0].view, 'pages/react-test');
+    assert.equal(values[0].view, 'pages/dashboard-simples');
     assert.equal(values[0].locals.activePage, 'home');
     assert.equal(values[0].locals.user, user);
 });
