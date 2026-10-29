@@ -14,6 +14,7 @@
       <p class="text-warning" role="status">O catálogo está vazio. Tente novamente depois.</p>
     <% } else { %>
       <form action="/dashboard/forge-2d/download" method="post">
+        <input type="hidden" name="forgeCsrfToken" value="<%= forgeCsrfToken %>"/>
         <label class="form-label text-white fw-semibold" for="receita">Modelo de partida</label>
         <select id="receita" name="receita" class="form-select mb-4" required>
           <option value="" disabled selected>Selecione uma receita</option>
