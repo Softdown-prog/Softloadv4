@@ -33,3 +33,8 @@ A oferta pública é **compilador procedural de temas XML para Blogger**, cadast
 
 ### Plano recomendado
 Aprovar testes de intents independentes no GitHub, homologar MP em ambiente de teste e verificar a conciliação; só depois habilitar o Essencial manualmente, monitorar os primeiros pedidos e só então retirar módulos antigos do Agent e APIs Solaris em PR próprio.
+
+### Endurecimento posterior ao PR #102 — Bricks
+- Cada chamada Bricks usa o UUID da intenção já persistida como `requestOptions.idempotencyKey` ao enviar `Payment.create` ao SDK Mercado Pago. Assim, repetições **da mesma operação no SDK** usam a chave vinculada à intenção, sem depender da geração automática.
+- **Limite atual:** um novo POST ao checkout cria uma nova intenção e nova chave. Não afirmar deduplicação de solicitações HTTP distintas; isso exigirá fluxo de reuso controlado da intenção sem reutilizar cartão/token ou liberar cobranças indevidas.
+- A alteração é apenas de código/testes; a flag `BLOGGER_ESSENCIAL_CHECKOUT_ENABLED` permanece desligada até a homologação externa.
