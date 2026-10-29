@@ -51,7 +51,6 @@ async function criarIntencaoBlogger(user, canal) {
     });
     return { id, externalReference: 'slb:' + id };
 }
-
 // Contract: Provides the React frontend with context previously injected via res.locals
 router.get('/api/app-config', (req, res) => {
     res.json({
@@ -143,7 +142,8 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         let intent;
         try {
             intent = await criarIntencaoBlogger(user, 'checkout-pro');
-            if (!intent) return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
+            if (!intent)
+                return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
         } catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao criar intenção:', e.message);
@@ -236,7 +236,8 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
         let intent;
         try {
             intent = await criarIntencaoBlogger(user, 'bricks');
-            if (!intent) return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
+            if (!intent)
+                return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
         } catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao criar intenção Bricks:', e.message);
@@ -340,8 +341,10 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     const receipt = await tx.get(receiptRef);
                     const user = await tx.get(userRef);
                     const liveIntent = intentRef ? await tx.get(intentRef) : null;
-                    if (receipt.exists || user.data()?.mp_payment_id === id) return { duplicate: true };
-                    if (!user.exists) return { missingUser: true };
+                    if (receipt.exists || user.data()?.mp_payment_id === id)
+                        return { duplicate: true };
+                    if (!user.exists)
+                        return { missingUser: true };
 
                     const userData = user.data();
                     const intentData = liveIntent?.data();
@@ -356,7 +359,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     }
                     const plan = approvedPlanForPayment(paymentDetails,
                         intentRef ? intentData?.plano : userData.plano_pendente);
-                    if (!plan) return { invalidPlanOrAmount: true };
+                    if (!plan)
+                        return { invalidPlanOrAmount: true };
                     // Uma renovação Essencial soma 30 dias ao vencimento vigente,
                     // em vez de apagar os dias já pagos. Tudo ocorre dentro da transação.
                     const currentExpiry = Date.parse(userData.premium_ate || '');
@@ -393,7 +397,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         creditos_bloggerai_ciclo_total: BLOGGERAI_PLAN_CREDITS[plan],
                         creditos_bloggerai_expira_em: expiresAt,
                     });
-                    if (intentRef) tx.update(intentRef, {
+                    if (intentRef)
+                        tx.update(intentRef, {
                         status: 'approved', mp_payment_id: id, processadoEm: new Date().toISOString(),
                     });
                     return { activated: true, plan, name: userData.nome || '', expiresAt };
