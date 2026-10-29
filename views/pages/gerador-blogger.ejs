@@ -1,4 +1,4 @@
-<%- include('../partials/header', {pageTitle:'Criador de Templates Blogger | Softload',pageDescription:'Gere templates XML Blogger sem inteligência artificial',pageNoindex:true}) %>
+<%- include('../partials/header', {pageTitle:'Criador de Templates Blogger | Softload',pageDescription:'Gere e personalize seu template XML Blogger sem programar.',pageNoindex:!guestMode,pageCanonical:guestMode?'/criar':null}) %>
 <style>
 .sl-generator{max-width:1240px;margin:0 auto;padding:100px 16px 64px;color:var(--sl-text-300)}
 .sl-generator .panel{background:#111c31;border:1px solid #31425d;border-radius:16px;padding:24px}
@@ -27,17 +27,18 @@
 <main class="sl-generator">
   <div class="mb-4 d-flex justify-content-between align-items-start gap-2 flex-wrap">
     <div>
-      <p class="eyebrow mb-1">Softload · sem Gemini · sem React</p>
+      <p class="eyebrow mb-1">Softload Blogger · editor visual</p>
       <h1 class="fw-bolder mb-2 text-white">Criador de templates Blogger</h1>
       <p class="hint mb-0">Comece do zero ou escolha um dos <%= nichos.length %> nichos e personalize. Gere um XML real e baixe sem API de IA.</p>
     </div>
-    <a class="btn btn-outline-secondary btn-sm" href="/dashboard">Voltar ao painel</a>
+    <a class="btn btn-outline-secondary btn-sm" href="<%= guestMode ? '/' : '/dashboard' %>"><%= guestMode ? 'Página inicial' : 'Voltar ao painel' %></a>
   </div>
   <div class="row g-3">
     <section class="col-12 col-xl-5" aria-label="Configurar template">
       <div class="panel">
         <h2 class="h5 fw-bold text-white mb-3">1. Monte seu template</h2>
-        <form id="generator-form" method="post" action="/dashboard/gerador-blogger/download" autocomplete="off">
+        <form id="generator-form" method="post" action="<%= downloadPath %>" autocomplete="off">
+          <% if (guestMode) { %><input type="hidden" name="guestToken" value="<%= guestToken %>"/><% } %>
           <fieldset class="mb-3">
             <legend class="fs-6 fw-bold">Como deseja começar?</legend>
             <label class="form-check mb-2"><input class="form-check-input" type="radio" name="modo" value="novo" checked/> <span class="form-check-label">Criar do zero (estrutura-base Blogger)</span></label>
@@ -87,11 +88,20 @@
             </div>
           </div>
           <div class="mt-4 p-3 rounded-3" style="background:#0b2538">
-            <p class="small fw-bold mb-1 text-white">Teste gratuito: <%= gratuitoLimite %> downloads por conta.</p>
-            <p class="hint mb-0">A compilação não utiliza Gemini. O plano de R$ 5/mês está sendo preparado e a assinatura antiga permanece válida durante a migração.</p>
+            <% if (guestMode) { %>
+              <p class="small fw-bold mb-1 text-white">Experimente sem cadastro: até <%= gratuitoLimite %> XML por sessão do navegador.</p>
+              <p class="hint mb-0">Não precisa criar conta para testar. <a href="/register">Criar conta</a> é opcional e permite acessar limites e recursos de assinante quando disponíveis. Limites técnicos antiabuso também se aplicam.</p>
+            <% } else { %>
+              <p class="small fw-bold mb-1 text-white">Conta gratuita: <%= gratuitoLimite %> downloads; assinantes ativos têm limite ampliado.</p>
+              <p class="hint mb-0"><a href="/dashboard/plano-essencial">Ver plano Essencial</a> · Sem consumo de créditos de IA.</p>
+            <% } %>
+          </div>
+          <div class="d-flex gap-2 flex-wrap mt-3">
+            <button type="button" class="btn btn-outline-info flex-fill" id="surpreender-estilo">Surpreenda-me com um estilo</button>
+            <button type="button" class="btn btn-outline-secondary flex-fill" id="salvar-escolhas">Salvar escolhas neste dispositivo</button>
           </div>
           <button type="submit" class="btn btn-sl-primary fw-bold w-100 mt-3" id="download-template">2. Gerar e baixar XML</button>
-          <p id="form-message" class="hint mt-2 mb-0" role="status">O arquivo será validado antes do download. Nenhum crédito de IA será usado.</p>
+          <p id="form-message" class="hint mt-2 mb-0" role="status">O arquivo será validado antes do download. Não usa IA. A prévia é aproximada.</p>
         </form>
       </div>
     </section>
@@ -141,6 +151,17 @@
     document.querySelector('.fake-header').style.borderBottomColor=palette[document.getElementById('colorPreset').value]||'#0ea5e9';
   }
   form.addEventListener('change',refresh);document.getElementById('siteName').addEventListener('input',refresh);
+  const fields=['colorPreset','typography','gridLayout','sidebarPosition'];
+  function secureIndex(length){const values=new Uint32Array(1);crypto.getRandomValues(values);return values[0]%length;}
+  document.getElementById('surpreender-estilo').addEventListener('click',()=>{
+    for(const id of fields){const select=document.getElementById(id);if(select.options.length)select.selectedIndex=secureIndex(select.options.length);}
+    refresh();document.getElementById('form-message').textContent='Novo estilo sorteado. Confira a prévia e baixe seu XML.';
+  });
+  document.getElementById('salvar-escolhas').addEventListener('click',()=>{
+    try{const prefs=Object.fromEntries(fields.map(id=>[id,document.getElementById(id).value]));localStorage.setItem('softload-blogger-estilo-v1',JSON.stringify(prefs));document.getElementById('form-message').textContent='Preferências de visual salvas neste navegador.';}
+    catch(e){document.getElementById('form-message').textContent='Não foi possível salvar neste navegador. Você ainda pode baixar seu XML.';}
+  });
+  try{const prefs=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}');for(const id of fields){const value=prefs[id];const select=document.getElementById(id);if(typeof value==='string'&&[...select.options].some(o=>o.value===value))select.value=value;}}catch(e){}
   form.addEventListener('submit',()=>{document.getElementById('form-message').textContent='Gerando XML... confira a pasta Downloads do navegador. Se a geração falhar, a resposta exibirá uma mensagem.';});
   refresh();
 })();
