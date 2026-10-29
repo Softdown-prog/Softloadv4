@@ -19,9 +19,8 @@ test('lite Dockerfile is a separate opt-in build and never changes production de
   assert.match(pilot,/^COPY server\.js \./m);
   assert.match(pilot,/^COPY src \.\/src/m);
   assert.match(pilot,/^COPY views \.\/views/m);
-  assert.match(pilot,/^COPY agent\/forge \.\/agent\/forge/m);
   assert.match(pilot,/^COPY --from=vendor \/usr\/src\/app\/public\/vendor \.\/public\/vendor/m);
-  assert.match(pilot,/node agent\/forge\/verify-source\.cjs && node agent\/forge\/smoke\.cjs/);
+  assert.doesNotMatch(pilot,/agent\/forge|python3|ffmpeg|solaris-forge|FROM node:20-slim AS frontend-build/);
   assert.match(pilot,/node scripts\/vendorTemplateRefs\.js/);
   assert.match(pilot,/require\('\.\/src\/routes\/authRoutes'\)/);
   assert.match(pilot,/require\('\.\/src\/routes\/apiRoutes'\)/);
@@ -30,12 +29,12 @@ test('lite Dockerfile is a separate opt-in build and never changes production de
 
 test('pilot context explicitly excludes React/Agent runtime, secrets and old dist',()=>{
   const ignore=file('Dockerfile.lite.dockerignore');
-  for(const item of ['.git','.github','.env','/frontend','/agent/src','/public/dist']){
+  for(const item of ['.git','.github','.env','/frontend','/agent','/public/dist']){
     assert.ok(ignore.split(/\r?\n/).includes(item),'missing ignore '+item);
   }
   const pilot=file('Dockerfile.lite');
   assert.match(pilot,/test ! -d \/usr\/src\/app\/frontend/);
-  assert.match(pilot,/test ! -d \/usr\/src\/app\/agent\/src/);
+  assert.match(pilot,/test ! -d \/usr\/src\/app\/agent/);
   assert.match(pilot,/test ! -e \/usr\/src\/app\/public\/dist\/assets\/main\.js/);
 });
 
