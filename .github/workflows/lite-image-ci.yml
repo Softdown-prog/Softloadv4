@@ -1,0 +1,49 @@
+name: Softload - piloto Docker Lite (sem deploy)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Dockerfile.lite
+      - Dockerfile.lite.dockerignore
+      - .github/workflows/lite-image-ci.yml
+      - scripts/liteImage.contract.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-lite:
+    name: Build isolado e smoke do App Lite
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar que não altera o deploy atual
+        run: node --test scripts/liteImage.contract.test.cjs
+
+      - name: Construir imagem experimental (sem publicar)
+        run: docker build --progress plain -f Dockerfile.lite --build-arg GIT_SHA="${{ github.sha }}" --tag softload-lite-ci:local .
+
+      - name: Validar separação do React e manter Forge e EJS
+        run: |
+          docker run --rm --entrypoint sh softload-lite-ci:local -ec '
+            test ! -d /usr/src/app/frontend
+            test ! -d /usr/src/app/agent/src
+            test ! -d /usr/src/app/public/dist
+            test -s /usr/src/app/public/vendor/bootstrap/css/bootstrap.min.css
+            test -s /usr/src/app/public/vendor/bootstrap/js/bootstrap.bundle.min.js
+            test -s /usr/src/app/agent/forge/index.cjs
+            test -s /usr/src/app/views/pages/gerador-blogger.ejs
+            test -s /usr/src/app/views/pages/forge-2d.ejs
+            test -s /usr/src/app/views/pages/arquivos-simples.ejs
+            test -s /usr/src/app/GIT_SHA
+          '
+
+      - name: Medir tamanho descompactado (sem prometer economia na VPS)
+        run: |
+          docker image inspect softload-lite-ci:local --format 'LITE IMAGE BYTES: {{.Size}}'
+          docker images softload-lite-ci:local --format 'LITE IMAGE ON RUNNER: {{.Size}}'
+          echo 'Resultado: imagem de teste local no GitHub Actions; nenhum container de produção foi alterado.'
