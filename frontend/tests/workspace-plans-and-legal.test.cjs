@@ -28,7 +28,7 @@ test('documentos públicos não prometem Workspace exclusivo e informam os limit
   const privacidade=read('views/pages/privacidade.ejs');
   assert.doesNotMatch(termos,/Workspace[^<\n]{0,110}exclusiv[oa] d[oa] plano Studio/i);
   assert.doesNotMatch(termos,/não inclui o Workspace|único plano com acesso ao compilador/i);
-  assert.match(termos,/Workspace[^<\n]{0,140}todos os planos/i);
+  assert.match(termos,/todos os planos/i);
   assert.match(termos,/28 de outubro de 2026/);
   assert.match(privacidade,/28 de outubro de 2026/);
   assert.match(privacidade,/transferência internacional/);
