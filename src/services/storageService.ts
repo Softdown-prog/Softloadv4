@@ -2,7 +2,7 @@ import type { Firestore, DocumentReference } from 'firebase-admin/firestore';
 import type { Bucket } from '@google-cloud/storage';
 import type { Writable } from 'node:stream';
 import { createHash } from 'node:crypto';
-interface StorageWallet { storage_usado_mb?: number }
+interface StorageWallet { storage_usado_mb?: number; plano?: string; is_active?: boolean; premium_ate?: string }
 export interface QuotaTrackingMutation { ref: DocumentReference; data: Record<string, unknown> | null }
 export interface FileQuotaChange { path: string; bytesAntes: number; bytesDepois: number }
 export interface QuotaReservation { confirmarUso(bytes: number, confirmationId?: string): Promise<void> }
@@ -15,6 +15,7 @@ interface Archive {
 const archiver = require('archiver') as (format: 'zip', options: { zlib: { level: number } }) => Archive;
 const admin = require('firebase-admin') as { firestore: { FieldValue: typeof import('firebase-admin/firestore').FieldValue } };
 const { bucket, db } = require('./firebase') as { bucket: Bucket; db: Firestore };
+const { currentStorageLimit } = require('./essentialStoragePolicy') as { currentStorageLimit(account: StorageWallet): number | null };
 
 
 
@@ -23,7 +24,7 @@ const { bucket, db } = require('./firebase') as { bucket: Bucket; db: Firestore 
 // Limite de armazenamento GCS por plano (em MB)
 export const STORAGE_LIMITS_MB: Readonly<Record<string, number>> = {
     free:    5,
-    essencial: 0, // XML é entregue diretamente; armazenamento opcional ainda não contratado
+    essencial: 50, // Acesso pago de 30 dias com 50 MiB; só com assinatura ativa
     starter: 100,
     start:   100, // backward compat
     pro:     100,
@@ -68,7 +69,10 @@ export async function reservarCota(email: string, plano: string, tamanhoBytesEst
     const emailKey = (email || '').toLowerCase();
     const snap      = await db.collection('clientes_premium').doc(emailKey).get();
     const storageMb = snap.exists ? ((snap.data() as StorageWallet).storage_usado_mb || 0) : 0;
-    const limiteMb  = STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
+    const conta = snap.exists ? (snap.data() as StorageWallet) : {};
+    const limiteMb = conta.plano === 'essencial' || plano === 'essencial'
+        ? currentStorageLimit(conta) ?? STORAGE_LIMITS_MB.free
+        : STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
     verificarCota(storageMb, tamanhoBytesEstimado, limiteMb);
 
     return {
@@ -119,7 +123,10 @@ async function movimentarCotaIdempotente(emailKey: string, deltaBytes: number, o
         }
         const user = await tx.get(userRef);
         if (deltaBytes > 0 && limiteMb !== undefined) {
-            verificarCota(user.exists ? ((user.data() as StorageWallet).storage_usado_mb || 0) : 0, deltaBytes, limiteMb);
+            const atual = user.exists ? (user.data() as StorageWallet) : {};
+            const tetoAtual = atual.plano === 'essencial' || limiteMb === STORAGE_LIMITS_MB.essencial
+                ? currentStorageLimit(atual) ?? STORAGE_LIMITS_MB.free : limiteMb;
+            verificarCota(atual.storage_usado_mb || 0, deltaBytes, tetoAtual);
         }
         if (deltaBytes !== 0) tx.set(userRef, {
             storage_usado_mb: admin.firestore.FieldValue.increment(deltaBytes / (1024 * 1024))
@@ -175,7 +182,6 @@ export async function reconciliarCotaArquivos(email: string, plano: string, uid:
         return { path, bytesAntes, bytesDepois, ref: db.collection('storage_cota_arquivos').doc(id) };
     });
     const userRef = db.collection('clientes_premium').doc(emailKey);
-    const limiteMb = STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
     return db.runTransaction(async tx => {
         // All reads precede any write, as required by Firestore transactions.
         const snapshots = await Promise.all(items.map(item => tx.get(item.ref)));
@@ -192,7 +198,11 @@ export async function reconciliarCotaArquivos(email: string, plano: string, uid:
         }, 0);
         if (!Number.isSafeInteger(deltaBytes)) throw new RangeError('Diferenca de armazenamento fora do limite.');
         const oldMb = user.exists ? ((user.data() as StorageWallet).storage_usado_mb || 0) : 0;
-        if (deltaBytes > 0) verificarCota(oldMb, deltaBytes, limiteMb);
+        const currentAccount = user.exists ? (user.data() as StorageWallet) : {};
+        const limit = currentAccount.plano === 'essencial' || plano === 'essencial'
+            ? currentStorageLimit(currentAccount) ?? STORAGE_LIMITS_MB.free
+            : STORAGE_LIMITS_MB[plano] ?? STORAGE_LIMITS_MB.free;
+        if (deltaBytes > 0) verificarCota(oldMb, deltaBytes, limit);
         if (deltaBytes !== 0) {
             tx.set(userRef, { storage_usado_mb: Math.max(0, oldMb + deltaBytes / (1024 * 1024)) }, { merge: true });
         }
