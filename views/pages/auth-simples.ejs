@@ -14,11 +14,11 @@
   <section class="panel" aria-labelledby="auth-title">
     <% if(authMode === 'register') { %>
       <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Crie sua conta grátis</h1>
-      <p class="copy">Comece a criar templates Blogger com dois downloads gratuitos e até 5 MB para seus arquivos.</p>
+      <p class="copy">Comece com dois downloads gratuitos de XML para Blogger. A área de arquivos com até 5 MB gratuitos está em preparação.</p>
       <form action="/register" method="post">
         <div class="mb-3"><label class="form-label" for="name">Seu nome</label><input class="form-control" id="name" name="name" autocomplete="name" minlength="2" maxlength="100" required></div>
         <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
-        <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" id="password" name="password" type="password" minlength="6" maxlength="128" autocomplete="new-password" required></div>
+        <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
         <p class="copy small">Ao criar a conta, você aceita nossos <a href="/termos-de-uso">Termos de Uso</a> e a <a href="/privacidade">Política de Privacidade</a>. A contratação de armazenamento pago exige aceite próprio.</p>
         <button class="btn btn-sl-primary w-100 fw-bold" type="submit">Criar conta</button>
       </form>
