@@ -343,7 +343,6 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         return { duplicate: true };
                     if (!user.exists)
                         return { missingUser: true };
-
                     const userData = user.data();
                     const intentData = liveIntent?.data();
                     if (intentRef) {
