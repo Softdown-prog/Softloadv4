@@ -395,8 +395,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     });
                     if (intentRef)
                         tx.update(intentRef, {
-                        status: 'approved', mp_payment_id: id, processadoEm: new Date().toISOString(),
-                    });
+                            status: 'approved', mp_payment_id: id, processadoEm: new Date().toISOString(),
+                        });
                     return { activated: true, plan, name: userData.nome || '', expiresAt };
                 });
                 if (result.duplicate) {
