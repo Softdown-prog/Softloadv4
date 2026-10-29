@@ -32,13 +32,13 @@ const client = new MercadoPagoConfig({
 });
 const payment = new Payment(client);
 const preference = new Preference(client);
-
-// Cada tentativa recebe uma referência própria, sem depender de plano_pendente.
 async function criarIntencaoBlogger(user, canal) {
-    if (!user?.email || !user.uid) return null;
+    if (!user?.email || !user.uid)
+        return null;
     const email = user.email.toLowerCase();
     const query = await db.collection('clientes_premium').where('email', '==', email).limit(1).get();
-    if (query.empty || query.docs[0].data()?.uid !== user.uid) return null;
+    if (query.empty || query.docs[0].data()?.uid !== user.uid)
+        return null;
     const id = crypto.randomUUID();
     const aceiteEm = new Date().toISOString();
     // Não grava no campo mutável plano_pendente: duas compras simultâneas
