@@ -6,13 +6,15 @@ const path=require('node:path');
 const root=path.join(__dirname,'..');
 const file=(name)=>fs.readFileSync(path.join(root,name),'utf8');
 
-test('lite Dockerfile is a separate opt-in build and never changes production deploy',()=>{
+test('production and pilot build Blogger-only images, while deployment keeps App+Agent contract',()=>{
   const pilot=file('Dockerfile.lite');
   const deploy=file('.github/workflows/deploy.yml');
   const stable=file('Dockerfile');
   assert.match(deploy,/dockerfile:\s*Dockerfile\s*\n/);
   assert.doesNotMatch(deploy,/dockerfile:\s*Dockerfile\.lite\s*\n/);
-  assert.match(stable,/FROM node:20-slim AS frontend-build/);
+  assert.doesNotMatch(stable,/FROM node:20-slim AS frontend-build|npm run build|COPY frontend|COPY \\. \\./);
+  for(const artifact of ['server.js','src','views','public','scripts','manifests']) assert.match(stable,new RegExp('^COPY '+artifact+' ', 'm'));
+  assert.doesNotMatch(stable,/python3|ffmpeg|agent\\/forge|COPY --from=frontend-build/);
   assert.doesNotMatch(pilot,/\bRUN\s+npm run build\b|\bRUN\s+vite\b/);
   assert.doesNotMatch(pilot,/^COPY\s+frontend(?:\/|\s)/m);
   assert.doesNotMatch(pilot,/^COPY\s+\.\s+\./m,'avoid shipping the entire repo');
@@ -32,6 +34,12 @@ test('pilot context explicitly excludes React/Agent runtime, secrets and old dis
   for(const item of ['.git','.github','.env','/frontend','/agent','/public/dist']){
     assert.ok(ignore.split(/\r?\n/).includes(item),'missing ignore '+item);
   }
+  const prod=file('Dockerfile');
+  const prodIgnore=file('Dockerfile.dockerignore');
+  for(const item of ['.git','.github','.env','/frontend','/agent','/public/dist','/views/pages/forge-2d.ejs','/src/routes/dashboard_routes/forgeStandalone.cjs']){
+    assert.ok(prodIgnore.split(/\\r?\\n/).includes(item),'production ignore missing '+item);
+  }
+  assert.match(prod,/test ! -e \\/usr\\/src\\/app\\/views\\/pages\\/forge-2d\\.ejs/);
   const pilot=file('Dockerfile.lite');
   assert.match(pilot,/test ! -d \/usr\/src\/app\/frontend/);
   assert.match(pilot,/test ! -d \/usr\/src\/app\/agent/);
