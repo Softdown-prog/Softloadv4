@@ -390,7 +390,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     if (intentRef) {
                         // Nunca aprovar com plano, valor ou usuário de outra tentativa.
                         if (!liveIntent?.exists || intentData?.status !== 'created' ||
-                            intentData?.uid !== userData.uid || intentData?.email !== emailCliente ||
+                            intentData?.uid !== (userData as AccountRecord & {uid?: string}).uid || intentData?.email !== emailCliente ||
                             intentData?.plano !== 'essencial' ||
                             intentData?.precoCentavos !== PRICES_CENTS.essencial) {
                             return { invalidIntent: true };
@@ -424,7 +424,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         ...(plan === 'essencial' ? { essencial_storage_expira_em: expiresAt } : {}),
                         mp_payment_id: id,
                         // Fluxo novo não interfere em pagamentos legados pendentes.
-                        ...(intentRef ? { essencial_storage_aceite_em: intentData.aceiteEm } : { plano_pendente: null }),
+                        ...(intentRef ? { essencial_storage_aceite_em: intentData!.aceiteEm } : { plano_pendente: null }),
                         ultima_atualizacao: new Date().toISOString(),
                         creditos: PLAN_CREDITS[plan],
                         creditos_ciclo_total: PLAN_CREDITS[plan],
