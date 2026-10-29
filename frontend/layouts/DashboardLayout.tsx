@@ -122,6 +122,8 @@ function SidebarContent({ user, location, onNavigate, onClose }: SidebarContentP
 
 export default function DashboardLayout(): React.JSX.Element | null {
     const [config, setConfig] = useState<AppConfig | null>(null);
+    const [carregandoConta, setCarregandoConta] = useState(true);
+    const [tentativaConta, setTentativaConta] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const location = useLocation();
     const drawerRef = useRef<HTMLElement | null>(null);
@@ -130,8 +132,15 @@ export default function DashboardLayout(): React.JSX.Element | null {
     useFocusTrap(drawerRef, drawerOpen, fecharDrawer);
 
     useEffect(() => {
-        fetchAppConfig().then(setConfig);
-    }, []);
+        let montado = true;
+        setCarregandoConta(true);
+        void fetchAppConfig().then(data => {
+            if (montado) setConfig(data);
+        }).finally(() => {
+            if (montado) setCarregandoConta(false);
+        });
+        return () => { montado = false; };
+    }, [tentativaConta]);
 
     // Fecha o drawer automaticamente ao navegar (troca de rota) — evita
     // que ele fique aberto sobre a próxima página depois de um clique.
@@ -139,7 +148,27 @@ export default function DashboardLayout(): React.JSX.Element | null {
         setDrawerOpen(false);
     }, [location.pathname]);
 
-    if (!config) return null; // or a minimal loading state
+    // Não deixar uma página totalmente vazia se a sessão ou a rede falhar.
+    if (!config) {
+        return (
+            <main className="sl-dashboard-page p-4 p-md-5" role={carregandoConta ? 'status' : 'alert'} aria-live="polite">
+                <div className="sl-card mx-auto" style={{ maxWidth: '480px' }}>
+                    <h1 className="h5 fw-bold mb-2">{carregandoConta ? 'Abrindo seu painel...' : 'Não conseguimos abrir seu painel'}</h1>
+                    <p className="small mb-3" style={{ color: 'var(--sl-text-400)' }}>
+                        {carregandoConta ? 'Estamos consultando os dados da sua conta.' : 'Verifique sua conexão ou entre na sua conta novamente. Seus projetos não foram alterados.'}
+                    </p>
+                    {!carregandoConta && (
+                        <div className="d-flex flex-wrap gap-2">
+                            <button type="button" className="btn btn-sl-primary" onClick={() => setTentativaConta(n => n + 1)}>
+                                Tentar novamente
+                            </button>
+                            <Link to="/login" className="btn btn-sl-outline">Entrar novamente</Link>
+                        </div>
+                    )}
+                </div>
+            </main>
+        );
+    }
 
     const user = config.user || { nome: 'Usuário', is_active: false, plano: 'Gratuito' };
 

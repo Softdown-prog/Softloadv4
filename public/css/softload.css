@@ -2519,6 +2519,36 @@ body.sl-admin-body { background: var(--sl-bg-950); color: var(--sl-text-300); }
 }
 
 
+/* Primeiro acesso do cliente: ajuda direta, sem trocar a navegação existente. */
+.sl-dashboard-page .sl-dashboard-get-started {
+  padding:clamp(18px,2.4vw,30px);
+  border:1px solid rgba(56,189,248,.35);
+  background:linear-gradient(115deg,rgba(14,165,233,.11),rgba(99,102,241,.055) 58%,transparent),var(--sl-panel-surface);
+}
+.sl-dashboard-get-started-copy { flex:1 1 340px;max-width:730px;min-width:0; }
+.sl-dashboard-get-started-cta {
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  text-decoration:none;white-space:normal;text-align:center;
+}
+.sl-dashboard-steps {
+  display:flex;flex-wrap:wrap;gap:10px 22px;
+  border-top:1px solid var(--sl-panel-border);
+  color:var(--sl-text-400);font-size:.8rem;line-height:1.5;
+}
+.sl-dashboard-steps span { display:inline-flex;align-items:baseline;gap:7px; }
+.sl-dashboard-steps strong { color:var(--sl-primary);font-weight:800; }
+.sl-dashboard-primary-tools .sl-dashboard-quicklink { display:flex!important;flex-direction:column; }
+.sl-dashboard-quicklink-action {
+  margin-top:auto;display:inline-flex;align-items:center;gap:7px;color:var(--sl-primary);
+}
+@media (max-width:575.98px) {
+  .sl-dashboard-get-started-cta { width:100%; }
+  .sl-dashboard-steps { flex-direction:column;gap:6px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sl-dashboard-get-started-cta { scroll-behavior:auto; }
+}
+
 /* Histórico dos chats: selecionar e excluir são botões distintos e acessíveis. */
 .sl-conversation__history-drawer {
   background: var(--sl-bg-900);
