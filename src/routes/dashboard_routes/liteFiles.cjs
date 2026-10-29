@@ -12,10 +12,8 @@ const { currentStorageLimit,MB,DAY }=require('../../services/essentialStoragePol
 const router=express.Router();
 const ON=()=>process.env.SOFTLOAD_LITE_FILES_ENABLED==='true';
 const FILE_MAX=5*MB;
-const TOTAL_MAX=50*MB;
 const LEGACY_LIMITS={starter:100,start:100,pro:100,studio:500,premium:100};
 const EXTENSIONS=new Set(['.xml','.png','.jpg','.jpeg','.webp','.gif','.json','.zip']);
-const MIME={'application/octet-stream':'application/octet-stream'};
 const ID=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const raw=express.raw({type:'application/octet-stream',limit:FILE_MAX});
 const throttle=rateLimit({windowMs:60*60*1000,limit:12,standardHeaders:'draft-8',legacyHeaders:false,
@@ -153,7 +151,9 @@ router.post('/dashboard/arquivos/upload',exigirLogin,refused,throttle,raw,async(
       try{
         const snap=await ref.get();
         if(snap.exists&&snap.data().state==='ready')return res.status(201).json({id,recuperado:true});
-        if(saved){await bucket.file(filePath(me.uid,id)).delete({ignoreNotFound:true});saved=false;}
+        // Uma escrita GCS pode ter tido sucesso mesmo que a confirmação falhe.
+        // Só limpar o objeto após verificar que o manifesto NÃO está ready.
+        await bucket.file(filePath(me.uid,id)).delete({ignoreNotFound:true});saved=false;
         await db.runTransaction(async tx=>{
           const [fileSnap,ownerSnap]=await Promise.all([tx.get(ref),tx.get(account)]);
           if(!fileSnap.exists||fileSnap.data()?.state!=='uploading')return;
