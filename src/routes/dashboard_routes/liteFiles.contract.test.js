@@ -155,6 +155,29 @@ test('download e exclusão usam manifestos de dono autenticado, sem afetar arqui
   assert.equal(f.dbFiles.get(f.root).storage_usado_mb,0);
   assert.equal(f.requests.some(([op,p])=>op==='delete'&&!p.includes('/lite-v1/')),false);
 });
+test('reserva concorrente também entra na cota, mesmo antes de gravar GCS',async()=>{
+  const f=fixture();
+  f.dbFiles.get(f.root).lite_storage_pendente_bytes=5*MB;
+  assert.equal((await f.call('POST','/dashboard/arquivos/upload')).code,413);
+  assert.equal(f.blobStore.size,0);
+});
+test('arquivo essencial vencido bloqueia download após carência, mas renovação recupera acesso',async()=>{
+  const f=fixture({premium:true});
+  const id=crypto.randomUUID();
+  const a=f.dbFiles.get(f.root);
+  a.is_active=false;
+  a.premium_ate='2020-01-01T00:00:00.000Z';
+  a.essencial_storage_expira_em=a.premium_ate;
+  f.dbFiles.set(f.root+'/lite_files/'+id,{
+    uid:f.owner,name:'pago.xml',bytes:20,state:'ready',scope:'essential-v1',createdAt:'2020-01-01'});
+  f.req.params={id};
+  assert.equal((await f.call('GET','/dashboard/arquivos/:id/download')).code,403);
+  assert.equal(f.requests.some(([op])=>op==='read'),false);
+  a.is_active=true;a.premium_ate='2099-01-01T00:00:00.000Z';
+  const ok=await f.call('GET','/dashboard/arquivos/:id/download');
+  assert.equal(ok.code,200);
+  assert.match(ok.streamed,/lite-v1/);
+});
 test('página EJS apresenta cotas, histórico e upload sem carregar React',async()=>{
   const view=path.join(__dirname,'../../../views/pages/arquivos-simples.ejs');
   const html=await new Promise((resolve,reject)=>ejs.renderFile(view,{
