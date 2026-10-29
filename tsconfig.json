@@ -272,7 +272,8 @@
     "src/routes/dashboard_routes/workspace.ts",
     "src/routes/dashboard_routes/workspaceChat.ts",
     "src/services/essentialStoragePolicy.ts",
-    "src/routes/dashboard_routes/forgeStandalone.ts"
+    "src/routes/dashboard_routes/forgeStandalone.ts",
+    "src/routes/dashboard_routes/liteFiles.ts"
   ],
   "exclude": [
     "node_modules",
