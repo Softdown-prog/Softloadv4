@@ -16,3 +16,6 @@ npm-debug.log*
 # Não reenviar ao contexto Docker o bundle versionado (public/dist):
 # COPY --from=frontend-build fornece o bundle novo ao stage final.
 /public/dist/
+
+# Ferramenta A7 Forge aposentada do App. Agent tem contexto Docker separado.
+/agent/forge/
