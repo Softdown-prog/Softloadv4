@@ -250,7 +250,7 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
             description: 'Softload Blogger — Acesso de 30 dias',
             external_reference: intent.externalReference,
         };
-        const result = await payment.create({ body: paymentBody });
+        const result = await payment.create({ body: paymentBody, requestOptions: { idempotencyKey: intent.id } });
         console.log(`[MP-BRICKS] Pagamento criado: id=${result.id} status=${result.status} plano=${plano} email=${user.email}`);
         // Pix — retorna QR code para o front exibir
         if (result.payment_method_id === 'pix' || result.status === 'pending') {
