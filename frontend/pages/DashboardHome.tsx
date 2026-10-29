@@ -60,7 +60,7 @@ export default function DashboardHome(): React.JSX.Element {
     useEffect(() => {
         let montado = true;
         setErroStats(false);
-        void fetch('/api/dashboard/stats', { credentials: 'same-origin', cache: 'no-store' })
+        void fetch('/api/dashboard/stats')
             .then(async res => {
                 if (!res.ok) throw new Error('Falha ao carregar indicadores');
                 const statsRecebidos = normalizarDashboardStats(await res.json());
