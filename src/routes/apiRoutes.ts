@@ -2,7 +2,7 @@
 import type { AccountRecord } from '../contracts/workspaceRoutes';
 import type { RouteRequest, RouteResponse, RouteHandler, RouteRouter, RouteFailure, RouteRateLimit } from '../contracts/routeHttp';
 import type { Firestore } from '@google-cloud/firestore';
-interface RouteBody { plano: string; formData?: Record<string, unknown>; action?: string; type?: string; data?: {id: string}; id: string; query?: unknown; topK?: number; corpus?: string }
+interface RouteBody { plano: string; aceitePoliticaArmazenamento?: boolean; formData?: Record<string, unknown>; action?: string; type?: string; data?: {id: string}; id: string; query?: unknown; topK?: number; corpus?: string }
 declare function require(name: string): unknown;
 const express = require('express') as { Router(): RouteRouter<RouteBody> };
 const crypto = require('crypto') as typeof import('crypto');
