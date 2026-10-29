@@ -126,3 +126,26 @@ test('missing records and database failures preserve HTTP errors', async () => {
     const res = await f.call('GET /api/historico');
     assert.equal(res.code, 500); assert.equal(res.body.compilacoes.length, 0);
 });
+
+test('EJS histórico lista apenas downloads com prefixo do UID autenticado', async () => {
+    const good = fixture();
+    const page = await good.call('GET /dashboard/historico');
+    assert.equal(page.view, 'pages/historico-simples');
+    assert.equal(page.data.activePage, 'historico');
+    assert.equal(page.data.arquivos.length, 1);
+    assert.equal(page.data.arquivos[0].id, 'fixture');
+    assert.equal(page.data.arquivos[0].nome, 'Fixture');
+    const foreign = fixture();
+    foreign.state.data.gcPath = 'users/outro/compilations/segredo.zip';
+    const result = await foreign.call('GET /dashboard/historico');
+    assert.equal(result.data.arquivos.length, 0);
+    assert.equal(foreign.calls.filter(x=>x.kind==='download'||x.kind==='stream').length, 0);
+});
+
+test('EJS histórico indisponível retorna erro sem expor lista ou dados de outra conta', async () => {
+    const offline = fixture();
+    offline.state.failDb = true;
+    const page = await offline.call('GET /dashboard/historico');
+    assert.equal(page.code, 503);
+    assert.match(page.text, /Não foi possível carregar/);
+});
