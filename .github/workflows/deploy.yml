@@ -726,6 +726,9 @@ jobs:
           }
           console.log('[DEPLOY] Landing Blogger e editor público verificados no domínio.');
           NODE
+      # O job activate nao faz checkout por padrao; o smoke precisa do script local.
+      - uses: actions/checkout@v4
+        if: steps.latest.outputs.proceed == 'true'
       - name: Confirm live Blogger XML compilation after activation
         if: steps.latest.outputs.proceed == 'true'
         run: node scripts/livePublicCompilerSmoke.cjs
