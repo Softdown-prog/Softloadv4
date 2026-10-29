@@ -11,8 +11,9 @@ const source=fs.readFileSync(path.join(__dirname,'../routes/apiRoutes.js'),'utf8
 const DAY=86400000;
 function setup(options={}){
   const routes={get:new Map(),post:new Map()};
-  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[],idempotencyKeys:[]};
+  const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[],idempotencyKeys:[],reviewWrites:0};
   const intents=new Map();
+  const reconciliations=new Map();
   const paymentById=options.paymentById||{};
   const account=options.account||{email:'buyer@example.test',uid:'firebase-user-123',plano:'free',
     is_active:false,plano_pendente:'essencial',nome:'Cliente'};
@@ -24,18 +25,26 @@ function setup(options={}){
         kind:'intent',id,
         async create(data){calls.intentCreates++;intents.set(id,{...data})},
         async get(){return{exists:intents.has(id),data:()=>intents.get(id)}}
-      }:{kind:name==='softload_mp_payments'?'receipt':'other',id}
+      }:{kind:name==='softload_mp_payments'?'receipt':name==='softload_mp_reconciliations'?'review':'other',id}
     }),
-    runTransaction:async task=>task({
-      get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists}:
-        ref.kind==='intent'?{exists:intents.has(ref.id),data:()=>intents.get(ref.id)}:
-        {exists:true,data:()=>account},
-      create:()=>{calls.receipts++},
-      update:(ref,update)=>{
-        if(ref.kind==='intent'){Object.assign(intents.get(ref.id),update);return}
-        calls.usersUpdated++;Object.assign(account,update)
-      }
-    }),
+    runTransaction:async task=>{
+      if(options.failTransaction)throw Error('Firestore offline');
+      return task({
+        get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists}:
+          ref.kind==='review'?{exists:reconciliations.has(ref.id),data:()=>reconciliations.get(ref.id)}:
+          ref.kind==='intent'?{exists:intents.has(ref.id),data:()=>intents.get(ref.id)}:
+          {exists:true,data:()=>account},
+        create:(ref,value)=>{
+          if(ref.kind==='review'){reconciliations.set(ref.id,{...value});calls.reviewWrites++;return}
+          calls.receipts++;
+        },
+        update:(ref,update)=>{
+          if(ref.kind==='review'){Object.assign(reconciliations.get(ref.id),update);calls.reviewWrites++;return}
+          if(ref.kind==='intent'){Object.assign(intents.get(ref.id),update);return}
+          calls.usersUpdated++;Object.assign(account,update)
+        }
+      });
+    },
     batch:()=>({update(){},async commit(){}})
   };
   const router={
@@ -89,7 +98,7 @@ function setup(options={}){
       query:{'data.id':id},headers:{'x-signature':'ts='+ts+',v1='+signature,'x-request-id':requestId}
     });
   }
-  return{post,request,signedRequest,calls,account,env,intents,paymentById};
+  return{post,request,signedRequest,calls,account,env,intents,paymentById,reconciliations};
 }
 test('legacy AI plans cannot be purchased by either checkout',async()=>{
   const f=setup({checkoutEnabled:true});
@@ -229,4 +238,59 @@ test('Bricks binds Mercado Pago idempotency keys to distinct persisted payment i
     assert.ok(f.intents.has(key));
     assert.equal(f.intents.get(key).canal,'bricks');
   }
+});
+
+test('refunds, chargebacks and mediation require review without changing account entitlements',async()=>{
+  for(const status of ['refunded','charged_back','in_mediation']){
+    const f=setup({receiptExists:true,paymentDetails:{
+      status,status_detail:status==='refunded'?'refunded':'in_process',
+      currency_id:'BRL',transaction_amount:5,external_reference:'buyer@example.test'
+    }});
+    const previous=JSON.stringify(f.account);
+    assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+    assert.equal(f.calls.reviewWrites,1);
+    assert.equal(f.calls.receipts,0);
+    assert.equal(f.calls.usersUpdated,0);
+    assert.equal(JSON.stringify(f.account),previous);
+    const review=f.reconciliations.get('123');
+    assert.equal(review.status,status);
+    assert.equal(review.receipt_exists,true);
+    assert.equal(review.needs_manual_review,true);
+    const before=review.observed_at;
+    assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+    assert.equal(f.calls.reviewWrites,1);
+    assert.equal(f.reconciliations.get('123').observed_at,before);
+  }
+});
+test('partially refunded approved payment must not grant a full subscription',async()=>{
+  const f=setup({paymentDetails:{
+    status:'approved',status_detail:'partially_refunded',currency_id:'BRL',
+    transaction_amount:5,external_reference:'buyer@example.test'
+  }});
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  assert.equal(f.calls.receipts,0);
+  assert.equal(f.calls.usersUpdated,0);
+  assert.equal(f.reconciliations.get('123').status_detail,'partially_refunded');
+  assert.equal(f.reconciliations.get('123').receipt_exists,false);
+});
+test('a changed dispute status updates one review case, not account or receipt',async()=>{
+  const f=setup({receiptExists:true,paymentDetails:{
+    status:'in_mediation',status_detail:'pending'
+  }});
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  f.paymentById['123']={status:'charged_back',status_detail:'settled'};
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  assert.equal(f.reconciliations.size,1);
+  assert.equal(f.calls.reviewWrites,2);
+  assert.equal(f.reconciliations.get('123').status,'charged_back');
+  assert.equal(f.calls.usersUpdated,0);
+  assert.equal(f.calls.receipts,0);
+});
+test('Firestore failure processing a reversal returns 500 so MP can retry',async()=>{
+  const f=setup({failTransaction:true,paymentDetails:{
+    status:'refunded',status_detail:'refunded'
+  }});
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,500);
+  assert.equal(f.reconciliations.size,0);
+  assert.equal(f.calls.usersUpdated,0);
 });

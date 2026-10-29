@@ -327,6 +327,40 @@ router.post('/webhook/mercado-pago', async (req, res) => {
             // Consulta back-channel — nunca confia no body
             const paymentDetails = await payment.get({ id: paymentId });
 
+            // Estornos e disputas exigem conciliação. Não revogar automaticamente
+            // o acesso: outras compras podem ter adicionado períodos válidos.
+            const mpStatus = String(paymentDetails.status || '');
+            const mpStatusDetail = String(paymentDetails.status_detail || '');
+            const requiresReview = mpStatus === 'refunded' ||
+                mpStatus === 'charged_back' ||
+                mpStatus === 'in_mediation' ||
+                (mpStatus === 'approved' && mpStatusDetail === 'partially_refunded');
+            if (requiresReview) {
+                const caseRef = db.collection('softload_mp_reconciliations').doc(paymentId);
+                const receiptRef = db.collection('softload_mp_payments').doc(paymentId);
+                await db.runTransaction(async (tx) => {
+                    const existingCase = await tx.get(caseRef);
+                    const receipt = await tx.get(receiptRef);
+                    // Duplicatas não alteram a data da primeira observação nem
+                    // reabrem casos que já tenham recebido tratamento manual.
+                    if (existingCase.exists &&
+                        existingCase.data()?.status === mpStatus &&
+                        existingCase.data()?.status_detail === mpStatusDetail) return;
+                    const record = {
+                        payment_id: paymentId,
+                        status: mpStatus,
+                        status_detail: mpStatusDetail,
+                        receipt_exists: receipt.exists,
+                        needs_manual_review: true,
+                        observed_at: new Date().toISOString(),
+                    };
+                    if (existingCase.exists) tx.update(caseRef, record);
+                    else tx.create(caseRef, { ...record, created_at: new Date().toISOString() });
+                });
+                console.warn(`[MP] Pagamento ${paymentId} em ${mpStatus}/${mpStatusDetail}; conciliação manual pendente.`);
+                return res.status(200).send('OK');
+            }
+
             if (paymentDetails.status === 'approved') {
                 const externalReference = String(paymentDetails.external_reference || '').trim();
                 const novaIntencao = externalReference.startsWith('slb:');
