@@ -6,7 +6,7 @@ const { approvedPlanForPayment, PRICES_CENTS } = require('./mpPlanRules');
 const approved = (amount, overrides = {}) => ({ status: 'approved', currency_id: 'BRL', transaction_amount: amount, ...overrides });
 
 test('preços permanecem congelados, em centavos, e planos só aprovam pelo valor exato', () => {
-    assert.deepEqual(PRICES_CENTS, { starter: 2990, pro: 3990, studio: 5990 });
+    assert.deepEqual(PRICES_CENTS, { starter: 2990, pro: 3990, studio: 5990, essencial: 500 });
     assert.equal(Object.isFrozen(PRICES_CENTS), true);
     for (const [plan, cents] of Object.entries(PRICES_CENTS)) {
         const amount = cents / 100;
@@ -29,6 +29,8 @@ test('status, moeda e plano pendente são verificados antes de liberar assinatur
     }
     assert.equal(approvedPlanForPayment(approved(29.90), 'pro'), null);
     assert.equal(approvedPlanForPayment(approved(39.90), 'starter'), null);
+    assert.equal(approvedPlanForPayment(approved(5.00), 'essencial'), 'essencial');
+    assert.equal(approvedPlanForPayment(approved(5.01), 'essencial'), null);
 });
 
 test('rejeita valores não numéricos, infinitos, ausentes ou zero', () => {
