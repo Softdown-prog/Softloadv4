@@ -143,12 +143,12 @@ test('webhook assinado ativa os três saldos e recibo juntos, sem renovar em um 
     assert.equal(h.calls.filter(x => x[0] === 'email').length, 1);
 });
 
-test('webhook não concede plano para valor incorreto e retorna 500 para permitir retry após falha transacional', async () => {
+test('webhook recusa valor divergente com 503 para conciliação e falhas transacionais com 500', async () => {
     for (const options of [{ approved: false }, { failTransaction: true }]) {
         const h = apiHarness(options);
         const res = response();
         await last(h, 'post /webhook/mercado-pago')(h.signed(), res);
-        assert.equal(res.statusCode, options.failTransaction ? 500 : 200);
+        assert.equal(res.statusCode, options.failTransaction ? 500 : 503);
         assert.equal(h.records.has('softload_mp_payments/123'), false);
         assert.equal(h.records.get('clientes_premium/client@example.test').creditos, 0);
         assert.equal(h.calls.filter(x => x[0] === 'email').length, 0);
