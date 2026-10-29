@@ -32,5 +32,7 @@ test('Mercado Pago reconhece preço R$5, protege o checkout até homologação e
   assert.match(html,/R\$ 5,00/);
   assert.match(html,/30 dias/);
   assert.match(html,/plano:'essencial'/);
+  assert.match(html,/aceitePoliticaArmazenamento/);
+  assert.match(api,/essencial_storage_expira_em/);
   assert.doesNotMatch(html,/react-root|\/dist\/assets\/main\.js/);
 });
