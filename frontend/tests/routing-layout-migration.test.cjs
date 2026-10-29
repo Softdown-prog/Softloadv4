@@ -447,22 +447,24 @@ test('arquivos aprovados do vídeo Solaris são MP4 e PNG válidos e leves', () 
 });
 
 // Regressão de identidade e responsividade nas páginas EJS fora do React Router.
-test('navegação EJS promove somente Blogger e A7 Forge 2D', () => {
+test('navegação EJS promove Blogger com editor aberto sem cadastro, sem Forge', () => {
   const header=source('views/partials/header.ejs');
   const landing=source('views/pages/landing-blogger.ejs');
   const footer=source('views/partials/footer-blogger.ejs');
-  for(const label of ['Início','Ferramentas','Blogger','A7 Forge 2D','Contato']){
+  for(const label of ['Início','Ferramentas','Criar template','Como funciona','Planos','Contato']){
     assert.ok(header.includes('>'+label+'</a>'),label);
   }
-  for(const href of ['/','/#ferramentas','/dashboard/gerador-blogger','/dashboard/forge-2d','/contato']){
+  for(const href of ['/','/#recursos','/criar','/#como-funciona','/#planos','/contato']){
     assert.ok(header.includes('href="'+href+'"'),'link público: '+href);
   }
-  assert.match(landing,/id="ferramentas"/);
-  assert.match(landing,/Crie seu blog e suas imagens 2D/);
+  assert.match(landing,/id="recursos"/);
+  assert.match(landing,/id="como-funciona"/);
+  assert.match(landing,/id="planos"/);
+  assert.match(landing,/Experimentar gratuitamente/);
   assert.match(header,/navbar-expand-md/);
   assert.match(header,/data-bs-toggle="collapse"/);
   assert.match(header,/aria-controls="sl-nav-collapse"/);
-  assert.doesNotMatch(header+footer,/#demo-solaris|href="\/dashboard\/chat"|Solaris Code/);
+  assert.doesNotMatch(header+landing+footer,/A7 Forge|forge-2d|#demo-solaris|href="\/dashboard\/chat"|Solaris Code/);
 });
 
 
@@ -557,7 +559,8 @@ test('rodapé Blogger é EJS e mantém destinos legais, sem marketing Solaris', 
     assert.ok(footer.includes('href="'+href+'"'), 'EJS: '+href);
   }
   assert.match(footer,/templates XML para Blogger/);
-  assert.match(landing,/A7 Forge 2D/);
+  assert.match(landing,/sem precisar de conta para experimentar/);
+  assert.doesNotMatch(landing,/A7 Forge|forge-2d/);
   assert.doesNotMatch(entry+footer,/#demo-solaris|#ia-pode|Solaris Code · Blogger · Workspace/);
 });
 
