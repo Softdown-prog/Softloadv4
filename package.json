@@ -31,7 +31,7 @@
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
     "typecheck:frontend": "tsc --project tsconfig.frontend.json --noEmit",
     "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs",
-    "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs frontend/tests/billingRecovery.test.cjs",
+    "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs frontend/tests/billingRecovery.test.cjs frontend/tests/chat-http-errors.test.cjs",
     "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
     "typecheck:forge-html5": "tsc --project tsconfig.forge-html5.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/html5/procedural.test.cjs agent/forge/html5/runtime.test.cjs",
     "typecheck:forge-catalog": "tsc --project tsconfig.forge-catalog.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/catalog.test.cjs",

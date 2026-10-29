@@ -414,11 +414,11 @@ router.post('/dashboard/workspace/chat/stream', exigirLogin, verificarCreditosWo
         }
         sendEvent({
             type: 'error',
-            message: isCota ? 'Alto volume de acessos. Aguarde 1 minuto e tente novamente.'
+            message: isCota ? 'Alto volume de acessos ao Gemini. Aguarde e tente mais tarde; se persistir, avise o suporte.'
                 : isSeguranca ? 'Mensagem não pôde ser processada. Reformule e tente novamente.'
-                    : isModelo ? `Modelo de IA não encontrado. Verifique a configuração ${isGpt ? 'GPT_MODEL_NAME' : 'GEMINI_MODEL_NAME'} no servidor.`
+                    : isModelo ? 'O serviço de IA não encontrou o modelo ou recurso configurado. Avise o suporte da Softload.'
                         : isChave ? `Chave de API inválida ou expirada. Verifique ${chaveNome} no servidor.`
-                            : isParam ? `Parâmetro inválido na requisição. Verifique configuração do modelo ${process.env.GPT_MODEL_NAME || 'gpt-5.4-nano'}.`
+                            : isParam ? 'A API de IA recebeu um parâmetro incompatível. Avise o suporte da Softload.'
                                 : `Assistente temporariamente indisponível. (${httpStatus || 'err'}) Tente novamente.`,
         });
     }
