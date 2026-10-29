@@ -43,7 +43,30 @@ prune --volumes. Remova apenas imagens realmente sem referencias, por ID.
 
 ## Evitar acumulacao futura
 
-O receptor SSH que recebe os pacotes e instalado fora deste repositorio.
+### Receptor sincronizado (issue #72)
+
+O fonte revisável é `scripts/vps/softload-actions-receiver.sh`. As operações
+rsync/finish/reuse/deploy compartilham a mesma trava usada por cleanup_staging.
+O shell pai mantém a trava até o rsync terminar. Uma repetição de finish para
+imagem já importada também valida e remove o pacote recebido. Depois de saúde
+confirmada, somente tags App/Agent sem referência por containers são removidas;
+nenhuma limpeza global de imagens de outros projetos é feita pelo receptor.
+
+`scripts/vps/softload-clean-stale-archives.sh` substitui o find/delete sem trava:
+se houver rsync ou Runner.Worker, não limpa. Caso contrário, executa o utilitário
+de staging com trava exclusiva e nomes exatos, removendo pacotes abandonados.
+O timer existente pode continuar chamando esse wrapper. Os testes de retenção
+simulam Docker e transferência em diretórios temporários.
+
+Política solicitada: não criar cópia anterior do receptor/código nem manter
+imagens de rollback depois de deploy saudável. A substituição do executável
+deve ser atômica, após checksum, bash -n, handshake e confirmação de ociosidade.
+Recuperação de código ocorre pelo GitHub e rebuild/redeploy; dados, segredos,
+volumes, certificados e configuração operacional continuam preservados.
+O migrador histórico `migrate_receiver_v2.py` cria backup local e não deve ser
+usado nessa política. Não executar limpeza enquanto houver deploy em trânsito.
+
+O receptor SSH que recebe os pacotes é instalado fora do checkout.
 Uma limpeza automatica apos o deploy exige uma alteracao coordenada no
 receptor real, incluindo lock, validacao de revisao/transferencias em curso
 e testes de regressao. O runner softloadrunner nao possui Docker/sudo;
