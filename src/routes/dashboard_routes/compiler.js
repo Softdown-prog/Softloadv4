@@ -97,7 +97,7 @@ router.get('/dashboard/gerador-blogger', exigirLogin, (req, res) => {
     res.render('pages/gerador-blogger', { activePage: 'gerador-blogger', user: req.session.user,
         nichos: catalogo(), cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
         fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
-        gratuitoLimite: MAX_FREE_DOWNLOADS });
+        gratuitoLimite: MAX_FREE_DOWNLOADS, guestMode: false, downloadPath: '/dashboard/gerador-blogger/download', guestToken: '' });
 });
 router.post('/dashboard/gerador-blogger/download', exigirLogin, limite, async (req, res) => {
     const origin = req.get('origin');
@@ -134,8 +134,8 @@ router.post('/dashboard/gerador-blogger/download', exigirLogin, limite, async (r
 });
 router.get('/dashboard/compiler', exigirLogin, (_req, res) => res.redirect(302, '/dashboard/gerador-blogger'));
 router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req, res) => res.redirect(302, '/dashboard/gerador-blogger'));
-const forgeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 2, standardHeaders: 'draft-8', legacyHeaders: false,
-    message: 'Muitas gerações de assets em pouco tempo. Tente novamente mais tarde.' });
-router.get('/dashboard/forge-2d', exigirLogin, (req, res) => require('./forgeStandalone.cjs').show(req, res));
-router.post('/dashboard/forge-2d/download', exigirLogin, forgeLimiter, (req, res) => require('./forgeStandalone.cjs').download(req, res));
+// API de compilação compartilhada com a experiência pública, sem duplicar regras de validação.
+router.publicCompile = compilarSemIa;
+router.publicCatalog = catalogo;
+router.publicPresets = () => ({ cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })), fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })) });
 module.exports = router;
