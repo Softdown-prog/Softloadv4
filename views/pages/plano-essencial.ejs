@@ -20,15 +20,21 @@
       <li>Experimente sem cadastro: até 2 XML por sessão. Com conta gratuita, até 2 downloads adicionais vinculados ao cadastro</li>
       <li>50 MB para armazenar arquivos durante os 30 dias pagos; 5 MB na conta gratuita</li>
     </ul>
-    <p class="small text-warning mb-3">O checkout usa pagamento avulso do Mercado Pago: o acesso vale por 30 dias e não renova automaticamente. A contratação permanece desativada até os testes completos de acesso e webhook. Cadastro é solicitado somente para contratar ou acessar recursos de conta.</p>
+    <p class="small text-warning mb-3">O acesso é por pagamento avulso do Mercado Pago, válido por 30 dias, sem renovação automática. A contratação só fica disponível após a homologação técnica. Cadastro é necessário apenas para contratar ou acessar recursos de conta.</p>
     <label class="d-flex gap-2 align-items-start text-white mb-3"><input id="aceitePoliticaArmazenamento" type="checkbox" required class="form-check-input mt-1"/><span>Li e aceito os <a href="/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>. Estou ciente do aviso 5 dias antes do vencimento e da exclusão dos arquivos abrangidos pela nova política após o fim dos 30 dias e mais 5 dias de recuperação, caso não renove.</span></label>
-    <button id="pagarEssencial" type="button" class="btn btn-sl-primary w-100 fw-bolder">Continuar para pagamento de R$ 5</button>
-    <p id="pagamentoStatus" class="small text-secondary mt-3 mb-0" role="status">Você será redirecionado para o Mercado Pago.</p>
+    <% if (typeof checkoutEnabled !== 'undefined' && checkoutEnabled) { %>
+      <button id="pagarEssencial" type="button" class="btn btn-sl-primary w-100 fw-bolder">Continuar para pagamento de R$ 5</button>
+      <p id="pagamentoStatus" class="small text-secondary mt-3 mb-0" role="status">Pagamento avulso no Mercado Pago. Seu acesso será ativado após confirmação.</p>
+    <% } else { %>
+      <button type="button" class="btn btn-outline-secondary w-100 fw-bold" disabled aria-disabled="true">Pagamento temporariamente indisponível</button>
+      <p class="small text-warning mt-3 mb-0" role="status">Estamos concluindo a homologação do Mercado Pago. Nenhuma cobrança será iniciada nesta página. Você pode continuar testando o Blogger gratuitamente.</p>
+    <% } %>
   </div>
 </main>
 <script>
 (function(){
   const btn=document.getElementById('pagarEssencial'),output=document.getElementById('pagamentoStatus');
+  if (!btn || !output) return;
   btn.addEventListener('click',async()=>{
     if (!document.getElementById('aceitePoliticaArmazenamento').checked) { output.textContent='Aceite os termos de armazenamento para continuar.';return; }
     btn.disabled=true; output.textContent='Preparando pagamento seguro...';
