@@ -144,7 +144,8 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
             intent = await criarIntencaoBlogger(user, 'checkout-pro');
             if (!intent)
                 return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
-        } catch (eCaught) {
+        }
+        catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao criar intenção:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
@@ -238,7 +239,8 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
             intent = await criarIntencaoBlogger(user, 'bricks');
             if (!intent)
                 return res.status(503).json({ erro: 'Não foi possível confirmar sua conta para pagamento.' });
-        } catch (eCaught) {
+        }
+        catch (eCaught) {
             const e = eCaught;
             console.warn('[MP] Falha ao criar intenção Bricks:', e.message);
             return res.status(503).json({ erro: 'Não foi possível registrar sua compra. Tente novamente.' });
