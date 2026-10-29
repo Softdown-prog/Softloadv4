@@ -9,8 +9,8 @@ const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard') as { exigirLogin: RouteHandler };
 
 router.get('/dashboard/upgrade', exigirLogin, (req: DashboardRequest, res: DashboardResponse) => {
-    res.render('pages/react-test', {
-        activePage: 'upgrade',
+    res.render('pages/plano-essencial', {
+        activePage: 'plano-essencial',
         user: req.session.user
     });
 });
