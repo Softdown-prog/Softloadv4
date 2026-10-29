@@ -5,6 +5,7 @@ import MarkdownRenderer from '../components/MarkdownRenderer';
 import ChatHeaderActions from '../components/ChatHeaderActions';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { drainSseFrames, parseSseJsonFrame } from '../utils/sseFrames';
+import { extrairErroRespostaChat } from '../services/chatHttpErrors';
 import { 
     Cpu, Send, Sparkles, Terminal, CheckCircle2, AlertCircle, 
     History, Plus, Trash2, X, Clipboard, Check, 
@@ -382,12 +383,7 @@ export default function Solaris(): React.JSX.Element {
             });
 
             if (!response.ok) {
-                if (response.status === 402) {
-                    const err402 = await response.json().catch(() => ({})) as ChatApiError;
-                    throw new Error(err402.error || err402.erro || 'Seus créditos de IA acabaram.');
-                }
-                const err = await response.json().catch(() => ({})) as ChatApiError;
-                throw new Error(err.error || err.erro || 'Erro ao processar requisição.');
+                throw new Error(await extrairErroRespostaChat(response));
             }
 
             const reader = response.body?.getReader();
