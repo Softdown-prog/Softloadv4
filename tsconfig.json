@@ -262,6 +262,7 @@
     "src/services/sentinelWorker.ts",
     "src/middlewares/authGuard.ts",
     "src/routes/dashboard_routes/historico.ts",
+    "src/routes/publicBlogger.ts",
     "src/routes/authRoutes.ts",
     "server.ts",
     "cli.ts",
