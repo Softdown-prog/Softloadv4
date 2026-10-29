@@ -40,14 +40,21 @@ for (const [file, url, page] of [
 ]) {
     test('rota protegida ' + file + ' preserva a view React e usuário de sessão', () => {
         const { registrations, exigirLogin } = loadRouter(file);
-        assert.equal(registrations.length, 1);
-        assert.equal(registrations[0].route, url);
-        assert.equal(registrations[0].handlers[0], exigirLogin);
+        const selected = registrations.find(r=>r.route===url);
+        assert.ok(selected,'rota legada disponível');
+        assert.equal(selected.handlers[0], exigirLogin);
         const results = [];
         const user = { uid: 'id-de-teste' };
-        registrations[0].handlers[1]({ session: { user } }, { render(view, locals) { results.push({ view, locals }); } });
+        selected.handlers[1]({ session: { user } }, { render(view, locals) { results.push({ view, locals }); } });
         assert.equal(results[0].view, 'pages/react-test');
         assert.equal(results[0].locals.activePage, page);
         assert.equal(results[0].locals.user, user);
+        if(file==='upgrade.js') {
+          const essential=registrations.find(r=>r.route==='/dashboard/plano-essencial');
+          assert.ok(essential,'novo plano SSR precisa de rota independente');
+          const outcome=[];
+          essential.handlers[1]({session:{user}},{render(view,locals){outcome.push({view,locals});}});
+          assert.equal(outcome[0].view,'pages/plano-essencial');
+        }
     });
 }
