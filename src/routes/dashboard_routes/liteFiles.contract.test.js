@@ -51,8 +51,8 @@ function fixture({enabled=true,used=0,premium=false,saveFails=false}={}){
     createReadStream(){requests.push(['read',name]);return {on(){return this;},pipe(res){res.streamed=name;}};}
   };}};
   const router={
-    get(url,...handlers){routes.set('GET '+url,handlers.at(-1));},
-    post(url,...handlers){routes.set('POST '+url,handlers.at(-1));}
+    get(url,...handlers){routes.set('GET '+url,handlers);},
+    post(url,...handlers){routes.set('POST '+url,handlers);}
   };
   const module={exports:{}};
   const code=fs.readFileSync(path.join(__dirname,'liteFiles.cjs'),'utf8');
@@ -64,7 +64,7 @@ function fixture({enabled=true,used=0,premium=false,saveFails=false}={}){
       if(name==='node:crypto')return crypto;
       if(name==='node:path')return path;
       if(name==='../../services/firebase')return {db,bucket};
-      if(name==='../../middlewares/authGuard')return {exigirLogin:()=>{}};
+      if(name==='../../middlewares/authGuard')return {exigirLogin:(_req,_res,next)=>next()};
       if(name==='../../services/essentialStoragePolicy.cjs')return {
         MB,DAY:86400000,currentStorageLimit(a){
           const exp=Date.parse(a.premium_ate||'');
@@ -84,9 +84,13 @@ function fixture({enabled=true,used=0,premium=false,saveFails=false}={}){
       set(a){this.headers=a;return this;},end(){this.ended=true;return this;},
       destroy(){this.destroyed=true;return this;}};
   }
-  async function call(method,url,request=req){const response=res();const handler=routes.get(method+' '+url);
-    assert.ok(handler,'Missing route: '+method+' '+url);
-    await handler(request,response);return response;}
+  async function call(method,url,request=req){const response=res();const handlers=routes.get(method+' '+url);
+    assert.ok(handlers,'Missing route: '+method+' '+url);
+    for(const handler of handlers){let continued=false;
+      await handler(request,response,()=>{continued=true;});
+      if(!continued)break;
+    }
+    return response;}
   return {owner,root,token,req,routes,dbFiles,blobStore,requests,call};
 }
 test('feature flag desligada impede gravações e não expõe arquivos',async()=>{
@@ -94,6 +98,8 @@ test('feature flag desligada impede gravações e não expõe arquivos',async()=
   const list=await x.call('GET','/dashboard/arquivos');
   assert.equal(list.view,'pages/arquivos-simples');assert.equal(list.locals.enabled,false);
   assert.equal(x.routes.has('POST /dashboard/arquivos/upload'),true);
+  const denied=await x.call('POST','/dashboard/arquivos/upload');
+  assert.equal(denied.code,503);
   assert.equal(x.blobStore.size,0);
 });
 test('conta gratuita reserva/debita bytes no mesmo saldo Firestore e usa prefixo privado',async()=>{
