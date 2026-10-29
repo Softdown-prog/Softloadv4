@@ -12,11 +12,16 @@ test('production image publication depends on the frontend contracts that gate m
   const build=workflow.split('\n  build_and_transfer:')[1].split('\n  receive:')[0];
   assert.match(build,/needs:\s*\[verify, plan\]/);
 });
-test('public bundle verification tolerates a slow link without accepting partial or invalid output',()=>{
+test('public EJS Blogger verification rejects removed React and broken guest editor',()=>{
   const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/deploy.yml'),'utf8');
-  const check=workflow.split('name: Confirm public React bundle has no disabled provider')[1];
-  assert.match(check,/curl --fail --silent --show-error --compressed/);
-  assert.match(check,/--connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors/);
-  assert.match(check,/process\.exit\(1\)/);
-  assert.doesNotMatch(check,/\|\|\s*true/);
+  const check=workflow.split('name: Confirm public Blogger landing and guest editor are live')[1];
+  assert.ok(check, 'Missing production Blogger smoke');
+  assert.match(check, /curl --fail --silent --show-error --compressed/);
+  assert.match(check, /--connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors/);
+  assert.match(check, /\/criar/);
+  assert.match(check, /generator-form/);
+  assert.match(check, /guestToken/);
+  assert.match(check, /process\.exit\(1\)/);
+  assert.doesNotMatch(check, /\|\|\s*true/);
+  assert.doesNotMatch(check, /main\.js\?v=|React bundle has no disabled provider/);
 });
