@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const p=require('./essentialStoragePolicy');
+const p=require('./essentialStoragePolicy.cjs');
 const now=Date.parse('2026-11-01T12:00:00.000Z');
 const iso=t=>new Date(t).toISOString();
 test('5 MB free e 50 MB somente durante o pagamento vigente',()=>{

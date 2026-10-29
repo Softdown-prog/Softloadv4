@@ -12,7 +12,7 @@ const node_crypto_1 = require("node:crypto");
 const archiver = require('archiver');
 const admin = require('firebase-admin');
 const { bucket, db } = require('./firebase');
-const { currentStorageLimit } = require('./essentialStoragePolicy');
+const { currentStorageLimit } = require('./essentialStoragePolicy.cjs');
 // Limite de armazenamento GCS por plano (em MB)
 exports.STORAGE_LIMITS_MB = {
     free: 5,

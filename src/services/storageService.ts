@@ -15,7 +15,7 @@ interface Archive {
 const archiver = require('archiver') as (format: 'zip', options: { zlib: { level: number } }) => Archive;
 const admin = require('firebase-admin') as { firestore: { FieldValue: typeof import('firebase-admin/firestore').FieldValue } };
 const { bucket, db } = require('./firebase') as { bucket: Bucket; db: Firestore };
-const { currentStorageLimit } = require('./essentialStoragePolicy') as { currentStorageLimit(account: StorageWallet): number | null };
+const { currentStorageLimit } = require('./essentialStoragePolicy.cjs') as { currentStorageLimit(account: StorageWallet): number | null };
 
 
 
