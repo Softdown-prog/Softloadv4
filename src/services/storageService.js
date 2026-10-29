@@ -15,6 +15,7 @@ const { bucket, db } = require('./firebase');
 // Limite de armazenamento GCS por plano (em MB)
 exports.STORAGE_LIMITS_MB = {
     free: 5,
+    essencial: 5, // templates procedurais são baixados sem armazenamento GCS
     starter: 100,
     start: 100, // backward compat
     pro: 100,
