@@ -134,83 +134,8 @@ router.post('/dashboard/gerador-blogger/download', exigirLogin, limite, async (r
 });
 router.get('/dashboard/compiler', exigirLogin, (_req, res) => res.redirect(302, '/dashboard/gerador-blogger'));
 router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req, res) => res.redirect(302, '/dashboard/gerador-blogger'));
-
-const FORGE_PUBLIC_COMMANDS = new Set(['draw-graph','draw-recipe','run-workers','plan-plant','render-pixel-character','author-art','author-prop']);
-const forgeLimiter = rateLimit({windowMs:15*60*1000,limit:2,standardHeaders:'draft-8',legacyHeaders:false,
-  message:'Limite temporário do A7 Forge atingido. Tente novamente mais tarde.'});
-const forgeRunning = new Set();
-function catalogoForge() {
-  // O motor é usado diretamente; não chama Worker Agent, Solaris nem modelos de IA.
-  const forge = require('../../../agent/forge/index.cjs');
-  return forge.catalog().recipes.filter((r) => FORGE_PUBLIC_COMMANDS.has(r.command));
-}
-router.get('/dashboard/forge-2d', exigirLogin, (req,res) => {
-  try {
-    res.render('pages/forge-2d',{activePage:'forge-2d',user:req.session.user,
-      receitas:catalogoForge().map((item)=>({id:item.recipeId,nome:item.id,comando:item.command}))});
-  } catch (err) {
-    console.error('[FORGE] Catálogo indisponível:',err.message);
-    res.status(503).type('text/plain; charset=utf-8').send('O catálogo A7 Forge está indisponível.');
-  }
-});
-router.post('/dashboard/forge-2d/download', exigirLogin, forgeLimiter, async (req,res) => {
-  const origin = req.get('origin');
-  if (origin) {
-    try { if (new URL(origin).host !== req.get('host')) return res.status(403).send('Origem não autorizada.'); }
-    catch { return res.status(403).send('Origem inválida.'); }
-  }
-  const email = typeof req.session.user?.email === 'string' ? req.session.user.email.trim().toLowerCase() : '';
-  if (!email) return res.status(401).send('Entre novamente para gerar seu asset.');
-  const selected = typeof req.body?.receita === 'string' ? req.body.receita : '';
-  const item = catalogoForge().find((r)=>r.recipeId === selected);
-  if (!item) return res.status(400).send('Escolha uma receita válida do catálogo A7 Forge.');
-  // Consulta sempre o Firestore; uma sessão com plano vencido não habilita uso pago.
-  let current;
-  try {
-    const snap = await db.collection('clientes_premium').doc(email).get();
-    current = snap.exists ? snap.data() : null;
-  } catch {
-    return res.status(503).send('Não foi possível confirmar a assinatura.');
-  }
-  const expiry = Date.parse(current?.premium_ate || '');
-  if (current?.is_active !== true || !Number.isFinite(expiry) || expiry <= Date.now() ||
-      !['essencial','starter','start','pro','studio','premium'].includes(current?.plano)) {
-    return res.status(402).send('O A7 Forge 2D está disponível para assinantes ativos. Consulte o plano Essencial.');
-  }
-  if (forgeRunning.has(email)) return res.status(429).send('Já existe uma geração em andamento para esta conta.');
-  forgeRunning.add(email);
-  const fs = require('node:fs');
-  const path = require('node:path');
-  const os = require('node:os');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(),'softload-a7-'));
-  const cleanup = () => { try { fs.rmSync(dir,{recursive:true,force:true}); } catch {} };
-  let streamStarted = false;
-  try {
-    const forge = require('../../../agent/forge/index.cjs');
-    const output = await forge.render({id:'produto',command:item.command,recipeId:item.recipeId},{baseDir:dir});
-    const files = Array.isArray(output.files) ? output.files : [];
-    const root = path.resolve(dir,'assets','produto');
-    const safeFiles = files.map((f)=>({name:f.caminho,absolute:path.resolve(dir,String(f.caminho||''))}))
-      .filter((f)=>f.name.startsWith('assets/produto/') && f.absolute.startsWith(root+path.sep) && fs.statSync(f.absolute).isFile());
-    if (!safeFiles.length) throw new Error('Nenhum arquivo gerado.');
-    const archiver = require('archiver');
-    const zip = archiver('zip',{zlib:{level:6}});
-    zip.on('error',(err)=>{console.error('[FORGE] ZIP:',err.message);res.destroy(err);});
-    res.once('close',cleanup);res.once('finish',cleanup);
-    res.status(200).set({'Content-Type':'application/zip',
-      'Content-Disposition':'attachment; filename="a7-forge-2d.zip"',
-      'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
-    streamStarted=true;
-    zip.pipe(res);
-    safeFiles.forEach((f)=>zip.file(f.absolute,{name:path.relative(root,f.absolute).split(path.sep).join('/')}));
-    await zip.finalize();
-  } catch (err) {
-    console.error('[FORGE] Falha ao gerar:',err.message);
-    if (!streamStarted && !res.headersSent) {cleanup();return res.status(503).type('text/plain; charset=utf-8').send('Não foi possível gerar o asset. Escolha outra receita.');}
-    if (!res.destroyed) res.destroy(err);
-  } finally {
-    forgeRunning.delete(email);
-    if (!streamStarted) cleanup();
-  }
-});
+const forgeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 2, standardHeaders: 'draft-8', legacyHeaders: false,
+  message: 'Muitas gerações de assets em pouco tempo. Tente novamente mais tarde.' });
+router.get('/dashboard/forge-2d', exigirLogin, (req,res) => require('./forgeStandalone.cjs').show(req,res));
+router.post('/dashboard/forge-2d/download', exigirLogin, forgeLimiter, (req,res) => require('./forgeStandalone.cjs').download(req,res));
 module.exports = router;
