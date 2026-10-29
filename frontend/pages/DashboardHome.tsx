@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { ShieldCheck, Cpu, FolderOpen, BookOpen, ArrowRight, RefreshCw, History, Zap, HardDrive, Settings, ArrowUpRight } from 'lucide-react';
+import { ShieldCheck, Cpu, FolderOpen, BookOpen, ArrowRight, RefreshCw, AlertTriangle, History, Zap, HardDrive, Settings, ArrowUpRight } from 'lucide-react';
 import type { AppUser } from '../services/api';
 import { normalizarDashboardStats, formatarDataConta, type DashboardStats } from '../services/dashboardStats';
 import type { LucideIcon } from 'lucide-react';
