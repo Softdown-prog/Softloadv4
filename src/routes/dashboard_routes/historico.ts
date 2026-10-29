@@ -49,11 +49,38 @@ const GRID_LABELS: Record<string, string> = {
     coluna:  'Coluna',
 };
 
-router.get('/dashboard/historico', exigirLogin, (req, res) => {
-    res.render('pages/react-test', {
-        activePage: 'historico',
-        user: req.session.user
-    });
+router.get('/dashboard/historico', exigirLogin, async (req, res) => {
+    // O arquivo histórico pertence ao UID autenticado; não listar itens de outros usuários.
+    try {
+        const user = req.session.user;
+        const email = user.email.toLowerCase();
+        const snapshot = await db.collection('clientes_premium').doc(email)
+            .collection('compilacoes').orderBy('criadoEm', 'desc').limit(30).get();
+        const prefixo = 'users/' + user.uid + '/';
+        const arquivos = snapshot.docs.filter(doc => {
+            const data = doc.data();
+            return typeof data.gcPath === 'string' && data.gcPath.startsWith(prefixo);
+        }).map(doc => {
+            const data = doc.data();
+            const date = data.criadoEm && typeof data.criadoEm.toDate === 'function'
+                ? data.criadoEm.toDate() : null;
+            return {
+                id: doc.id,
+                nome: data.siteName || data.arquivo || 'Template anterior',
+                arquivo: data.arquivo || 'template.zip',
+                tamanhoBytes: Number.isSafeInteger(data.tamanhoBytes) && data.tamanhoBytes > 0
+                    ? data.tamanhoBytes : 0,
+                criadoEm: date && !Number.isNaN(date.getTime())
+                    ? date.toLocaleDateString('pt-BR') : 'Data indisponível'
+            };
+        });
+        return res.render('pages/historico-simples', {
+            activePage: 'historico', user, arquivos
+        });
+    } catch (err) {
+        console.error('[HISTORICO] Pagina EJS indisponivel:', err.message);
+        return res.status(503).send('Não foi possível carregar seu histórico. Tente novamente.');
+    }
 });
 
 router.get('/api/historico', exigirLogin, async (req, res) => {
