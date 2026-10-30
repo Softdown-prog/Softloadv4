@@ -58,3 +58,8 @@ test('production Compose keeps one App and resolves the release tag from environ
   assert.ok(compose.secrets.MP_WEBHOOK_SECRET);
   assert.ok(compose.secrets.GCP_ADC);
 });
+
+test('dependency automation and the PR gate cover only the current application', () => {
+  assert.doesNotMatch(read('.github/dependabot.yml'), /directory: .\/agent/);
+  assert.match(read('.github/workflows/refactor-ci.yml'), /scripts\/artifactDelivery\.test\.cjs/);
+});
