@@ -36,3 +36,9 @@ npm-debug.log
 # acima: sempre reproduzido a partir da fonte única de verdade, nunca
 # commitado nem sincronizado manualmente.
 /agent/native/
+
+# Artefatos produzidos por Vite/React legado: nunca versionar bundles.
+/public/dist/
+
+# Saída gerada pela auditoria de fidelidade do compilador Blogger.
+/out/template-fidelity/
