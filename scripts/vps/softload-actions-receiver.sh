@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Operator-owned project configuration; callers cannot select retired services.
+agent_retired() {
+  grep -Fxq 'SOFTLOAD_AGENT_RETIRED=1' /opt/softload-infra/softload/.env
+}
 case "${SSH_ORIGINAL_COMMAND:-}" in
   rsync\ --server\ *|finish:*|reuse:*|deploy:*)
     exec 9>/run/lock/softload-actions-deploy.lock
@@ -9,7 +13,13 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
 esac
 case "${SSH_ORIGINAL_COMMAND:-}" in
   contract:v2)
+    # Legacy transport remains accepted; retired Agent payloads are verified
+    # and discarded rather than imported or reactivated.
     echo "softload-deploy:v2:app,agent"
+    ;;
+  contract:v3)
+    if agent_retired; then echo 'softload-deploy:v3:app';
+    else echo 'softload-deploy:v3:app,agent'; fi
     ;;
   current)
     cd /opt/softload-infra/softload
@@ -23,6 +33,10 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
     sha="${payload#*:}"
     [[ "$service" =~ ^(agent)$ ]] || exit 2
     [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || exit 2
+    if agent_retired; then
+      echo 'Agent retired; no image reused'
+      exit 0
+    fi
     cd /opt/softload-infra/softload
     current="$(sed -n 's/^SOFTLOAD_IMAGE_TAG=//p' .env | tail -n 1)"
     [[ "$current" =~ ^[0-9a-f]{40}$ ]] || exit 2
@@ -40,6 +54,14 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
     sha="${BASH_REMATCH[2]}"
     expected="${BASH_REMATCH[3]}"
     archive="/var/lib/softload-image-staging/softload-$service-$sha.tar.gz"
+    if [[ "$service" == agent ]] && agent_retired; then
+      [[ -f "$archive" && ! -L "$archive" ]] || { echo 'Archive missing' >&2; exit 3; }
+      actual="$(sha256sum "$archive" | cut -d' ' -f1)"
+      [[ "$actual" == "$expected" ]] || { echo 'Archive checksum mismatch' >&2; exit 4; }
+      rm -f -- "$archive"
+      echo 'Agent retired; verified transport discarded without importing image'
+      exit 0
+    fi
     if docker image inspect "softload-$service:$sha" >/dev/null 2>&1; then
       if [[ -e "$archive" || -L "$archive" ]]; then
         [[ -f "$archive" && ! -L "$archive" ]] || exit 3
@@ -66,18 +88,20 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
     sha="${SSH_ORIGINAL_COMMAND#deploy:}"
     [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || exit 2
     cd /opt/softload-infra/softload
-    for service in app agent; do docker image inspect "softload-$service:$sha" >/dev/null; done
+    services=(app)
+    agent_retired || services+=(agent)
+    for service in "${services[@]}"; do docker image inspect "softload-$service:$sha" >/dev/null; done
     previous="$(sed -n 's/^SOFTLOAD_IMAGE_TAG=//p' .env | tail -n 1)"
     sed -i "s/^SOFTLOAD_IMAGE_TAG=.*/SOFTLOAD_IMAGE_TAG=$sha/" .env
-    if ! docker compose -f compose.vps.yaml config --quiet || ! docker compose -f compose.vps.yaml up -d --no-build; then
+    if ! docker compose -f compose.vps.yaml config --quiet || ! docker compose -f compose.vps.yaml up -d --no-build "${services[@]}"; then
       sed -i "s/^SOFTLOAD_IMAGE_TAG=.*/SOFTLOAD_IMAGE_TAG=$previous/" .env
-      docker compose -f compose.vps.yaml up -d --no-build
+      docker compose -f compose.vps.yaml up -d --no-build "${services[@]}"
       exit 4
     fi
     healthy=false
     for attempt in $(seq 1 36); do
       healthy=true
-      for service in app agent; do
+      for service in "${services[@]}"; do
         cid="$(docker compose -f compose.vps.yaml ps -q "$service")"
         status="$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null || true)"
         [[ "$status" == healthy ]] || healthy=false
@@ -88,13 +112,13 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
     if [[ "$healthy" != true ]]; then
       echo 'Health check failed; rolling back'
       sed -i "s/^SOFTLOAD_IMAGE_TAG=.*/SOFTLOAD_IMAGE_TAG=$previous/" .env
-      docker compose -f compose.vps.yaml up -d --no-build
+      docker compose -f compose.vps.yaml up -d --no-build "${services[@]}"
       exit 5
     fi
     if ! curl --fail --silent --show-error --max-time 15 --cacert /etc/ssl/certs/cloudflare-origin-ca-rsa.pem --resolve softload.analysepro.com:443:164.163.9.7 https://softload.analysepro.com/health >/dev/null; then
       echo "Origin health check failed; rolling back"
       sed -i "s/^SOFTLOAD_IMAGE_TAG=.*/SOFTLOAD_IMAGE_TAG=$previous/" .env
-      docker compose -f compose.vps.yaml up -d --no-build
+      docker compose -f compose.vps.yaml up -d --no-build "${services[@]}"
       exit 6
     fi
     # After a healthy activation, keep only images referenced by containers.

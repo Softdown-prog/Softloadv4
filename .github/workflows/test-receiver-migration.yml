@@ -11,6 +11,8 @@ on:
       - scripts/vps/softload-actions-receiver.sh
       - scripts/vps/softload-clean-stale-archives.sh
       - scripts/vps/test_receiver_retention.py
+      - scripts/vps/retire_agent_gateway.py
+      - scripts/vps/test_retire_agent_gateway.py
       - .github/workflows/test-receiver-migration.yml
   pull_request:
     paths:
@@ -21,6 +23,8 @@ on:
       - scripts/vps/softload-actions-receiver.sh
       - scripts/vps/softload-clean-stale-archives.sh
       - scripts/vps/test_receiver_retention.py
+      - scripts/vps/retire_agent_gateway.py
+      - scripts/vps/test_retire_agent_gateway.py
       - .github/workflows/test-receiver-migration.yml
   workflow_dispatch:
 
@@ -39,4 +43,5 @@ jobs:
           python3 -m unittest discover -s scripts/vps -p test_migrate_receiver_v2.py -v
           python3 -m unittest discover -s scripts/vps -p test_cleanup_staging.py -v
           python3 -m unittest discover -s scripts/vps -p test_receiver_retention.py -v
+          python3 -m unittest discover -s scripts/vps -p test_retire_agent_gateway.py -v
           bash -n scripts/vps/softload-actions-receiver.sh scripts/vps/softload-clean-stale-archives.sh

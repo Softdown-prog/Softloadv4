@@ -27,6 +27,9 @@ class ReceiverRetentionTests(unittest.TestCase):
         source = source.replace('/run/lock/softload-actions-deploy.lock', str(self.lock))
         source = source.replace('/var/lib/softload-image-staging', str(self.stage))
         source = source.replace('/usr/bin/rrsync', str(self.bin / 'rrsync'))
+        self.stack = self.root / 'stack'; self.stack.mkdir()
+        (self.stack / '.env').write_text('SOFTLOAD_IMAGE_TAG=' + ('b' * 40) + '\n')
+        source = source.replace('/opt/softload-infra/softload', str(self.stack))
         self.script.write_text(source)
         self.tool('docker', f'''#!/bin/sh
 if [ "$1 $2" = "image inspect" ]; then test -e '{self.marker}'; exit $?; fi
@@ -50,6 +53,65 @@ exit 90
     def test_syntax_and_readonly_handshake(self):
         self.assertEqual(subprocess.run(['bash','-n',str(self.script)]).returncode,0)
         self.assertEqual(self.run_receiver('contract:v2').stdout.strip(),'softload-deploy:v2:app,agent')
+
+    def retire_agent(self):
+        with (self.stack / '.env').open('a') as file:
+            file.write('SOFTLOAD_AGENT_RETIRED=1\n')
+
+    def test_retired_agent_reuse_needs_no_image_and_preserves_legacy_handshake(self):
+        self.retire_agent()
+        self.assertEqual(self.run_receiver('contract:v3').stdout.strip(), 'softload-deploy:v3:app')
+        self.assertEqual(self.run_receiver('contract:v2').stdout.strip(), 'softload-deploy:v2:app,agent')
+        self.assertEqual(self.run_receiver('reuse:agent:' + SHA).returncode, 0)
+        self.assertFalse(self.marker.exists())
+
+    def test_retired_transport_is_verified_and_never_loaded(self):
+        self.retire_agent()
+        archive = self.stage / ('softload-agent-' + SHA + '.tar.gz')
+        archive.write_bytes(b'retired transport')
+        good = hashlib.sha256(archive.read_bytes()).hexdigest()
+        self.assertEqual(self.run_receiver(f'finish:agent:{SHA}:{"b"*64}').returncode, 4)
+        self.assertTrue(archive.exists())
+        self.assertEqual(self.run_receiver(f'finish:agent:{SHA}:{good}').returncode, 0)
+        self.assertFalse(archive.exists()); self.assertFalse(self.marker.exists())
+
+    def test_app_only_deploy_never_inspects_starts_or_waits_for_agent(self):
+        self.retire_agent()
+        self.tool('curl', '#!/bin/sh\nexit 0\n')
+        self.tool('docker', f'''#!/bin/sh
+case "$*" in *agent*) echo 'Unexpected Agent operation' >&2; exit 99;; esac
+case "$1 $2" in
+ 'image inspect') exit 0;;
+ 'compose -f') if [ "$4" = ps ]; then echo container; fi; exit 0;;
+ 'ps -aq') echo container; exit 0;;
+ 'inspect -f') echo healthy; exit 0;;
+ 'inspect --format') echo softload-app:{SHA}; exit 0;;
+ 'image ls') echo 'softload-app:{SHA} sha256:current'; exit 0;;
+esac
+exit 91
+''')
+        result = self.run_receiver('deploy:' + SHA)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_app_only_failed_health_restores_previous_revision_without_agent(self):
+        self.retire_agent()
+        self.script.write_text(self.script.read_text().replace('seq 1 36', 'seq 1 1').replace('sleep 5', 'sleep 0'))
+        log = self.root / 'docker-calls'
+        self.tool('docker', f'''#!/bin/sh
+echo "$*" >> '{log}'
+case "$*" in *agent*) exit 99;; esac
+case "$1 $2" in
+ 'image inspect') exit 0;;
+ 'compose -f') if [ "$4" = ps ]; then echo container; fi; exit 0;;
+ 'inspect -f') echo unhealthy; exit 0;;
+esac
+exit 91
+''')
+        result = self.run_receiver('deploy:' + SHA)
+        self.assertEqual(result.returncode, 5, result.stdout + result.stderr)
+        self.assertIn('SOFTLOAD_IMAGE_TAG=' + 'b' * 40, (self.stack / '.env').read_text())
+        self.assertNotIn('agent', log.read_text())
+        self.assertEqual(log.read_text().count('up -d --no-build app'), 2)
 
     def test_successful_import_deletes_transport(self):
         archive, digest = self.archive()
@@ -90,7 +152,7 @@ exit 90
         self.assertIn('{{.Config.Image}}',source)
 
     def test_healthy_deploy_removes_old_alias_but_keeps_current_refs_and_other_projects(self):
-        stack=self.root/'stack';stack.mkdir();(stack/'.env').write_text('SOFTLOAD_IMAGE_TAG='+('b'*40)+'\n')
+        stack=self.stack;(stack/'.env').write_text('SOFTLOAD_IMAGE_TAG='+('b'*40)+'\n')
         source=self.script.read_text().replace('/opt/softload-infra/softload',str(stack))
         self.script.write_text(source)
         self.tool('curl','#!/bin/sh\nexit 0\n')
