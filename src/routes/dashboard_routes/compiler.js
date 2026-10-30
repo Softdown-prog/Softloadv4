@@ -112,7 +112,7 @@ async function debitarTesteGratuito(user) {
 }
 router.get('/dashboard/gerador-blogger', exigirLogin, (req, res) => {
     res.render('pages/gerador-blogger', { activePage: 'gerador-blogger', user: req.session.user,
-        nichos: catalogo(), cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
+        nichos: catalogo(), cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label, hex: p.primary })),
         fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
         exemplos: listarExemplos(),
         gratuitoLimite: MAX_FREE_DOWNLOADS, guestMode: false, downloadPath: '/dashboard/gerador-blogger/download', guestToken: '' });
@@ -156,5 +156,5 @@ router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req, res) => res.re
 router.publicCompile = compilarSemIa;
 router.publicCatalog = catalogo;
 router.publicExamples = listarExemplos;
-router.publicPresets = () => ({ cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })), fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })) });
+router.publicPresets = () => ({ cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label, hex: p.primary })), fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })) });
 module.exports = router;
