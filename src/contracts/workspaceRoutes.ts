@@ -1,5 +1,5 @@
-import type { RouteExports as CompilerExports } from '../routes/dashboard_routes/chat/chatTemplateCompiler';
-export type WorkspaceManifest = Parameters<CompilerExports['_snapshotDeManifesto']>[1];
+/** Formato legado de manifesto mantido para leitura de históricos, sem chat ou agente. */
+export type WorkspaceManifest = Record<string, unknown>;
 export interface WorkspaceSnapshot extends Record<string, unknown> {
     compilacaoId?: string | null; siteName?: string | null; colorPreset?: string; typography?: string;
     gridLayout?: string; nichoTema?: string | null; xmlPath?: string | null; gcPath?: string | null;
