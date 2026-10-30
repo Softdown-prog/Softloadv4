@@ -88,13 +88,16 @@ async function calcularKpis() {
 // Paginação cursor-based (startAfter) — Firestore não suporta offset eficiente
 // e cobrava leitura de todos os documentos pulados.
 async function listarUsuarios(limit = 50, cursor: string | null = null) {
-    let query = db.collection('clientes_premium').orderBy('criado_em', 'desc').limit(limit);
+    let query = db.collection('clientes_premium').orderBy('criado_em', 'desc').limit(limit + 1);
     if (cursor) {
-        query = query.startAfter(cursor);
+        const cursorDoc = await db.collection('clientes_premium').doc(cursor).get();
+        if (!cursorDoc.exists) return { usuarios: [], nextCursor: null };
+        query = query.startAfter(cursorDoc);
     }
     const snap = await query.get();
 
-    const usuarios = snap.docs.map(doc => {
+    const pageDocs = snap.docs.slice(0, limit);
+    const usuarios = pageDocs.map(doc => {
         const d = doc.data() as AccountRecord;
         return {
             email: d.email || doc.id,
@@ -110,13 +113,12 @@ async function listarUsuarios(limit = 50, cursor: string | null = null) {
                     day: '2-digit', month: '2-digit', year: 'numeric'
                 })
                 : '—',
-            // Cursor opaco para a próxima página — última data ordenada
-            _cursor: d.criado_em || null
+            // A ordenação para paginação usa o snapshot do documento.
         };
     });
 
-    const nextCursor = snap.size === limit && usuarios.length > 0
-        ? usuarios[usuarios.length - 1]._cursor
+    const nextCursor = snap.size > limit && pageDocs.length > 0
+        ? pageDocs[pageDocs.length - 1].id
         : null;
 
     return { usuarios, nextCursor };
@@ -168,9 +170,10 @@ router.get('/eu/api/kpis', exigirSuperAdmin, async (req, res) => {
 // ==========================================
 router.get('/eu/api/usuarios', exigirSuperAdmin, async (req, res) => {
     try {
-        const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-        // Cursor opaco passado pelo cliente (criado_em ISO da última linha da página anterior)
-        const cursor = req.query.cursor || null;
+        const limit = Math.min(Math.max(parseInt(req.query.limit as string, 10) || 50, 1), 100);
+        // O cursor referencia o último documento exibido; nunca compara datas como strings.
+        const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
+        if (cursor && cursor.length > 256) return res.status(400).json({ erro: 'Cursor inválido.' });
         const { usuarios, nextCursor } = await listarUsuarios(limit, cursor);
         res.json({ usuarios, nextCursor });
     } catch (errCaught) {
