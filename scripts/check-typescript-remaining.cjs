@@ -42,6 +42,17 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
     const atual=fs.readFileSync(base+'.js','utf8');
     if(emitido!==atual)divergentes.push(nome);
   }
+  // Script EJS do painel admin: transpilar TypeScript e comparar AST canônica
+  // com o JavaScript servido ao navegador, ignorando apenas formatação/comentários.
+  const adminBase=path.join(root,'public/js/admin-simples');
+  const adminTs=fs.readFileSync(adminBase+'.ts','utf8');
+  const adminJs=fs.readFileSync(adminBase+'.js','utf8');
+  const adminGenerated=ts.transpileModule(adminTs,{compilerOptions:{
+    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+  }}).outputText;
+  const printer=ts.createPrinter({removeComments:true});
+  const canonical=(code)=>printer.printFile(ts.createSourceFile('admin-simples.js',code,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS));
+  if(canonical(adminGenerated)!==canonical(adminJs))divergentes.push('admin-simples');
   return divergentes;
 }
 function verificarEspelhoProcedural(root=path.resolve(__dirname,'..')) {
