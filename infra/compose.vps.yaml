@@ -1,0 +1,179 @@
+{
+  "name": "softload-vps",
+  "networks": {
+    "core": {
+      "name": "softload-vps_core",
+      "ipam": {},
+      "internal": true
+    },
+    "proxy": {
+      "name": "softload_proxy",
+      "ipam": {},
+      "external": true
+    }
+  },
+  "secrets": {
+    "FIREBASE_API_KEY": {
+      "name": "softload-vps_FIREBASE_API_KEY",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/FIREBASE_API_KEY"
+    },
+    "FIREBASE_APP_ID": {
+      "name": "softload-vps_FIREBASE_APP_ID",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/FIREBASE_APP_ID"
+    },
+    "GCP_ADC": {
+      "name": "softload-vps_GCP_ADC",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/GCP_ADC"
+    },
+    "MP_ACCESS_TOKEN": {
+      "name": "softload-vps_MP_ACCESS_TOKEN",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/MP_ACCESS_TOKEN"
+    },
+    "MP_CHECKOUT_URL": {
+      "name": "softload-vps_MP_CHECKOUT_URL",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/MP_CHECKOUT_URL"
+    },
+    "MP_PUBLIC_KEY": {
+      "name": "softload-vps_MP_PUBLIC_KEY",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/MP_PUBLIC_KEY"
+    },
+    "MP_WEBHOOK_SECRET": {
+      "name": "softload-vps_MP_WEBHOOK_SECRET",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/MP_WEBHOOK_SECRET"
+    },
+    "RESEND_API_KEY": {
+      "name": "softload-vps_RESEND_API_KEY",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/RESEND_API_KEY"
+    },
+    "SESSION_SECRET": {
+      "name": "softload-vps_SESSION_SECRET",
+      "file": "${SOFTLOAD_SECRET_DIR:-/etc/softload-secrets}/SESSION_SECRET"
+    }
+  },
+  "services": {
+    "app": {
+      "restart": "unless-stopped",
+      "cpus": 1.5,
+      "command": [
+        "node",
+        "server.js"
+      ],
+      "entrypoint": [
+        "/bin/sh",
+        "/run/softload/secret-entrypoint.sh"
+      ],
+      "environment": {
+        "BASE_URL": "https://softload.analysepro.com",
+        "GCS_BUCKET_NAME": "softload-compilacoes",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/run/secrets/GCP_ADC",
+        "GOOGLE_CLOUD_PROJECT": "loyal-road-395203",
+        "NODE_ENV": "production",
+        "PORT": "8080",
+        "SOFTLOAD_SECRET_NAMES": "SESSION_SECRET FIREBASE_API_KEY FIREBASE_APP_ID RESEND_API_KEY MP_ACCESS_TOKEN MP_WEBHOOK_SECRET MP_PUBLIC_KEY MP_CHECKOUT_URL"
+      },
+      "image": "softload-app:${SOFTLOAD_IMAGE_TAG:?set a validated commit SHA}",
+      "init": true,
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "3",
+          "max-size": "10m"
+        }
+      },
+      "mem_limit": "1073741824",
+      "networks": {
+        "core": null,
+        "proxy": null
+      },
+      "pids_limit": 256,
+      "secrets": [
+        {
+          "source": "SESSION_SECRET",
+          "target": "/run/secrets/SESSION_SECRET"
+        },
+        {
+          "source": "FIREBASE_API_KEY",
+          "target": "/run/secrets/FIREBASE_API_KEY"
+        },
+        {
+          "source": "FIREBASE_APP_ID",
+          "target": "/run/secrets/FIREBASE_APP_ID"
+        },
+        {
+          "source": "RESEND_API_KEY",
+          "target": "/run/secrets/RESEND_API_KEY"
+        },
+        {
+          "source": "MP_ACCESS_TOKEN",
+          "target": "/run/secrets/MP_ACCESS_TOKEN"
+        },
+        {
+          "source": "MP_WEBHOOK_SECRET",
+          "target": "/run/secrets/MP_WEBHOOK_SECRET"
+        },
+        {
+          "source": "MP_PUBLIC_KEY",
+          "target": "/run/secrets/MP_PUBLIC_KEY"
+        },
+        {
+          "source": "MP_CHECKOUT_URL",
+          "target": "/run/secrets/MP_CHECKOUT_URL"
+        },
+        {
+          "source": "GCP_ADC",
+          "target": "/run/secrets/GCP_ADC"
+        }
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "/opt/softload-infra/softload/secret-entrypoint.sh",
+          "target": "/run/softload/secret-entrypoint.sh",
+          "read_only": true,
+          "bind": {}
+        }
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:8080/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+        ],
+        "timeout": "30s",
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "45s"
+      }
+    }
+  },
+  "x-common": {
+    "init": true,
+    "logging": {
+      "driver": "json-file",
+      "options": {
+        "max-file": "3",
+        "max-size": "10m"
+      }
+    },
+    "restart": "unless-stopped",
+    "security_opt": [
+      "no-new-privileges:true"
+    ]
+  },
+  "x-node-health": {
+    "interval": "30s",
+    "retries": 3,
+    "start_period": "45s",
+    "test": [
+      "CMD",
+      "node",
+      "-e",
+      "require('http').get('http://127.0.0.1:8080/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+    ],
+    "timeout": "30s"
+  }
+}

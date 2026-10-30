@@ -45,3 +45,16 @@ test('static compiler inputs, data compatibility and financial guards survive re
   assert.doesNotMatch(read('server.js'), /recuperarReservasWorkspace|criarMonitorRecuperacaoCobrancas/);
   assert.match(read('src/services/sentinelWorker.js'), /makeRequest\('\/dashboard\/gerador-blogger'\)/);
 });
+
+
+test('production Compose keeps one App and resolves the release tag from environment', () => {
+  const compose = JSON.parse(read('infra/compose.vps.yaml'));
+  assert.deepEqual(Object.keys(compose.services), ['app']);
+  assert.match(compose.services.app.image, /\$\{SOFTLOAD_IMAGE_TAG:/);
+  assert.equal(compose.services.app.depends_on, undefined);
+  assert.equal(compose.services.app.ports, undefined);
+  assert.doesNotMatch(JSON.stringify(compose), /GEMINI|OPENAI|SOLARIS|WORKER_SHARED|SANDBOX|EMBEDDINGS/);
+  assert.ok(compose.secrets.SESSION_SECRET);
+  assert.ok(compose.secrets.MP_WEBHOOK_SECRET);
+  assert.ok(compose.secrets.GCP_ADC);
+});

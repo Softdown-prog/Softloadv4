@@ -35,3 +35,7 @@ jobs:
         run: docker build --progress plain -t softload-blogger-ci .
       - name: Iniciar Docker e validar EJS, acesso protegido e XML sem credenciais
         run: bash scripts/smoke-container.sh softload-blogger-ci
+      - name: Validar Compose App-only e a revisão configurável
+        env:
+          SOFTLOAD_IMAGE_TAG: ${{ github.sha }}
+        run: docker compose -f infra/compose.vps.yaml config --quiet
