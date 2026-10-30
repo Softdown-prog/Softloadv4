@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "baselineCommit": "11cb4a502afeb8063b4a9249a81d1d02bfac803c",
-  "description": "Inventário fechado: TS-fonte substitui JS de runtime, sem contar JS compilado, testes, exemplos e bundles Vite.",
+  "description": "Inventário fechado: espelhos JS não contam como dívida, testes e exemplos ficam fora; a ferramenta de smoke público é CJS controlado. React/Vite foram aposentados.",
   "runtime": [
     "agent.js",
     "agent/forge/catalog.cjs",
@@ -44,12 +44,12 @@
     "src/services/storageService.js",
     "src/services/workspaceCreditReservations.js",
     "src/workers/taskWorker.js",
-    "src/workers/xmlPatchWorker.js",
-    "vite.config.js"
+    "src/workers/xmlPatchWorker.js"
   ],
   "tooling": [
     "agent/forge/smoke.cjs",
     "agent/forge/verify-source.cjs",
-    "scripts/check-agent-capabilities-ts-mirrors.cjs"
+    "scripts/check-agent-capabilities-ts-mirrors.cjs",
+    "scripts/livePublicCompilerSmoke.cjs"
   ]
 }
