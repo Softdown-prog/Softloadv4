@@ -132,6 +132,8 @@ app.use((req, res, next) => {
     res.locals.currentPath = req.path;
     res.locals.firebaseApiKey = process.env.FIREBASE_API_KEY;
     res.locals.firebaseAppId = process.env.FIREBASE_APP_ID;
+    res.locals.bloggerCheckoutEnabled = process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true';
+    res.locals.bloggerFilesEnabled = process.env.SOFTLOAD_LITE_FILES_ENABLED === 'true';
     res.locals.mpCheckoutUrl = process.env.MP_CHECKOUT_URL || '#';
     res.locals.gitSha = buildInfo.gitSha;
     next();

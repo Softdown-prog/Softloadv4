@@ -140,8 +140,13 @@
             <li>Pagamento avulso, sem renovação automática</li>
             <li>Conta gratuita: 2 downloads vinculados ao cadastro</li>
           </ul>
+          <% if (typeof bloggerCheckoutEnabled !== 'undefined' && bloggerCheckoutEnabled) { %>
+          <a class="mk-btn mk-btn--primary" href="/dashboard/plano-essencial">Contratar Essencial por R$ 5</a>
+          <p class="plan-notice">Pagamento único para 30 dias de acesso. Crie sua conta ou entre para contratar. Sem renovação automática.</p>
+          <% } else { %>
           <a class="mk-btn mk-btn--primary" href="/register">Criar conta para acompanhar o plano</a>
           <p class="plan-notice">A contratação do Essencial depende da conclusão da homologação do checkout. A criação de conta não inicia cobrança.</p>
+          <% } %>
         </article>
       </div>
     </div>
@@ -157,7 +162,7 @@
       <div class="faq-items">
         <details><summary>Preciso de uma conta para testar?</summary><p>Não. O editor público permite experimentar e gerar até 2 XML por sessão. A conta gratuita tem sua própria cota de teste.</p></details>
         <details><summary>Posso instalar o XML diretamente no Blogger?</summary><p>Você baixa o arquivo e importa pelo painel do Blogger. O XML passa por validação de estrutura, mas a prévia é ilustrativa: teste o tema em um blog separado e preserve o tema anterior.</p></details>
-        <details><summary>O plano Essencial renova sozinho?</summary><p>Não. O acesso previsto é por pagamento avulso de 30 dias, com renovação manual. O pagamento ficará disponível depois da homologação técnica.</p></details>
+        <details><summary>O plano Essencial renova sozinho?</summary><p>Não. O acesso é por pagamento avulso de 30 dias, com renovação manual.<% if (typeof bloggerCheckoutEnabled === 'undefined' || !bloggerCheckoutEnabled) { %> O pagamento ficará disponível depois da homologação técnica.<% } %></p></details>
         <details><summary>Os templates usam inteligência artificial?</summary><p>Não. O gerador Blogger usa um compilador procedural que transforma suas configurações em um arquivo XML.</p></details>
       </div>
     </div>

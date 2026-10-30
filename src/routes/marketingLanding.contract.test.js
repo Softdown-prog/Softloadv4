@@ -48,3 +48,12 @@ test('telas internas não recebem o CSS comercial e rodapé mantém acesso públ
   const contact = read('views/pages/contato.ejs');
   assert.doesNotMatch(contact, /Solaris Code|Workspace/);
 });
+
+
+test('released landing advertises the authorized single payment without pending-release copy', async () => {
+  const html = await render('views/pages/landing-blogger.ejs', {bloggerCheckoutEnabled:true, bloggerFilesEnabled:true});
+  assert.match(html, /Contratar Essencial por R\$ 5/);
+  assert.match(html, /href="\/dashboard\/plano-essencial"/);
+  assert.match(html, /Pagamento único para 30 dias/);
+  assert.doesNotMatch(html, /homologação do checkout|depois da homologação técnica/);
+});

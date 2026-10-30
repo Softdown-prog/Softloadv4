@@ -102,7 +102,9 @@ async function debitarTesteGratuito(user) {
         const usado = Number.isSafeInteger(dados.gerador_sem_ia_testes_usados) &&
             dados.gerador_sem_ia_testes_usados >= 0 ? dados.gerador_sem_ia_testes_usados : 0;
         if (usado >= MAX_FREE_DOWNLOADS) {
-            const err = new Error('Você já utilizou seus 2 downloads gratuitos. O plano de R$ 5 está sendo preparado.');
+            const err = new Error(process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true'
+                ? 'Você já utilizou seus 2 downloads gratuitos. Ative o plano Essencial de R$ 5 por 30 dias no painel.'
+                : 'Você já utilizou seus 2 downloads gratuitos. O plano de R$ 5 está sendo preparado.');
             err.status = 402;
             throw err;
         }
