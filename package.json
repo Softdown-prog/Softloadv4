@@ -11,14 +11,15 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node scripts/runTests.js",
-    "typecheck": "tsc --project tsconfig.json --noEmit && node scripts/check-typescript-mirrors.js && node scripts/audit-typescript-migration.js",
+    "typecheck": "node node_modules/typescript/bin/tsc --project tsconfig.json --noEmit && node scripts/check-typescript-mirrors.js && node scripts/audit-typescript-migration.js",
     "compile:batch": "node scripts/compile-batch.js",
     "compile:batch:pkg": "node scripts/compile-batch.js",
     "test:quality": "node --test src/routes/dashboard_routes/compiler.procedural.integration.test.js",
     "sync:typescript": "node scripts/check-typescript-mirrors.js --write",
     "audit:typescript": "node scripts/audit-typescript-migration.js",
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
-    "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs"
+    "typecheck:workers": "node node_modules/typescript/bin/tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
+    "check:typescript-native": "node -e \"const {execFileSync}=require('node:child_process');const out=execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--version'],{encoding:'utf8'});if(!/^Version 7\\\\.0\\\\.2\\\\s*$/.test(out))throw new Error('Compilador nativo TypeScript 7 não ativo: '+out);console.log(out.trim())\""
   },
   "dependencies": {
     "archiver": "^8.0.0",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "bootstrap": "^5.3.8",
     "chart.js": "^4.6.1",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "@typescript/typescript6": "6.0.2"
   }
 }

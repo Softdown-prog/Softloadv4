@@ -57,7 +57,7 @@ declare const process: { argv: string[]; exitCode?: number };
 
 const fs = require('node:fs') as MirrorFileSystem;
 const path = require('node:path') as MirrorPaths;
-const ts = require('typescript') as MirrorCompiler;
+const ts = require('@typescript/typescript6') as MirrorCompiler;
 const ROOT = path.resolve(__dirname, '..');
 const SOURCES = require('./typescript-mirror-sources.json') as string[];
 

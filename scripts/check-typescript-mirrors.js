@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verificarEspelhos = verificarEspelhos;
 const fs = require('node:fs');
 const path = require('node:path');
-const ts = require('typescript');
+const ts = require('@typescript/typescript6');
 const ROOT = path.resolve(__dirname, '..');
 const SOURCES = require('./typescript-mirror-sources.json');
 /** Verifica todos os espelhos sem escrever, salvo quando write é explícito. */
