@@ -13,8 +13,8 @@
   <p class="eyebrow mb-2">Softload · especializado em Blogger</p>
   <section class="panel" aria-labelledby="auth-title">
     <% if(authMode === 'register') { %>
-      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Crie sua conta, se quiser</h1>
-      <p class="copy">Você pode experimentar o editor sem cadastro. Crie uma conta somente se quiser identificar seus downloads, ampliar seus limites de uso ou contratar o Essencial. A área de arquivos gratuitos está em preparação.</p>
+      <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Sua área de criação começa aqui</h1>
+      <p class="copy">Você pode experimentar o editor sem cadastro. Crie uma conta para acompanhar seu uso, acessar recursos de conta e, quando disponível, contratar o Essencial. A área de arquivos está em preparação.</p>
       <form action="/register" method="post">
         <div class="mb-3"><label class="form-label" for="name">Seu nome</label><input class="form-control" id="name" name="name" autocomplete="name" minlength="2" maxlength="100" required></div>
         <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
@@ -33,7 +33,7 @@
       <p class="copy small mt-4 mb-0"><a href="/login">Voltar para entrar</a></p>
     <% } else { %>
       <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Entre na sua conta</h1>
-      <p class="copy">Continue criando templates e imagens 2D. Sua conta segue protegida pelo Firebase.</p>
+      <p class="copy">Acesse seus templates, suas configurações e os recursos da conta. O login continua protegido pelo Firebase.</p>
       <form action="/login" method="post">
         <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
         <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required></div>

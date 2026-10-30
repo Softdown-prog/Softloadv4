@@ -24,6 +24,13 @@
         (max-age=0, só revalida por ETag) não é suficiente em caches mais
         agressivos, e o CSS atualizado nunca chega em quem já visitou antes. %>
     <link href="/css/softload.css?v=<%= gitSha %>" rel="stylesheet">
+    <% if (typeof marketingPage !== 'undefined' && marketingPage) { %>
+    <link href="/css/blogger-marketing.css?v=<%= gitSha %>" rel="stylesheet">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="Softload | Crie e personalize templates Blogger">
+    <meta property="og:description" content="Seu template para Blogger, do seu jeito. Personalize o layout, visualize uma prévia e gere seu XML no navegador.">
+    <% } %>
 
     <%# Aplica o tema antes do render para evitar flash %>
     <script>
@@ -37,7 +44,7 @@
         })();
     </script>
 </head>
-<body>
+<body<% if (typeof marketingPage !== 'undefined' && marketingPage) { %> class="sl-blogger-marketing"<% } %>>
 
 <%
     var onDashboard = typeof activePage !== 'undefined' && activePage !== null;
