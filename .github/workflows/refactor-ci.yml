@@ -21,6 +21,8 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: Verificar contratos TypeScript
         run: npm run typecheck
+      - name: Verificar scripts TypeScript do navegador e espelhos
+        run: npm run typecheck:workers
       - name: Garantir contrato de duas imagens e Agent sem Chromium
         run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs
       - name: Contratos das rotas finais e RAG local (sem servicos externos)
