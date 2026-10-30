@@ -49,6 +49,46 @@
       body.appendChild(tr);
     }
   }
+
+  let userCursors = [null];
+  let currentUserPage = 0;
+  let loadingUsers = false;
+
+  async function loadUserPage(index) {
+    if (loadingUsers || index < 0 || index >= userCursors.length) return;
+    const previous = document.getElementById('admin-usuarios-prev');
+    const next = document.getElementById('admin-usuarios-next');
+    const pageLabel = document.getElementById('admin-usuarios-page');
+    if (!previous || !next || !pageLabel) return;
+    loadingUsers = true;
+    previous.disabled = true;
+    next.disabled = true;
+    say('Consultando contas…');
+    try {
+      const cursor = userCursors[index];
+      const endpoint = '/eu/api/usuarios?limit=50' + (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
+      const data = await getJson(endpoint);
+      const items = Array.isArray(data.usuarios) ? data.usuarios : [];
+      renderTable('admin-usuarios', items.map(user => [
+        user.email, user.nome, user.plano,
+        user.is_active ? 'Ativa' : 'Não ativa',
+        number(user.tentativas_compilacao), user.storage_usado_mb
+      ]), 6, 'Nenhuma conta encontrada.');
+      currentUserPage = index;
+      userCursors = userCursors.slice(0, index + 1);
+      if (typeof data.nextCursor === 'string' && data.nextCursor) userCursors.push(data.nextCursor);
+      pageLabel.textContent = 'Página ' + (index + 1);
+      say(items.length + ' conta(s) nesta página. Consulta somente leitura.');
+    } catch (_) {
+      say('Não foi possível carregar esta página de contas. Tente novamente.');
+      if (index === 0) renderTable('admin-usuarios', [], 6, 'Consulta temporariamente indisponível.');
+    } finally {
+      loadingUsers = false;
+      previous.disabled = currentUserPage === 0;
+      next.disabled = currentUserPage + 1 >= userCursors.length;
+    }
+  }
+
   async function load() {
     try {
       if (section === 'inicio') {
@@ -59,14 +99,7 @@
         }
         say('Dados atualizados. Indicadores históricos; não representam faturamento.');
       } else if (section === 'usuarios') {
-        const data = await getJson('/eu/api/usuarios?limit=50');
-        const items = Array.isArray(data.usuarios) ? data.usuarios : [];
-        renderTable('admin-usuarios', items.map(user => [
-          user.email, user.nome, user.plano,
-          user.is_active ? 'Ativa' : 'Não ativa',
-          number(user.tentativas_compilacao), user.storage_usado_mb
-        ]), 6, 'Nenhuma conta encontrada.');
-        say(items.length + ' conta(s) exibida(s). Consulta somente leitura.');
+        await loadUserPage(0);
       } else if (section === 'analytics') {
         const data = await getJson('/eu/api/analytics/creditos?dias=30');
         const groups = Object.entries(data.por_plano || {});
@@ -83,6 +116,12 @@
       if (section === 'usuarios') renderTable('admin-usuarios', [], 6, 'Consulta temporariamente indisponível.');
       if (section === 'analytics') renderTable('admin-analytics', [], 5, 'Consulta temporariamente indisponível.');
     }
+  }
+  if (section === 'usuarios') {
+    const previous = document.getElementById('admin-usuarios-prev');
+    const next = document.getElementById('admin-usuarios-next');
+    if (previous) previous.addEventListener('click', () => { void loadUserPage(currentUserPage - 1); });
+    if (next) next.addEventListener('click', () => { void loadUserPage(currentUserPage + 1); });
   }
   void load();
 })();
