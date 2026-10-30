@@ -17,6 +17,7 @@ function fixture(){
   let compiled=0;
   const compiler={
     publicCatalog:()=>[{id:'noticias-mag-news',nome:'Notícias',aviso:null}],
+    publicExamples:()=>[{id:'noticias-elegante',nome:'Jornal Horizonte',nichoTema:'noticias-mag-news'}],
     publicPresets:()=>({cores:[{id:'tech-blue',nome:'Azul'}],fontes:[{id:'inter',nome:'Inter'}]}),
     publicCompile:()=>{compiled++;return{slug:'teste',xmlFinal:"<html><b:widget id='Blog1' type='Blog'/></html>"};}
   };
