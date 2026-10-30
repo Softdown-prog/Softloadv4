@@ -125,38 +125,28 @@ async function listarUsuarios(limit = 50, cursor: string | null = null) {
 // ==========================================
 // GET /eu — Dashboard principal
 //
-// Migrado pro app React (frontend/pages/admin/Dashboard.jsx) — 'pages/react-admin'
-// é a bridge do painel admin (documento HTML próprio, não reaproveita
-// partials/header|footer nem a bridge do dashboard do cliente). Os dados
-// (kpis, últimas contas, saúde, logs) já eram servidos como JSON pelos
-// endpoints /eu/api/* abaixo; o React busca tudo client-side, então esta
-// rota não precisa mais calcular nada — só valida a sessão de super-admin.
+// Página administrativa EJS nativa; informações vindas de /eu/api/* protegidas.
 // ==========================================
 router.get('/eu', exigirSuperAdmin, (req, res) => {
-    res.render('pages/react-admin');
+    res.render('pages/admin-simples', { adminSection: 'inicio', user: req.session.user });
 });
 
 // ==========================================
 // GET /eu/usuarios — Gestão de usuários
 //
-// Migrado pro app React (frontend/pages/admin/Usuarios.jsx) — busca a
-// primeira página direto de /eu/api/usuarios client-side, mesmo raciocínio
-// já usado em GET /eu (ver comentário lá).
+// Lista de contas EJS; mantém endpoint JSON existente e guarda super-admin.
 // ==========================================
 router.get('/eu/usuarios', exigirSuperAdmin, (req, res) => {
-    res.render('pages/react-admin');
+    res.render('pages/admin-simples', { adminSection: 'usuarios', user: req.session.user });
 });
 
 // ==========================================
 // GET /eu/sol — Chat com o Sol (agente conversacional interno)
 //
-// Migrado pro app React (frontend/pages/admin/Sol.jsx) — mesmo raciocínio
-// já usado em GET /eu e GET /eu/usuarios (ver comentário em GET /eu):
-// os dados (sessões salvas, streaming SSE) já eram servidos pelos
-// endpoints /eu/api/sol/* abaixo, o React só consome client-side.
+// Tela informativa: o chat Sol foi aposentado na versão Blogger, sem apagar histórico.
 // ==========================================
 router.get('/eu/sol', exigirSuperAdmin, (req, res) => {
-    res.render('pages/react-admin');
+    res.render('pages/admin-simples', { adminSection: 'sol', user: req.session.user });
 });
 
 // ==========================================
@@ -671,15 +661,10 @@ async function calcularAnalyticsCreditos(diasAtras = 30) {
 
 // GET /eu/analytics — dashboard de consumo
 //
-// Migrado pro app React (frontend/pages/admin/Analytics.jsx) — mesmo
-// raciocínio já usado em GET /eu, GET /eu/usuarios e GET /eu/sol (ver
-// comentário em GET /eu). O React busca tudo client-side via
-// /eu/api/analytics/creditos abaixo, que já tem seu próprio fallback
-// seguro em caso de erro (status 200 + { erro }) — dispensa o
-// segundo caminho de render (500 + erroGeral) que esta rota tinha.
+// Consumo histórico em EJS, carregado da API de analytics sem React.
 // ==========================================
 router.get('/eu/analytics', exigirSuperAdmin, (req, res) => {
-    res.render('pages/react-admin');
+    res.render('pages/admin-simples', { adminSection: 'analytics', user: req.session.user });
 });
 
 // GET /eu/api/analytics/creditos — JSON para auto-refresh
