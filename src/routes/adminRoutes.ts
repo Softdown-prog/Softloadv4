@@ -138,14 +138,6 @@ router.get('/eu/usuarios', exigirSuperAdmin, (req, res) => {
 });
 
 // ==========================================
-// GET /eu/sol — Chat com o Sol (agente conversacional interno)
-//
-// Tela informativa: o chat Sol foi aposentado na versão Blogger, sem apagar histórico.
-// ==========================================
-
-});
-
-// ==========================================
 // GET /eu/api/kpis — Polling de KPIs (JSON)
 // ==========================================
 router.get('/eu/api/kpis', exigirSuperAdmin, async (req, res) => {
