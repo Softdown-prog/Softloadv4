@@ -15,6 +15,7 @@
     "isolatedModules": true
   },
   "include": [
+    "src/contracts/**/*.ts",
     "src/core/compilerEngine/sanitize.ts",
     "src/core/compilerEngine/fieldGraph.ts",
     "src/core/compilerEngine/orphans.ts",
