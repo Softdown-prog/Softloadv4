@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      # Toda fonte JS/TS altera a contagem da migração; dist é gerado pelo Vite.
+      # Toda fonte JS/TS altera a contagem da migração; bundles antigos não são versionados.
       - '**/*.js'
       - '**/*.jsx'
       - '**/*.cjs'
@@ -14,11 +14,9 @@ on:
       - '!public/dist/**'
       - 'scripts/typescript-remaining.json'
       - 'tsconfig.json'
-      - 'tsconfig.frontend.json'
       - 'tsconfig.workers.json'
       - 'tsconfig.forge-html5.json'
       - 'tsconfig.forge-catalog.json'
-      - 'tsconfig.vite.json'
       - 'src/**/*.ts'
       - 'src/**/*.js'
       - 'src/solaris/code-examples/**'
@@ -69,9 +67,6 @@ on:
       - 'scripts/ragOrganizarRascunhos.js'
       - 'scripts/ragOrganizarRascunhos.test.js'
       - 'tsconfig.json'
-      - 'tsconfig.frontend.json'
-      - 'frontend/**'
-      - 'vite.config.js'
       - 'scripts/typescript-mirror-sources.json'
       - 'scripts/check-typescript-mirrors.js'
       - 'scripts/check-typescript-mirrors.ts'
@@ -158,8 +153,6 @@ jobs:
         run: |
           node --test scripts/check-typescript-remaining.test.cjs
           node scripts/check-typescript-remaining.cjs
-      - name: Typecheck da configuração Vite e equivalência do bundle
-        run: npm run typecheck:vite
       - name: Verificar catálogo tipado do Asset Forge e espelho CommonJS
         run: npm run typecheck:forge-catalog
       - name: Verificar runtime procedural Forge HTML5 e espelho ESM
@@ -168,17 +161,11 @@ jobs:
         run: npm run typecheck:workers
       - name: Testar autoauditoria de espelhos TypeScript (arquivos temporários)
         run: node --test scripts/check-typescript-mirrors.test.js
-      - name: Testar contratos da base React em ambientes simulados
-        run: npm run test:frontend-base
-      - name: Conferir rotas e layouts React migrados
-        run: npm run test:frontend-layouts
-      - name: Testar prévia isolada de créditos V2 do dashboard
-        run: node --test frontend/tests/creditsV2.test.cjs frontend/tests/solarisCredits.test.cjs
-      - name: Validar layout e rolagem dos chats React
-        run: node --test frontend/tests/conversation-ui.test.cjs
-      - name: Verificar TypeScript do frontend React
-        run: npm run typecheck:frontend
-      - name: Compilar frontend React pelo Vite
+      - name: Validar compilador Blogger, sessão visitante e páginas EJS
+        run: |
+          node --test src/routes/publicBlogger.contract.test.cjs
+          node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
+      - name: Preparar assets vendorizados do Blogger
         run: npm run build
       - name: Verificar segurança do boot (ambiente simulado)
         run: |

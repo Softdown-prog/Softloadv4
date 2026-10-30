@@ -22,7 +22,8 @@ function inventariar(tracked,lista) {
 function auditar({root=path.resolve(__dirname,'..'),tracked=null,lista=null,tsconfig=null}={}) {
   const files=tracked||execFileSync('git',['ls-files','-z'],{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
   const baseline=lista||JSON.parse(fs.readFileSync(path.join(root,'scripts/typescript-remaining.json'),'utf8'));
-  const config=tsconfig||JSON.parse(fs.readFileSync(path.join(root,'tsconfig.frontend.json'),'utf8'));
+  // Frontend React aposentado: fixtures podem fornecer tsconfig, mas produção não o exige.
+  const config=tsconfig||{include:[]};
   const result=inventariar(files,baseline);
   const ausentes=result.frontendTs.filter(x=>!config.include.includes(x));
   return {...result,frontendForaTypecheck:ausentes,ok:result.inesperados.length===0&&ausentes.length===0};
@@ -63,14 +64,6 @@ function verificarEspelhoForgeCatalog(root=path.resolve(__dirname,'..')) {
     return expected===fs.readFileSync(base+'.cjs','utf8');
   });
 }
-function verificarEspelhoVite(root=path.resolve(__dirname,'..')) {
-  const ts=require('typescript');
-  const base=path.join(root,'vite.config');
-  const expected=ts.transpileModule(fs.readFileSync(base+'.ts','utf8'),{compilerOptions:{
-    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,removeComments:false
-  }}).outputText;
-  return expected===fs.readFileSync(base+'.js','utf8');
-}
 if(require.main===module){
   const r=auditar();
   console.log('[TS-MIGRACAO] Fontes JS de runtime ainda sem TS:',r.runtime.length);
@@ -84,8 +77,6 @@ if(require.main===module){
   if(!procedural)console.error('Forge HTML5 procedural/runtime.mjs não sincronizado com TypeScript');
   const catalogo=verificarEspelhoForgeCatalog();
   if(!catalogo)console.error('Forge catalog/index.cjs não sincronizado com fonte TypeScript');
-  const vite=verificarEspelhoVite();
-  if(!vite)console.error('Vite config JS não sincronizado com TypeScript');
-  if(!r.ok||browsers.length||!procedural||!catalogo||!vite)process.exitCode=1;
+  if(!r.ok||browsers.length||!procedural||!catalogo)process.exitCode=1;
 }
-module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural,verificarEspelhoForgeCatalog,verificarEspelhoVite};
+module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural,verificarEspelhoForgeCatalog};

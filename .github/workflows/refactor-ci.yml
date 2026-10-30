@@ -6,7 +6,7 @@ on:
 
 jobs:
   verify:
-    name: Typecheck + testes + frontend
+    name: Typecheck + testes + Blogger
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,9 +44,11 @@ jobs:
         run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
       - name: Validar Blogger sem conta (cota, CSRF e XML)
         run: node --test src/routes/publicBlogger.contract.test.cjs
-      - name: Conferir layout público EJS e navegação antes de mesclar
-        run: npm run test:frontend-layouts
-      - name: Build React
+      - name: Validar fluxo público EJS Blogger e compilação XML antes de mesclar
+        run: |
+          node --test src/routes/publicBlogger.contract.test.cjs
+          node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
+      - name: Preparar assets locais do Blogger sem Vite
         run: npm run build
       - name: Verificar imagem Docker de producao
         run: docker build --progress plain -t softload-refactor-ci .

@@ -32,11 +32,11 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
-      - name: Gate frontend before building production images
+      - name: Gate Blogger EJS, sessao e compilador antes da publicacao
         run: |
-          npm run typecheck:frontend
-          npm run test:frontend-base
-          npm run test:frontend-layouts
+          node --test src/routes/publicBlogger.contract.test.cjs
+          node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
+          node --test scripts/deployFrontendGate.contract.test.cjs
       - name: Verify image metadata and deploy cache contracts
         run: node --test scripts/deployBuildCache.contract.test.cjs scripts/deployFrontendGate.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs scripts/artifactDelivery.test.cjs
       - uses: actions/setup-python@v5
@@ -75,14 +75,14 @@ jobs:
         run: node --test src/routes/publicBlogger.contract.test.cjs
       - run: npm run test:quality
       - run: npm run build
-      - name: Proibir referências ao ChatGPT no frontend e no bundle
+      - name: Validar nomes antigos nas páginas EJS e CSS
         run: node scripts/check-frontend-branding.js
 
   plan:
     if: github.repository == 'Softdown-prog/Softloadv4' && github.ref == 'refs/heads/main'
     # Preflight rápido e sem efeitos colaterais: se a VPS rejeita contract:v2,
     # evita instalar dependências/testes pesados a cada push. A CI independente
-    # Softload - Gate TypeScript continua verificando o frontend.
+    # Softload - Gate TypeScript continua verificando TypeScript e páginas EJS.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:

@@ -2,12 +2,13 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-test('production image publication depends on the frontend contracts that gate main',()=>{
+test('production image publication depends on Blogger editor, XML compilation and its contracts',()=>{
   const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/deploy.yml'),'utf8');
   const verify=workflow.split('\n  verify:')[1].split('\n  plan:')[0];
-  for(const command of ['typecheck:frontend','test:frontend-base','test:frontend-layouts']) {
-    assert.match(verify,new RegExp('^          npm run '+command+'$','m'));
+  for (const contract of ['src/routes/publicBlogger.contract.test.cjs', 'src/routes/dashboard_routes/compiler.procedural.test.js', 'src/routes/dashboard_routes/compiler.procedural.integration.test.js']) {
+    assert.ok(verify.includes(contract), 'Obrigatório no deploy: '+contract);
   }
+  assert.doesNotMatch(verify, /typecheck:frontend|test:frontend-base|test:frontend-layouts/);
   assert.doesNotMatch(verify,/continue-on-error:\s*true/);
   const build=workflow.split('\n  build_and_transfer:')[1].split('\n  receive:')[0];
   assert.match(build,/needs:\s*\[verify, plan\]/);
