@@ -54,7 +54,7 @@
       surface:hex(x.surface,'#ffffff'),
       text:hex(x.text,'#1e293b'),
       footer:hex(x.footer,'#0f172a'),
-      font:FONT_STACK[x.typography]||FONT_STACK.inter,
+      font:Object.hasOwn(FONT_STACK,x.typography)?FONT_STACK[x.typography]:FONT_STACK.inter,
       layout:allowedLayouts.has(x.layout)?x.layout:'revista',
       side:allowedSides.has(x.side)?x.side:'right'
     };
