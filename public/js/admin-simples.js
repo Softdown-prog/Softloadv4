@@ -54,7 +54,7 @@
       if (section === 'inicio') {
         const info = await getJson('/eu/api/kpis');
         for (const element of root.querySelectorAll('[data-kpi]')) {
-          const key = element.getAttribute('data-kpi');
+          const key = element.getAttribute('data-kpi') || '';
           element.textContent = key === 'storageTotal' ? String(info[key] ?? '—') : number(info[key]);
         }
         say('Dados atualizados. Indicadores históricos; não representam faturamento.');
