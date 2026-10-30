@@ -101,7 +101,8 @@
             <button type="button" class="btn btn-outline-secondary flex-fill" id="salvar-escolhas">Salvar escolhas neste dispositivo</button>
           </div>
           <button type="submit" class="btn btn-sl-primary fw-bold w-100 mt-3" id="download-template">2. Gerar e baixar XML</button>
-          <p id="form-message" class="hint mt-2 mb-0" role="status">O arquivo será validado antes do download. Não usa IA. A prévia é aproximada.</p>
+          <a id="download-link" class="btn btn-outline-info fw-bold w-100 mt-2" hidden>O download não começou? Toque aqui para baixar o XML</a>
+          <p id="form-message" class="hint mt-2 mb-0" role="status" aria-live="polite">O arquivo será validado antes do download. Não usa IA. A prévia é aproximada.</p>
         </form>
       </div>
     </section>
@@ -162,7 +163,59 @@
     catch(e){document.getElementById('form-message').textContent='Não foi possível salvar neste navegador. Você ainda pode baixar seu XML.';}
   });
   try{const prefs=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}');for(const id of fields){const value=prefs[id];const select=document.getElementById(id);if(typeof value==='string'&&[...select.options].some(o=>o.value===value))select.value=value;}}catch(e){}
-  form.addEventListener('submit',()=>{document.getElementById('form-message').textContent='Gerando XML... confira a pasta Downloads do navegador. Se a geração falhar, a resposta exibirá uma mensagem.';});
+  // Com JavaScript, gera em segundo plano e mostra o erro no editor, sem navegar
+  // para uma página de texto HTTP 402/403/422/503. Sem JS, o POST HTML continua funcional.
+  const downloadButton=document.getElementById('download-template');
+  const downloadLink=document.getElementById('download-link');
+  const message=document.getElementById('form-message');
+  let lastObjectUrl=null;
+  function clearPreviousDownload(){
+    downloadLink.hidden=true;
+    downloadLink.removeAttribute('href');
+    downloadLink.removeAttribute('download');
+    if(lastObjectUrl){URL.revokeObjectURL(lastObjectUrl);lastObjectUrl=null;}
+  }
+  form.addEventListener('submit',async function(event){
+    if(!window.fetch||!window.URL||!window.URL.createObjectURL)return;
+    event.preventDefault();
+    clearPreviousDownload();
+    downloadButton.disabled=true;
+    message.textContent='Gerando e validando o arquivo XML…';
+    try{
+      const payload=new URLSearchParams(new FormData(form));
+      const response=await fetch(form.action,{
+        method:'POST',credentials:'same-origin',redirect:'follow',
+        headers:{'Content-Type':'application/x-www-form-urlencoded; charset=utf-8','Accept':'application/xml','X-Requested-With':'XMLHttpRequest'},
+        body:payload.toString()
+      });
+      const mime=response.headers.get('content-type')||'';
+      if(!response.ok){
+        let explanation=(await response.text()).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,280);
+        if(response.status===401||response.status===403)explanation=explanation||'Sua sessão expirou. Reabra o editor e entre novamente, se necessário.';
+        if(!explanation||mime.includes('text/html'))explanation='Não foi possível gerar o arquivo. Reabra o editor e tente novamente.';
+        throw new Error(explanation);
+      }
+      if(!/\b(?:application|text)\/xml\b/i.test(mime)){
+        throw new Error(response.redirected?'Sua sessão mudou. Atualize esta página e tente novamente.':'O servidor não retornou um XML. Tente novamente.');
+      }
+      const blob=await response.blob();
+      if(blob.size<1000)throw new Error('O XML retornado parece incompleto. Tente novamente.');
+      const disposition=response.headers.get('content-disposition')||'';
+      const match=disposition.match(/filename="([a-z0-9-]{1,40}\.xml)"/i);
+      const filename=match?match[1]:'template-blogger.xml';
+      lastObjectUrl=URL.createObjectURL(blob);
+      downloadLink.href=lastObjectUrl;
+      downloadLink.download=filename;
+      downloadLink.hidden=false;
+      message.textContent='XML gerado com sucesso. O download deve começar automaticamente. Se não começar, use o botão de download abaixo.';
+      downloadLink.click();
+    }catch(error){
+      message.textContent=(error instanceof Error?error.message:'Falha ao baixar XML. Verifique sua conexão e tente novamente.');
+    }finally{
+      downloadButton.disabled=false;
+    }
+  });
+  window.addEventListener('pagehide',clearPreviousDownload);
   refresh();
 })();
 </script>
