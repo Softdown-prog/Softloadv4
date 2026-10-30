@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const ts = require('typescript');
+const ts = require('@typescript/typescript6');
 const { verificarEspelhos } = require('./check-typescript-mirrors.js');
 
 function fixture(t, source = 'export const numero: number = 42;\n') {

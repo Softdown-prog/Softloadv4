@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "None",
+    "module": "Preserve",
     "lib": [
       "ES2022",
       "DOM",
@@ -10,7 +10,8 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": []
   },
   "files": [
     "public/js/workers/w-utils.ts",
