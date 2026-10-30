@@ -37,7 +37,7 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
     const base=path.join(root,'public/js/workers',nome);
     const fonte=fs.readFileSync(base+'.ts','utf8');
     const emitido=ts.transpileModule(fonte,{compilerOptions:{
-      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false,newLine:ts.NewLineKind.LineFeed
     }}).outputText;
     const atual=fs.readFileSync(base+'.js','utf8');
     if(emitido!==atual)divergentes.push(nome);
@@ -48,7 +48,7 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
   const adminTs=fs.readFileSync(adminBase+'.ts','utf8');
   const adminJs=fs.readFileSync(adminBase+'.js','utf8');
   const adminGenerated=ts.transpileModule(adminTs,{compilerOptions:{
-    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false,newLine:ts.NewLineKind.LineFeed
   }}).outputText;
   const printer=ts.createPrinter({removeComments:true});
   const canonical=(code)=>printer.printFile(ts.createSourceFile('admin-simples.js',code,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS));

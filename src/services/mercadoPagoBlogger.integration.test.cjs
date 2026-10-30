@@ -145,7 +145,7 @@ test('valid signed payment extends Essencial and keeps exactly one receipt',asyn
   const f=setup({account:{email:'buyer@example.test',uid:'firebase-user-123',plano:'essencial',
     is_active:true,plano_pendente:'essencial',premium_ate:new Date(initial).toISOString(),nome:'Cliente'}});
   assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
-  assert.equal(f.calls.receipts,1);assert.equal(f.account.creditos,0);
+  assert.equal(f.calls.receipts,1);assert.equal(f.account.creditos,undefined);
   assert.equal(f.account.plano_pendente,null);
   assert.ok(Math.abs(Date.parse(f.account.premium_ate)-initial-30*DAY)<30);
 });

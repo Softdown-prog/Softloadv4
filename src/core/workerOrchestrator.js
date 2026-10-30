@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.criarExecutorCompilacao = criarExecutorCompilacao;
 /** Mantém ordem e fronteiras de erro do compilerWorker.js legado. */
 function criarExecutorCompilacao(deps) {
-    return function executarCompilacao(body) {
+    return function executarCompilacao(body, options = {}) {
         const errosManifesto = deps.validarManifesto(body);
         if (errosManifesto.length > 0) {
             throw new Error(`[MANIFEST] ${errosManifesto.join(' | ')}`);
@@ -82,7 +82,8 @@ function criarExecutorCompilacao(deps) {
         catch (err) {
             deps.warn('[COMPILER-WORKER] Safety-net do Diagnóstico falhou ao rodar (ignorado):', err.message);
         }
-        deps.registrarCompilacao(deps.montarEventoTelemetria(deps.now(), params.nichoTema, dossieDoNicho, avisos, diagnosticoErros));
+        if (options.telemetry !== false)
+            deps.registrarCompilacao(deps.montarEventoTelemetria(deps.now(), params.nichoTema, dossieDoNicho, avisos, diagnosticoErros));
         return {
             xmlFinal,
             avisos,

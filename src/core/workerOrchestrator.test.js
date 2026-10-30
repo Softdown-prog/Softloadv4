@@ -96,3 +96,8 @@ function harness(overrides = {}) {
     assert.ok(h.errors.some(x=>String(x[0]).includes('1 erro(s) real(is)')));
 }
 console.log('✅ workerOrchestrator: manifesto, erros, hero protegido, integridade, safety-net e ordem.');
+
+{
+ const h=harness(); const out=h.execute({siteName:'Offline'}, {telemetry:false});
+ assert.ok(out.xmlFinal); assert.ok(!h.calls.includes('telemetria'));
+}

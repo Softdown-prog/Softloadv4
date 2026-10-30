@@ -52,14 +52,14 @@ try {
     assert.match(report.errors.join('\n'), /Fonte TS ausente/);
     assert.match(report.errors.join('\n'), /Espelho CommonJS ausente/);
     // O registro cobre também schemas da IA, sem aceitar travessia de diretórios.
-    const aiSource = 'src/ai/blueprintSchema.ts';
-    const aiMirror = 'src/ai/blueprintSchema.js';
+    const aiSource = 'src/blogger/manifestSchema.ts';
+    const aiMirror = 'src/blogger/manifestSchema.js';
     write(aiSource, 'export const ENUMS = {menuType: [\'offcanvas\']} as const;');
     write(aiMirror, '"use strict";');
     registry([source, aiSource]);
     config([source, aiSource]);
     report = auditarMigracao(root);
-    assert.equal(report.ok, true, 'src/ai deve ser área suportada pela auditoria');
+    assert.equal(report.ok, true, 'src/blogger deve ser área suportada pela auditoria');
     assert.deepEqual(report.summary, {
         fontesTypeScript: 2, espelhosRegistrados: 2,
         arquivosJavaScriptSemFonteTs: 1, arquivosJavaScriptNoNucleo: 3,
@@ -68,28 +68,28 @@ try {
 
     config([source]);
     report = auditarMigracao(root);
-    assert.ok(report.errors.some(error => error.includes('Fonte TS fora de tsconfig.include: src/ai/blueprintSchema.ts')));
+    assert.ok(report.errors.some(error => error.includes('Fonte TS fora de tsconfig.include: src/blogger/manifestSchema.ts')));
     config([source, aiSource]);
-    registry([source, 'src/ai/../escape.ts']);
+    registry([source, 'src/blogger/../escape.ts']);
     report = auditarMigracao(root);
     assert.match(report.errors.join('\\n'), /Entrada inválida no registro/);
     registry([source, aiSource]);
     // O pacote Solaris também precisa do espelho CommonJS e do typecheck.
-    const solarisSource = 'src/solaris/rag/ragChunker.ts';
-    const solarisMirror = 'src/solaris/rag/ragChunker.js';
+    const solarisSource = 'src/lib/newRenderer.ts';
+    const solarisMirror = 'src/lib/newRenderer.js';
     write(solarisSource, 'export const valor: number = 10;');
     write(solarisMirror, '"use strict";');
     report = auditarMigracao(root);
-    assert.ok(report.errors.some(error => error.includes('Fonte TypeScript não registrada: src/solaris')));
+    assert.ok(report.errors.some(error => error.includes('Fonte TypeScript não registrada: src/lib')));
     registry([source, aiSource, solarisSource]);
     config([source, aiSource, solarisSource]);
     report = auditarMigracao(root);
-    assert.equal(report.ok, true, 'src/solaris deve ser área suportada pela auditoria');
+    assert.equal(report.ok, true, 'src/lib deve ser área suportada pela auditoria');
     assert.equal(report.summary.fontesTypeScript, 3);
     assert.equal(report.summary.arquivosJavaScriptSemFonteTs, 1);
     fs.unlinkSync(path.join(root, solarisMirror));
     report = auditarMigracao(root);
-    assert.ok(report.errors.some(error => error.includes('Espelho CommonJS ausente: src/solaris')));
+    assert.ok(report.errors.some(error => error.includes('Espelho CommonJS ausente: src/lib')));
     write(solarisMirror, '"use strict";');
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
@@ -112,8 +112,8 @@ try {
     assert.equal(report.ok, true);
 
     // O namespace dos três RAGs vive em src/knowledge e também exige mirror.
-    const knowledgeSource = 'src/knowledge/ragNamespaces.ts';
-    const knowledgeMirror = 'src/knowledge/ragNamespaces.js';
+    const knowledgeSource = 'src/blogger/nicheCatalog.ts';
+    const knowledgeMirror = 'src/blogger/nicheCatalog.js';
     write(knowledgeSource, 'export const RAG_NAMESPACES = {};');
     write(knowledgeMirror, '"use strict";');
     report = auditarMigracao(root);
@@ -158,25 +158,25 @@ try {
     // Bibliotecas de preview e workers precisam participar da mesma auditoria,
     // senão o CI aprova a compilação mas rejeita a fonte TS no registro.
     const libSource = 'src/lib/bloggerTemplateRenderer.ts';
-    const workerSource = 'src/workers/xmlPatchWorker.ts';
+    const workerSource = 'src/blogger/scriptValidation.ts';
     write(libSource, 'export const render = () => true;');
     write('src/lib/bloggerTemplateRenderer.js', '"use strict";');
     write(workerSource, 'export const worker = () => true;');
-    write('src/workers/xmlPatchWorker.js', '"use strict";');
+    write('src/blogger/scriptValidation.js', '"use strict";');
     registry([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource, libSource, workerSource]);
     config([source, aiSource, solarisSource, vendorSource, knowledgeSource, serviceSource, libSource, workerSource]);
     report = auditarMigracao(root);
     assert.equal(report.ok, true, 'src/lib e src/workers devem aceitar fontes TS registradas');
     assert.equal(report.summary.fontesTypeScript, 8);
-    fs.unlinkSync(path.join(root, 'src/workers/xmlPatchWorker.js'));
+    fs.unlinkSync(path.join(root, 'src/blogger/scriptValidation.js'));
     report = auditarMigracao(root);
-    assert.ok(report.errors.some(e => e.includes('Espelho CommonJS ausente: src/workers/xmlPatchWorker.js')));
-    write('src/workers/xmlPatchWorker.js', '"use strict";');
+    assert.ok(report.errors.some(e => e.includes('Espelho CommonJS ausente: src/blogger/scriptValidation.js')));
+    write('src/blogger/scriptValidation.js', '"use strict";');
     report = auditarMigracao(root);
     assert.equal(report.ok, true);
     // Root server/CLI sources are production entry points and obey the same gate.
     const rootRegistry = JSON.parse(fs.readFileSync(path.join(root, 'scripts/typescript-mirror-sources.json'), 'utf8'));
-    for (const entry of ['server', 'cli']) {
+    for (const entry of ['server']) {
         const typed = entry + '.ts', generated = entry + '.js';
         write(typed, 'export interface Entry {}'); write(generated, '"use strict";');
         assert.ok(auditarMigracao(root).errors.some(e => e.includes('Fonte TypeScript não registrada: ' + typed)));

@@ -9,7 +9,7 @@ const v8 = require('v8');
 const REMEDIATION = {
     'API Health Check': 'Verifique se o Express está rodando e a porta 8080 acessível.',
     'Database Connection': 'Verifique as credenciais do Firebase e a conexão com a internet.',
-    'Compiler Endpoint': 'Verifique a rota /dashboard/blogger-ai e o middleware de autenticação.',
+    'Compiler Endpoint': 'Verifique a rota /dashboard/gerador-blogger e o middleware de autenticação.',
     'GCS Storage': 'Verifique as credenciais GCS e as permissões do bucket.',
     'Authentication': 'Verifique as credenciais do Firebase Auth SDK.',
     'Response Time': 'Servidor lento — verifique carga de CPU e memória do processo Node.js.',
@@ -151,14 +151,14 @@ class SentinelWorker {
     }
     async testCompilerEndpoint() {
         try {
-            const result = await this.makeRequest('/dashboard/chat');
+            const result = await this.makeRequest('/dashboard/gerador-blogger');
             if (result.statusCode === 200 || result.statusCode === 302) {
-                return { status: 'PASS', message: 'Gerador IA endpoint acessível', statusCode: result.statusCode };
+                return { status: 'PASS', message: 'Gerador Blogger endpoint acessível', statusCode: result.statusCode };
             }
             throw new Error(`Status code inesperado: ${result.statusCode}`);
         }
         catch (error) {
-            throw { message: 'Gerador IA endpoint indisponível', details: error.message };
+            throw { message: 'Gerador Blogger endpoint indisponível', details: error.message };
         }
     }
     async testGCSStorage() {

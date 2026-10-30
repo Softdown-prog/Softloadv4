@@ -20,8 +20,7 @@ test('admin continua protegido pelo mesmo guard e entrega EJS nativo em todas as
   for (const pathName of ['src/routes/adminRoutes.ts', 'src/routes/adminRoutes.js']) {
     const code = source(pathName);
     for (const [route, section] of [
-      ['/eu', 'inicio'], ['/eu/usuarios', 'usuarios'],
-      ['/eu/analytics', 'analytics'], ['/eu/sol', 'sol']
+      ['/eu', 'inicio'], ['/eu/usuarios', 'usuarios']
     ]) {
       assert.ok(code.includes("router.get('" + route + "', exigirSuperAdmin"), route + ' requer super-admin');
       assert.ok(code.includes("res.render('pages/admin-simples', { adminSection: '" + section + "'"),
@@ -29,7 +28,7 @@ test('admin continua protegido pelo mesmo guard e entrega EJS nativo em todas as
     }
     assert.doesNotMatch(code, /res\.render\('pages\/react-admin'\)/);
     assert.match(code, /router\.post\('\/eu\/api\/usuario\/:email\/premium'/);
-    assert.match(code, /router\.get\('\/eu\/api\/billing\/recuperacao'/);
+    assert.doesNotMatch(code, /creditService|billingRecoveryMonitor|router\.get\('\/eu\/sol'/);
   }
   assert.equal(fs.existsSync(path.join(root, 'views/pages/react-admin.ejs')), false);
 });
@@ -37,9 +36,7 @@ test('admin continua protegido pelo mesmo guard e entrega EJS nativo em todas as
 test('painel EJS oferece resumo, contas, analytics e aviso do chat aposentado sem bundle React', async () => {
   const checks = [
     ['inicio', /Resumo de operação/],
-    ['usuarios', /Contas cadastradas/],
-    ['analytics', /Consumo histórico de créditos/],
-    ['sol', /Chat administrativo aposentado/]
+    ['usuarios', /Contas cadastradas/]
   ];
   for (const [section, expected] of checks) {
     const html = await render(section);
@@ -60,6 +57,6 @@ test('carregamento de dados administrativos é só leitura e escreve texto sem H
   assert.match(browser, /replaceChildren\(\)/);
   assert.doesNotMatch(browser, /innerHTML|document\.write|method:\s*'(?:POST|PUT|PATCH|DELETE)'/);
   for (const endpoint of [
-    '/eu/api/kpis', '/eu/api/usuarios?limit=50', '/eu/api/analytics/creditos?dias=30'
+    '/eu/api/kpis', '/eu/api/usuarios?limit=50'
   ]) assert.ok(browser.includes(endpoint), 'Endpoint ausente: ' + endpoint);
 });

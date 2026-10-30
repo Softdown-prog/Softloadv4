@@ -1,4 +1,4 @@
-name: Softload Blogger - Gate de produção
+name: Softload Blogger - Gate de produÃ§Ã£o
 on:
   push:
     branches: [main]
@@ -31,3 +31,4 @@ jobs:
       - run: node --test src/routes/publicBlogger.contract.test.cjs src/services/mercadoPagoBlogger.integration.test.cjs
       - run: npm run build
       - run: docker build --progress plain -t softload-blogger-gate .
+      - run: bash scripts/smoke-container.sh softload-blogger-gate

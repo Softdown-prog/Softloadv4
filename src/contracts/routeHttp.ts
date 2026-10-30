@@ -2,8 +2,6 @@
 export interface RouteUser { uid: string; email: string; plano: string; nome?: string; is_active?: boolean; premium_ate?: string | null; [key: string]: unknown }
 export interface RouteSession {
     user: RouteUser;
-    wsPreview?: Record<string, unknown>;
-    githubOAuthState?: string;
     save(callback: (error?: Error | null) => void): void;
 }
 export interface RouteRequest<Body = Record<string, unknown>> {

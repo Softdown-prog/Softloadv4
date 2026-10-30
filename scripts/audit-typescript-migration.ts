@@ -58,16 +58,16 @@ export function auditarMigracao(root: string): MigrationReport {
     if (!Array.isArray(sources) || !Array.isArray(config.include)) {
         throw new Error('Registro de espelhos e tsconfig.include precisam ser arrays.');
     }
-    // As fontes tipadas cobrem compilador, IA, Solaris, RAG, serviços e scripts de build.
+    // As fontes tipadas cobrem compilador, nichos, serviços e scripts de build.
     // Todas precisam estar no registro, no typecheck e possuir espelho CommonJS.
-    const rootEntries = ['server.ts', 'server.js', 'cli.ts', 'cli.js'].filter(file => fs.existsSync(path.join(root, file)));
-    const auditedFiles = [...rootEntries, ...scanFiles(root, 'src/core'), ...scanFiles(root, 'src/ai'), ...scanFiles(root, 'src/solaris'), ...scanFiles(root, 'src/knowledge'), ...scanFiles(root, 'src/lib'), ...scanFiles(root, 'src/workers'), ...scanFiles(root, 'src/services'), ...scanFiles(root, 'src/middlewares'), ...scanFiles(root, 'src/routes'), ...scanFiles(root, 'src/rag'), ...scanFiles(root, 'scripts')].sort();
+    const rootEntries = ['server.ts', 'server.js'].filter(file => fs.existsSync(path.join(root, file)));
+    const auditedFiles = [...rootEntries, ...scanFiles(root, 'src/core'), ...scanFiles(root, 'src/blogger'), ...scanFiles(root, 'src/lib'), ...scanFiles(root, 'src/workers'), ...scanFiles(root, 'src/services'), ...scanFiles(root, 'src/middlewares'), ...scanFiles(root, 'src/routes'), ...scanFiles(root, 'scripts')].sort();
     const actualTs = auditedFiles.filter(x => x.endsWith('.ts') && !x.endsWith('.d.ts'));
     const allJs = auditedFiles.filter(x => x.endsWith('.js') && !x.endsWith('.test.js'));
     const seen = new Set<string>();
 
     for (const source of sources) {
-        if (typeof source !== 'string' || !/^(?:(?:server|cli)\.ts|(?:src\/(?:core|ai|solaris|knowledge|lib|workers|services|middlewares|routes|rag)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts)$/.test(source) || source.includes('..')) {
+        if (typeof source !== 'string' || !/^(?:(?:server|cli)\.ts|(?:src\/(?:core|blogger|lib|workers|services|middlewares|routes)\/|scripts\/)[a-zA-Z0-9_./-]+\.ts)$/.test(source) || source.includes('..')) {
             errors.push('Entrada inválida no registro: ' + JSON.stringify(source));
             continue;
         }

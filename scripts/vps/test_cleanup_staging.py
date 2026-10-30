@@ -12,7 +12,7 @@ module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(module)
 
 OLD = "softload-app-" + "a" * 40 + ".tar.gz"
-NEW = "softload-agent-" + "b" * 40 + ".tar.gz"
+NEW = "softload-app-" + "b" * 40 + ".tar.gz"
 
 
 class StagingCleanupTests(unittest.TestCase):

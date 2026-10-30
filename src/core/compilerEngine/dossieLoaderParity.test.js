@@ -24,7 +24,7 @@ assert.deepEqual(parsearDossie(JSON.stringify(make('saas-nexus',{tokensCss:[]}))
 for(const input of [null,undefined,false,0,7,{},[],true,'']) {
     assert.equal(carregarNichoDossie(input),null);
 }
-const temas=path.resolve(__dirname,'../../../src/rag/rag-ia-compiler/pipeline/temas');
+const temas=path.resolve(__dirname,'../../../src/blogger/nichos');
 const nicho='etapa25-loader-'+process.pid;
 const filename=path.join(temas,'tema-'+nicho+'-dossie.json');
 assert.equal(fs.existsSync(filename),false,'Não sobrescrever dossiê real');

@@ -13,7 +13,7 @@ const fs   = require('fs');
 const path = require('path');
 const vm   = require('vm');
 
-const TEMAS_DIR   = path.join(__dirname, '../../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR   = path.join(__dirname, '../../../src/blogger/nichos');
 const FIXTURE_NOME = 'tema-__fixture-teste-nichoimpl__-impl.json';
 const FIXTURE_PATH = path.join(TEMAS_DIR, FIXTURE_NOME);
 

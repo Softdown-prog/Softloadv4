@@ -18,7 +18,7 @@ exports.verificarMarcadoresDesignPackage = exports.carregarChassisParaNicho = ex
 const path = require('path');
 const fs = require('fs');
 const { compilarTemplate, construirGrafoCampos, sanitizarEntidadesXml, montarWidgetHtml, carregarNichoDossie, verificarDomIdsNoOutput, } = require('./compilerEngine');
-const { ENUMS } = require('../ai/blueprintSchema');
+const { ENUMS } = require('../blogger/manifestSchema');
 const { repararXml } = require('./repairEngine');
 const { NICHO_DESIGN_VOICE_MAP, COLOR_DESIGN_VOICE_HINT } = require('./designVoicePresets');
 const { chassisParaNicho, pageTypeParaNicho } = require('./nichoTaxonomy');

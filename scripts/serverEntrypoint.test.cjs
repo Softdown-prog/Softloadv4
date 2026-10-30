@@ -93,17 +93,10 @@ test('health exposes booleans and revision without secrets; global errors keep g
     assert.equal(html.statusCode, 500); assert.equal(html.view, 'pages/404');
 });
 
-test('billing inspection stays aggregate; webhook is HTTPS-only and timers stop on SIGTERM', async () => {
-    const f = fixture(); f.state.files = [
-        { download: async () => [Buffer.from(JSON.stringify({ criadoEm: new Date(Date.now() - 120000).toISOString() }))] },
-        { download: async () => [Buffer.from('invalid')] },
-    ];
-    const queue = await f.state.monitor.inspecionar(); assert.equal(queue.quantidadeAmostrada, 2); assert.equal(queue.ilegivel, 1); assert.ok(queue.maisAntigaMs >= 120000);
-    const alert = { tipo: 'cobrancas_pendentes', motivos: ['pendencia_antiga'], falhasConsecutivas: 3, falhas: 1, pendenciasAmostradas: 2, amostraLimitada: false, maisAntigaMinutos: 2, ts: 'fixture' };
-    f.state.env.BILLING_ALERT_WEBHOOK_URL = 'http://invalid.example'; await assert.rejects(() => f.state.monitor.notificar(alert), /HTTPS/);
-    assert.equal(f.calls.filter(x => x[0] === 'fetch').length, 0);
-    f.state.listener.callback(); await new Promise(resolve => setImmediate(resolve));
-    assert.ok(f.calls.some(x => x[0] === 'sentinel:start' && x[1] === 60000)); assert.equal(f.timers[0].delay, 300000);
-    assert.throws(() => f.handlers.SIGTERM(), error => error.exitCode === 0);
-    assert.ok(f.calls.some(x => x[0] === 'sentinel:stop')); assert.ok(f.calls.some(x => x[0] === 'clear'));
+test('only the operational monitor starts and stops; no retired billing jobs', () => {
+  const f = fixture(); f.state.listener.callback();
+  assert.ok(f.calls.some(x => x[0] === 'sentinel:start' && x[1] === 60000));
+  assert.equal(f.state.monitor, null); assert.equal(f.timers.length, 0);
+  assert.throws(() => f.handlers.SIGTERM(), error => error.exitCode === 0);
+  assert.ok(f.calls.some(x => x[0] === 'sentinel:stop'));
 });

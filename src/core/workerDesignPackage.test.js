@@ -1,3 +1,4 @@
+require('./test/isolatedTelemetry.cjs');
 'use strict';
 
 // Compilação testada sem gravações Firestore nem credenciais de produção.
@@ -86,7 +87,7 @@ assert.deepEqual(verificarMarcadoresDesignPackage(xml),{ok:true,erros:[]});
 assert.deepEqual(verificarMarcadoresDesignPackage(noCdata),{ok:true,erros:[]});
 assert.equal(checkPublico,verificarMarcadoresDesignPackage);
 for(const niche of Object.keys(NICHO_CHASSIS_MAP)) {
-    const file=path.join(__dirname,'../rag/templates','template_'+niche+'.xml');
+    const file=path.join(__dirname,'../blogger/templates','template_'+niche+'.xml');
     if(fs.existsSync(file)) {
         const data=fs.readFileSync(file,'utf8');
         assert.deepEqual(checkPublico(data),verificarMarcadoresDesignPackage(data));

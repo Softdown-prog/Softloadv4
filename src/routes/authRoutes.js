@@ -99,9 +99,6 @@ router.post('/register', registerLimiter, async (req, res) => {
             tentativas_compilacao: 0,
             premium_ate: null,
             storage_usado_mb: 0,
-            creditos: 5,
-            creditos_ciclo_total: 5,
-            creditos_expira_em: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             criado_em: new Date().toISOString()
         });
         console.log(`✅ [AUTH] Registrado: ${email}`);

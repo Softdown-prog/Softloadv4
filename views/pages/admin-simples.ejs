@@ -18,14 +18,13 @@
     <div>
       <p class="sl-admin__eyebrow mb-2">Área restrita · Softload Blogger</p>
       <h1 class="fw-bold text-white mb-2">Administração</h1>
-      <p class="sl-admin__hint mb-0">Informações do sistema e contas cadastradas. A interface anterior em React foi aposentada.</p>
+      <p class="sl-admin__hint mb-0">Informações do sistema e contas cadastradas.</p>
     </div>
     <a href="/dashboard" class="btn btn-outline-info">Voltar ao Blogger</a>
   </div>
   <nav class="sl-admin__nav" aria-label="Seções da administração">
     <a href="/eu" <%= adminSection === 'inicio' ? 'aria-current=page' : '' %>>Visão geral</a>
     <a href="/eu/usuarios" <%= adminSection === 'usuarios' ? 'aria-current=page' : '' %>>Usuários</a>
-    <a href="/eu/analytics" <%= adminSection === 'analytics' ? 'aria-current=page' : '' %>>Uso histórico</a>
   </nav>
 
   <% if (adminSection === 'inicio') { %>
@@ -46,13 +45,12 @@
       <div class="sl-admin__card">
         <p class="sl-admin__hint mb-2">As contagens e métricas acima vêm das APIs administrativas protegidas. O número de contas ativas não equivale a pagamentos recebidos.</p>
         <a href="/eu/usuarios" class="btn btn-outline-info me-2">Consultar usuários</a>
-        <a href="/eu/analytics" class="btn btn-outline-info">Ver consumo histórico</a>
       </div>
     </section>
   <% } else if (adminSection === 'usuarios') { %>
     <section aria-labelledby="usuarios-titulo">
       <h2 id="usuarios-titulo" class="h4 fw-bold">Contas cadastradas</h2>
-      <p class="sl-admin__hint">Consulta paginada de até 50 registros por vez. Não altera créditos, assinaturas ou dados de usuários.</p>
+      <p class="sl-admin__hint">Consulta paginada de até 50 registros por vez. Não altera assinaturas ou dados de usuários.</p>
       <p id="admin-status" class="sl-admin__hint" role="status" aria-live="polite">Carregando contas…</p>
       <div class="table-responsive sl-admin__table">
         <table class="table table-dark table-hover" aria-label="Contas cadastradas">
@@ -67,24 +65,6 @@
           <button type="button" id="admin-usuarios-next" class="btn btn-outline-info btn-sm" disabled>Próxima</button>
         </div>
       </div>
-    </section>
-  <% } else if (adminSection === 'analytics') { %>
-    <section aria-labelledby="consumo-titulo">
-      <h2 id="consumo-titulo" class="h4 fw-bold">Consumo histórico de créditos</h2>
-      <p class="sl-admin__hint">Registros anteriores à mudança para o Blogger sem IA. Não representam cobranças atuais ou receita.</p>
-      <p id="admin-status" class="sl-admin__hint" role="status" aria-live="polite">Consultando histórico…</p>
-      <div class="table-responsive sl-admin__table">
-        <table class="table table-dark table-hover" aria-label="Consumo histórico">
-          <thead><tr><th>Plano legado</th><th>Usuários com uso</th><th>Interações</th><th>Créditos utilizados</th><th>Tokens</th></tr></thead>
-          <tbody id="admin-analytics"><tr><td colspan="5">Consultando dados…</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-  <% } else { %>
-    <section class="sl-admin__card" aria-labelledby="legado-titulo">
-      <h2 id="legado-titulo" class="h4 fw-bold">Chat administrativo aposentado</h2>
-      <p class="sl-admin__hint">O chat Sol não faz parte da versão Blogger sem IA. Os históricos permanecem armazenados; nenhuma conversa foi apagada nesta limpeza.</p>
-      <a href="/eu" class="btn btn-outline-info">Voltar à administração</a>
     </section>
   <% } %>
 </main>

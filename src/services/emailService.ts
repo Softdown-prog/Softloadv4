@@ -89,21 +89,20 @@ function templateBoasVindas(nome: string): string {
         Bem-vindo ao Softload Engine, ${nome}!
       </h2>
       <p style="margin:0 0 20px;color:#475569;line-height:1.7">
-        Sua conta foi criada com sucesso. Você ganhou <strong style="color:#0ea5e9">5 créditos de IA</strong>
-        para começar a explorar as ferramentas — sem precisar de cartão.
+        Sua conta foi criada com sucesso. Personalize seu template Blogger e experimente o gerador gratuitamente, sem cartão.
       </p>
       <div style="background:#f0f9ff;border-left:4px solid #0ea5e9;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px">
         <p style="margin:0;font-size:13px;color:#0369a1;line-height:1.6">
           <strong>O que você pode fazer agora:</strong><br>
-          → Usar o Chat IA Especialista em Blogger<br>
-          → Gerar templates XML com o Blogger AI<br>
+          → Escolher nichos, cores, fontes e layouts<br>
+          → Gerar e baixar templates XML para Blogger<br>
           → Compilar seu primeiro template no painel
         </p>
       </div>
       ${btnPrimario(`${BASE}/dashboard`, 'Acessar o painel')}
       ${divisor()}
       <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6">
-        Os 5 créditos iniciais expiram em 30 dias.
+        O plano Essencial custa R$ 5 e libera o gerador por 30 dias.
         Para uso contínuo, confira os <a href="${BASE}/dashboard/upgrade" style="color:#0ea5e9">planos disponíveis</a>.
       </p>
     `;
@@ -131,7 +130,7 @@ function templateRecuperacaoSenha(nome: string | null | undefined, resetLink: st
     return layout('Redefinição de senha — Softload Engine', corpo);
 }
 
-function templatePlanoAtivado(nome: string | null | undefined, plano: string, creditos: number, expiraEm: string | number | Date | null | undefined): string {
+function templatePlanoAtivado(nome: string | null | undefined, plano: string, expiraEm: string | number | Date | null | undefined): string {
     const planoLabel = plano.charAt(0).toUpperCase() + plano.slice(1);
     const dataExp    = expiraEm ? new Date(expiraEm).toLocaleDateString('pt-BR') : '30 dias';
     const corpo = `
@@ -149,14 +148,6 @@ function templatePlanoAtivado(nome: string | null | undefined, plano: string, cr
             <td style="padding:6px 0;font-weight:700;color:#0f172a;text-align:right">${planoLabel}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;color:#475569">Créditos de IA</td>
-            <td style="padding:6px 0;font-weight:700;color:#0ea5e9;text-align:right">${creditos.toLocaleString('pt-BR')} créditos</td>
-          </tr>
-          <tr>
-            <td style="padding:6px 0;color:#475569">Tokens disponíveis</td>
-            <td style="padding:6px 0;font-weight:700;color:#0f172a;text-align:right">${(creditos * 1000).toLocaleString('pt-BR')} tokens</td>
-          </tr>
-          <tr>
             <td style="padding:6px 0;color:#475569">Válido até</td>
             <td style="padding:6px 0;font-weight:700;color:#0f172a;text-align:right">${dataExp}</td>
           </tr>
@@ -165,7 +156,7 @@ function templatePlanoAtivado(nome: string | null | undefined, plano: string, cr
       ${btnPrimario(`${BASE}/dashboard`, 'Ir para o painel')}
       ${divisor()}
       <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6">
-        Créditos não utilizados expiram ao final do ciclo. O plano não renova automaticamente —
+        O acesso é válido por 30 dias. O plano não renova automaticamente —
         você decide se quer continuar no próximo mês.
       </p>
     `;
@@ -192,11 +183,11 @@ export async function enviarRecuperacaoSenha(email: string, nome: string | null 
     await enviar(email, 'Redefinição de senha — Softload Engine', templateRecuperacaoSenha(nome, resetLink));
 }
 
-export async function enviarPlanoAtivado(email: string, nome: string | null | undefined, plano: string, creditos: number, expiraEm: string | number | Date | null | undefined): Promise<void> {
+export async function enviarPlanoAtivado(email: string, nome: string | null | undefined, plano: string, expiraEm: string | number | Date | null | undefined): Promise<void> {
     await enviar(
         email,
         `Plano ${plano.charAt(0).toUpperCase() + plano.slice(1)} ativado! — Softload Engine`,
-        templatePlanoAtivado(nome, plano, creditos, expiraEm)
+        templatePlanoAtivado(nome, plano, expiraEm)
     );
 }
 

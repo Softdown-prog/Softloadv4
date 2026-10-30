@@ -1,5 +1,5 @@
-import { ENUMS } from '../ai/blueprintSchema';
-import type { BlueprintEnumKey, BlueprintEnumValue } from '../ai/blueprintSchema';
+import { ENUMS } from '../blogger/manifestSchema';
+import type { BlueprintEnumKey, BlueprintEnumValue } from '../blogger/manifestSchema';
 
 const key: BlueprintEnumKey = 'menuType';
 const menu: BlueprintEnumValue<'menuType'> = 'offcanvas';

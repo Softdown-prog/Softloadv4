@@ -31,7 +31,7 @@ declare const process: { argv: string[]; exit(status: number): never };
 const fs = require('fs') as BatchFileSystem;
 const path = require('path') as BatchPath;
 const { executarCompilacao } = require('../src/core/compilerWorker') as {
-    executarCompilacao(manifesto: unknown): { xmlFinal: string };
+    executarCompilacao(manifesto: unknown, options?: {telemetry?: boolean}): { xmlFinal: string };
 };
 
 function parseArg(args: readonly string[], nome: string, padrao: string): string {
@@ -60,7 +60,7 @@ export function compilarLote({ dir, outDir }: BatchParams): BatchResult {
         const caminhoManifesto = path.join(dir, nome);
         try {
             const manifesto: unknown = JSON.parse(fs.readFileSync(caminhoManifesto, 'utf8'));
-            const { xmlFinal } = executarCompilacao(manifesto);
+            const { xmlFinal } = executarCompilacao(manifesto, {telemetry:false});
             const caminhoSaida = path.join(outDir, `${path.basename(nome, '.json')}.xml`);
             fs.writeFileSync(caminhoSaida, xmlFinal, 'utf8');
             compilados.push({ manifesto: nome, saida: caminhoSaida });

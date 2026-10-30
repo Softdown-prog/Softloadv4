@@ -15,7 +15,7 @@ import time
 
 STAGING = Path("/var/lib/softload-image-staging")
 LOCK = Path("/run/lock/softload-actions-deploy.lock")
-ARCHIVE = re.compile(r"softload-(?:app|agent)-[0-9a-f]{40}\.tar\.gz\Z")
+ARCHIVE = re.compile(r"softload-app-[0-9a-f]{40}\.tar\.gz\Z")
 
 
 def candidates(folder, min_age_hours, now=None):

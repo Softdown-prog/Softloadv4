@@ -5,8 +5,6 @@ const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const { exigirSuperAdmin } = require('../middlewares/adminGuard');
 const { db, admin } = require('../services/firebase');
-const { PLAN_CREDITS, concederCreditos, concederCreditosBloggerAi } = require('../services/creditService');
-const { obterStatusRecuperacaoCobrancas } = require('../services/billingRecoveryMonitor');
 const FV = admin.firestore.FieldValue;
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -60,8 +58,6 @@ async function calcularKpis() {
         storageTotal: storageTotal.toFixed(2),
         compilacoesTotal,
         expirando7dias,
-        // Receita estimada usando preço médio ponderado (starter 49 + pro 119 + studio 249) / 3
-        receitaEstimada: (totalPremium * 139.00).toFixed(2)
     };
 }
 // Paginação cursor-based (startAfter) — Firestore não suporta offset eficiente
@@ -153,7 +149,7 @@ router.get('/eu/api/usuarios', exigirSuperAdmin, async (req, res) => {
 // POST /eu/api/usuario/:email/premium — Ativar/revogar com plano escolhido
 // Body: { ativo: bool, plano: 'starter'|'pro'|'studio' }
 // ==========================================
-const PLANOS_VALIDOS = ['free', 'starter', 'pro', 'studio', 'premium'];
+const PLANOS_VALIDOS = ['free', 'essencial'];
 router.post('/eu/api/usuario/:email/premium', exigirSuperAdmin, async (req, res) => {
     try {
         const emailAlvo = decodeURIComponent(req.params.email).toLowerCase().trim();
@@ -170,7 +166,7 @@ router.post('/eu/api/usuario/:email/premium', exigirSuperAdmin, async (req, res)
         const novoEstado = req.body.ativo !== undefined ? Boolean(req.body.ativo) : !atual.is_active;
         const planoReq = req.body.plano;
         const planoAtivado = novoEstado
-            ? (PLANOS_VALIDOS.includes(planoReq) ? planoReq : 'pro')
+            ? (PLANOS_VALIDOS.includes(planoReq) ? planoReq : 'essencial')
             : 'free';
         const update = {
             is_active: novoEstado,
@@ -187,13 +183,6 @@ router.post('/eu/api/usuario/:email/premium', exigirSuperAdmin, async (req, res)
             update.status = 'pendente';
         }
         await ref.update(update);
-        // Provisiona apenas os serviços que estão disponíveis ao usuário
-        if (novoEstado) {
-            await Promise.all([
-                concederCreditos(emailAlvo, planoAtivado),
-                concederCreditosBloggerAi(emailAlvo, planoAtivado),
-            ]);
-        }
         console.log(`[ADMIN] Toggle premium: ${emailAlvo} → ${novoEstado ? 'ATIVO ' + planoAtivado : 'DESATIVO'} (por ${req.session.user.email})`);
         logAdmin(req.session.user.email, novoEstado ? 'plano_ativado' : 'plano_revogado', { email_alvo: emailAlvo, plano: planoAtivado });
         res.json({
@@ -208,94 +197,6 @@ router.post('/eu/api/usuario/:email/premium', exigirSuperAdmin, async (req, res)
         console.error('[ADMIN-API] Erro toggle premium:', err.message);
         res.status(500).json({ erro: 'Falha ao atualizar usuário.' });
     }
-});
-// ==========================================
-// POST /eu/api/usuario/:email/creditos — Define créditos Gemini
-// Body: { gemini: number }  (valores absolutos, expira em 30 dias)
-// ==========================================
-router.post('/eu/api/usuario/:email/creditos', exigirSuperAdmin, async (req, res) => {
-    try {
-        const emailAlvo = decodeURIComponent(req.params.email).toLowerCase().trim();
-        if (!emailAlvo || !emailAlvo.includes('@')) {
-            return res.status(400).json({ erro: 'E-mail inválido.' });
-        }
-        const ref = db.collection('clientes_premium').doc(emailAlvo);
-        const doc = await ref.get();
-        if (!doc.exists) {
-            return res.status(404).json({ erro: 'Usuário não encontrado.' });
-        }
-        const expira_em = new Date();
-        expira_em.setDate(expira_em.getDate() + 30);
-        const expiraISO = expira_em.toISOString();
-        const patch = { ultima_atualizacao: new Date().toISOString() };
-        const geminiVal = req.body.gemini !== undefined && req.body.gemini !== '' ? parseInt(req.body.gemini, 10) : NaN;
-        if (!isNaN(geminiVal) && geminiVal >= 0) {
-            patch.creditos = geminiVal;
-            patch.creditos_ciclo_total = geminiVal;
-            patch.creditos_expira_em = expiraISO;
-        }
-        if (!patch.creditos_expira_em) {
-            return res.status(400).json({ erro: 'Informe ao menos um valor de crédito válido (>= 0).' });
-        }
-        await ref.set(patch, { merge: true });
-        console.log(`[ADMIN] Créditos manuais: ${emailAlvo} Gemini=${patch.creditos ?? '—'} (por ${req.session.user.email})`);
-        logAdmin(req.session.user.email, 'creditos_atualizados', { email_alvo: emailAlvo, gemini: patch.creditos ?? null });
-        res.json({
-            sucesso: true,
-            email: emailAlvo,
-            creditos: patch.creditos ?? null,
-        });
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN-API] Erro creditos:', err.message);
-        res.status(500).json({ erro: 'Falha ao atualizar créditos.' });
-    }
-});
-// ==========================================
-// POST /eu/api/creditos/provisionar — migração: concede créditos a todos os usuários ativos
-// ==========================================
-router.post('/eu/api/creditos/provisionar', exigirSuperAdmin, async (req, res) => {
-    try {
-        const snap = await db.collection('clientes_premium')
-            .where('is_active', '==', true)
-            .get();
-        let ok = 0, erros = 0;
-        await Promise.all(snap.docs.map(async (doc) => {
-            const d = doc.data();
-            const email = doc.id;
-            const plano = d.plano || 'free';
-            try {
-                await Promise.all([
-                    concederCreditos(email, plano),
-                    concederCreditosBloggerAi(email, plano),
-                ]);
-                ok++;
-            }
-            catch (eCaught) {
-                const e = eCaught;
-                console.error(`[ADMIN-MIGR] Falha ${email}:`, e.message);
-                erros++;
-            }
-        }));
-        console.log(`[ADMIN] Provisionamento: ${ok} OK, ${erros} erros (por ${req.session.user.email})`);
-        res.json({ sucesso: true, provisionados: ok, erros });
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro provisionamento:', err.message);
-        res.status(500).json({ erro: err.message });
-    }
-});
-// APIs antigas de Sol, RAG e Gemini removidas do painel administrativo.
-// ==========================================
-// GET /eu/api/billing/recuperacao — apenas superadmin; não expõe dados de usuário.
-router.get('/eu/api/billing/recuperacao', exigirSuperAdmin, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, private');
-    res.json({
-        ...obterStatusRecuperacaoCobrancas(),
-        webhookConfigurado: !!process.env.BILLING_ALERT_WEBHOOK_URL,
-    });
 });
 // ==========================================
 // GET /eu/api/logs — Últimas ações administrativas
@@ -323,111 +224,6 @@ router.get('/eu/api/logs', exigirSuperAdmin, async (req, res) => {
         const err = errCaught;
         console.error('[ADMIN-API] Erro logs:', err.message);
         res.status(500).json({ erro: err.message });
-    }
-});
-// ==========================================
-// ANALYTICS — consumo de créditos por plano
-// ==========================================
-async function calcularAnalyticsCreditos(diasAtras = 30) {
-    const corte = new Date(Date.now() - diasAtras * 24 * 60 * 60 * 1000);
-    const ts = admin.firestore.Timestamp.fromDate(corte);
-    // 1 — Todos os billing_logs do período via collection group.
-    // Requer índice Firestore para o collection group 'billing_logs'.
-    // Se o índice ainda não existe, cai na degradação abaixo.
-    let logsSnap;
-    try {
-        logsSnap = await db.collectionGroup('billing_logs')
-            .where('criado_em', '>=', ts)
-            .get();
-    }
-    catch (eCaught) {
-        const e = eCaught;
-        const semIndice = e.code === 9 || (e.message && e.message.includes('index'));
-        if (semIndice) {
-            console.warn('[ADMIN-ANALYTICS] Índice Firestore ausente para billing_logs.criado_em — retornando dados vazios.');
-            return { periodo_dias: diasAtras, por_plano: {}, gerado_em: new Date().toISOString(), semIndice: true };
-        }
-        throw e;
-    }
-    if (logsSnap.empty)
-        return { periodo_dias: diasAtras, por_plano: {}, gerado_em: new Date().toISOString() };
-    // 2 — Agrega por email (email = id do doc pai em clientes_premium)
-    const porEmail = {};
-    for (const doc of logsSnap.docs) {
-        const email = doc.ref.parent.parent.id;
-        const d = doc.data();
-        if (!porEmail[email])
-            porEmail[email] = { creditos: 0, interacoes: 0, tokens: 0 };
-        porEmail[email].creditos += d.credits_debited || 0;
-        porEmail[email].interacoes += 1;
-        porEmail[email].tokens += (d.input_tokens || 0) + (d.output_tokens || 0);
-    }
-    // 3 — Busca plano de cada email único (batches de 30 — limite do operador 'in')
-    const emails = Object.keys(porEmail);
-    const planoPorEmail = {};
-    for (let i = 0; i < emails.length; i += 30) {
-        const lote = emails.slice(i, i + 30);
-        const snap = await db.collection('clientes_premium')
-            .where(admin.firestore.FieldPath.documentId(), 'in', lote)
-            .select('plano')
-            .get();
-        snap.docs.forEach(d => { planoPorEmail[d.id] = d.data().plano || 'free'; });
-    }
-    // 4 — Agrupa métricas por plano
-    const acc = {};
-    for (const [email, stats] of Object.entries(porEmail)) {
-        const plano = planoPorEmail[email] || 'free';
-        if (!acc[plano])
-            acc[plano] = { emails: new Set(), creditos: 0, interacoes: 0, tokens: 0 };
-        acc[plano].emails.add(email);
-        acc[plano].creditos += stats.creditos;
-        acc[plano].interacoes += stats.interacoes;
-        acc[plano].tokens += stats.tokens;
-    }
-    // 5 — Formata resultado
-    const ORDEM = ['studio', 'pro', 'premium', 'free'];
-    const porPlano = {};
-    for (const plano of [...ORDEM, ...Object.keys(acc).filter(p => !ORDEM.includes(p))]) {
-        if (!acc[plano])
-            continue;
-        const a = acc[plano];
-        const usuarios = a.emails.size;
-        const ciclo = PLAN_CREDITS[plano] ?? PLAN_CREDITS.free;
-        const mediaCredUsuario = usuarios > 0 ? Math.round(a.creditos / usuarios) : 0;
-        const mediaCredInteracao = a.interacoes > 0 ? +(a.creditos / a.interacoes).toFixed(2) : 0;
-        const mediaTokensInteracao = a.interacoes > 0 ? Math.round(a.tokens / a.interacoes) : 0;
-        const pctUsoCiclo = ciclo > 0 ? +((mediaCredUsuario / ciclo) * 100).toFixed(1) : 0;
-        porPlano[plano] = {
-            usuarios_ativos: usuarios,
-            total_creditos_debitados: a.creditos,
-            total_interacoes: a.interacoes,
-            total_tokens: a.tokens,
-            media_creditos_por_usuario: mediaCredUsuario,
-            media_creditos_por_interacao: mediaCredInteracao,
-            media_tokens_por_interacao: mediaTokensInteracao,
-            creditos_ciclo: ciclo,
-            pct_uso_ciclo: pctUsoCiclo,
-        };
-    }
-    return { periodo_dias: diasAtras, por_plano: porPlano, gerado_em: new Date().toISOString() };
-}
-// GET /eu/analytics — dashboard de consumo
-//
-// Consumo histórico em EJS, carregado da API de analytics sem React.
-// ==========================================
-router.get('/eu/analytics', exigirSuperAdmin, (req, res) => {
-    res.render('pages/admin-simples', { adminSection: 'analytics', user: req.session.user });
-});
-// GET /eu/api/analytics/creditos — JSON para auto-refresh
-router.get('/eu/api/analytics/creditos', exigirSuperAdmin, async (req, res) => {
-    try {
-        const dias = Math.min(parseInt(req.query.dias) || 30, 90);
-        res.json(await calcularAnalyticsCreditos(dias));
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN-ANALYTICS-API]', err.message);
-        res.status(200).json({ periodo_dias: 30, por_plano: {}, gerado_em: new Date().toISOString(), erro: err.message });
     }
 });
 module.exports = router;

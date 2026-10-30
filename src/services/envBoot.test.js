@@ -51,10 +51,10 @@ function envCompleto() {
 // ── Falta só uma opcional — não derruba ok ───────────────────────────
 {
     const env = envCompleto();
-    delete env.GEMINI_API_KEY;
+    delete env.RESEND_API_KEY;
     const r = validarEnvBoot(env);
-    assert('sem GEMINI_API_KEY (opcional): ok continua true', r.ok === true);
-    assert('sem GEMINI_API_KEY (opcional): aparece na lista de opcionais faltando', r.faltandoOpcionais.includes('GEMINI_API_KEY'));
+    assert('sem RESEND_API_KEY (opcional): ok continua true', r.ok === true);
+    assert('sem RESEND_API_KEY (opcional): aparece na lista de opcionais faltando', r.faltandoOpcionais.includes('RESEND_API_KEY'));
 }
 
 // ── String vazia conta como ausente (não só undefined) ───────────────

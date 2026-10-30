@@ -36,7 +36,6 @@ const express = require('express') as { Router(): HistoryRouter };
 const router      = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard') as { exigirLogin: AuthGuardHandler };
 const { db, bucket, admin } = require('../../services/firebase') as { db: HistoryDatabase; bucket: import('@google-cloud/storage').Bucket; admin: { firestore: { FieldValue: unknown } } };
-const { parseBloggerXMLToHTML } = require('../../lib/bloggerPreviewRenderer') as typeof import('../../lib/bloggerPreviewRenderer');
 const { COLOR_PRESETS, TYPOGRAPHY_PRESETS } = require('../../core/presets') as { COLOR_PRESETS: Record<string, { label: string; primary: string }>; TYPOGRAPHY_PRESETS: Record<string, { label: string }> };
 const { STORAGE_LIMITS_MB } = require('../../services/storageService') as typeof import('../../services/storageService');
 
@@ -177,97 +176,6 @@ router.get('/dashboard/compilacao/:id/download', exigirLogin, async (req, res) =
     }
 });
 
-// GET /dashboard/preview/session — preview sem Firestore, usa wsPreview da sessão HTTP
-// Renderiza o shell React; os dados reais vêm de GET /api/preview/session (abaixo).
-router.get('/dashboard/preview/session', exigirLogin, (req, res) => {
-    res.render('pages/react-test', {
-        activePage: 'workspace',
-        user: req.session.user
-    });
-});
-
-// GET /api/preview/session — JSON com o HTML renderizado do preview da sessão de workspace
-router.get('/api/preview/session', exigirLogin, async (req, res) => {
-    try {
-        const user = req.session.user;
-        const prev = req.session.wsPreview;
-
-        if (!prev || !prev.xmlPath || !prev.xmlPath.startsWith(`users/${user.uid}/`)) {
-            return res.status(404).json({ erro: 'Nenhum preview de workspace ativo nesta sessão.' });
-        }
-
-        const [contents] = await bucket.file(prev.xmlPath).download();
-        const previewHtml = parseBloggerXMLToHTML(contents.toString('utf-8'), prev.siteName || 'Meu Blog');
-
-        res.json({
-            siteName:      prev.siteName     || 'Template',
-            compilacaoId:  prev.compilacaoId || null,
-            colorPreset:   prev.colorPreset  || null,
-            nichoTema:     prev.nichoTema    || null,
-            from:          'workspace',
-            previewHtml,
-        });
-    } catch (err) {
-        console.error('[PREVIEW-SESSION]', (err as Error).message);
-        res.status(500).json({ erro: 'Falha ao gerar preview da sessão.' });
-    }
-});
-
-// GET /dashboard/preview/:id — renderiza o shell React; dados reais vêm de GET /api/preview/:id
-router.get('/dashboard/preview/:id', exigirLogin, (req, res) => {
-    res.render('pages/react-test', {
-        activePage: req.query.from === 'workspace' ? 'workspace' : 'historico',
-        user: req.session.user
-    });
-});
-
-// GET /api/preview/:id — JSON com o HTML renderizado do preview de uma compilação salva
-router.get('/api/preview/:id', exigirLogin, async (req, res) => {
-    // Tempo mínimo de resposta — equaliza timing entre doc existente e não-existente
-    // para impedir enumeração por análise de latência (timing attack).
-    const t0    = Date.now();
-    const pad   = () => new Promise<void>(r => setTimeout(r, Math.max(0, 100 - (Date.now() - t0))));
-
-    try {
-        const user  = req.session.user;
-        const email = user.email.toLowerCase();
-        const doc   = await db.collection('clientes_premium').doc(email)
-            .collection('compilacoes').doc(req.params.id).get();
-
-        if (!doc.exists) { await pad(); return res.status(404).json({ erro: 'Compilação não encontrada.' }); }
-
-        const data    = doc.data();
-
-        // xmlPath: salvo a partir do pipeline atualizado.
-        // Fallback para compilações antigas: deriva do gcPath trocando .zip → .xml
-        // (o storageService sempre salvou o XML bruto, só não persistia o path).
-        const xmlPath = data.xmlPath
-            || (data.gcPath ? data.gcPath.replace(/\.zip$/, '.xml') : null);
-
-        if (!xmlPath || !xmlPath.startsWith(`users/${user.uid}/`)) {
-            await pad(); return res.status(404).json({ erro: 'Compilação não encontrada.' });
-        }
-
-        const [contents] = await bucket.file(xmlPath).download();
-        const previewHtml = parseBloggerXMLToHTML(contents.toString('utf-8'), data.siteName || 'Meu Blog');
-
-        const from = req.query.from === 'workspace' ? 'workspace' : 'historico';
-        await pad();
-        res.json({
-            siteName:     data.siteName || 'Template',
-            compilacaoId: req.params.id,
-            colorPreset:  data.colorPreset || null,
-            nichoTema:    data.nichoTema   || null,
-            from,
-            previewHtml,
-        });
-    } catch (err) {
-        console.error('[PREVIEW]', (err as Error).message);
-        await pad(); res.status(500).json({ erro: 'Falha ao gerar preview.' });
-    }
-});
-
-// DELETE /dashboard/compilacao/:id — apaga template do GCS + Firestore
 router.delete('/dashboard/compilacao/:id', exigirLogin, async (req, res) => {
     try {
         const user    = req.session.user;

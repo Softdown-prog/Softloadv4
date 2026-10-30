@@ -1,3 +1,4 @@
+require('../test/isolatedTelemetry.cjs');
 'use strict';
 
 /**
@@ -7,7 +8,7 @@
  * (/root/.claude/plans/indexed-jumping-treehouse.md) — 1º nicho migrado do
  * chassis genérico compartilhado ('magazine', usado também por
  * noticias-mag-news/tecnologia-mag-tech/tecnologia-techwind) pra um
- * esqueleto PRÓPRIO (src/rag/templates/template_viral-magazine.xml),
+ * esqueleto PRÓPRIO (src/blogger/templates/template_viral-magazine.xml),
  * extraído da estrutura física real de exemplos/viral-magazine.xml.
  * Escolhido como piloto de mecanismo por ter a menor "densidade de
  * gambiarra pro chassis" entre os candidatos avaliados (dossiê atual já
@@ -127,8 +128,8 @@ const { carregarNichoDossie } = require('./dossieLoader');
 const { validarDossie } = require('./dossieValidator');
 const { verificarDomIdsNoOutput, verificarSecoesPreenchidas } = require('./dossieIntegrityChecker');
 const { chassisParaNicho } = require('../nichoTaxonomy');
-const { validarEscopoGlobal } = require('./workers/jsWorker');
-const { validarTokensCss } = require('./workers/cssWorker');
+const { validarEscopoGlobal } = require('../../blogger/scriptValidation');
+const { validarTokensCss } = require('../../blogger/cssValidation');
 const { TOKENS_GLOBAIS_CHASSIS } = require('./designTokensCss');
 const { executarCompilacao, carregarChassisParaNicho, verificarMarcadoresDesignPackage } = require('../compilerWorker');
 const { checarSeo } = require('../diagnostico/seoChecker');

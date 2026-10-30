@@ -49,7 +49,7 @@ exit 90
 
     def test_syntax_and_readonly_handshake(self):
         self.assertEqual(subprocess.run(['bash','-n',str(self.script)]).returncode,0)
-        self.assertEqual(self.run_receiver('contract:v2').stdout.strip(),'softload-deploy:v2:app,agent')
+        self.assertEqual(self.run_receiver('contract:v3').stdout.strip(),'softload-deploy:v3:app')
 
     def test_successful_import_deletes_transport(self):
         archive, digest = self.archive()
@@ -85,7 +85,7 @@ exit 90
         source=SOURCE.read_text()
         self.assertNotIn('docker image prune',source)
         self.assertNotIn('docker system prune',source)
-        self.assertIn('softload-app:*|softload-agent:*',source)
+        self.assertIn('softload-app:*',source)
         self.assertIn('grep -Fxq "$ref"',source)
         self.assertIn('{{.Config.Image}}',source)
 
@@ -93,7 +93,7 @@ exit 90
         stack=self.root/'stack';stack.mkdir();(stack/'.env').write_text('SOFTLOAD_IMAGE_TAG='+('b'*40)+'\n')
         source=self.script.read_text().replace('/opt/softload-infra/softload',str(stack))
         self.script.write_text(source)
-        self.tool('curl','#!/bin/sh\nexit 0\n')
+        self.tool('curl', '#!/bin/sh\necho \'{"status":"ok","deploy":{"gitSha":"' + SHA + '"}}\'\n')
         log=self.root/'removed'
         self.tool('docker', f'''#!/bin/sh
 case "$1 $2" in
@@ -101,14 +101,44 @@ case "$1 $2" in
  'compose -f') if [ "$4" = ps ]; then echo container; fi; exit 0;;
  'ps -aq') echo container; exit 0;;
  'inspect -f') echo healthy; exit 0;;
- 'inspect --format') printf '%s\\n' softload-app:{SHA} softload-agent:{SHA}; exit 0;;
- 'image ls') printf '%s\\n' 'softload-app:{SHA} sha256:current' 'softload-agent:{SHA} sha256:shared' 'softload-agent:old sha256:shared' 'other-project:old sha256:other'; exit 0;;
+ 'inspect --format') printf '%s\\n' softload-app:{SHA}; exit 0;;
+ 'image ls') printf '%s\\n' 'softload-app:{SHA} sha256:current' 'softload-app:old sha256:shared' 'other-project:old sha256:other'; exit 0;;
  'image rm') echo "$3" >> '{log}'; exit 0;;
 esac
 exit 91
 ''')
         result=self.run_receiver('deploy:'+SHA)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
-        self.assertEqual(log.read_text().strip(),'softload-agent:old')
+        self.assertEqual(log.read_text().strip(),'softload-app:old')
+
+    def test_removed_service_and_old_protocol_fail_closed(self):
+        self.assertEqual(self.run_receiver('contract:v2').returncode, 2)
+        self.assertEqual(self.run_receiver(f'finish:agent:{SHA}:{"c"*64}').returncode, 2)
+        self.assertEqual(self.run_receiver(f'reuse:agent:{SHA}').returncode, 2)
+        self.assertFalse(self.marker.exists())
+
+    def test_failed_activation_restores_previous_revision_and_only_app(self):
+        stack=self.root/'stack';stack.mkdir();previous='b'*40
+        (stack/'.env').write_text('SOFTLOAD_IMAGE_TAG='+previous+'\n')
+        self.script.write_text(self.script.read_text().replace('/opt/softload-infra/softload',str(stack)))
+        log=self.root/'compose.log';attempted=self.root/'attempted'
+        self.tool('docker', f'''#!/bin/sh
+if [ "$1 $2" = "image inspect" ]; then exit 0; fi
+if [ "$1" = compose ]; then
+ echo "$*" >> '{log}'
+ case "$*" in
+  *"up -d"*) if [ ! -e '{attempted}' ]; then touch '{attempted}'; exit 1; fi;;
+ esac
+ exit 0
+fi
+exit 90
+''')
+        result=self.run_receiver('deploy:'+SHA)
+        self.assertEqual(result.returncode,4,result.stderr)
+        self.assertEqual((stack/'.env').read_text(),'SOFTLOAD_IMAGE_TAG='+previous+'\n')
+        up=[line for line in log.read_text().splitlines() if 'up -d' in line]
+        self.assertEqual(len(up),2)
+        self.assertTrue(all(line.endswith('--no-deps app') for line in up))
+        self.assertNotIn('agent',log.read_text())
 
 if __name__=='__main__':unittest.main()

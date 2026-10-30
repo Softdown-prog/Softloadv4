@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   verify:
-    name: TypeScript, Blogger, cobrança e Docker
+    name: TypeScript, Blogger, cobranÃ§a e Docker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,21 +15,23 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Instalar dependências
+      - name: Instalar dependÃªncias
         run: npm ci --legacy-peer-deps
       - name: Verificar contratos TypeScript e espelhos JS
         run: npm run typecheck
       - name: Verificar scripts JS de navegador
         run: npm run typecheck:workers
-      - name: Executar testes de regressão do aplicativo
+      - name: Executar testes de regressÃ£o do aplicativo
         run: npm test
-      - name: Verificar sessão pública e compilação procedural
+      - name: Verificar sessÃ£o pÃºblica e compilaÃ§Ã£o procedural
         run: |
           node --test src/routes/publicBlogger.contract.test.cjs
           node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
-      - name: Validar contratos Mercado Pago sem emitir cobranças
+      - name: Validar contratos Mercado Pago sem emitir cobranÃ§as
         run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
       - name: Preparar assets locais
         run: npm run build
       - name: Verificar boot do aplicativo
         run: docker build --progress plain -t softload-blogger-ci .
+      - name: Iniciar Docker e validar EJS, acesso protegido e XML sem credenciais
+        run: bash scripts/smoke-container.sh softload-blogger-ci

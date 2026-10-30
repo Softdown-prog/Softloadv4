@@ -23,7 +23,7 @@ declare function require(name: string): any;
 const fs = require('fs') as { existsSync(path: string): boolean; readFileSync(path: string, encoding: string): string };
 const path = require('path') as { join(...parts: string[]): string };
 
-const TEMAS_DIR = path.join(__dirname, '../../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR = path.join(__dirname, '../../../src/blogger/nichos');
 
 // Cache em memória: nicho → dossiê (ou null somente se ausente).
 const _cache = new Map<string, DossieCarregado | null>();

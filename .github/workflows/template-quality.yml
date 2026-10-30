@@ -1,22 +1,17 @@
-name: Softload - Auditoria de fidelidade Blogger
-
+name: Softload - Qualidade XML Blogger
 on:
-  push:
-    branches: [main]
+  pull_request:
     paths:
       - 'src/core/**'
-      - 'src/rag/templates/**'
-      - 'src/rag/rag-ia-compiler/pipeline/temas/**'
-      - 'exemplos/**'
-      - 'scripts/audit-template-fidelity*'
-      - 'scripts/visual/compareTemplates.js'
+      - 'src/blogger/**'
+      - 'src/routes/dashboard_routes/compiler*'
       - '.github/workflows/template-quality.yml'
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
-  fidelity:
-    name: Gerar e comparar 14 nichos Blogger
-    runs-on: ubuntu-latest
+  xml:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,18 +19,5 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --legacy-peer-deps
-      - name: Testar comparação de fidelidade
-        run: node scripts/audit-template-fidelity.test.js
-      - name: Compilar nichos e comparar com XML original
-        run: node scripts/audit-template-fidelity.js --out=out/template-fidelity
-      - name: Preparar Chromium para prévia visual
-        run: npx playwright install --with-deps chromium
-      - name: Comparar visualmente referências e saídas do compilador
-        run: node scripts/visual/compareTemplates.js --niches=biolink-social,pop-retro-pixel,viral-magazine --out=out/template-fidelity/visual
-      - name: Guardar diagnóstico para inspeção
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: blogger-template-fidelity
-          path: out/template-fidelity
-          if-no-files-found: warn
+      - name: Compilar e validar a base e os 15 nichos reais
+        run: npm run test:quality

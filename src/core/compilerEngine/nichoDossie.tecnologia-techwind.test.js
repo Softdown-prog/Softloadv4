@@ -1,3 +1,4 @@
+require('../test/isolatedTelemetry.cjs');
 'use strict';
 
 /**
@@ -65,7 +66,7 @@ const { carregarNichoDossie } = require('./dossieLoader');
 const { validarDossie } = require('./dossieValidator');
 const { verificarDomIdsNoOutput, verificarSecoesPreenchidas } = require('./dossieIntegrityChecker');
 const { chassisParaNicho } = require('../nichoTaxonomy');
-const { validarEscopoGlobal } = require('./workers/jsWorker');
+const { validarEscopoGlobal } = require('../../blogger/scriptValidation');
 const { executarCompilacao, carregarChassisParaNicho, verificarMarcadoresDesignPackage } = require('../compilerWorker');
 const { gerarDiagnostico } = require('../diagnostico');
 

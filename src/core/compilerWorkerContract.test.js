@@ -1,3 +1,4 @@
+require('./test/isolatedTelemetry.cjs');
 'use strict';
 const assert = require('node:assert/strict');
 const worker = require('./compilerWorker');

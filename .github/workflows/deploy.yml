@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 # Uma revisão por vez. Build no GitHub; artefato autenticado/criptografado
-# por HTTPS para o runner sem Docker/sudo; SSH somente local para o receptor v2.
+# por HTTPS para o runner sem Docker/sudo; SSH somente local para o receptor v3.
 concurrency:
   group: softload-vps-production
   cancel-in-progress: false
@@ -32,6 +32,7 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run typecheck
+      - run: npm run typecheck:workers
       - name: Gate Blogger EJS, sessao e compilador antes da publicacao
         run: |
           node --test src/routes/publicBlogger.contract.test.cjs
@@ -51,14 +52,13 @@ jobs:
 
   plan:
     if: github.repository == 'Softdown-prog/Softloadv4' && github.ref == 'refs/heads/main'
-    # Preflight rápido e sem efeitos colaterais: se a VPS rejeita contract:v2,
+    # Preflight rápido e sem efeitos colaterais: se a VPS rejeita contract:v3,
     # evita instalar dependências/testes pesados a cada push. A CI independente
     # Softload - Gate TypeScript continua verificando TypeScript e páginas EJS.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
       proceed: ${{ steps.latest.outputs.proceed }}
-      agent: ${{ steps.diff.outputs.agent }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -90,45 +90,20 @@ jobs:
       # Contrato somente-leitura: fail-closed antes de gerar/carregar imagens.
       # O receptor da VPS precisa ser migrado e retornar esta resposta exata.
       # O comando desconhecido no receptor antigo deve falhar sem efeitos.
-      - name: Confirm receiver understands app+agent before upload
+      - name: Confirm receiver understands app before upload
         if: steps.latest.outputs.proceed == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          if ! contract="$(ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"; then
-            echo "::error::Receptor VPS não implementa contract:v2; migre o receptor antes do deploy."
+          if ! contract="$(ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 root@164.163.9.7 'contract:v3')"; then
+            echo "::error::Receptor VPS não implementa contract:v3; migre o receptor antes do deploy."
             exit 1
           fi
-          if [[ "$contract" != 'softload-deploy:v2:app,agent' ]]; then
-            echo "::error::Receptor VPS não confirmou contrato v2 app+agent; nenhuma imagem será transferida."
+          if [[ "$contract" != 'softload-deploy:v3:app' ]]; then
+            echo "::error::Receptor VPS não confirmou contrato v3 app; nenhuma imagem será transferida."
             exit 1
           fi
-          echo '[DEPLOY] Receptor compatível com app+agent (v2).'
-      - name: Compare with running revision
-        if: steps.latest.outputs.proceed == 'true'
-        id: diff
-        shell: bash
-        env:
-          TARGET_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4; do
-            if base="$(ssh -i "$HOME/.ssh/softload_deploy" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 root@164.163.9.7 current)"; then
-              break
-            fi
-            if [ "$attempt" -eq 4 ]; then exit 1; fi
-            sleep $((attempt * 10))
-          done
-          [[ "$base" =~ ^[0-9a-f]{40}$ ]]
-          if git cat-file -e "$base^{commit}" 2>/dev/null; then
-            # Agent aposentado: não gerar novas imagens; v2 usa apenas a imagem legada já existente.
-            echo 'agent=false' >> "$GITHUB_OUTPUT"
-          else
-            # First deployment from Softloadv4: the running SHA belongs to the old repository.
-            # Rebuild every service once, then compare commits normally on future deployments.
-            echo 'agent=false' >> "$GITHUB_OUTPUT"
-          fi
-          echo "[DEPLOY] Running revision: $base"
+          echo '[DEPLOY] Receptor compatível com app (v3).'
   build_and_transfer:
     needs: [verify, plan]
     if: needs.plan.outputs.proceed == 'true'
@@ -161,10 +136,8 @@ jobs:
       - name: Determine whether this service changed
         if: steps.latest_before_build.outputs.proceed == 'true'
         id: changes
-        env:
         run: |
           echo "changed=true" >> "$GITHUB_OUTPUT"
-      # Nenhum build do Agent: o código foi removido do repositório.
       - name: Prepare shared Docker BuildKit cache
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
         uses: docker/setup-buildx-action@v3
@@ -315,18 +288,16 @@ jobs:
           chmod 600 "$dir/key" "$dir/known_hosts"
           contract="$(ssh -i "$dir/key" -o UserKnownHostsFile="$dir/known_hosts" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"
-          test "$contract" = 'softload-deploy:v2:app,agent'
+            -o ConnectTimeout=20 root@164.163.9.7 'contract:v3')"
+          test "$contract" = 'softload-deploy:v3:app'
           echo 'proceed=true' >> "$GITHUB_OUTPUT"
       - name: Download encrypted images through parallel HTTPS ranges
         if: steps.local.outputs.proceed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
         run: |
           set -euo pipefail
-          for service in app agent; do
-            if [ "$service" = agent ] && [ "$AGENT_CHANGED" = false ]; then continue; fi
+          for service in app; do
             export ARTIFACT_NAME="softload-$service-$GITHUB_SHA"
             export OUTPUT_DIR="$DELIVERY_DIR/$service"
             python3 - <<'PYHTTPS'
@@ -465,13 +436,12 @@ jobs:
         if: steps.local.outputs.proceed == 'true'
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
-          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
         run: |
           set -euo pipefail
           python3 - <<'PYVERIFY'
           import hashlib, hmac, os, pathlib
           key = hashlib.sha256(b'softload-artifact-mac-v1\0' + os.environ['DEPLOY_KEY'].encode()).digest()
-          services = ['app', 'agent'] if os.environ['AGENT_CHANGED'] == 'true' else ['app']
+          services = ['app']
           for service in services:
               folder = pathlib.Path(os.environ['DELIVERY_DIR']) / service
               context = '/'.join([os.environ[k] for k in ('GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_SHA')] + [service])
@@ -484,11 +454,10 @@ jobs:
                   raise SystemExit('Artifact authentication failed: ' + service)
               print('[DELIVERY] Authenticated', service)
           PYVERIFY
-      - name: Load both images through local restricted SSH
+      - name: Load application image through local restricted SSH
         if: steps.local.outputs.proceed == 'true'
         env:
           DEPLOY_KEY: ${{ secrets.SOFTLOAD_VPS_SSH_KEY }}
-          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -496,7 +465,7 @@ jobs:
           ssh_options=(-i "$DELIVERY_DIR/key" -o UserKnownHostsFile="$DELIVERY_DIR/known_hosts"
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
             -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          for service in app agent; do
+          for service in app; do
             latest="$(curl --fail --silent --show-error --max-time 20 \
               -H "Authorization: Bearer $GH_TOKEN" \
               "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/main" \
@@ -504,10 +473,6 @@ jobs:
             if [ "$latest" != "$GITHUB_SHA" ]; then
               echo "::notice::Main advanced; stop retries for obsolete image $GITHUB_SHA."
               exit 0
-            fi
-            if [ "$service" = agent ] && [ "$AGENT_CHANGED" = false ]; then
-              ssh "${ssh_options[@]}" root@164.163.9.7 "reuse:$service:$GITHUB_SHA"
-              continue
             fi
             archive="$DELIVERY_DIR/softload-$service-$GITHUB_SHA.tar.gz"
             openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
@@ -533,7 +498,7 @@ jobs:
 
   activate:
     needs: receive
-    # Ativação pelo receptor existente, depois das duas imagens carregadas.
+    # Ativação pelo receptor existente, depois da imagem App verificada.
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -571,7 +536,7 @@ jobs:
           chmod 600 "$RUNNER_TEMP/softload-ssh/deploy_key"
           printf '%s\n' '164.163.9.7 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGa3uqM1QMkr/Mhh7SNGs1jxUVg9x2HFVwJ2hJ1MIsfR' > "$RUNNER_TEMP/softload-ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/softload-ssh/known_hosts"
-      - name: Reconfirm receiver v2 immediately before activating
+      - name: Reconfirm receiver v3 immediately before activating
         if: steps.latest.outputs.proceed == 'true'
         shell: bash
         run: |
@@ -579,12 +544,12 @@ jobs:
           if ! contract="$(ssh -i "$RUNNER_TEMP/softload-ssh/deploy_key" \
             -o UserKnownHostsFile="$RUNNER_TEMP/softload-ssh/known_hosts" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"; then
+            -o ConnectTimeout=20 root@164.163.9.7 'contract:v3')"; then
             echo "::error::Receptor VPS indisponível/incompatível antes da ativação."
             exit 1
           fi
-          if [[ "$contract" != 'softload-deploy:v2:app,agent' ]]; then
-            echo "::error::Contrato v2 divergente; ativação cancelada sem trocar containers."
+          if [[ "$contract" != 'softload-deploy:v3:app' ]]; then
+            echo "::error::Contrato v3 divergente; ativação cancelada sem trocar containers."
             exit 1
           fi
       - name: Activate only after every image arrives

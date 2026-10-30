@@ -22,9 +22,9 @@ function setup(provider) {
 }
 test('painel escapa conteúdo, calcula estatísticas e filtra sem nova solicitação',async()=>{
  const f=setup(async()=>({ok:true,json:async()=>({
-  logs:[{level:'error',source:'GEMINI',message:'<script>alert(1)</script>',stack:'<stack>',ts:'2026-10-26T10:00:00Z'},
+  logs:[{level:'error',source:'COMPILER',message:'<script>alert(1)</script>',stack:'<stack>',ts:'2026-10-26T10:00:00Z'},
         {level:'warn',source:'NODE',message:'offline'}],
-  stats:{total:2,byLevel:{error:1,warn:1},bySource:{GEMINI:1,NODE:1}}
+  stats:{total:2,byLevel:{error:1,warn:1},bySource:{COMPILER:1,NODE:1}}
  })}));
  await f.win.loadErrorLog();
  assert.equal(f.calls(),1);
@@ -32,12 +32,12 @@ test('painel escapa conteúdo, calcula estatísticas e filtra sem nova solicita�
  assert.doesNotMatch(f.element('errorLogEntries').innerHTML,/<script>/);
  assert.equal(f.element('elTotal').textContent,'2');
  assert.equal(f.element('elWarns').textContent,'1');
- assert.match(f.element('errorLogSourceList').innerHTML,/source-chip--ai/);
- f.win.elToggleFilter('GEMINI');
- assert.match(f.element('errorLogEntries').innerHTML,/GEMINI/);
+ assert.match(f.element('errorLogSourceList').innerHTML,/source-chip/);
+ f.win.elToggleFilter('COMPILER');
+ assert.match(f.element('errorLogEntries').innerHTML,/COMPILER/);
  assert.doesNotMatch(f.element('errorLogEntries').innerHTML,/offline/);
  assert.equal(f.calls(),1);
- f.win.elToggleFilter('GEMINI');
+ f.win.elToggleFilter('COMPILER');
  assert.match(f.element('errorLogEntries').innerHTML,/offline/);
  f.win.downloadErrorLog('json');
  assert.deepEqual(f.links,['/workers/api/errors/download?format=json']);
