@@ -1,13 +1,8 @@
 {
   "schema": 1,
   "baselineCommit": "11cb4a502afeb8063b4a9249a81d1d02bfac803c",
-  "description": "Inventário fechado: espelhos JS não contam como dívida, testes e exemplos ficam fora; a ferramenta de smoke público é CJS controlado. React/Vite foram aposentados.",
+  "description": "Inventário do app Blogger. Sem runtime Agent, Forge ou ferramentas de IA no projeto.",
   "runtime": [
-    "agent.js",
-    "agent/forge/catalog.cjs",
-    "agent/forge/html5/procedural.mjs",
-    "agent/forge/html5/runtime.mjs",
-    "agent/forge/index.cjs",
     "cli.js",
     "public/js/workers/w-errorlog.js",
     "public/js/workers/w-init.js",
@@ -47,9 +42,6 @@
     "src/workers/xmlPatchWorker.js"
   ],
   "tooling": [
-    "agent/forge/smoke.cjs",
-    "agent/forge/verify-source.cjs",
-    "scripts/check-agent-capabilities-ts-mirrors.cjs",
     "scripts/livePublicCompilerSmoke.cjs"
   ]
 }
