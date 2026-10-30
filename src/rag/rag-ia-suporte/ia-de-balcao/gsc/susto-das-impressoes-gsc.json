@@ -1,8 +1,0 @@
-{
-  "susto-das-impressoes-gsc": {
-    "problema-identificado": "erro-interno-de-contagem-que-inflou-artificialmente-as-impressoes-no-search-console",
-    "periodo-do-bug": "maio-de-2025-ate-3-de-abril-de-2026",
-    "reacao-do-usuario": "graficos-de-impressoes-despencaram-apos-a-correcao-fazendo-usuarios-acharem-que-foram-penalizados-pelo-algoritmo",
-    "realidade-dos-dados": "o-google-estava-apenas-limpando-dados-inflados"
-  }
-}
