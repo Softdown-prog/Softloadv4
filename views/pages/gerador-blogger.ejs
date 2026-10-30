@@ -143,7 +143,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6"><label for="colorPreset">Paleta de cores</label>
               <select id="colorPreset" name="colorPreset" class="form-select">
-                <% cores.forEach(function(c) { %><option value="<%= c.id %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
+                <% cores.forEach(function(c) { %><option value="<%= c.id %>" data-hex="<%= c.hex || '#0ea5e9' %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
               </select>
             </div>
             <div class="col-12 col-md-6"><label for="typography">Fonte</label>
@@ -220,7 +220,6 @@
   const body=document.getElementById('fake-body');
   const grid=document.getElementById('fake-grid');
   const aside=document.getElementById('fake-aside');
-  const palette={ 'tech-blue':'#0ea5e9', 'tech-blue-royal':'#2563eb', 'tech-blue-ice':'#7dd3fc', 'tech-blue-cobalt':'#1d4ed8','tech-blue-midnight':'#1e3a8a' };
   function refresh() {
     const useNiche=mode()==='modelo';
     wrapper.hidden=!useNiche;niche.disabled=!useNiche;
@@ -232,7 +231,7 @@
     aside.hidden=side==='none';
     const layout=document.getElementById('gridLayout').value;
     grid.style.gridTemplateColumns=layout==='coluna-unica'||layout==='lista'?'1fr':layout==='dupla'?'repeat(2,minmax(0,1fr))':layout==='mural'?'repeat(4,minmax(0,1fr))':'';
-    document.querySelector('.fake-header').style.borderBottomColor=palette[document.getElementById('colorPreset').value]||'#0ea5e9';
+    document.querySelector('.fake-header').style.borderBottomColor=document.getElementById('colorPreset').selectedOptions[0]?.dataset.hex||'#0ea5e9';
   }
 
   // Escolher um exemplo apenas preenche as opções existentes do compilador.
