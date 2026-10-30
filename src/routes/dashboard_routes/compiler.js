@@ -8,6 +8,7 @@ const { executarCompilacao } = require('../../core/compilerWorker');
 const { validarXmlCompilado, validarXmlEstrutura, validarSemanticaBlogger } = require('../../core/xmlValidator');
 const { COLOR_PRESETS, TYPOGRAPHY_PRESETS } = require('../../core/presets');
 const { NICHO_PAGE_TYPE_MAP, PAGE_TYPES_SEM_CHASSIS_DEDICADO } = require('../../core/nichoTaxonomy');
+const { listarExemplos } = require('../../blogger/exampleGallery.cjs');
 const { db } = require('../../services/firebase');
 const NICHO_NOMES = Object.freeze({
     'gamer-playerone': 'Games e reviews', 'pop-retro-pixel': 'Cultura pop e retrô',
@@ -113,6 +114,7 @@ router.get('/dashboard/gerador-blogger', exigirLogin, (req, res) => {
     res.render('pages/gerador-blogger', { activePage: 'gerador-blogger', user: req.session.user,
         nichos: catalogo(), cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
         fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })),
+        exemplos: listarExemplos(),
         gratuitoLimite: MAX_FREE_DOWNLOADS, guestMode: false, downloadPath: '/dashboard/gerador-blogger/download', guestToken: '' });
 });
 router.post('/dashboard/gerador-blogger/download', exigirLogin, limite, async (req, res) => {
@@ -153,5 +155,6 @@ router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req, res) => res.re
 // API de compilação compartilhada com a experiência pública, sem duplicar regras de validação.
 router.publicCompile = compilarSemIa;
 router.publicCatalog = catalogo;
+router.publicExamples = listarExemplos;
 router.publicPresets = () => ({ cores: Object.entries(COLOR_PRESETS).map(([id, p]) => ({ id, nome: p.label })), fontes: Object.entries(TYPOGRAPHY_PRESETS).map(([id, p]) => ({ id, nome: p.label })) });
 module.exports = router;
