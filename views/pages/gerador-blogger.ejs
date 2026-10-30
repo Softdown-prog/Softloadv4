@@ -7,23 +7,26 @@
 .sl-generator select,.sl-generator input{background:#081322!important;border:1px solid #415673!important;color:#e2e8f0!important}
 .sl-generator select:focus,.sl-generator input:focus{border-color:#38bdf8!important;box-shadow:0 0 0 2px #0ea5e944!important}
 .sl-generator .hint{color:#94a3b8;font-size:.83rem}
-.sl-generator .fake-blog{background:#f8fafc;color:#1e293b;border-radius:13px;overflow:hidden;border:1px solid #334155}
-.sl-generator .fake-header{background:#0f172a;color:white;padding:18px 20px;border-bottom:4px solid #0ea5e9}
-.sl-generator .fake-nav{background:#e2e8f0;color:#475569;padding:9px 20px;font-size:.78rem}
-.sl-generator .fake-body{display:grid;grid-template-columns:minmax(0,2fr) minmax(130px,1fr);gap:14px;padding:14px}
-.sl-generator .fake-body.no-sidebar{grid-template-columns:1fr}
-.sl-generator .fake-body.sidebar-left{grid-template-columns:minmax(130px,1fr) minmax(0,2fr)}
-.sl-generator .fake-body.sidebar-left .fake-aside{order:-1}
-.sl-generator .fake-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.sl-generator .fake-card{background:white;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden;min-width:0}
-.sl-generator .fake-thumb{height:38px;background:linear-gradient(135deg,#bae6fd,#dbeafe)}
-.sl-generator .fake-title{font-size:.66rem;font-weight:700;padding:7px}
-.sl-generator .fake-aside{background:white;border:1px solid #cbd5e1;border-radius:7px;padding:10px;font-size:.7rem}
-.sl-generator .fake-footer{background:#0f172a;padding:13px 20px;color:#e2e8f0;font-size:.7rem}
+.sl-generator .preview-actions{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin:16px 0}
+.sl-generator .preview-views{display:flex;gap:6px;padding:4px;border:1px solid #364964;background:#071425;border-radius:11px}
+.sl-generator .preview-view{border:0;border-radius:7px;color:#c2d1e7;background:transparent;padding:9px 11px;font-size:12px;font-weight:750;cursor:pointer}
+.sl-generator .preview-view[aria-pressed="true"]{background:#155e75;color:#f0fdfa;box-shadow:0 1px 8px #0c4a6e55}
+.sl-generator .preview-view:focus-visible{outline:2px solid #38bdf8;outline-offset:3px}
+.sl-generator .preview-frame-border{background:#071320;border:1px solid #34465f;border-radius:14px;padding:12px 9px;overflow:hidden;min-width:0}
+.sl-generator .preview-browser-top{display:flex;align-items:center;gap:6px;padding:0 6px 10px;color:#94a3b8}
+.sl-generator .preview-browser-dot{width:8px;height:8px;border-radius:50%;background:#f87171}
+.sl-generator .preview-browser-dot:nth-child(2){background:#fbbf24}
+.sl-generator .preview-browser-dot:nth-child(3){background:#34d399}
+.sl-generator .preview-url{margin-left:9px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid #2c405b;border-radius:6px;background:#111f34;padding:4px 10px;flex:1}
+.sl-generator .preview-stage{position:relative;min-width:0;width:100%;height:580px;overflow:hidden;border:1px solid #42546b;border-radius:8px;background:#f8fafc;transition:height .15s ease}
+.sl-generator .preview-document{position:absolute;top:0;left:50%;width:1080px;height:760px;max-width:none;display:block;border:0;background:#f8fafc;transform:translateX(-50%);transform-origin:center top;pointer-events:none}
+.sl-generator .preview-note{font-size:.8rem;line-height:1.5;color:#b4c3d8}
+.sl-generator .preview-device-info{font-size:.74rem;color:#94a3b8}
+@media(max-width:640px){.sl-generator .preview-frame-border{padding:9px 6px}.sl-generator .preview-view{padding:8px 10px}.sl-generator .preview-actions{gap:8px}}
+@media(prefers-reduced-motion:reduce){.sl-generator .preview-stage{transition:none}}
 .sl-generator #form-message{min-height:22px}
 .sl-generator #download-link[hidden]{display:none!important}
-@media(max-width:1024px){.sl-generator .fake-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:640px){.sl-generator .panel{padding:17px}.sl-generator .fake-body,.sl-generator .fake-body.sidebar-left{grid-template-columns:1fr}.sl-generator .fake-grid{grid-template-columns:1fr}.sl-generator .fake-aside{order:2!important}}
+@media(max-width:640px){.sl-generator .panel{padding:17px}}
 
 /* Miniaturas ilustrativas de configurações reais do compilador; não são screenshots. */
 .sl-generator .example-gallery{margin-bottom:20px}
@@ -131,7 +134,7 @@
             <label for="nichoTema" class="form-label">Nicho de partida</label>
             <select class="form-select" id="nichoTema" name="nichoTema" disabled>
               <% nichos.forEach(function(n) { %>
-                <option value="<%= n.id %>" data-aviso="<%= n.aviso || '' %>"><%= n.nome %></option>
+                <option value="<%= n.id %>" data-aviso="<%= n.aviso || '' %>" data-page-type="<%= n.pageType || 'blogger-conteudo' %>"><%= n.nome %></option>
               <% }); %>
             </select>
             <p id="nicho-aviso" class="hint mt-1 mb-0"></p>
@@ -143,7 +146,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6"><label for="colorPreset">Paleta de cores</label>
               <select id="colorPreset" name="colorPreset" class="form-select">
-                <% cores.forEach(function(c) { %><option value="<%= c.id %>" data-hex="<%= c.hex || '#0ea5e9' %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
+                <% cores.forEach(function(c) { %><option value="<%= c.id %>" data-hex="<%= c.hex || '#0ea5e9' %>" data-bg="<%= c.bg || '#f8fafc' %>" data-surface="<%= c.surface || '#ffffff' %>" data-text="<%= c.text || '#1e293b' %>" data-footer="<%= c.footer || '#0f172a' %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
               </select>
             </div>
             <div class="col-12 col-md-6"><label for="typography">Fonte</label>
@@ -189,49 +192,69 @@
         </form>
       </div>
     </section>
-    <section class="col-12 col-xl-7" aria-label="Prévia aproximada do visual">
+    <section class="col-12 col-xl-7" aria-label="Prévia responsiva aproximada">
       <div class="panel">
-        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
-          <div><h2 class="h5 fw-bold text-white mb-1">Prévia do layout</h2><p class="hint mb-0">Simulação visual; não substitui importar o XML no Blogger para validar a renderização real.</p></div>
-          <span class="badge rounded-pill border border-info text-info">Sem navegador na VPS</span>
-        </div>
-        <div class="fake-blog">
-          <div class="fake-header"><strong id="preview-title">Meu Blog Azul</strong><div style="font-size:.74rem;opacity:.75">Seu conteúdo começa aqui</div></div>
-          <div class="fake-nav">Início&nbsp; · &nbsp;Categorias&nbsp; · &nbsp;Sobre&nbsp; · &nbsp;Contato</div>
-          <div class="fake-body" id="fake-body">
-            <div class="fake-grid" id="fake-grid">
-              <% for(var i=0;i<6;i++){ %><div class="fake-card"><div class="fake-thumb"></div><div class="fake-title">Exemplo de postagem <%= i+1 %></div></div><% } %>
-            </div>
-            <div class="fake-aside" id="fake-aside"><strong>Barra lateral</strong><hr/>Categorias<br/>Postagens populares<br/>Arquivo do blog</div>
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+          <div>
+            <h2 class="h5 fw-bold text-white mb-1">Prévia responsiva</h2>
+            <p class="hint mb-0">Veja uma representação do estilo escolhido, sem gerar ou consumir downloads.</p>
           </div>
-          <div class="fake-footer">© Meu Blog · Blogger</div>
+          <span class="badge rounded-pill border border-info text-info">Sem Chromium na VPS</span>
         </div>
-        <p class="hint mt-3 mb-0">O XML produzido inclui o widget de postagens do Blogger, CSS responsivo e as opções selecionadas.</p>
+        <div class="preview-actions">
+          <div class="preview-views" role="group" aria-label="Escolher tamanho da prévia">
+            <button type="button" class="preview-view" data-preview-device="desktop" aria-pressed="true">Computador</button>
+            <button type="button" class="preview-view" data-preview-device="tablet" aria-pressed="false">Tablet</button>
+            <button type="button" class="preview-view" data-preview-device="mobile" aria-pressed="false">Celular</button>
+          </div>
+          <span id="preview-device-info" class="preview-device-info">1080 px · Computador</span>
+        </div>
+        <div class="preview-frame-border">
+          <div class="preview-browser-top" aria-hidden="true">
+            <span class="preview-browser-dot"></span><span class="preview-browser-dot"></span><span class="preview-browser-dot"></span>
+            <span class="preview-url">Exemplo local · HTML/CSS ilustrativo</span>
+          </div>
+          <div id="preview-stage" class="preview-stage">
+            <iframe id="preview-iframe" class="preview-document" sandbox="" referrerpolicy="no-referrer" title="Visualização ilustrativa do Blogger" loading="eager"></iframe>
+          </div>
+        </div>
+        <p class="preview-note mt-3 mb-0">A prévia acompanha nicho, paleta, tipografia, layout e barra lateral. É uma simulação local: widgets, postagens e CSS específicos do XML precisam ser conferidos no Blogger depois da importação.</p>
       </div>
     </section>
   </div>
 </main>
+<script src="/js/blogger-preview.js?v=<%= gitSha %>"></script>
 <script>
 (function() {
   const form=document.getElementById('generator-form');
   const mode=()=>form.querySelector('input[name="modo"]:checked').value;
   const niche=document.getElementById('nichoTema');
   const wrapper=document.getElementById('nicho-wrapper');
-  const body=document.getElementById('fake-body');
-  const grid=document.getElementById('fake-grid');
-  const aside=document.getElementById('fake-aside');
+  const preview=window.SoftloadBloggerPreview?.mount(document.getElementById('preview-iframe'),document.getElementById('preview-stage'));
+  if(preview&&typeof document.querySelectorAll==='function'){
+    document.querySelectorAll('[data-preview-device]').forEach(button=>button.addEventListener('click',()=>{
+      const device=button.dataset.previewDevice;
+      preview.setDevice(device);
+      document.querySelectorAll('[data-preview-device]').forEach(other=>other.setAttribute('aria-pressed',other===button?'true':'false'));
+      const width=window.SoftloadBloggerPreview.DEVICES[device];
+      const info=document.getElementById('preview-device-info');
+      if(info)info.textContent=width+' px · '+(device==='desktop'?'Computador':device==='tablet'?'Tablet':'Celular');
+    }));
+  }
   function refresh() {
     const useNiche=mode()==='modelo';
     wrapper.hidden=!useNiche;niche.disabled=!useNiche;
     document.getElementById('nicho-aviso').textContent=useNiche ? (niche.selectedOptions[0].dataset.aviso||'Este nicho utiliza componentes existentes do compilador.') : '';
-    document.getElementById('preview-title').textContent=document.getElementById('siteName').value||'Meu blog';
-    const side=document.getElementById('sidebarPosition').value;
-    body.classList.toggle('no-sidebar',side==='none');
-    body.classList.toggle('sidebar-left',side==='left');
-    aside.hidden=side==='none';
-    const layout=document.getElementById('gridLayout').value;
-    grid.style.gridTemplateColumns=layout==='coluna-unica'||layout==='lista'?'1fr':layout==='dupla'?'repeat(2,minmax(0,1fr))':layout==='mural'?'repeat(4,minmax(0,1fr))':'';
-    document.querySelector('.fake-header').style.borderBottomColor=document.getElementById('colorPreset').selectedOptions[0]?.dataset.hex||'#0ea5e9';
+    const colors=document.getElementById('colorPreset').selectedOptions[0]?.dataset||{};
+    preview?.render({
+      siteName:document.getElementById('siteName').value||'Meu Blog',
+      niche:useNiche?niche.value:'',
+      pageType:useNiche?niche.selectedOptions[0]?.dataset.pageType:'blogger-conteudo',
+      accent:colors.hex,bg:colors.bg,surface:colors.surface,text:colors.text,footer:colors.footer,
+      typography:document.getElementById('typography').value,
+      layout:document.getElementById('gridLayout').value,
+      side:document.getElementById('sidebarPosition').value
+    });
   }
 
   // Escolher um exemplo apenas preenche as opções existentes do compilador.
