@@ -8,7 +8,7 @@ const { executarCompilacao } = require('../../core/compilerWorker');
 const { validarXmlCompilado, validarXmlEstrutura, validarSemanticaBlogger } = require('../../core/xmlValidator');
 const { COLOR_PRESETS, TYPOGRAPHY_PRESETS } = require('../../core/presets');
 const { NICHO_PAGE_TYPE_MAP, PAGE_TYPES_SEM_CHASSIS_DEDICADO } = require('../../core/nichoTaxonomy');
-const { listarExemplos } = require('../../blogger/exampleGallery.cjs');
+const { listarExemplos } = require('../../blogger/exampleGallery');
 const { db } = require('../../services/firebase');
 const NICHO_NOMES = Object.freeze({
     'gamer-playerone': 'Games e reviews', 'pop-retro-pixel': 'Cultura pop e retrô',
