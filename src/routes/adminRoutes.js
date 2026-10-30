@@ -75,7 +75,8 @@ async function listarUsuarios(limit = 50, cursor = null) {
     let query = db.collection('clientes_premium').orderBy('criado_em', 'desc').limit(limit + 1);
     if (cursor) {
         const cursorDoc = await db.collection('clientes_premium').doc(cursor).get();
-        if (!cursorDoc.exists) return { usuarios: [], nextCursor: null };
+        if (!cursorDoc.exists)
+            return { usuarios: [], nextCursor: null };
         query = query.startAfter(cursorDoc);
     }
     const snap = await query.get();
@@ -150,7 +151,8 @@ router.get('/eu/api/usuarios', exigirSuperAdmin, async (req, res) => {
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
         // O cursor referencia o último documento exibido; nunca compara datas como strings.
         const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
-        if (cursor && cursor.length > 256) return res.status(400).json({ erro: 'Cursor inválido.' });
+        if (cursor && cursor.length > 256)
+            return res.status(400).json({ erro: 'Cursor inválido.' });
         const { usuarios, nextCursor } = await listarUsuarios(limit, cursor);
         res.json({ usuarios, nextCursor });
     }
