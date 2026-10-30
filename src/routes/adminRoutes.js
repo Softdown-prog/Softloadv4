@@ -7,11 +7,6 @@ const { exigirSuperAdmin } = require('../middlewares/adminGuard');
 const { db, admin } = require('../services/firebase');
 const { PLAN_CREDITS, concederCreditos, concederCreditosBloggerAi } = require('../services/creditService');
 const { obterStatusRecuperacaoCobrancas } = require('../services/billingRecoveryMonitor');
-const buildInfo = require('../services/buildInfo');
-const { resolverPeca } = require('../core/compilerEngine/pecaOrchestrator');
-const { perguntarAoSol } = require('../ai/solAgent');
-const chatStorage = require('../services/chatStorageService');
-const SOL_SESSION_TYPE = 'sol';
 const FV = admin.firestore.FieldValue;
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -126,8 +121,7 @@ router.get('/eu/usuarios', exigirSuperAdmin, (req, res) => {
 //
 // Tela informativa: o chat Sol foi aposentado na versão Blogger, sem apagar histórico.
 // ==========================================
-router.get('/eu/sol', exigirSuperAdmin, (req, res) => {
-    res.render('pages/admin-simples', { adminSection: 'sol', user: req.session.user });
+
 });
 // ==========================================
 // GET /eu/api/kpis — Polling de KPIs (JSON)
@@ -300,185 +294,7 @@ router.post('/eu/api/creditos/provisionar', exigirSuperAdmin, async (req, res) =
         res.status(500).json({ erro: err.message });
     }
 });
-// ==========================================
-// ==========================================
-// GET /eu/api/saude — Verifica config das APIs de IA
-// ==========================================
-// ==========================================
-// POST /eu/api/pecas/resolver — Worker de execução do RAG Agent de peças.
-//
-// Rota lateral, propositalmente FORA do pipeline síncrono de compilação
-// (compilarTemplate/executarCompilacao) — resolverPeca() é assíncrono
-// (pode chamar a API do Gemini) e o pipeline de compilação é síncrono do
-// início ao fim. Chamar esta rota ANTES de compilar persiste a peça no
-// dossiê do nicho (dossieWriter.js); a compilação síncrona que roda
-// depois já lê o dossiê atualizado do disco. Admin-only: pode disparar
-// custo de IA e mutar um dossiê compartilhado por todos os usuários do
-// nicho, não é dado por-usuário.
-// ==========================================
-router.post('/eu/api/pecas/resolver', exigirSuperAdmin, async (req, res) => {
-    try {
-        const { nichoTema, pedido } = req.body || {};
-        if (!nichoTema || typeof nichoTema !== 'string') {
-            return res.status(400).json({ erro: 'Campo "nichoTema" é obrigatório.' });
-        }
-        if (!pedido || typeof pedido !== 'string') {
-            return res.status(400).json({ erro: 'Campo "pedido" é obrigatório (ex: "widget Trending Posts, Bootstrap 5, dark mode, Adsense").' });
-        }
-        const resultado = await resolverPeca(nichoTema, { pedido });
-        logAdmin(req.session.user.email, 'peca_resolvida', {
-            nichoTema, pedido, ok: resultado.ok, origem: resultado.origem, pecaId: resultado.peca?.id || null,
-        });
-        console.log(`[ADMIN] pecaOrchestrator "${nichoTema}": ok=${resultado.ok} origem=${resultado.origem} (por ${req.session.user.email})`);
-        res.status(resultado.ok ? 200 : 422).json(resultado);
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro em /eu/api/pecas/resolver:', err.message);
-        res.status(500).json({ erro: err.message });
-    }
-});
-// ==========================================
-// GET /eu/api/sol/sessions — lista as conversas salvas do admin logado.
-// DELETE /eu/api/sol/sessions/:sessionId — remove uma conversa.
-// GET /eu/api/sol/sessions/:sessionId — carrega uma conversa específica.
-//
-// Mesmo mecanismo de persistência dos outros chats da Softload
-// (chatStorageService, GCS, mesmo type genérico usado por
-// 'chat-suporte'/'blogger-ai') — Sol usa o type 'sol'. Substitui o
-// doc único no Firestore (admin_sol_conversas) da rodada anterior:
-// aqui cada conversa é uma sessão independente, com lista/retomada/
-// exclusão individual, igual ao chat de suporte em /dashboard/chat.
-// ==========================================
-router.get('/eu/api/sol/sessions', exigirSuperAdmin, async (req, res) => {
-    try {
-        const sessions = await chatStorage.listSessions(req.session.user.uid, SOL_SESSION_TYPE);
-        res.json({ sessions });
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro ao listar sessões do Sol:', err.message);
-        res.status(500).json({ erro: 'Erro ao listar conversas.' });
-    }
-});
-router.get('/eu/api/sol/sessions/:sessionId', exigirSuperAdmin, async (req, res) => {
-    try {
-        const session = await chatStorage.loadSession(req.session.user.uid, SOL_SESSION_TYPE, req.params.sessionId);
-        if (!session)
-            return res.status(404).json({ erro: 'Conversa não encontrada.' });
-        res.json({ session });
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro ao carregar sessão do Sol:', err.message);
-        res.status(500).json({ erro: 'Erro ao carregar conversa.' });
-    }
-});
-router.delete('/eu/api/sol/sessions/:sessionId', exigirSuperAdmin, async (req, res) => {
-    try {
-        await chatStorage.deleteSession(req.session.user.uid, SOL_SESSION_TYPE, req.params.sessionId, {
-            email: req.session.user.email,
-            plano: req.session.user?.plano || 'free',
-        });
-        res.json({ sucesso: true });
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro ao remover sessão do Sol:', err.message);
-        res.status(500).json({ erro: 'Erro ao remover conversa.' });
-    }
-});
-// ==========================================
-// POST /eu/api/sol/perguntar/stream — pergunta ao Sol, via SSE.
-// Protocolo idêntico ao já usado em dashboard_routes/chat.js:
-//   data: {"type":"status","label":"..."}                            — progresso (ferramenta em execução)
-//   data: {"type":"chunk","text":"..."}                              — fragmento/resposta completa
-//   data: {"type":"done","resposta":"...","sessionId":"...", ...}    — final
-//   data: {"type":"error","message":"..."}                           — erro
-//
-// perguntarAoSol() não faz streaming token-a-token (usa chat.sendMessage,
-// não sendMessageStream) — mesma limitação que _tentarFluxoEdicao já tem em
-// chat.js (envia "chunk" único com o texto inteiro). O valor real do
-// streaming aqui é mostrar PROGRESSO de ferramenta em tempo real via
-// onProgress, não o texto chegando palavra por palavra.
-// ==========================================
-router.post('/eu/api/sol/perguntar/stream', exigirSuperAdmin, async (req, res) => {
-    const { mensagem, historico, sessionId: clientSessionId } = req.body || {};
-    if (!mensagem || typeof mensagem !== 'string') {
-        return res.status(400).json({ erro: 'Campo "mensagem" é obrigatório.' });
-    }
-    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-    const sendEvent = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
-    const historicoSeguro = Array.isArray(historico) ? historico : [];
-    const uid = req.session.user.uid;
-    const sessionId = clientSessionId || chatStorage.newSessionId();
-    try {
-        const resultado = await perguntarAoSol(historicoSeguro, mensagem, {
-            onProgress: (evento) => sendEvent(evento),
-        });
-        sendEvent({ type: 'chunk', text: resultado.resposta });
-        sendEvent({ type: 'done', resposta: resultado.resposta, budget: resultado.budget, iteracoes: resultado.iteracoes, ms: resultado.ms, sessionId });
-        console.log(`[ADMIN] Sol (stream) respondeu: ${resultado.iteracoes} iteração(ões), ${resultado.ms}ms (por ${req.session.user.email})`);
-        if (uid) {
-            const ts = new Date().toISOString();
-            const messages = [
-                ...historicoSeguro,
-                { role: 'user', content: mensagem, ts },
-                { role: 'assistant', content: resultado.resposta, ts },
-            ];
-            chatStorage.saveSession(uid, SOL_SESSION_TYPE, sessionId, {
-                messages,
-                tokens: { total: resultado.budget?.tokensUsados || 0, input: 0, output: 0 },
-                meta: {},
-            }, { email: req.session.user.email, plano: req.session.user?.plano || 'free' })
-                .catch(e => console.error('[ADMIN] Falha ao salvar sessão do Sol (ignorado):', e.message));
-        }
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[ADMIN] Erro em /eu/api/sol/perguntar/stream:', err.message);
-        sendEvent({ type: 'error', message: err.message });
-    }
-    finally {
-        res.end();
-    }
-});
-// ==========================================
-// ==========================================
-// GET /eu/api/saude — Verifica config das APIs de IA
-// ==========================================
-router.get('/eu/api/saude', exigirSuperAdmin, (req, res) => {
-    const geminiKey = !!process.env.GEMINI_API_KEY;
-    const geminiFlash = process.env.GEMINI_FLASH_MODEL || 'gemini-2.5-flash';
-    const geminiLite = process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite';
-    res.json({
-        apis: {
-            gemini_flash: {
-                chave: geminiKey,
-                modelo: geminiFlash,
-                uso: 'chat + templates',
-                status: geminiKey ? 'ok' : 'CHAVE AUSENTE — configure GEMINI_API_KEY no Cloud Run',
-            },
-            gemini_lite: {
-                chave: geminiKey,
-                modelo: geminiLite,
-                uso: 'planner + JSON',
-                status: geminiKey ? 'ok' : 'CHAVE AUSENTE — configure GEMINI_API_KEY no Cloud Run',
-            },
-        },
-        ambiente: process.env.NODE_ENV || 'development',
-        ts: new Date().toISOString(),
-        deploy: {
-            gitSha: buildInfo.gitSha,
-            gitDate: buildInfo.gitDate,
-            buildTime: buildInfo.buildTime,
-        },
-    });
-});
+// APIs antigas de Sol, RAG e Gemini removidas do painel administrativo.
 // ==========================================
 // GET /eu/api/billing/recuperacao — apenas superadmin; não expõe dados de usuário.
 router.get('/eu/api/billing/recuperacao', exigirSuperAdmin, (req, res) => {
