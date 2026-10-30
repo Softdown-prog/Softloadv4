@@ -14,7 +14,7 @@
   <section class="panel" aria-labelledby="auth-title">
     <% if(authMode === 'register') { %>
       <h1 id="auth-title" class="h3 fw-bold text-white mb-2">Sua área de criação começa aqui</h1>
-      <p class="copy">Você pode experimentar o editor sem cadastro. Crie uma conta para acompanhar seu uso, acessar recursos de conta e, quando disponível, contratar o Essencial. A área de arquivos está em preparação.</p>
+      <p class="copy">Você pode experimentar o editor sem cadastro. Crie uma conta para acompanhar seu uso e acessar seus templates.<% if (typeof bloggerCheckoutEnabled !== 'undefined' && bloggerCheckoutEnabled) { %> O Essencial oferece 30 dias de acesso por R$ 5.<% } %><% if (typeof bloggerFilesEnabled !== 'undefined' && bloggerFilesEnabled) { %> Sua conta também permite gerenciar arquivos no painel.<% } %></p>
       <form action="/register" method="post">
         <div class="mb-3"><label class="form-label" for="name">Seu nome</label><input class="form-control" id="name" name="name" autocomplete="name" minlength="2" maxlength="100" required></div>
         <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>

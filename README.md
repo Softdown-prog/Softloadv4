@@ -41,3 +41,5 @@ Configuração: `SESSION_SECRET`, `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, credenc
 O banco e os caminhos atuais de clientes permanecem compatíveis. Campos antigos são dados históricos, não dependências de serviços aposentados. Não executar deploy de índices Firebase ou remoção de dados como parte de uma atualização da aplicação.
 
 Ver [infraestrutura e deploy](docs/VPS_DEPLOY.md), [pagamentos](docs/PAGAMENTOS.md) e [resultado da limpeza](docs/LIMPEZA_BLOGGER_20261030.md).
+
+Para liberar o checkout e os uploads na VPS após homologar, configure `BLOGGER_ESSENCIAL_CHECKOUT_ENABLED=true` e `SOFTLOAD_LITE_FILES_ENABLED=true` no ambiente do Compose. Os padrões continuam desligados em instalações novas.
