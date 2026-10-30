@@ -38,36 +38,7 @@ jobs:
           node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
           node --test scripts/deployFrontendGate.contract.test.cjs
       - name: Verify image metadata and deploy cache contracts
-        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/deployFrontendGate.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs scripts/artifactDelivery.test.cjs
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Forge test dependencies
-        timeout-minutes: 15
-        run: |
-          set -euo pipefail
-          python -m pip install --retries 3 --timeout 30 -r agent/forge/requirements.txt
-          # Os runners hospedados podem levar >15 minutos baixando ffmpeg
-          # e suas dezenas de dependências do espelho Ubuntu. Durante o
-          # teste, usamos binários Linux estáticos de versões FIXAS do npm.
-          # Não são enviados para a VPS nem alteram o pacote de produção.
-          media_dir="${RUNNER_TEMP}/forge-test-media"
-          npm install --prefix "$media_dir" --no-save --ignore-scripts \
-            --no-audit --no-fund --package-lock=false \
-            @ffmpeg-installer/linux-x64@4.1.0 \
-            @ffprobe-installer/linux-x64@5.2.0
-          install -d "$media_dir/bin"
-          ffmpeg_binary="$media_dir/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
-          ffprobe_binary="$media_dir/node_modules/@ffprobe-installer/linux-x64/ffprobe"
-          chmod +x "$ffmpeg_binary" "$ffprobe_binary"
-          ln -s "$ffmpeg_binary" "$media_dir/bin/ffmpeg"
-          ln -s "$ffprobe_binary" "$media_dir/bin/ffprobe"
-          echo "$media_dir/bin" >> "$GITHUB_PATH"
-          "$media_dir/bin/ffmpeg" -version >/dev/null
-          "$media_dir/bin/ffprobe" -version >/dev/null
-          "$media_dir/bin/ffmpeg" -hide_banner -encoders 2>/dev/null | grep -F libvorbis
-          # Pillow usa fontes do sistema; sinaliza caso o runner as perca.
-          test -r /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/deployFrontendGate.contract.test.cjs scripts/rsync-resume.contract.test.cjs scripts/artifactDelivery.test.cjs
       - run: npm test
       - name: Validar Mercado Pago sem emitir cobranças
         run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
@@ -150,11 +121,12 @@ jobs:
           done
           [[ "$base" =~ ^[0-9a-f]{40}$ ]]
           if git cat-file -e "$base^{commit}" 2>/dev/null; then
-            if git diff --quiet "$base" "$TARGET_SHA" -- agent/ Power-up/; then echo 'agent=false' >> "$GITHUB_OUTPUT"; else echo 'agent=true' >> "$GITHUB_OUTPUT"; fi
+            # Agent aposentado: não gerar novas imagens; v2 usa apenas a imagem legada já existente.
+            echo 'agent=false' >> "$GITHUB_OUTPUT"
           else
             # First deployment from Softloadv4: the running SHA belongs to the old repository.
             # Rebuild every service once, then compare commits normally on future deployments.
-            echo 'agent=true' >> "$GITHUB_OUTPUT"
+            echo 'agent=false' >> "$GITHUB_OUTPUT"
           fi
           echo "[DEPLOY] Running revision: $base"
   build_and_transfer:
@@ -171,9 +143,6 @@ jobs:
           - service: app
             context: .
             dockerfile: Dockerfile
-          - service: agent
-            context: agent
-            dockerfile: agent/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - name: Record main revision before build
@@ -193,38 +162,9 @@ jobs:
         if: steps.latest_before_build.outputs.proceed == 'true'
         id: changes
         env:
-          AGENT_CHANGED: ${{ needs.plan.outputs.agent }}
         run: |
-          case '${{ matrix.service }}' in
-            app) changed=true ;;
-            agent) changed="$AGENT_CHANGED" ;;
-          esac
-          [[ "$changed" == true || "$changed" == false ]]
-          echo "changed=$changed" >> "$GITHUB_OUTPUT"
-      - name: Prepare Agent native source
-        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
-        run: node agent/scripts/vendorPowerUp.js
-      # Compilacao acontece no GitHub-hosted runner, NAO na VPS e NAO
-      # dentro da imagem do Worker. A imagem usa apenas ESM JavaScript.
-      - name: Setup Node for Agent TypeScript compilation
-        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Generate Agent runtime JavaScript from TypeScript
-        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'agent' && steps.changes.outputs.changed == 'true'
-        timeout-minutes: 15
-        run: |
-          set -euo pipefail
-          # Usa o lockfile da raiz. O codigo TS do Agent requer apenas
-          # TypeScript e acorn; ignora postinstall durante essa etapa.
-          npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
-          npm run typecheck:agent
-          npm run build:agent:capabilities
-      # Cache de camadas dos serviços app/agent nos runners hospedados.
-      # Importante: o cache acelera build/npm/apt/Chromium no GitHub,
-      # mas não reduz sozinho o .tar.gz enviado à VPS.
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      # Nenhum build do Agent: o código foi removido do repositório.
       - name: Prepare shared Docker BuildKit cache
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
         uses: docker/setup-buildx-action@v3
