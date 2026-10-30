@@ -24,6 +24,45 @@
 .sl-generator #download-link[hidden]{display:none!important}
 @media(max-width:1024px){.sl-generator .fake-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.sl-generator .panel{padding:17px}.sl-generator .fake-body,.sl-generator .fake-body.sidebar-left{grid-template-columns:1fr}.sl-generator .fake-grid{grid-template-columns:1fr}.sl-generator .fake-aside{order:2!important}}
+
+/* Miniaturas ilustrativas de configurações reais do compilador; não são screenshots. */
+.sl-generator .example-gallery{margin-bottom:20px}
+.sl-generator .example-title{font-size:1.15rem;font-weight:800;color:#f8fafc;margin:0}
+.sl-generator .example-filters{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 18px}
+.sl-generator .example-filter{border:1px solid #405472;background:#0b1729;color:#bdd0e7;border-radius:999px;padding:7px 12px;font-size:.8rem;font-weight:700;cursor:pointer}
+.sl-generator .example-filter[aria-pressed="true"]{background:#155e75;border-color:#38bdf8;color:#e0f2fe}
+.sl-generator .example-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.sl-generator .example-choice{display:flex;flex-direction:column;gap:10px;text-align:left;min-width:0;padding:10px;border:1px solid #31445c;background:#0b1729;color:#e2e8f0;border-radius:13px;cursor:pointer;transition:border-color .15s ease,transform .15s ease,background .15s ease}
+.sl-generator .example-choice:hover,.sl-generator .example-choice:focus-visible{border-color:#38bdf8;background:#13223a;transform:translateY(-2px);outline:none}
+.sl-generator .example-choice[aria-pressed="true"]{border:2px solid #38bdf8;padding:9px;box-shadow:0 0 0 2px rgba(56,189,248,.13)}
+.sl-generator .example-choice[hidden]{display:none!important}
+.sl-generator .example-screen{height:112px;overflow:hidden;border-radius:7px;background:var(--ex-bg);border:1px solid rgba(110,128,151,.22);color:var(--ex-text);display:flex;flex-direction:column}
+.sl-generator .example-screen-top{height:11px;flex:none;background:var(--ex-accent)}
+.sl-generator .example-screen-head{padding:9px 10px 5px;font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-generator .example-screen-hero{height:21px;margin:0 10px 6px;border-radius:3px;background:linear-gradient(120deg,var(--ex-accent),transparent 95%);opacity:.7}
+.sl-generator .example-screen-layout{display:flex;gap:5px;margin:0 10px 7px;min-height:0;flex:1}
+.sl-generator .example-screen-posts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;flex:1}
+.sl-generator .example-screen-post{display:block;border-radius:3px;background:var(--ex-surface);border:1px solid rgba(110,128,151,.20);position:relative;overflow:hidden}
+.sl-generator .example-screen-post:before{content:"";display:block;background:var(--ex-accent);opacity:.5;height:48%}
+.sl-generator .example-screen-post:after{content:"";display:block;position:absolute;bottom:8px;left:5px;width:60%;height:3px;background:var(--ex-text);opacity:.16}
+.sl-generator .example-screen-side{width:23%;border-radius:3px;background:var(--ex-surface);border:1px solid rgba(110,128,151,.18)}
+.sl-generator .example-screen[data-side="none"] .example-screen-side{display:none}
+.sl-generator .example-screen[data-side="left"] .example-screen-side{order:-1}
+.sl-generator .example-screen[data-layout="lista"] .example-screen-posts,
+.sl-generator .example-screen[data-layout="coluna-unica"] .example-screen-posts{grid-template-columns:1fr}
+.sl-generator .example-screen[data-layout="dupla"] .example-screen-posts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sl-generator .example-screen[data-layout="mural"] .example-screen-posts,
+.sl-generator .example-screen[data-layout="quadrado"] .example-screen-posts{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sl-generator .example-screen[data-layout="zigzag"] .example-screen-post:nth-child(even){transform:translateY(5px)}
+.sl-generator .example-name{font-size:.85rem;font-weight:780;line-height:1.2;color:#f1f5f9}
+.sl-generator .example-category{font-size:.7rem;color:#67e8f9;text-transform:uppercase;font-weight:740;letter-spacing:.04em}
+.sl-generator .example-description{font-size:.74rem;color:#aabdd6;line-height:1.4;flex:1}
+.sl-generator .example-action{font-size:.74rem;font-weight:800;color:#7dd3fc}
+.sl-generator .example-note{font-size:.76rem;color:#a5b4ce;margin:14px 0 0}
+@media(max-width:1080px){.sl-generator .example-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.sl-generator .example-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.sl-generator .example-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.sl-generator .example-choice{padding:8px}.sl-generator .example-screen{height:92px}.sl-generator .example-description{display:none}}
+@media(prefers-reduced-motion:reduce){.sl-generator .example-choice{transition:none}.sl-generator .example-choice:hover{transform:none}}
 </style>
 <main class="sl-generator">
   <div class="mb-4 d-flex justify-content-between align-items-start gap-2 flex-wrap">
@@ -34,6 +73,49 @@
     </div>
     <a class="btn btn-outline-secondary btn-sm" href="<%= guestMode ? '/' : '/dashboard' %>"><%= guestMode ? 'Página inicial' : 'Voltar ao painel' %></a>
   </div>
+
+  <% if (typeof exemplos !== 'undefined' && Array.isArray(exemplos) && exemplos.length) { %>
+  <section class="panel example-gallery" aria-labelledby="example-gallery-title">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div>
+        <p class="eyebrow mb-1">Biblioteca de inspiração · <%= exemplos.length %> opções</p>
+        <h2 id="example-gallery-title" class="example-title">Escolha um exemplo para personalizar</h2>
+        <p class="hint mb-0">Modelos com nichos, cores e layouts predefinidos. Depois você pode mudar tudo no editor.</p>
+      </div>
+      <span class="badge rounded-pill border border-info text-info">100% procedural</span>
+    </div>
+    <div class="example-filters" role="group" aria-label="Filtrar modelos por categoria">
+      <% ['Todos','Editorial','Tecnologia','Criativos','Blogs','Negócios'].forEach(function(cat) { %>
+        <button class="example-filter" type="button" data-gallery-filter="<%= cat %>" aria-pressed="<%= cat==='Todos' ? 'true' : 'false' %>"><%= cat %></button>
+      <% }); %>
+    </div>
+    <div id="example-grid" class="example-grid">
+      <% exemplos.forEach(function(ex) { %>
+      <button type="button" class="example-choice" aria-pressed="false"
+          data-example-id="<%= ex.id %>" data-category="<%= ex.categoria %>"
+          data-site-name="<%= ex.nome %>" data-nicho="<%= ex.nichoTema %>"
+          data-color="<%= ex.colorPreset %>" data-typography="<%= ex.typography %>"
+          data-layout="<%= ex.gridLayout %>" data-side="<%= ex.sidebarPosition %>">
+        <div class="example-screen" aria-hidden="true" data-layout="<%= ex.gridLayout %>" data-side="<%= ex.sidebarPosition %>"
+          style="--ex-accent:<%= ex.accent %>;--ex-bg:<%= ex.background %>;--ex-surface:<%= ex.surface %>;--ex-text:<%= ex.contrast %>">
+          <div class="example-screen-top"></div>
+          <div class="example-screen-head"><%= ex.nome %></div>
+          <div class="example-screen-hero"></div>
+          <div class="example-screen-layout">
+            <div class="example-screen-posts"><% for (var k=0;k<4;k++) { %><span class="example-screen-post"></span><% } %></div>
+            <div class="example-screen-side"></div>
+          </div>
+        </div>
+        <span class="example-category"><%= ex.categoria %></span>
+        <span class="example-name"><%= ex.nome %></span>
+        <span class="example-description"><%= ex.descricao %></span>
+        <span class="example-action">Usar este exemplo</span>
+      </button>
+      <% }); %>
+    </div>
+    <p id="example-feedback" class="example-note" role="status" aria-live="polite">Miniaturas ilustrativas. O XML definitivo é compilado e validado quando você clicar em “Gerar e baixar XML”.</p>
+  </section>
+  <% } %>
   <div class="row g-3">
     <section class="col-12 col-xl-5" aria-label="Configurar template">
       <div class="panel">
@@ -61,7 +143,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6"><label for="colorPreset">Paleta de cores</label>
               <select id="colorPreset" name="colorPreset" class="form-select">
-                <% cores.forEach(function(c) { %><option value="<%= c.id %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
+                <% cores.forEach(function(c) { %><option value="<%= c.id %>" data-hex="<%= c.hex || '#0ea5e9' %>" <%= c.id==='tech-blue'?'selected':'' %>><%= c.nome %></option><% }); %>
               </select>
             </div>
             <div class="col-12 col-md-6"><label for="typography">Fonte</label>
@@ -138,7 +220,6 @@
   const body=document.getElementById('fake-body');
   const grid=document.getElementById('fake-grid');
   const aside=document.getElementById('fake-aside');
-  const palette={ 'tech-blue':'#0ea5e9', 'tech-blue-royal':'#2563eb', 'tech-blue-ice':'#7dd3fc', 'tech-blue-cobalt':'#1d4ed8','tech-blue-midnight':'#1e3a8a' };
   function refresh() {
     const useNiche=mode()==='modelo';
     wrapper.hidden=!useNiche;niche.disabled=!useNiche;
@@ -150,7 +231,46 @@
     aside.hidden=side==='none';
     const layout=document.getElementById('gridLayout').value;
     grid.style.gridTemplateColumns=layout==='coluna-unica'||layout==='lista'?'1fr':layout==='dupla'?'repeat(2,minmax(0,1fr))':layout==='mural'?'repeat(4,minmax(0,1fr))':'';
-    document.querySelector('.fake-header').style.borderBottomColor=palette[document.getElementById('colorPreset').value]||'#0ea5e9';
+    document.querySelector('.fake-header').style.borderBottomColor=document.getElementById('colorPreset').selectedOptions[0]?.dataset.hex||'#0ea5e9';
+  }
+
+  // Escolher um exemplo apenas preenche as opções existentes do compilador.
+  // Não gera, não consome cota e não faz nenhuma chamada de IA.
+  const exampleGrid=typeof document.querySelectorAll==='function'?document.getElementById('example-grid'):null;
+  if(exampleGrid){
+    const choices=[...exampleGrid.querySelectorAll('[data-example-id]')];
+    const feedback=document.getElementById('example-feedback');
+    exampleGrid.addEventListener('click',event=>{
+      const choice=event.target.closest('[data-example-id]');
+      if(!choice||!exampleGrid.contains(choice))return;
+      const data=choice.dataset;
+      const nichos=[...niche.options].map(o=>o.value);
+      if(!nichos.includes(data.nicho))return;
+      form.querySelector('input[name="modo"][value="modelo"]').checked=true;
+      niche.value=data.nicho;
+      document.getElementById('siteName').value=data.siteName;
+      const setters={colorPreset:data.color,typography:data.typography,gridLayout:data.layout,sidebarPosition:data.side};
+      for(const [field,value] of Object.entries(setters)){
+        const select=document.getElementById(field);
+        if([...select.options].some(o=>o.value===value))select.value=value;
+      }
+      for(const item of choices)item.setAttribute('aria-pressed',item===choice?'true':'false');
+      refresh();
+      const msg='Exemplo '+data.siteName+' aplicado. Personalize as opções e gere seu XML quando desejar.';
+      feedback.textContent=msg;
+      document.getElementById('form-message').textContent=msg;
+      form.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    });
+    document.querySelectorAll('[data-gallery-filter]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const active=button.dataset.galleryFilter;
+        document.querySelectorAll('[data-gallery-filter]').forEach(filter=>{
+          filter.setAttribute('aria-pressed',filter===button?'true':'false');
+        });
+        for(const choice of choices)choice.hidden=active!=='Todos'&&choice.dataset.category!==active;
+        feedback.textContent=active==='Todos'?'Todos os exemplos disponíveis.':'Exibindo modelos da categoria '+active+'.';
+      });
+    });
   }
   form.addEventListener('change',refresh);document.getElementById('siteName').addEventListener('input',refresh);
   const fields=['colorPreset','typography','gridLayout','sidebarPosition'];

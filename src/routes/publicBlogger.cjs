@@ -27,7 +27,7 @@ function publicOptions(req) {
   const {cores, fontes} = compiler.publicPresets();
   return {
     user: null,
-    nichos: compiler.publicCatalog(), cores, fontes,
+    nichos: compiler.publicCatalog(), cores, fontes, exemplos: compiler.publicExamples(),
     gratuitoLimite: GUEST_LIMIT, guestMode: true, activePage: null,
     guestToken: req.session.bloggerGuestToken, downloadPath: '/criar/download'
   };

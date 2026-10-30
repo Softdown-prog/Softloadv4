@@ -9,7 +9,9 @@
   "scripts/vendorAssets.ts",
   "scripts/vendorCachePolicy.ts",
   "scripts/vendorTemplateRefs.ts",
+  "server.ts",
   "src/blogger/cssValidation.ts",
+  "src/blogger/exampleGallery.ts",
   "src/blogger/manifestSchema.ts",
   "src/blogger/scriptValidation.ts",
   "src/core/blockLibrary.ts",
@@ -86,6 +88,5 @@
   "src/services/firebase.ts",
   "src/services/mpPlanRules.ts",
   "src/services/sentinelWorker.ts",
-  "src/services/storageService.ts",
-  "server.ts"
+  "src/services/storageService.ts"
 ]

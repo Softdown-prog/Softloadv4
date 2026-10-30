@@ -18,6 +18,7 @@ function loadRouter(file) {
             if (spec === '../../middlewares/authGuard') return { exigirLogin };
             if (file === 'compiler.js') {
                 if (spec === 'express-rate-limit') return () => (_req,_res,next)=>next();
+                if (spec === '../../blogger/exampleGallery') return { listarExemplos: () => [{id:'noticias-elegante',nome:'Jornal Horizonte',nichoTema:'noticias-mag-news'}] };
                 if (spec === '../../core/compilerWorker') return { executarCompilacao: () => ({xmlFinal:'<html/>',slug:'teste'}) };
                 if (spec === '../../core/xmlValidator') return {validarXmlCompilado:()=>[],validarXmlEstrutura:()=>({erros:[]}),validarSemanticaBlogger:()=>({erros:[]})};
                 if (spec === '../../core/presets') return {COLOR_PRESETS:{'tech-blue':{label:'Azul'}},TYPOGRAPHY_PRESETS:{inter:{label:'Inter'}}};
