@@ -33,10 +33,16 @@ test('the production App and pilot both package Blogger without React/Forge/Pyth
 test('production context removes Forge, frontend and secrets without touching Agent build context',()=>{
   const ignore=file('Dockerfile.dockerignore').split(/\r?\n/);
   const pilotIgnore=file('Dockerfile.lite.dockerignore').split(/\r?\n/);
-  for(const item of ['.git','.github','.env','/frontend','/agent','/public/dist',
-    '/views/pages/forge-2d.ejs','/src/routes/dashboard_routes/forgeStandalone.cjs']) {
+  for(const item of ['.git','.github','.env','/frontend','/agent','/public/dist']) {
     assert.ok(ignore.includes(item), 'prod ignore: '+item);
     assert.ok(pilotIgnore.includes(item), 'pilot ignore: '+item);
+  }
+  // As antigas páginas/bridges Forge foram removidas do Git, não apenas omitidas no Docker.
+  for(const item of ['views/pages/forge-2d.ejs',
+    'src/routes/dashboard_routes/forgeStandalone.cjs',
+    'src/routes/dashboard_routes/forgeStandalone.js',
+    'src/routes/dashboard_routes/forgeStandalone.ts']) {
+    assert.equal(fs.existsSync(path.join(root,item)), false, 'rota Forge ainda versionada: '+item);
   }
   assert.match(file('agent/Dockerfile'),/^FROM node:22-bookworm-slim$/m);
 });

@@ -24,10 +24,11 @@ test('EJS v7 compiles all production views and partials', () => {
   }
 });
 
-test('EJS v7 renders React entry HTML and escapes user-controlled input', async () => {
-  const html = await render(path.join(views, 'pages/react-public.ejs'), { gitSha: 'safe-sha' });
-  assert.match(html, /id="react-root"/);
-  assert.match(html, /main\.js\?v=safe-sha/);
+test('EJS v7 renders Blogger landing without React and escapes user-controlled input', async () => {
+  const html = await render(path.join(views, 'pages/landing-blogger.ejs'), { gitSha: 'safe-sha', user: null });
+  assert.match(html, /Experimentar gratuitamente/);
+  assert.match(html, /href="\/criar"/);
+  assert.doesNotMatch(html, /id="react-root"|\/dist\/assets\/main\.js/);
   const safe = ejs.render('<%= content %>', { content: '<img src=x onerror=alert(1)>' });
   assert.doesNotMatch(safe, /<img/);
   assert.match(safe, /&lt;img/);

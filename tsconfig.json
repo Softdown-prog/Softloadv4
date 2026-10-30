@@ -213,7 +213,6 @@
     "src/routes/dashboard_routes/upgrade.ts",
     "src/routes/dashboardRoutes.ts",
     "src/routes/dashboard_routes/home.ts",
-    "src/routes/dashboard_routes/reactTest.ts",
     "src/routes/dashboard_routes/index.ts",
     "src/routes/api_routes/appConfig.ts",
     "src/routes/dashboard_routes/chat/chatHistory.ts",
@@ -273,7 +272,6 @@
     "src/routes/dashboard_routes/workspace.ts",
     "src/routes/dashboard_routes/workspaceChat.ts",
     "src/services/essentialStoragePolicy.ts",
-    "src/routes/dashboard_routes/forgeStandalone.ts",
     "src/routes/dashboard_routes/liteFiles.ts"
   ],
   "exclude": [

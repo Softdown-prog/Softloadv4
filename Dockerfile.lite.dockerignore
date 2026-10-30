@@ -23,8 +23,3 @@ npm-debug.log*
 *.zip
 
 # A7 Forge legado: sem rotas, interface ou gerador no contêiner Blogger.
-/views/pages/forge-2d.ejs
-/src/routes/dashboard_routes/forgeStandalone.cjs
-/src/routes/dashboard_routes/forgeStandalone.js
-/src/routes/dashboard_routes/forgeStandalone.ts
-/src/routes/dashboard_routes/forgeStandalone.contract.test.js

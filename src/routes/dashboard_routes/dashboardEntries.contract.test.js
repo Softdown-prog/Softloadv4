@@ -26,7 +26,7 @@ function loadRouter(file) {
     assert.equal(sandbox.module.exports, router);
     return { routes, middlewares, exigirLogin };
 }
-test('dashboard mounts only Blogger, Forge and compatibility account/history routes', () => {
+test('dashboard mounts only Blogger and compatibility account/history routes', () => {
     const { middlewares } = loadRouter('index.js');
     assert.deepEqual(middlewares, ['./home', './compiler', './historico', './configuracoes', './upgrade', './conta', './liteFiles']);
 });
@@ -42,10 +42,15 @@ test('dashboard home requires login and passes session to simplified EJS view', 
     assert.equal(values[0].locals.activePage, 'home');
     assert.equal(values[0].locals.user, user);
 });
-test('react test bridge preserves its original render behavior', () => {
-    const { routes } = loadRouter('reactTest.js');
-    assert.equal(routes[0].route, '/react-test');
-    let view = null;
-    routes[0].handlers[0]({}, { render(name) { view = name; } });
-    assert.equal(view, 'pages/react-test');
+test('dashboard não registra rotas aposentadas de chat, Forge e React', () => {
+    const { middlewares } = loadRouter('index.js');
+    assert.equal(middlewares.includes('./reactTest'), false);
+    assert.equal(middlewares.includes('./forgeStandalone'), false);
+    for (const name of ['./chat', './solaris', './workspace', './workspaceChat']) {
+        assert.equal(middlewares.includes(name), false, 'Rota legada ativa: ' + name);
+    }
+    for (const removed of ['forgeStandalone.cjs', 'forgeStandalone.js', 'forgeStandalone.ts',
+        'reactTest.js', 'reactTest.ts']) {
+        assert.equal(fs.existsSync(path.join(__dirname, removed)), false, 'Ainda presente: '+removed);
+    }
 });
