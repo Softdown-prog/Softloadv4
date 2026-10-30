@@ -104,7 +104,8 @@
     "src/services/mpPlanRules.ts",
     "src/services/sentinelWorker.ts",
     "src/services/storageService.ts",
-    "server.ts"
+    "server.ts",
+    "src/blogger/exampleGallery.ts"
   ],
   "exclude": [
     "node_modules",
