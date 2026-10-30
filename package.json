@@ -7,9 +7,9 @@
     "postinstall": "node scripts/vendorAssets.js",
     "verify:vendor": "node scripts/vendorAssets.js --verify",
     "verify:vendor:templates": "node scripts/vendorTemplateRefs.js",
-    "build": "vite build",
+    "build": "node scripts/vendorAssets.js && node scripts/vendorTemplateRefs.js",
     "start": "node server.js",
-    "dev": "concurrently \"vite build --watch\" \"node --watch server.js\"",
+    "dev": "node --watch server.js",
     "test": "node scripts/runTests.js",
     "typecheck": "tsc --project tsconfig.json --noEmit && node scripts/check-typescript-mirrors.js && node scripts/audit-typescript-migration.js && npm run typecheck:agent",
     "typecheck:agent": "tsc --project agent/tsconfig.json --noEmit && node scripts/check-agent-capabilities-ts-mirrors.cjs",
@@ -29,13 +29,9 @@
     "rag:code-test": "node --test src/solaris/code-examples/javascript/examples.test.js src/solaris/rag/authoredCatalog.test.js examples/solaris-code/examples.test.js && node node_modules/typescript/bin/tsc --project examples/solaris-code/tsconfig.json --noEmit && python3 -B -m unittest discover -s src/solaris/code-examples/python -p test_examples.py -v",
     "rag:boundaries-test": "node --test src/knowledge/ragNamespaces.test.js src/solaris/rag/codeCorpus.test.js && node src/rag/ragLoader.test.js && node scripts/ragEmbedIndex.test.js",
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
-    "typecheck:frontend": "tsc --project tsconfig.frontend.json --noEmit",
-    "test:frontend-base": "node --test frontend/tests/base-migration.test.cjs",
-    "test:frontend-layouts": "node --test frontend/tests/routing-layout-migration.test.cjs frontend/tests/billingRecovery.test.cjs frontend/tests/chat-http-errors.test.cjs",
     "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
     "typecheck:forge-html5": "tsc --project tsconfig.forge-html5.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/html5/procedural.test.cjs agent/forge/html5/runtime.test.cjs",
     "typecheck:forge-catalog": "tsc --project tsconfig.forge-catalog.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/catalog.test.cjs",
-    "typecheck:vite": "tsc --project tsconfig.vite.json --noEmit && node scripts/check-typescript-remaining.cjs && npm run build",
     "typecheck:forge-index": "tsc --project tsconfig.forge-index.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/index.test.cjs"
   },
   "dependencies": {
@@ -61,23 +57,10 @@
     "postcss": "^8.5.23"
   },
   "devDependencies": {
-    "@types/react": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.6.1",
-    "concurrently": "^9.2.5",
     "firebase": "^12.12.1",
-    "gsap": "^3.15.0",
-    "highlight.js": "^11.12.0",
-    "lucide-react": "^1.61.0",
-    "mermaid": "^12.2.0",
-    "motion": "^13.1.0",
     "playwright": "^1.64.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.18.4",
-    "typescript": "5.9.3",
-    "vite": "^8.3.5"
+    "typescript": "5.9.3"
   }
 }
