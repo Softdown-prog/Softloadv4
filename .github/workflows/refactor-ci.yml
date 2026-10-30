@@ -27,6 +27,8 @@ jobs:
         run: |
           node --test src/routes/publicBlogger.contract.test.cjs
           node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
+      - name: Validate authenticated artifact delivery before merge
+        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/deployFrontendGate.contract.test.cjs scripts/rsync-resume.contract.test.cjs scripts/artifactDelivery.test.cjs
       - name: Validar contratos Mercado Pago sem emitir cobranÃ§as
         run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
       - name: Preparar assets locais

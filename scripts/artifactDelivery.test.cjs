@@ -59,7 +59,10 @@ test('VPS downloader is the tested script, runs without checkout, and authentica
   assert.match(receive, /github\.ref == 'refs\/heads\/main'/);
   assert.match(receive, /ip route get 164\.163\.9\.7/);
   assert.match(receive, /grep -q '\^local '/);
-  assert.ok(receive.indexOf('Authenticate encrypted artifacts') < receive.indexOf('Load both images'));
+  const authentication = receive.indexOf('name: Authenticate encrypted artifacts');
+  const load = receive.indexOf('name: Load application image through local restricted SSH');
+  assert.ok(authentication >= 0 && load >= 0, 'Both authenticated delivery stages must exist');
+  assert.ok(authentication < load, 'Authenticate before loading the App image');
   assert.match(receive, /Remove decrypted images and temporary credentials\n        if: always\(\)/);
   assert.match(workflow, /retention-days: 1/);
   assert.match(workflow, /needs: receive/);
