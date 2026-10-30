@@ -7,6 +7,13 @@ const preview=require('../../public/js/blogger-preview.js');
 const {COLOR_PRESETS}=require('../core/presets');
 const {NICHO_PAGE_TYPE_MAP}=require('../core/nichoTaxonomy');
 
+test('código servido ao navegador é igual à fonte TypeScript, sem divergência',()=>{
+  const fs=require('node:fs');
+  const base=path.resolve(__dirname,'../../public/js/blogger-preview');
+  const ts=fs.readFileSync(base+'.ts','utf8').replace(/^\/\/ @ts-nocheck[^\n]*\n/,'');
+  const js=fs.readFileSync(base+'.js','utf8');
+  assert.equal(ts,js);
+});
 function config(niche,pageType){
   const p=COLOR_PRESETS['tech-blue'];
   return {siteName:'Blog de Teste',niche,pageType,accent:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg,typography:'playfair',layout:'dupla',side:'left'};
