@@ -236,7 +236,7 @@
 
   // Escolher um exemplo apenas preenche as opções existentes do compilador.
   // Não gera, não consome cota e não faz nenhuma chamada de IA.
-  const exampleGrid=document.getElementById('example-grid');
+  const exampleGrid=typeof document.querySelectorAll==='function'?document.getElementById('example-grid'):null;
   if(exampleGrid){
     const choices=[...exampleGrid.querySelectorAll('[data-example-id]')];
     const feedback=document.getElementById('example-feedback');
