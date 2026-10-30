@@ -18,7 +18,7 @@
     "sync:typescript": "node scripts/check-typescript-mirrors.js --write",
     "audit:typescript": "node scripts/audit-typescript-migration.js",
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
-    "typecheck:workers": "TS_MIRROR_DIAGNOSTICS=1 node node_modules/typescript/bin/tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
+    "typecheck:workers": "node node_modules/typescript/bin/tsc --project tsconfig.workers.json --noEmit && TS_MIRROR_DIAGNOSTICS=1 node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
     "check:typescript-native": "node -e \"const {execFileSync}=require('node:child_process');const out=execFileSync(process.execPath,['node_modules/typescript/bin/tsc','--version'],{encoding:'utf8'});if(out.trim()!=='Version 7.0.2')throw new Error('Compilador nativo TypeScript 7 não ativo: '+out);console.log(out.trim())\""
   },
   "dependencies": {
