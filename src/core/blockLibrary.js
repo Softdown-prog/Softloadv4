@@ -18,7 +18,7 @@ exports.hashSeed = hashSeed;
 // ============================================================
 const fs = require('fs');
 const path = require('path');
-const TEMAS_DIR = path.join(__dirname, '../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR = path.join(__dirname, '../../src/blogger/nichos');
 // Cache em memória: nicho → blocos (evita I/O repetido por compilação)
 const _cache = new Map();
 // ──────────────────────────────────────────────────────────────

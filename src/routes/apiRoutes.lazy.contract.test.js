@@ -12,7 +12,7 @@ test('boot API mantém checkout e webhook sem importar RAG/limpeza Solaris',()=>
     post(route,...handlers){routes.set('POST '+route,handlers.at(-1));},
   };
   const env={NODE_ENV:'production',MP_ACCESS_TOKEN:'test',MP_WEBHOOK_SECRET:'secret',
-    SOLARIS_CLEANUP_SECRET:'secret',SOLARIS_RAG_SEARCH_SECRET:'secret'};
+};
   const fake={
     'express':{Router:()=>router},
     'express-rate-limit':()=>(_req,_res,next)=>next(),
@@ -40,24 +40,6 @@ test('boot API mantém checkout e webhook sem importar RAG/limpeza Solaris',()=>
   assert.equal(module.exports,router);
   assert.equal(routes.has('POST /dashboard/checkout-create'),true);
   assert.equal(routes.has('POST /webhook/mercado-pago'),true);
-  assert.equal(routes.has('POST /internal/solaris/limpar-projetos-expirados'),true);
-  assert.equal(routes.has('POST /internal/solaris/rag/buscar'),true);
-  for(const name of ['../solaris/tools/projectStorage','../solaris/rag/ragLocalSearch','../knowledge/ragNamespaces']){
-    assert.equal(imports.includes(name),false,'import pesado no boot: '+name);
-  }
-  async function reject(path){
-    let statusCode=200,text='';
-    const req={headers:{},body:{query:'x'},query:{}};
-    const res={status(n){statusCode=n;return this;},send(x){text=x;return this;}};
-    await routes.get('POST '+path)(req,res);
-    assert.equal(statusCode,403);assert.equal(text,'Forbidden');
-  }
-  return Promise.all([
-    reject('/internal/solaris/limpar-projetos-expirados'),
-    reject('/internal/solaris/rag/buscar')
-  ]).then(()=>{
-    for(const name of ['../solaris/tools/projectStorage','../solaris/rag/ragLocalSearch','../knowledge/ragNamespaces']){
-      assert.equal(imports.includes(name),false,'import pesado antes da autorização: '+name);
-    }
-  });
+  assert.equal([...routes.keys()].some(path => path.includes('/internal/')), false);
+  assert.equal(imports.some(name => /creditService|\/(?:solaris|rag)|gemini|openai/.test(name)), false);
 });

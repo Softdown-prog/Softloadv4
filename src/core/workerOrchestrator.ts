@@ -3,6 +3,7 @@ import type { WorkerManifestInput, WorkerManifestDependencies, NormalizedWorkerM
 import type { DesignPackageBody, DesignPackageDependencies, DesignPackageResult } from './workerDesignPackage';
 import type { WorkerDiagnosticCategory, WorkerTelemetryEvent, WorkerDossieTelemetry } from './workerDiagnostics';
 
+export interface CompilerExecutionOptions { telemetry?: boolean }
 export interface WorkerCompilerBody extends WorkerManifestInput, DesignPackageBody {}
 export interface WorkerDossie extends WorkerDossieTelemetry {
     pecas: ReadonlyArray<{ id: string; tipo: string; protegida?: boolean; origem?: string | null }>;
@@ -40,8 +41,8 @@ export interface WorkerOrchestratorDependencies {
 
 /** Mantém ordem e fronteiras de erro do compilerWorker.js legado. */
 export function criarExecutorCompilacao(deps: WorkerOrchestratorDependencies):
-    (body: WorkerCompilerBody) => CompiledBloggerTheme {
-    return function executarCompilacao(body: WorkerCompilerBody): CompiledBloggerTheme {
+    (body: WorkerCompilerBody, options?: CompilerExecutionOptions) => CompiledBloggerTheme {
+    return function executarCompilacao(body: WorkerCompilerBody, options: CompilerExecutionOptions = {}): CompiledBloggerTheme {
         const errosManifesto = deps.validarManifesto(body);
         if (errosManifesto.length > 0) {
             throw new Error(`[MANIFEST] ${errosManifesto.join(' | ')}`);
@@ -120,7 +121,7 @@ export function criarExecutorCompilacao(deps: WorkerOrchestratorDependencies):
         } catch (err) {
             deps.warn('[COMPILER-WORKER] Safety-net do Diagnóstico falhou ao rodar (ignorado):', (err as Error).message);
         }
-        deps.registrarCompilacao(deps.montarEventoTelemetria(deps.now(), params.nichoTema, dossieDoNicho, avisos, diagnosticoErros));
+        if (options.telemetry !== false) deps.registrarCompilacao(deps.montarEventoTelemetria(deps.now(), params.nichoTema, dossieDoNicho, avisos, diagnosticoErros));
         return {
             xmlFinal,
             avisos,

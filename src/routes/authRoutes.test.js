@@ -64,7 +64,7 @@ test('cadastro mantém créditos free e e-mail assíncrono sem exibir senha', as
     assert.equal(h.providerRequests.length,1);
     assert.ok(h.providerRequests[0].url.includes(':signUp?key=test-only'));
     assert.equal(h.writes[0][0],'set');
-    assert.equal(h.writes[0][1].creditos,5);
+    assert.equal(Object.hasOwn(h.writes[0][1], 'creditos'), false);
     assert.equal(h.writes[0][1].plano,'free');
     assert.equal(h.writes[0][1].uid,'firebase-uid');
     assert.deepEqual(h.emails,[['welcome','person@example.com','Pessoa']]);

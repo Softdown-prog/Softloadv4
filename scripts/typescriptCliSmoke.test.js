@@ -47,32 +47,3 @@ test('sweep reporta falha de compilação e termina com erro', () => {
   assert.deepEqual(output.exits, [1]);
   assert.match(output.logs.join('\n'), /falha simulada/);
 });
-
-test('cleanup recebe dias explícitos e usa somente dependência simulada', async () => {
-  const calls = [];
-  const output = loadCli('limparProjetosSolarisExpirados.js', {
-    dotenv: { config: () => calls.push('dotenv') },
-    '../src/solaris/tools/projectStorage': {
-      DIAS_RETENCAO_PADRAO: 30,
-      apagarProjetosExpirados: async opts => { calls.push(opts.diasParaExpirar); return { apagados: ['p1'], erros: [] }; },
-    },
-  }, ['45']);
-  await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual(calls, ['dotenv', 45]);
-  assert.deepEqual(output.exits, [0]);
-  assert.match(output.logs.join('\n'), /1 projeto/);
-});
-
-test('cleanup aplica padrão a dias inválidos sem acessar produção', async () => {
-  const calls = [];
-  const output = loadCli('limparProjetosSolarisExpirados.js', {
-    dotenv: { config() {} },
-    '../src/solaris/tools/projectStorage': {
-      DIAS_RETENCAO_PADRAO: 30,
-      apagarProjetosExpirados: async opts => { calls.push(opts.diasParaExpirar); return { apagados: [], erros: [{ id: 'p1', erro: 'simulado' }] }; },
-    },
-  }, ['abc']);
-  await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual(calls, [30]);
-  assert.deepEqual(output.exits, [1]);
-});

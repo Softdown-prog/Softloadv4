@@ -79,22 +79,10 @@ test('history list preserves account scoping, display metadata, timestamps and q
 test('foreign files are rejected before GCS access in preview, download and deletion', async () => {
     const f = fixture(); f.state.data.gcPath = 'users/foreign/a.zip'; f.state.data.xmlPath = 'users/foreign/a.xml';
     for (const [route, status] of [
-        ['GET /api/preview/:id', 404], ['GET /dashboard/compilacao/:id/download', 403], ['DELETE /dashboard/compilacao/:id', 403],
+      ['GET /dashboard/compilacao/:id/download', 403], ['DELETE /dashboard/compilacao/:id', 403]
     ]) assert.equal((await f.call(route)).code, status);
     assert.equal(f.calls.filter(x => ['download', 'stream', 'gcs-delete', 'doc-delete', 'update'].includes(x.kind)).length, 0);
-    assert.ok(f.timers.length >= 2);
-});
 
-test('session and saved previews preserve workspace payload and legacy XML fallback', async () => {
-    const f = fixture(); const request = f.req();
-    assert.equal((await f.call('GET /api/preview/session', request)).code, 404);
-    request.session.wsPreview = { xmlPath: 'users/owner/preview.xml', siteName: 'Session' };
-    const session = await f.call('GET /api/preview/session', request);
-    assert.equal(session.body.from, 'workspace'); assert.match(session.body.previewHtml, /^rendered:Session:/);
-    delete f.state.data.xmlPath; request.query.from = 'workspace';
-    const saved = await f.call('GET /api/preview/:id', request);
-    assert.equal(saved.body.from, 'workspace'); assert.equal(saved.body.compilacaoId, 'fixture');
-    assert.ok(f.calls.some(x => x.kind === 'download' && x.location === 'users/owner/compilations/template.xml'));
 });
 
 test('download streams owned file and handles failures before headers are sent', async () => {
@@ -119,7 +107,6 @@ test('owned deletion removes zip/XML and clamps account quota without touching f
 
 test('missing records and database failures preserve HTTP errors', async () => {
     const f = fixture(); f.state.exists = false;
-    assert.equal((await f.call('GET /api/preview/:id')).code, 404);
     assert.equal((await f.call('GET /dashboard/compilacao/:id/download')).code, 404);
     assert.equal((await f.call('DELETE /dashboard/compilacao/:id')).code, 404);
     f.state.failDb = true;

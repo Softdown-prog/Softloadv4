@@ -25,7 +25,7 @@ function compilarLote({ dir, outDir }) {
         const caminhoManifesto = path.join(dir, nome);
         try {
             const manifesto = JSON.parse(fs.readFileSync(caminhoManifesto, 'utf8'));
-            const { xmlFinal } = executarCompilacao(manifesto);
+            const { xmlFinal } = executarCompilacao(manifesto, { telemetry: false });
             const caminhoSaida = path.join(outDir, `${path.basename(nome, '.json')}.xml`);
             fs.writeFileSync(caminhoSaida, xmlFinal, 'utf8');
             compilados.push({ manifesto: nome, saida: caminhoSaida });

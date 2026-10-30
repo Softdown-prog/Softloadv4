@@ -216,7 +216,7 @@ jobs:
           chmod 600 "$dir/key" "$dir/known_hosts"
           contract="$(ssh -i "$dir/key" -o UserKnownHostsFile="$dir/known_hosts" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o ConnectTimeout=20 root@164.163.9.7 'contract:v2')"
-          test "$contract" = 'softload-deploy:v2:app,agent'
-          echo 'HTTPS_CANARY_OK: downloaded and decrypted 4 MiB; local restricted receiver v2 confirmed.'
+            -o ConnectTimeout=20 root@164.163.9.7 'contract:v3')"
+          test "$contract" = 'softload-deploy:v3:app'
+          echo 'HTTPS_CANARY_OK: downloaded and decrypted 4 MiB; local restricted receiver v3 confirmed.'
           echo 'No image loaded, no deployment, no receiver or container changed.' >> "$GITHUB_STEP_SUMMARY"

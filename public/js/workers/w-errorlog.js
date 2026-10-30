@@ -4,10 +4,6 @@
     var _busy = false;
     var _logs = [];
     var _filter = null;
-    var AI_SOURCES = ['GEMINI', 'CHAT-IA', 'BLOGGER-AI'];
-    function isAiSource(src) {
-        return AI_SOURCES.some(function (s) { return src.indexOf(s) !== -1; });
-    }
     function levelCls(lvl) {
         if (lvl === 'error')
             return 'el-level-error';
@@ -89,9 +85,8 @@
                         .sort(function (a, b) { return b[1] - a[1]; })
                         .slice(0, 10);
                     sourceList.innerHTML = sorted.map(function (s) {
-                        var aiCls = isAiSource(s[0]) ? ' source-chip--ai' : '';
                         var actCls = _filter === s[0] ? ' active' : '';
-                        return '<button class="source-chip' + aiCls + actCls + '" ' +
+                        return '<button class="source-chip' + actCls + '" ' +
                             'onclick="elToggleFilter(' + JSON.stringify(s[0]) + ')" ' +
                             'title="Clique para filtrar · clique novamente para limpar">' +
                             _.esc(s[0]) + ' <strong>' + s[1] + '</strong></button>';

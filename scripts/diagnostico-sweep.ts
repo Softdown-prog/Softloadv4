@@ -27,7 +27,7 @@ declare const console: { log(...values: unknown[]): void; error(...values: unkno
 declare const require: (id: string) => unknown;
 declare const process: { exit(code: number): never };
 const { executarCompilacao } = require('../src/core/compilerWorker') as {
-    executarCompilacao(corpo: SweepManifest): { xmlFinal: string };
+    executarCompilacao(corpo: SweepManifest, options?: {telemetry?: boolean}): { xmlFinal: string };
 };
 const { gerarDiagnostico } = require('../src/core/diagnostico') as {
     gerarDiagnostico(xml: string): SweepDiagnosis;

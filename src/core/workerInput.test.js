@@ -1,9 +1,10 @@
+require('./test/isolatedTelemetry.cjs');
 'use strict';
 
 const assert = require('node:assert/strict');
 const { validarManifesto, resolverEnum, resolverDesignVoice } = require('./workerInput');
 const { validarManifesto: workerExport } = require('./compilerWorker');
-const { ENUMS } = require('../ai/blueprintSchema');
+const { ENUMS } = require('../blogger/manifestSchema');
 const { NICHO_DESIGN_VOICE_MAP, COLOR_DESIGN_VOICE_HINT } = require('./designVoicePresets');
 
 // Contrato público do worker: a função exportada segue a referência migrada.

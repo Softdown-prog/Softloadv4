@@ -11,13 +11,8 @@ test('plano Blogger custa exatamente R$5 por 30 dias, sem saldo de IA',()=>{
   assert.equal(approvedPlanForPayment({status:'approved',currency_id:'BRL',transaction_amount:5},'essencial'),'essencial');
   assert.equal(approvedPlanForPayment({status:'approved',currency_id:'BRL',transaction_amount:5.01},'essencial'),null);
   assert.equal(approvedPlanForPayment({status:'approved',currency_id:'USD',transaction_amount:5},'essencial'),null);
-  const credits=read('src/services/creditService.ts');
-  const sections=['PLAN_CREDITS','GPT_PLAN_CREDITS','BLOGGERAI_PLAN_CREDITS'];
-  for(const label of sections) {
-    const block=credits.split('export const '+label+':')[1]?.split('};')[0];
-    assert.ok(block,'Tabela ausente: '+label);
-    assert.match(block,/essencial:\s*0/,'Plano Essencial não deve fornecer créditos IA: '+label);
-  }
+  assert.equal(fs.existsSync(path.join(root, 'src/services/creditService.ts')), false);
+  assert.doesNotMatch(read('src/routes/apiRoutes.ts'), /PLAN_CREDITS|creditos_gpt:|creditos_bloggerai:/);
   assert.match(read('src/services/storageService.ts'),/essencial:\s*50/);
 });
 test('Mercado Pago reconhece preço R$5, protege o checkout até homologação e preserva recibos legados',()=>{

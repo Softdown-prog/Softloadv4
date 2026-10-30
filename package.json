@@ -1,7 +1,7 @@
 {
-  "name": "softload-engine-v3",
+  "name": "softload-blogger",
   "version": "3.0.0",
-  "description": "Fábrica Industrial de Templates XML",
+  "description": "Gerador procedural de templates XML para Blogger",
   "main": "server.js",
   "scripts": {
     "postinstall": "node scripts/vendorAssets.js",
@@ -11,33 +11,16 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node scripts/runTests.js",
-    "typecheck": "tsc --project tsconfig.json --noEmit && node scripts/check-typescript-mirrors.js && node scripts/audit-typescript-migration.js && npm run typecheck:agent",
-    "typecheck:agent": "tsc --project agent/tsconfig.json --noEmit && node scripts/check-agent-capabilities-ts-mirrors.cjs",
-    "build:agent:capabilities": "node scripts/check-agent-capabilities-ts-mirrors.cjs --write",
+    "typecheck": "tsc --project tsconfig.json --noEmit && node scripts/check-typescript-mirrors.js && node scripts/audit-typescript-migration.js",
     "compile:batch": "node scripts/compile-batch.js",
     "compile:batch:pkg": "node scripts/compile-batch.js",
-    "extract": "node scripts/extractTemplate.js",
-    "extract:all": "node scripts/extractTemplate.js --all",
-    "rag:generate": "node scripts/ragGenerate.js",
-    "rag:organizar": "node scripts/ragOrganizarRascunhos.js",
-    "solaris:limpar-projetos-expirados": "node scripts/limparProjetosSolarisExpirados.js",
-    "audit:templates": "node scripts/audit-template-fidelity.js --out=out/template-fidelity",
-    "test:quality": "node scripts/audit-template-fidelity.test.js && npm run audit:templates",
+    "test:quality": "node --test src/routes/dashboard_routes/compiler.procedural.integration.test.js",
     "sync:typescript": "node scripts/check-typescript-mirrors.js --write",
     "audit:typescript": "node scripts/audit-typescript-migration.js",
-    "rag:code-index": "node scripts/ragCodeIndex.js",
-    "rag:code-test": "node --test src/solaris/code-examples/javascript/examples.test.js src/solaris/rag/authoredCatalog.test.js examples/solaris-code/examples.test.js && node node_modules/typescript/bin/tsc --project examples/solaris-code/tsconfig.json --noEmit && python3 -B -m unittest discover -s src/solaris/code-examples/python -p test_examples.py -v",
-    "rag:boundaries-test": "node --test src/knowledge/ragNamespaces.test.js src/solaris/rag/codeCorpus.test.js && node src/rag/ragLoader.test.js && node scripts/ragEmbedIndex.test.js",
     "test:typescript-clis": "node --test scripts/typescriptCliSmoke.test.js",
-    "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs",
-    "typecheck:forge-html5": "tsc --project tsconfig.forge-html5.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/html5/procedural.test.cjs agent/forge/html5/runtime.test.cjs",
-    "typecheck:forge-catalog": "tsc --project tsconfig.forge-catalog.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/catalog.test.cjs",
-    "typecheck:forge-index": "tsc --project tsconfig.forge-index.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test agent/forge/index.test.cjs"
+    "typecheck:workers": "tsc --project tsconfig.workers.json --noEmit && node scripts/check-typescript-remaining.cjs && node --test scripts/browserWorkers.test.cjs scripts/browserErrorLog.test.cjs scripts/browserSentinel.test.cjs"
   },
   "dependencies": {
-    "@google/genai": "^2.31.0",
-    "acorn": "^8.19.0",
-    "acorn-walk": "^8.3.5",
     "archiver": "^7.0.1",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
@@ -47,20 +30,12 @@
     "express-session": "^1.19.0",
     "fast-xml-parser": "^5.11.2",
     "firebase-admin": "^13.8.0",
-    "google-auth-library": "^10.9.1",
     "mercadopago": "^2.12.0",
-    "multer": "^2.5.0",
-    "nodemailer": "^10.2.1",
-    "openai": "^6.39.0",
-    "parse5": "^7.2.1",
-    "php-parser": "^3.7.0",
-    "postcss": "^8.5.23"
+    "nodemailer": "^10.2.1"
   },
   "devDependencies": {
     "bootstrap": "^5.3.8",
     "chart.js": "^4.6.1",
-    "firebase": "^12.12.1",
-    "playwright": "^1.64.1",
     "typescript": "5.9.3"
   }
 }

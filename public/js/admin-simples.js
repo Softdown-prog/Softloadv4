@@ -100,21 +100,11 @@
         say('Dados atualizados. Indicadores históricos; não representam faturamento.');
       } else if (section === 'usuarios') {
         await loadUserPage(0);
-      } else if (section === 'analytics') {
-        const data = await getJson('/eu/api/analytics/creditos?dias=30');
-        const groups = Object.entries(data.por_plano || {});
-        renderTable('admin-analytics', groups.map(([plan, info]) => [
-          plan, number(info.usuarios_ativos), number(info.total_interacoes),
-          number(info.total_creditos_debitados), number(info.total_tokens)
-        ]), 5, 'Nenhum consumo de IA registrado neste período.');
-        say(data.semIndice
-          ? 'Dados indisponíveis: falta índice de consulta do histórico.'
-          : 'Últimos 30 dias. Histórico legado de uso de IA, sem movimentações financeiras.');
+
       }
     } catch (_) {
       say('Não foi possível carregar os dados agora. Atualize a página para tentar novamente.');
       if (section === 'usuarios') renderTable('admin-usuarios', [], 6, 'Consulta temporariamente indisponível.');
-      if (section === 'analytics') renderTable('admin-analytics', [], 5, 'Consulta temporariamente indisponível.');
     }
   }
   if (section === 'usuarios') {

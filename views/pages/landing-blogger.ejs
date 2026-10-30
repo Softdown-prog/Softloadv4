@@ -1,62 +1,173 @@
-<%- include('../partials/header', {pageTitle:'Softload Blogger | Crie templates para seu blog',pageDescription:'Crie temas Blogger XML sem programação. Experimente grátis sem criar conta e personalize cores, fontes e layouts.',pageCanonical:'/'}) %>
-<style>
-.sl-public{max-width:1160px;margin:0 auto;padding:112px 16px 82px;color:#b9c8dc}
-.sl-public .sl-eyebrow{color:#67e8f9;text-transform:uppercase;letter-spacing:.13em;font-size:.8rem;font-weight:800}
-.sl-public .hero{background:radial-gradient(circle at 85% 15%,#145272 0%,transparent 40%),linear-gradient(125deg,#142e49,#0d182a);border-radius:25px;border:1px solid #2c5870;padding:clamp(28px,5vw,62px)}
-.sl-public .panel{background:#101d30;border:1px solid #32465c;border-radius:16px;padding:26px;height:100%}
-.sl-public .text-muted-strong{color:#bdcad9;line-height:1.75}
-.sl-public .step-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:#11415d;color:#93e9ff;font-weight:800;margin-bottom:12px}
-.sl-public .price{color:white;font-size:2.5rem;line-height:1.1;font-weight:800}
-.sl-public a:focus-visible{outline:3px solid #67e8f9;outline-offset:3px}
-</style>
-<main class="sl-public">
-  <section class="hero mb-5" aria-labelledby="titulo">
-    <p class="sl-eyebrow mb-2">Softload · especializado em Blogger</p>
-    <h1 id="titulo" class="display-5 text-white fw-bolder mb-3">Seu próximo blog começa com um bom template.</h1>
-    <p class="text-muted-strong mb-4" style="max-width:700px">Escolha um estilo, personalize cores, fontes e organização das postagens, visualize o resultado e baixe um XML compatível com Blogger. Sem chat, sem programação e sem precisar de conta para experimentar.</p>
-    <div class="d-flex flex-wrap gap-3 align-items-center">
-      <a class="btn btn-sl-primary fw-bold px-4 py-3" href="/criar">Experimentar gratuitamente</a>
-      <a class="btn btn-outline-light px-4 py-3" href="#como-funciona">Como funciona</a>
+<%- include('../partials/header', {
+  pageTitle:'Softload | Crie e personalize templates Blogger',
+  pageDescription:'Crie templates XML para Blogger com editor visual, layouts responsivos e prévia ilustrativa. Comece grátis, sem instalar nada.',
+  pageCanonical:'/',
+  marketingPage:true
+}) %>
+<main id="conteudo" class="sl-market">
+  <section class="hero" aria-labelledby="titulo">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">SOFTLOAD BLOGGER STUDIO</p>
+        <h1 id="titulo" class="hero-title">Um blog com a sua identidade. <span>Sem começar do zero.</span></h1>
+        <p class="hero-description">Crie um template para Blogger com controle sobre cores, tipografia e organização das postagens. Escolha um ponto de partida, experimente o visual e gere seu arquivo XML em poucos passos.</p>
+        <div class="hero-actions">
+          <a class="mk-btn mk-btn--primary" href="/criar">Experimentar gratuitamente <span aria-hidden="true">↗</span></a>
+          <a class="mk-btn mk-btn--secondary" href="#como-funciona">Conheça o processo</a>
+        </div>
+        <p class="hero-note">Sem cartão e sem cadastro para experimentar. Visitantes podem gerar até 2 arquivos por sessão, sujeitos aos controles de segurança.</p>
+        <div class="trust-row" aria-label="Principais vantagens">
+          <span><b aria-hidden="true">✓</b> Editor no navegador</span>
+          <span><b aria-hidden="true">✓</b> Arquivo XML validado</span>
+          <span><b aria-hidden="true">✓</b> Sem instalar programas</span>
+        </div>
+      </div>
+      <div>
+        <div class="studio" role="img" aria-label="Ilustração do editor: opções de tema à esquerda e prévia de um blog à direita. Não é uma captura de tela do Blogger.">
+          <div class="studio-toolbar">
+            <div class="studio-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <strong>Softload Studio</strong>
+            <span class="studio-mode">Prévia ilustrativa</span>
+          </div>
+          <div class="studio-body">
+            <div class="studio-controls" aria-hidden="true">
+              <span class="studio-kicker">Personalização</span>
+              <span class="studio-label">Nome do blog</span>
+              <div class="studio-input">Revista Horizonte</div>
+              <span class="studio-label">Estilo</span>
+              <div class="studio-input">Editorial moderno</div>
+              <span class="studio-label">Paleta de cores</span>
+              <div class="studio-palette"><i></i><i></i><i></i><i></i></div>
+              <span class="studio-label">Layout de postagens</span>
+              <div class="studio-input">Grade em 2 colunas</div>
+              <div class="studio-mini-button">Gerar meu XML</div>
+            </div>
+            <div class="studio-preview" aria-hidden="true">
+              <span class="studio-preview-label">VISUALIZAÇÃO DO LAYOUT</span>
+              <div class="sample-blog">
+                <div class="sample-head"><strong>Revista Horizonte</strong><small>Ideias, cultura e cotidiano</small></div>
+                <div class="sample-nav">Início &nbsp; • &nbsp; Destaques &nbsp; • &nbsp; Sobre</div>
+                <div class="sample-layout">
+                  <div class="sample-posts">
+                    <% for (var i = 0; i < 4; i++) { %>
+                    <div class="sample-post"><div class="sample-thumb"></div><span class="sample-text"></span><span class="sample-text short"></span></div>
+                    <% } %>
+                  </div>
+                  <div class="sample-side"><span></span><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="studio-caption">Ilustração de possibilidades de layout. A prévia do editor é aproximada; confira o XML importando em um blog de testes.</p>
+      </div>
     </div>
-    <p class="small mt-3 mb-0">Cadastro opcional. 2 downloads de teste por sessão para visitantes, sujeitos a proteção contra abuso.</p>
   </section>
 
-  <section id="recursos" class="mb-5" aria-labelledby="recursos-titulo">
-    <p class="sl-eyebrow mb-2">Um único produto, várias possibilidades</p>
-    <h2 id="recursos-titulo" class="h2 text-white fw-bold mb-3">Ferramentas para criar e personalizar seu Blogger</h2>
-    <div class="row g-3">
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Gerador XML</h3><p class="text-muted-strong mb-2">Escolha entre nichos de blog ou comece do zero. O XML é validado antes de baixar.</p><a href="/criar">Abrir editor de templates</a></div></div>
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Estúdio de cores e tipografia</h3><p class="text-muted-strong mb-2">Experimente dezenas de paletas e fontes dentro do mesmo editor, sem instalar nada.</p><a href="/criar">Explorar combinações</a></div></div>
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Layouts responsivos</h3><p class="text-muted-strong mb-2">Defina colunas, listas, mosaicos, barras laterais e estruturas para diferentes tipos de blog.</p><a href="/criar">Personalizar a organização</a></div></div>
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Prévia e estilos rápidos</h3><p class="text-muted-strong mb-2">Visualize uma simulação, sorteie novas combinações e salve suas preferências no navegador.</p><a href="/criar">Testar a prévia</a></div></div>
+  <div class="proof" aria-label="Recursos disponíveis">
+    <div class="wrap proof-inner">
+      <span class="proof-label">Feito para criar</span>
+      <div class="proof-items">
+        <span>15 nichos de partida</span>
+        <span>Estilos personalizáveis</span>
+        <span>Layouts responsivos</span>
+        <span>Download XML</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="recursos" aria-labelledby="recursos-titulo">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">FUNCIONALIDADES</p>
+        <h2 id="recursos-titulo" class="section-title">Liberdade para criar. Simplicidade para publicar.</h2>
+        <p class="section-lead">Em vez de enfrentar arquivos de código desde o começo, você define o estilo e a estrutura do blog e deixa o compilador montar o XML.</p>
+      </div>
+      <div class="features">
+        <article class="feature"><span class="feature-index" aria-hidden="true">01</span><h3>Comece do seu jeito</h3><p>Escolha um dos 15 nichos disponíveis ou parta de uma estrutura-base para construir sua identidade.</p></article>
+        <article class="feature"><span class="feature-index" aria-hidden="true">02</span><h3>Cores e tipografia</h3><p>Experimente combinações visuais e escolha a aparência que melhor representa seu conteúdo.</p></article>
+        <article class="feature"><span class="feature-index" aria-hidden="true">03</span><h3>Layouts de postagens</h3><p>Organize a página com grades, listas, mosaicos e posições diferentes para a barra lateral.</p></article>
+        <article class="feature"><span class="feature-index" aria-hidden="true">04</span><h3>Prévia do visual</h3><p>Confira uma simulação da estrutura antes de gerar. O resultado final deve ser validado dentro do Blogger.</p></article>
+        <article class="feature"><span class="feature-index" aria-hidden="true">05</span><h3>XML pronto para testar</h3><p>O compilador gera e valida o arquivo para download. Você importa o resultado pelo painel do Blogger.</p></article>
+        <article class="feature"><span class="feature-index" aria-hidden="true">06</span><h3>Trabalhe no navegador</h3><p>Personalize sem instalar programas e salve suas escolhas de estilo neste dispositivo.</p></article>
+      </div>
+      <p class="mt-4 mb-0"><a class="mk-link" href="/criar">Abrir editor e explorar as opções <span aria-hidden="true">→</span></a></p>
     </div>
   </section>
 
-  <section id="como-funciona" class="mb-5" aria-labelledby="como-titulo">
-    <p class="sl-eyebrow mb-2">Sem complicações</p>
-    <h2 id="como-titulo" class="h2 text-white fw-bold mb-3">Como criar seu template</h2>
-    <div class="row g-3">
-      <div class="col-12 col-md-4"><div class="panel"><span class="step-num">1</span><h3 class="h5 text-white">Escolha</h3><p class="text-muted-strong">Defina o tema do blog, ou comece com o modelo padrão.</p></div></div>
-      <div class="col-12 col-md-4"><div class="panel"><span class="step-num">2</span><h3 class="h5 text-white">Personalize</h3><p class="text-muted-strong">Altere cores, fonte, grade das postagens e a barra lateral enquanto vê a prévia.</p></div></div>
-      <div class="col-12 col-md-4"><div class="panel"><span class="step-num">3</span><h3 class="h5 text-white">Baixe e publique</h3><p class="text-muted-strong">Baixe o XML e importe no painel do Blogger. Faça backup do tema atual antes de aplicar.</p></div></div>
+  <section class="section alt" id="como-funciona" aria-labelledby="como-titulo">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">DO PRIMEIRO CLIQUE AO BLOG</p>
+        <h2 id="como-titulo" class="section-title">Da ideia ao template em três etapas.</h2>
+        <p class="section-lead">Um fluxo objetivo, sem jargão técnico e sem exigir conhecimento de programação.</p>
+      </div>
+      <div class="workflow">
+        <article class="work-step"><span class="work-number">ETAPA 01</span><h3>Escolha a base</h3><p>Comece do zero ou selecione um nicho que combine com o tipo de conteúdo do seu blog.</p></article>
+        <article class="work-step"><span class="work-number">ETAPA 02</span><h3>Personalize o estilo</h3><p>Defina nome, paleta, fonte, grade de postagens e barra lateral. Veja a prévia ilustrativa.</p></article>
+        <article class="work-step"><span class="work-number">ETAPA 03</span><h3>Gere e importe</h3><p>Baixe seu XML e importe em um blog de testes no Blogger. Antes de trocar o tema atual, guarde uma cópia dele.</p></article>
+      </div>
     </div>
   </section>
 
-  <section id="planos" class="mb-5" aria-labelledby="planos-titulo">
-    <p class="sl-eyebrow mb-2">Use primeiro, decida depois</p>
-    <h2 id="planos-titulo" class="h2 text-white fw-bold mb-3">Cadastro só para ampliar seus limites</h2>
-    <div class="row g-3">
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Visitante</h3><p class="price">Grátis</p><p class="text-muted-strong">Sem cadastro. Até 2 downloads por sessão do navegador, com limites técnicos de prevenção de abuso. XML diretamente no seu dispositivo.</p><a class="btn btn-outline-info" href="/criar">Testar sem conta</a></div></div>
-      <div class="col-12 col-md-6"><div class="panel"><h3 class="h5 text-white">Conta e plano Essencial</h3><p class="price">R$ 5 <span class="fs-6 text-secondary">/ 30 dias</span></p><p class="text-muted-strong">Cadastro opcional para identificar o uso, acessar histórico e contratar mais gerações. Renovação manual; pagamento e armazenamento sujeitos à liberação do plano após homologação.</p><a class="btn btn-outline-info" href="/register">Criar conta opcional</a><p class="small mt-3 mb-0">Não é necessário se cadastrar para experimentar.</p></div></div>
+  <section class="section" id="planos" aria-labelledby="planos-titulo">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">ACESSO E PREÇOS</p>
+        <h2 id="planos-titulo" class="section-title">Comece grátis. Evolua quando precisar.</h2>
+        <p class="section-lead">Sem créditos de IA e sem planos complicados. Experimente o editor antes de criar uma conta.</p>
+      </div>
+      <div class="prices">
+        <article class="plan">
+          <div class="plan-head"><h3 class="plan-name">Explorar</h3></div>
+          <div class="plan-value">Grátis</div>
+          <p class="plan-description">Conheça o editor, teste combinações e gere seus primeiros templates sem cartão.</p>
+          <ul class="plan-list">
+            <li>2 downloads por sessão para visitantes</li>
+            <li>Prévia ilustrativa das escolhas</li>
+            <li>Editor acessível sem cadastro</li>
+            <li>Limites técnicos contra abuso</li>
+          </ul>
+          <a class="mk-btn mk-btn--secondary" href="/criar">Experimentar sem cadastro</a>
+        </article>
+        <article class="plan is-featured">
+          <div class="plan-head"><h3 class="plan-name">Essencial</h3><span class="plan-tag">Acesso de 30 dias</span></div>
+          <div class="plan-value">R$ 5,00 <small>/ 30 dias</small></div>
+          <p class="plan-description">Para quem quer criar e baixar templates com frequência, sem franquia mensal de XML durante a vigência.</p>
+          <ul class="plan-list">
+            <li>Gerações e downloads ilimitados, com proteção antiabuso</li>
+            <li>15 nichos e criação do zero</li>
+            <li>Pagamento avulso, sem renovação automática</li>
+            <li>Conta gratuita: 2 downloads vinculados ao cadastro</li>
+          </ul>
+          <a class="mk-btn mk-btn--primary" href="/register">Criar conta para acompanhar o plano</a>
+          <p class="plan-notice">A contratação do Essencial depende da conclusão da homologação do checkout. A criação de conta não inicia cobrança.</p>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section id="duvidas" class="panel" aria-labelledby="faq-titulo">
-    <h2 id="faq-titulo" class="h4 text-white">Dúvidas frequentes</h2>
-    <details class="mb-3"><summary class="text-white fw-bold">Preciso criar uma conta?</summary><p class="text-muted-strong mt-2">Não. Abra o editor, escolha as opções e experimente sem cadastro. A conta serve para benefícios adicionais e gerenciamento de uso.</p></details>
-    <details class="mb-3"><summary class="text-white fw-bold">O XML funciona no Blogger?</summary><p class="text-muted-strong mt-2">O arquivo passa por validações estruturais e de semântica Blogger. Confira o tema no Blogger antes de publicar definitivamente e mantenha um backup.</p></details>
-    <details><summary class="text-white fw-bold">A Softload utiliza inteligência artificial?</summary><p class="text-muted-strong mt-2">Não para gerar esses templates. A montagem usa um compilador procedural.</p></details>
-    <div class="d-flex gap-3 flex-wrap mt-4"><a href="/contato">Fale com a Softload</a><a href="/termos-de-uso">Termos</a><a href="/privacidade">Privacidade</a></div>
+  <section class="section alt" id="duvidas" aria-labelledby="faq-titulo">
+    <div class="wrap faq-grid">
+      <div>
+        <p class="eyebrow">DÚVIDAS FREQUENTES</p>
+        <h2 id="faq-titulo" class="section-title">Tudo claro antes de começar.</h2>
+        <p class="section-lead">Precisou de ajuda? <a class="mk-link" href="/contato">Fale com a Softload</a>.</p>
+      </div>
+      <div class="faq-items">
+        <details><summary>Preciso de uma conta para testar?</summary><p>Não. O editor público permite experimentar e gerar até 2 XML por sessão. A conta gratuita tem sua própria cota de teste.</p></details>
+        <details><summary>Posso instalar o XML diretamente no Blogger?</summary><p>Você baixa o arquivo e importa pelo painel do Blogger. O XML passa por validação de estrutura, mas a prévia é ilustrativa: teste o tema em um blog separado e preserve o tema anterior.</p></details>
+        <details><summary>O plano Essencial renova sozinho?</summary><p>Não. O acesso previsto é por pagamento avulso de 30 dias, com renovação manual. O pagamento ficará disponível depois da homologação técnica.</p></details>
+        <details><summary>Os templates usam inteligência artificial?</summary><p>Não. O gerador Blogger usa um compilador procedural que transforma suas configurações em um arquivo XML.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="last-cta" aria-labelledby="cta-titulo">
+    <div class="wrap last-cta-inner">
+      <div><h2 id="cta-titulo">Seu próximo template começa aqui.</h2><p>Abra o editor, escolha seu estilo e experimente sem cadastro.</p></div>
+      <a class="mk-btn" href="/criar">Criar meu template <span aria-hidden="true">↗</span></a>
+    </div>
   </section>
 </main>
 <%- include('../partials/footer-blogger') %>

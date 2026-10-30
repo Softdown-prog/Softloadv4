@@ -5,9 +5,7 @@ const crypto = require('crypto');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const { db } = require('../services/firebase');
-const { PLAN_CREDITS, GPT_PLAN_CREDITS, BLOGGERAI_PLAN_CREDITS } = require('../services/creditService');
 const { approvedPlanForPayment, PRICES_CENTS } = require('../services/mpPlanRules');
-const { STORAGE_LIMITS_MB } = require('../services/storageService');
 const { enviarPlanoAtivado } = require('../services/emailService');
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago');
 const { exigirLogin } = require('../middlewares/authGuard');
@@ -51,24 +49,6 @@ async function criarIntencaoBlogger(user, canal) {
     });
     return { id, externalReference: 'slb:' + id };
 }
-// Contract: Provides the React frontend with context previously injected via res.locals
-router.get('/api/app-config', (req, res) => {
-    res.json({
-        user: req.session.user || null,
-        firebaseConfig: {
-            apiKey: process.env.FIREBASE_API_KEY,
-            appId: process.env.FIREBASE_APP_ID,
-        },
-        features: {
-            mpCheckoutUrl: process.env.MP_CHECKOUT_URL || '#'
-        }
-    });
-});
-// ==========================================
-// HMAC do webhook do Mercado Pago
-// Doc: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
-// Cabeçalho x-signature contém ts=...,v1=<hmac sha256 do manifesto>
-// ==========================================
 function verificarAssinaturaMP(req) {
     const secret = process.env.MP_WEBHOOK_SECRET;
     // Nenhum ambiente recebe webhook sem assinatura válida (inclusive staging).
@@ -118,14 +98,14 @@ router.post('/dashboard/checkout-create', exigirLogin, pagamentoLimiter, async (
         if (!user || !user.email) {
             return res.status(401).json({ erro: 'Usuário não autenticado' });
         }
+        if (plano !== 'essencial' && Object.hasOwn(PRICES_CENTS, plano)) {
+            return res.status(410).json({ erro: 'Este plano não está mais à venda.' });
+        }
         const PLANOS = {
-            starter: { titulo: 'Plano Starter — Softload Engine', preco: PRICES_CENTS.starter / 100, creditos: PLAN_CREDITS.starter },
-            pro: { titulo: 'Plano Pro — Softload Engine', preco: PRICES_CENTS.pro / 100, creditos: PLAN_CREDITS.pro },
-            studio: { titulo: 'Plano Studio — Softload Engine', preco: PRICES_CENTS.studio / 100, creditos: PLAN_CREDITS.studio },
             essencial: { titulo: 'Softload Blogger — Acesso 30 dias', preco: PRICES_CENTS.essencial / 100, creditos: 0 },
         };
         if (!PLANOS[plano]) {
-            return res.status(400).json({ erro: 'Plano inválido. Escolha o plano essencial de R$ 5 ou um plano legado.' });
+            return res.status(400).json({ erro: 'Plano inválido. Escolha o plano essencial de R$ 5 .' });
         }
         // O preço de R$5 só será oferecido após validar cota procedural e webhook.
         if (plano === 'essencial' && process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED !== 'true') {
@@ -419,14 +399,8 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                         // Fluxo novo não interfere em pagamentos legados pendentes.
                         ...(intentRef ? { essencial_storage_aceite_em: intentData.aceiteEm } : { plano_pendente: null }),
                         ultima_atualizacao: new Date().toISOString(),
-                        creditos: PLAN_CREDITS[plan],
-                        creditos_ciclo_total: PLAN_CREDITS[plan],
                         creditos_expira_em: expiresAt,
-                        creditos_gpt: GPT_PLAN_CREDITS[plan],
-                        creditos_gpt_ciclo_total: GPT_PLAN_CREDITS[plan],
                         creditos_gpt_expira_em: expiresAt,
-                        creditos_bloggerai: BLOGGERAI_PLAN_CREDITS[plan],
-                        creditos_bloggerai_ciclo_total: BLOGGERAI_PLAN_CREDITS[plan],
                         creditos_bloggerai_expira_em: expiresAt,
                     });
                     if (intentRef)
@@ -444,7 +418,7 @@ router.post('/webhook/mercado-pago', async (req, res) => {
                     return res.status(503).send('Pagamento requer conciliação');
                 }
                 const planoAtivado = result.plan;
-                enviarPlanoAtivado(emailCliente, result.name, planoAtivado, PLAN_CREDITS[planoAtivado], result.expiresAt)
+                enviarPlanoAtivado(emailCliente, result.name, planoAtivado, result.expiresAt)
                     .catch(e => console.error('[EMAIL] Plano ativado falhou:', e.message));
                 // Atualiza qualquer sessão ativa do usuário no Firestore — UX:
                 // o cliente que está logado vê o premium ser liberado sem precisar deslogar.
@@ -483,154 +457,9 @@ router.post('/webhook/mercado-pago', async (req, res) => {
         res.status(500).send('Erro ao processar notificação');
     }
 });
-// ==========================================
-// Limpeza interna — TTL de projetos Solaris persistidos
-// Chamado por Cloud Scheduler (ou manualmente/`npm run
-// solaris:limpar-projetos-expirados`) — nunca por usuário final. Sem
-// corpo assinável vindo do Scheduler (diferente do webhook do MP acima),
-// então a autenticação é por secret compartilhado num header fixo —
-// mesma postura fail-closed em produção.
-// ==========================================
-function verificarSegredoLimpezaSolaris(req) {
-    const secret = process.env.SOLARIS_CLEANUP_SECRET;
-    if (!secret) {
-        if (process.env.NODE_ENV === 'production') {
-            console.warn('[SOLARIS-CLEANUP] SOLARIS_CLEANUP_SECRET não configurado — recusado em produção.');
-            return false;
-        }
-        console.warn('[SOLARIS-CLEANUP] SOLARIS_CLEANUP_SECRET não configurado — verificação desativada (dev).');
-        return true;
-    }
-    const recebido = req.headers['x-solaris-cleanup-secret'];
-    if (typeof recebido !== 'string' || recebido.length !== secret.length)
-        return false;
-    return crypto.timingSafeEqual(Buffer.from(recebido), Buffer.from(secret));
-}
-router.post('/internal/solaris/limpar-projetos-expirados', async (req, res) => {
-    if (!verificarSegredoLimpezaSolaris(req)) {
-        return res.status(403).send('Forbidden');
-    }
-    try {
-        const { apagarProjetosExpirados } = require('../solaris/tools/projectStorage');
-        const diasArg = Number(req.query.dias);
-        const opcoes = Number.isFinite(diasArg) && diasArg > 0 ? { diasParaExpirar: diasArg } : {};
-        const resultado = await apagarProjetosExpirados(opcoes);
-        console.log(`[SOLARIS-CLEANUP] ${resultado.apagados.length} projeto(s) expirado(s) removido(s), ${resultado.erros.length} erro(s).`);
-        res.status(200).json(resultado);
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[SOLARIS-CLEANUP] falhou:', err.message);
-        res.status(500).json({ erro: 'Falha ao limpar projetos expirados.' });
-    }
-});
-// ==========================================
-// Busca semântica interna — catálogo RAG do Solaris (embeddings)
-// Chamado pela capability knowledge.search do agent/ (Worker) --
-// nunca por usuário final direto. Mesma postura fail-closed em
-// produção de verificarSegredoLimpezaSolaris acima, secret dedicado
-// (não reaproveita SOLARIS_CLEANUP_SECRET -- são ações diferentes,
-// cada endpoint interno com seu próprio segredo evita que revogar um
-// afete o outro).
-// ==========================================
-function verificarSegredoRagBusca(req) {
-    const secret = process.env.SOLARIS_RAG_SEARCH_SECRET;
-    if (!secret) {
-        if (process.env.NODE_ENV === 'production') {
-            console.warn('[SOLARIS-RAG-BUSCA] SOLARIS_RAG_SEARCH_SECRET não configurado — recusado em produção.');
-            return false;
-        }
-        console.warn('[SOLARIS-RAG-BUSCA] SOLARIS_RAG_SEARCH_SECRET não configurado — verificação desativada (dev).');
-        return true;
-    }
-    const recebido = req.headers['x-solaris-rag-search-secret'];
-    if (typeof recebido !== 'string' || recebido.length !== secret.length)
-        return false;
-    return crypto.timingSafeEqual(Buffer.from(recebido), Buffer.from(secret));
-}
-router.post('/internal/solaris/rag/buscar', async (req, res) => {
-    if (!verificarSegredoRagBusca(req)) {
-        return res.status(403).send('Forbidden');
-    }
-    const { query, topK, corpus = 'catalogo' } = req.body || {};
-    if (typeof query !== 'string' || query.trim() === '') {
-        return res.status(400).json({ erro: 'query (string não vazia) é obrigatório' });
-    }
-    // O endpoint do Agent é exclusivo do Solaris. Nunca roteia para o
-    // conhecimento filesystem do Especialista Blogger.
-    try {
-        const { normalizeSolarisCorpus } = require('../knowledge/ragNamespaces');
-        normalizeSolarisCorpus(corpus);
-    }
-    catch (errorCaught) {
-        const error = errorCaught;
-        return res.status(400).json({ erro: error.message });
-    }
-    // Sem modelos de embeddings, o catálogo opera por palavras-chave,
-    // utilizando os JSON versionados. Índice vetorial de código fica indisponível.
-    if (corpus === 'codigo') {
-        return res.status(503).json({ erro: 'Busca vetorial de código desativada: serviço de embeddings retirado.' });
-    }
-    try {
-        const { buscarCatalogoLocal } = require('../solaris/rag/ragLocalSearch');
-        const resultado = await buscarCatalogoLocal({ query, topK });
-        res.status(200).json(resultado);
-    }
-    catch (errCaught) {
-        const err = errCaught;
-        console.error('[SOLARIS-RAG-BUSCA] falha na busca local:', err.message);
-        res.status(500).json({ erro: 'Falha ao buscar no catálogo RAG local.' });
-    }
-});
+// Roteamento exclusivamente Blogger: integração Solaris desativada e removida.
 /*
  * GET /api/dashboard/stats
  * Dados utilizados pelo Dashboard React.
  */
-router.get('/api/dashboard/stats', exigirLogin, async (req, res) => {
-    const user = req.session.user;
-    const email = user.email.toLowerCase();
-    let creditos = 0;
-    let creditosCicloTotal = PLAN_CREDITS[user.plano] ?? PLAN_CREDITS.free;
-    let creditosExpiraEm = null;
-    let totalProjetos = 0;
-    let storageUsadoMb = 0;
-    let tentativasCompilacao = 0;
-    try {
-        const [userSnap, projetosSnap] = await Promise.all([
-            db.collection('clientes_premium')
-                .doc(email)
-                .get(),
-            db.collection('clientes_premium')
-                .doc(email)
-                .collection('projetos')
-                .count()
-                .get(),
-        ]);
-        if (userSnap.exists) {
-            const d = userSnap.data();
-            creditos = d.creditos ?? 0;
-            creditosCicloTotal =
-                d.creditos_ciclo_total ?? creditosCicloTotal;
-            creditosExpiraEm =
-                d.creditos_expira_em ?? null;
-            storageUsadoMb = d.storage_usado_mb ?? 0;
-            tentativasCompilacao = d.tentativas_compilacao ?? 0;
-        }
-        totalProjetos =
-            projetosSnap.data().count ?? 0;
-    }
-    catch (eCaught) {
-        const e = eCaught;
-        console.warn('[API DASHBOARD] Falha ao buscar estatísticas:', e.message);
-    }
-    res.json({
-        creditos,
-        creditosCicloTotal,
-        creditosExpiraEm,
-        totalProjetos,
-        storageUsadoMb,
-        tentativasCompilacao,
-        storageLimitMb: STORAGE_LIMITS_MB[user.plano] ?? STORAGE_LIMITS_MB.free,
-    });
-});
 module.exports = router;

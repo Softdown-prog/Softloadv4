@@ -36,14 +36,6 @@ interface SessionModule {
     (options: { store: object; secret: string | undefined; resave: boolean; saveUninitialized: boolean; proxy: boolean; cookie: { secure: boolean; httpOnly: boolean; sameSite: string; maxAge: number } }): unknown;
     Store: new () => object;
 }
-interface BillingQueueStatus { quantidadeAmostrada: number; amostraLimitada: boolean; maisAntigaMs: number | null; ilegivel: number }
-export interface BootBillingAlert {
-    tipo: string; motivos: string[]; falhasConsecutivas: number; falhas: number;
-    pendenciasAmostradas: number; amostraLimitada: boolean; maisAntigaMinutos: number | null; ts: string;
-}
-interface BootBillingMonitor {
-    executar(): Promise<{ processadas: number; falhas: number; alertaAtivo: boolean; estado: string; falhasConsecutivas: number; quantidadeAmostrada: number }>;
-}
 type SessionReadCallback = (error: unknown, session?: PersistedServerSession | null) => void;
 type SessionWriteCallback = (error: unknown) => void;
 
@@ -74,13 +66,8 @@ const adminRoutes             = require('./src/routes/adminRoutes');
 const workersRoutes           = require('./src/routes/workersRoutes');
 const sentinelWorker = require('./src/services/sentinelWorker') as SentinelWorker;
 const errorLogWorker = require('./src/services/errorLogWorker') as { start(): void };
-const buildInfo = require('./src/services/buildInfo') as typeof import('./src/services/buildInfo');
-const { recuperarCobrancasPendentes } = require('./src/services/creditService') as { recuperarCobrancasPendentes(limit: number): Promise<{ processadas: number; falhas: number; conflitosCursor?: number }> };
-const { recuperarReservasWorkspace } = require('./src/services/workspaceCreditReservations') as typeof import('./src/services/workspaceCreditReservations');
-const { criarMonitorRecuperacaoCobrancas, definirMonitorRecuperacaoCobrancas } =
-    require('./src/services/billingRecoveryMonitor') as { criarMonitorRecuperacaoCobrancas(options: { recuperar(): Promise<unknown>; inspecionar(): Promise<BillingQueueStatus>; notificar(alert: BootBillingAlert): Promise<void> }): BootBillingMonitor; definirMonitorRecuperacaoCobrancas(monitor: BootBillingMonitor): void };
 const { setPublicStaticHeaders } = require('./scripts/vendorCachePolicy') as typeof import('./scripts/vendorCachePolicy');
-
+const buildInfo = require('./src/services/buildInfo') as typeof import('./src/services/buildInfo');
 // Inicia captura de erros silenciosos imediatamente — antes de qualquer require
 // que possa gerar warnings/erros durante a inicialização dos serviços.
 errorLogWorker.start();
@@ -224,7 +211,6 @@ app.get('/health', async (req, res) => {
         FIREBASE_APP_ID: !!process.env.FIREBASE_APP_ID,
         SESSION_SECRET: !!process.env.SESSION_SECRET,
         RESEND_API_KEY: !!process.env.RESEND_API_KEY,
-        PIXABAY_API_KEY: !!process.env.PIXABAY_API_KEY,
         MP_ACCESS_TOKEN: !!process.env.MP_ACCESS_TOKEN,
         GCS_BUCKET_NAME: !!process.env.GCS_BUCKET_NAME,
     };
@@ -270,85 +256,6 @@ app.use((err: ServerFailure, req: ServerRequest, res: ServerResponse, next: () =
 });
 
 // Verificação agregada da outbox GCS. Jamais expor emails ou conteúdo de recibos.
-async function inspecionarFilaCobrancas() {
-    const [files] = await bucket.getFiles({
-        prefix: 'billing/pending/', maxResults: 26, autoPaginate: false,
-    });
-    let maisAntigaMs: number | null = null;
-    let ilegivel = 0;
-    const inspecionados = await Promise.all(files.map(async file => {
-        try {
-            const [buffer] = await file.download();
-            const registro = JSON.parse(buffer.toString('utf8'));
-            const criado = Date.parse(registro?.criadoEm);
-            if (!Number.isFinite(criado)) return { ilegivel: true };
-            return { idadeMs: Math.max(0, Date.now() - criado) };
-        } catch (_) {
-            return { ilegivel: true };
-        }
-    }));
-    for (const item of inspecionados) {
-        if (item.ilegivel) ilegivel++;
-        else maisAntigaMs = Math.max(maisAntigaMs ?? 0, item.idadeMs!);
-    }
-    return {
-        quantidadeAmostrada: files.length, amostraLimitada: files.length >= 26,
-        maisAntigaMs, ilegivel,
-    };
-}
-async function emitirAlertaCobrancas(alerta: BootBillingAlert) {
-    const mensagem = [
-        '[SOFTLOAD] ' + (alerta.tipo === 'cobrancas_normalizadas' ?
-            'Recuperação de cobranças normalizada' : 'ALERTA de cobranças pendentes'),
-        'Motivos: ' + (alerta.motivos.join(', ') || 'resolvido'),
-        'Falhas consecutivas: ' + alerta.falhasConsecutivas,
-        'Falhas no ciclo: ' + alerta.falhas,
-        'Pendências na amostra: ' + alerta.pendenciasAmostradas,
-        'Amostra limitada: ' + alerta.amostraLimitada,
-        'Mais antiga (minutos): ' + (alerta.maisAntigaMinutos ?? 'desconhecida'),
-        'Hora: ' + alerta.ts,
-    ].join(' | ');
-    const webhook = process.env.BILLING_ALERT_WEBHOOK_URL;
-    if (!webhook) {
-        console.warn('[BILLING-ALERT] Webhook não configurado:', mensagem);
-        return;
-    }
-    // URL exclusivamente do ambiente, nunca do cliente. Não registrar o destino.
-    const endpoint = new URL(webhook);
-    if (endpoint.protocol !== 'https:') throw new Error('BILLING_ALERT_WEBHOOK_URL exige HTTPS');
-    const response = await fetch(endpoint.href, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: mensagem, content: mensagem }),
-        signal: AbortSignal.timeout(5000),
-    });
-    if (!response.ok) throw new Error('Webhook retornou HTTP ' + response.status);
-}
-const monitorCobrancas = criarMonitorRecuperacaoCobrancas({
-    recuperar: () => recuperarCobrancasPendentes(25),
-    inspecionar: inspecionarFilaCobrancas,
-    notificar: emitirAlertaCobrancas,
-});
-definirMonitorRecuperacaoCobrancas(monitorCobrancas);
-let recuperadorCobrancasTimer: ReturnType<typeof setInterval> | null = null;
-async function executarRecuperadorCobrancas() {
-    const estado = await monitorCobrancas.executar();
-    try {
-        const ws = await recuperarReservasWorkspace();
-        if (ws.recuperadas || ws.falhas) console.log('[WORKSPACE-BILLING] Recuperação:', ws);
-    } catch (error) {
-        console.error('[WORKSPACE-BILLING] Recuperador indisponível:', (error as ServerFailure | null)?.code || 'erro');
-    }
-    if (estado.processadas || estado.falhas || estado.alertaAtivo) {
-        console.log('[BILLING] Recuperação:', {
-            estado: estado.estado, processadas: estado.processadas,
-            falhas: estado.falhas, falhasConsecutivas: estado.falhasConsecutivas,
-            pendenciasAmostradas: estado.quantidadeAmostrada,
-            alertaAtivo: estado.alertaAtivo,
-        });
-    }
-}
-
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     if (isProd) {
@@ -359,15 +266,11 @@ app.listen(PORT, '0.0.0.0', () => {
 
     // Iniciar Sentinel Worker — monitora saúde da aplicação
     sentinelWorker.start(60000); // Executar a cada 60 segundos
-    void executarRecuperadorCobrancas();
-    recuperadorCobrancasTimer = setInterval(executarRecuperadorCobrancas, 5 * 60 * 1000);
-    recuperadorCobrancasTimer.unref();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('⚠️  SIGTERM recebido — encerrando gracefully');
     sentinelWorker.stop();
-    if (recuperadorCobrancasTimer) clearInterval(recuperadorCobrancasTimer);
     process.exit(0);
 });

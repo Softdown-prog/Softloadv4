@@ -34,11 +34,11 @@ test('variáveis obrigatórias ausentes bloqueiam boot sem expor valores sensív
 test('integração opcional ausente não bloqueia inicialização', () => {
     const { api } = makeEnvBoot();
     const env = allVars(api);
-    delete env.GEMINI_API_KEY;
+    delete env.RESEND_API_KEY;
     const result = api.validarEnvBoot(env);
     assert.equal(result.ok, true);
     assert.deepEqual(Array.from(result.faltandoObrigatorias), []);
-    assert.deepEqual(Array.from(result.faltandoOpcionais), ['GEMINI_API_KEY']);
+    assert.deepEqual(Array.from(result.faltandoOpcionais), ['RESEND_API_KEY']);
 });
 
 test('env padrão é lido sem alterar process.env global; valores vazios estão ausentes', () => {
@@ -55,8 +55,7 @@ test('contrato preserva classificação e ordem dos nomes aceitos', () => {
     const { api } = makeEnvBoot();
     assert.deepEqual(Array.from(api.OBRIGATORIAS), ['SESSION_SECRET', 'FIREBASE_API_KEY', 'FIREBASE_APP_ID']);
     assert.deepEqual(Array.from(api.OPCIONAIS), [
-        'GEMINI_API_KEY', 'OPENAI_API_KEY', 'RESEND_API_KEY', 'PIXABAY_API_KEY',
-        'MP_ACCESS_TOKEN', 'MP_WEBHOOK_SECRET', 'GCS_BUCKET_NAME', 'SOLARIS_CLEANUP_SECRET',
+        'RESEND_API_KEY', 'MP_ACCESS_TOKEN', 'MP_WEBHOOK_SECRET', 'GCS_BUCKET_NAME',
     ]);
     const unknownOnly = api.validarEnvBoot({ INTEGRACAO_DESCONHECIDA: 'valor' });
     assert.equal(unknownOnly.ok, false);

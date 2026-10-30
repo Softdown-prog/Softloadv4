@@ -145,7 +145,7 @@ test('valid signed payment extends Essencial and keeps exactly one receipt',asyn
   const f=setup({account:{email:'buyer@example.test',uid:'firebase-user-123',plano:'essencial',
     is_active:true,plano_pendente:'essencial',premium_ate:new Date(initial).toISOString(),nome:'Cliente'}});
   assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
-  assert.equal(f.calls.receipts,1);assert.equal(f.account.creditos,0);
+  assert.equal(f.calls.receipts,1);assert.equal(f.account.creditos,undefined);
   assert.equal(f.account.plano_pendente,null);
   assert.ok(Math.abs(Date.parse(f.account.premium_ate)-initial-30*DAY)<30);
 });
@@ -293,4 +293,19 @@ test('Firestore failure processing a reversal returns 500 so MP can retry',async
   assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,500);
   assert.equal(f.reconciliations.size,0);
   assert.equal(f.calls.usersUpdated,0);
+});
+
+test('initiated legacy purchases settle without rewriting archived credit balances',async()=>{
+  const account={email:'buyer@example.test',uid:'firebase-user-123',nome:'Legacy buyer',
+    plano:'free',plano_pendente:'starter',is_active:false,
+    creditos:77,creditos_gpt:12,creditos_bloggerai:31};
+  const f=setup({account,paymentDetails:{status:'approved',currency_id:'BRL',
+    transaction_amount:29.90,external_reference:'buyer@example.test'}});
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  assert.equal(f.account.plano,'starter');
+  assert.equal(f.account.is_active,true);
+  assert.equal(f.calls.receipts,1);
+  assert.deepEqual([f.account.creditos,f.account.creditos_gpt,f.account.creditos_bloggerai],[77,12,31]);
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  assert.equal(f.calls.receipts,1);
 });

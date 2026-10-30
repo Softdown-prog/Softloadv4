@@ -30,5 +30,5 @@ test('GitHub-hosted BuildKit caches layers and preserves authenticated local tra
   assert.match(workflow, /rsync --checksum --inplace --partial/);
   assert.doesNotMatch(workflow, /rsync --append-verify/);
   assert.match(workflow, /sha256sum "\$archive"/);
-  assert.match(workflow, /"reuse:\$service:\$GITHUB_SHA"/);
+  assert.doesNotMatch(workflow, /reuse:|AGENT_CHANGED/);
 });

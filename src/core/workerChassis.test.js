@@ -1,3 +1,4 @@
+require('./test/isolatedTelemetry.cjs');
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -17,7 +18,7 @@ function legacyChassis(nichoTema) {
     }
     function load(tipo = 'base') {
         const name = tipo === 'base' ? 'template_base.xml' : 'template_' + tipo + '.xml';
-        const filePath = path.join(workerDir, '../rag/templates', name);
+        const filePath = path.join(workerDir, '../blogger/templates', name);
         let xml;
         try { xml = fs.readFileSync(filePath, 'utf-8'); }
         catch (err) {
@@ -28,14 +29,14 @@ function legacyChassis(nichoTema) {
         if (xml.includes('[[BLOGGER_INCLUDABLES_PADRAO]]')) {
             if (baselineCache === null) {
                 baselineCache = fs.readFileSync(path.join(workerDir,
-                    '../rag/templates/_partials/blogger-includables-padrao.xml'), 'utf-8');
+                    '../blogger/templates/_partials/blogger-includables-padrao.xml'), 'utf-8');
             }
             xml = xml.split('[[BLOGGER_INCLUDABLES_PADRAO]]').join(baselineCache);
         }
         return xml;
     }
     const key = nichoTema ? String(nichoTema).replace(/^tema-/, '').toLowerCase().trim() : '';
-    if (key && fs.existsSync(path.join(workerDir, '../rag/templates', 'template_' + key + '.xml'))) {
+    if (key && fs.existsSync(path.join(workerDir, '../blogger/templates', 'template_' + key + '.xml'))) {
         return load(key);
     }
     return load(templateParaNicho(nichoTema));
@@ -50,7 +51,7 @@ for (const nicho of [null, undefined, '', 'nao-existe', ...Object.keys(NICHO_CHA
 }
 
 // Sistema de arquivos virtual: fallback, limpeza, cache, priorização e erros.
-const BASE = '/src/rag/templates';
+const BASE = '/src/blogger/templates';
 const partialPath = BASE + '/_partials/blogger-includables-padrao.xml';
 function makeLoader(changes = {}, opts = {}) {
     const files = Object.assign({

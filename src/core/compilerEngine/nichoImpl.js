@@ -4,7 +4,7 @@ exports.carregarNichoImpl = carregarNichoImpl;
 const fs = require('fs');
 const path = require('path');
 const { sanitizarEntidadesXml } = require('./xmlEntities');
-const TEMAS_DIR = path.join(__dirname, '../../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR = path.join(__dirname, '../../../src/blogger/nichos');
 // ==========================================
 // NICHO CSS + JS (carregado do impl.json)
 // ==========================================

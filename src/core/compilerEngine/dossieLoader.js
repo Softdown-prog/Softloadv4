@@ -16,7 +16,7 @@ exports.limparCache = limparCache;
 // ============================================================
 const fs = require('fs');
 const path = require('path');
-const TEMAS_DIR = path.join(__dirname, '../../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR = path.join(__dirname, '../../../src/blogger/nichos');
 // Cache em memória: nicho → dossiê (ou null somente se ausente).
 const _cache = new Map();
 // ──────────────────────────────────────────────────────────────

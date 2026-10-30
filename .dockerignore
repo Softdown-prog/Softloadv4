@@ -1,21 +1,10 @@
+.git
+.github
 node_modules
 .env
 .env.*
-.gitignore
-.DS_Store
-npm-debug.log*
-*.local
-
-# O SHA/data são passados via build args pelo workflow.
-# Nunca copiar o histórico Git para a imagem, inclusive no COPY . . final.
-.git
-.github
-
-
-# A imagem de produção recompila o React no stage frontend-build.
-# Não reenviar ao contexto Docker o bundle versionado (public/dist):
-# COPY --from=frontend-build fornece o bundle novo ao stage final.
-/public/dist/
-
-# Ferramenta A7 Forge aposentada do App. Agent tem contexto Docker separado.
-/agent/forge/
+/docs
+/out
+*.tar
+*.tar.gz
+*.zip

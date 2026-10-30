@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 # IMAGEM DO APP DE PRODUÇÃO: Blogger em Node + EJS, sem React/Forge.
-# O Agent continua separado; receptor v2 app+agent e rollback preservados.
+# Aplicação independente; receptor v3 App, health checks e rollback.
 
 # Vendorização somente de Bootstrap e Chart.js. Instala dependências de
 # desenvolvimento no BUILD, sem executar Vite/React nem copiar o bundle.
-FROM node:20-slim AS vendor
+FROM node:22-slim AS vendor
 WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
@@ -13,7 +13,7 @@ RUN npm ci --legacy-peer-deps --ignore-scripts \
     && node scripts/vendorAssets.js --verify
 
 # App Node + EJS exclusivamente Blogger; sem toolchains Python/FFmpeg.
-FROM node:20-slim
+FROM node:22-slim
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
@@ -28,8 +28,9 @@ COPY server.js ./
 COPY src ./src
 COPY views ./views
 COPY public ./public
-COPY scripts ./scripts
-COPY manifests ./manifests
+COPY scripts/vendorCachePolicy.js ./scripts/vendorCachePolicy.js
+COPY scripts/vendorTemplateRefs.js ./scripts/vendorTemplateRefs.js
+COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
 COPY --from=vendor /usr/src/app/public/vendor ./public/vendor
 
 # Testes não destrutivos, em build. Manter o mesmo grafo de require de
@@ -39,9 +40,12 @@ RUN test ! -d /usr/src/app/frontend \
     && test ! -e /usr/src/app/public/dist/assets/main.js \
     && test ! -e /usr/src/app/views/pages/forge-2d.ejs \
     && test ! -e /usr/src/app/src/routes/dashboard_routes/forgeStandalone.cjs
-RUN node scripts/vendorTemplateRefs.js \
-    && node src/core/vendorStaticPolicy.test.js
+RUN node scripts/vendorTemplateRefs.js
+
 RUN node -e "require('./src/services/envBoot');require('./src/services/firebase');require('./src/middlewares/security');require('./src/routes/authRoutes');require('./src/routes/dashboardRoutes');require('./src/routes/contatoRoutes');require('./src/routes/apiRoutes');require('./src/routes/adminRoutes');require('./src/routes/workersRoutes');require('./src/services/sentinelWorker');require('./src/services/errorLogWorker');require('./src/services/buildInfo');console.log('[BLOGGER] Grafo de boot carregado em ' + process.version)"
+
+RUN find src -type f \( -name '*.test.*' -o -name '*.ts' \) -delete \
+    && rm -rf src/contracts src/core/test
 
 ARG GIT_SHA=dev-local
 ARG GIT_DATE=unknown

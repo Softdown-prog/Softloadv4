@@ -23,7 +23,7 @@ function fixture() {
                 req.end = () => { queueMicrotask(() => {
                     if (state.timeout) return req.emit('timeout');
                     const response = new EventEmitter();
-                    response.statusCode = options.path === '/dashboard/chat' ? 302 : 200;
+                    response.statusCode = options.path === '/dashboard/gerador-blogger' ? 302 : 200;
                     response.headers = {};
                     callback(response);
                     response.emit('data', Buffer.from('discarded'));
@@ -48,7 +48,7 @@ test('health sweep computes score and history using mocked HTTP, GCS, DB and Aut
     assert.equal(report.healthScore, 100);
     assert.equal(report.isHealthy, true);
     assert.equal(Object.keys(report.tests).length, 8);
-    assert.deepEqual(calls.map(call => call.path).sort(), ['/', '/dashboard/chat', '/health']);
+    assert.deepEqual(calls.map(call => call.path).sort(), ['/', '/dashboard/gerador-blogger', '/health']);
     assert.ok(calls.every(call => call.hostname === '127.0.0.1' && call.port === 9090));
     assert.equal(worker.getHistory().length, 1);
     assert.equal(worker.getStatus().uptime, 100);

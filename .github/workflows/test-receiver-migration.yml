@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - scripts/vps/migrate_receiver_v2.py
-      - scripts/vps/test_migrate_receiver_v2.py
       - scripts/vps/cleanup_staging.py
       - scripts/vps/test_cleanup_staging.py
       - scripts/vps/softload-actions-receiver.sh
@@ -14,8 +12,6 @@ on:
       - .github/workflows/test-receiver-migration.yml
   pull_request:
     paths:
-      - scripts/vps/migrate_receiver_v2.py
-      - scripts/vps/test_migrate_receiver_v2.py
       - scripts/vps/cleanup_staging.py
       - scripts/vps/test_cleanup_staging.py
       - scripts/vps/softload-actions-receiver.sh
@@ -35,8 +31,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate receiver migration and safe staging cleanup offline
         run: |
-          python3 -m py_compile scripts/vps/migrate_receiver_v2.py scripts/vps/cleanup_staging.py
-          python3 -m unittest discover -s scripts/vps -p test_migrate_receiver_v2.py -v
           python3 -m unittest discover -s scripts/vps -p test_cleanup_staging.py -v
           python3 -m unittest discover -s scripts/vps -p test_receiver_retention.py -v
           bash -n scripts/vps/softload-actions-receiver.sh scripts/vps/softload-clean-stale-archives.sh

@@ -37,7 +37,7 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
     const base=path.join(root,'public/js/workers',nome);
     const fonte=fs.readFileSync(base+'.ts','utf8');
     const emitido=ts.transpileModule(fonte,{compilerOptions:{
-      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false,newLine:ts.NewLineKind.LineFeed
     }}).outputText;
     const atual=fs.readFileSync(base+'.js','utf8');
     if(emitido!==atual)divergentes.push(nome);
@@ -48,32 +48,12 @@ function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
   const adminTs=fs.readFileSync(adminBase+'.ts','utf8');
   const adminJs=fs.readFileSync(adminBase+'.js','utf8');
   const adminGenerated=ts.transpileModule(adminTs,{compilerOptions:{
-    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false
+    target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,removeComments:false,newLine:ts.NewLineKind.LineFeed
   }}).outputText;
   const printer=ts.createPrinter({removeComments:true});
   const canonical=(code)=>printer.printFile(ts.createSourceFile('admin-simples.js',code,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS));
   if(canonical(adminGenerated)!==canonical(adminJs))divergentes.push('admin-simples');
   return divergentes;
-}
-function verificarEspelhoProcedural(root=path.resolve(__dirname,'..')) {
-  const ts=require('typescript');
-  return ['procedural','runtime'].every(nome=>{
-    const base=path.join(root,'agent/forge/html5',nome);
-    const expected=ts.transpileModule(fs.readFileSync(base+'.ts','utf8'),{compilerOptions:{
-      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,removeComments:false
-    }}).outputText;
-    return expected===fs.readFileSync(base+'.mjs','utf8');
-  });
-}
-function verificarEspelhoForgeCatalog(root=path.resolve(__dirname,'..')) {
-  const ts=require('typescript');
-  return ['catalog','index'].every(name=>{
-    const base=path.join(root,'agent/forge',name);
-    const expected=ts.transpileModule(fs.readFileSync(base+'.ts','utf8'),{compilerOptions:{
-      target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,removeComments:false
-    }}).outputText;
-    return expected===fs.readFileSync(base+'.cjs','utf8');
-  });
 }
 if(require.main===module){
   const r=auditar();
@@ -84,10 +64,6 @@ if(require.main===module){
   for(const x of r.frontendForaTypecheck)console.error('TypeScript ignorado pelo typecheck frontend:',x);
   const browsers=verificarEspelhosWorkers();
   for(const nome of browsers)console.error('Espelho browser JS não sincronizado com TypeScript:',nome);
-  const procedural=verificarEspelhoProcedural();
-  if(!procedural)console.error('Forge HTML5 procedural/runtime.mjs não sincronizado com TypeScript');
-  const catalogo=verificarEspelhoForgeCatalog();
-  if(!catalogo)console.error('Forge catalog/index.cjs não sincronizado com fonte TypeScript');
-  if(!r.ok||browsers.length||!procedural||!catalogo)process.exitCode=1;
+  if(!r.ok||browsers.length)process.exitCode=1;
 }
-module.exports={inventariar,auditar,verificarEspelhosWorkers,verificarEspelhoProcedural,verificarEspelhoForgeCatalog};
+module.exports={inventariar,auditar,verificarEspelhosWorkers};

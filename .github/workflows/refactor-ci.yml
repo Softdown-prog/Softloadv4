@@ -1,75 +1,41 @@
-name: Softload - CI incremental TypeScript
+name: Softload Blogger - CI principal
 on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
   verify:
-    name: Typecheck + testes + Blogger
+    name: TypeScript, Blogger, cobranÃ§a e Docker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Node 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - name: Testar compilação real no site público (sem pagamento)
-        run: node scripts/livePublicCompilerSmoke.cjs
-      - name: Instalar dependencias
+      - name: Instalar dependÃªncias
         run: npm ci --legacy-peer-deps
-      - name: Verificar contratos TypeScript
+      - name: Verificar contratos TypeScript e espelhos JS
         run: npm run typecheck
-      - name: Verificar scripts TypeScript do navegador e espelhos
+      - name: Verificar scripts JS de navegador
         run: npm run typecheck:workers
-      - name: Garantir contrato de duas imagens e Agent sem Chromium
-        run: node --test scripts/deployBuildCache.contract.test.cjs scripts/removedServices.deploy.contract.test.cjs scripts/rsync-resume.contract.test.cjs
-      - name: Contratos das rotas finais e RAG local (sem servicos externos)
-        run: node --test src/routes/finalRoutes.contract.test.cjs src/solaris/rag/ragLocalSearch.test.js
-      - name: Contratos de segurança do estágio GHCR privado
-        run: node --test scripts/ghcr-release-contract.test.cjs
-      - name: Python para ferramentas 2D
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Dependências dos testes Forge
-        run: |
-          python -m pip install -r agent/forge/requirements.txt
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
-
-      - name: Testar motor Blogger e servicos
+      - name: Executar testes de regressÃ£o do aplicativo
         run: npm test
-      - name: Validar Mercado Pago sem emitir cobranças
-        run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
-      - name: Validar Blogger sem conta (cota, CSRF e XML)
-        run: node --test src/routes/publicBlogger.contract.test.cjs
-      - name: Validar fluxo público EJS Blogger e compilação XML antes de mesclar
+      - name: Verificar sessÃ£o pÃºblica e compilaÃ§Ã£o procedural
         run: |
           node --test src/routes/publicBlogger.contract.test.cjs
           node --test src/routes/dashboard_routes/compiler.procedural.test.js src/routes/dashboard_routes/compiler.procedural.integration.test.js
-      - name: Preparar assets locais do Blogger sem Vite
+      - name: Validar contratos Mercado Pago sem emitir cobranÃ§as
+        run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
+      - name: Preparar assets locais
         run: npm run build
-      - name: Verificar imagem Docker de producao
-        run: docker build --progress plain -t softload-refactor-ci .
-
-  agent:
-    name: Worker Agent - testes
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: agent
-    steps:
-      - uses: actions/checkout@v4
-      - name: Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: agent/package-lock.json
-      - name: Instalar dependencias Agent
-        run: npm ci
-      - name: Testar Agent
-        run: npm test
+      - name: Verificar boot do aplicativo
+        run: docker build --progress plain -t softload-blogger-ci .
+      - name: Iniciar Docker e validar EJS, acesso protegido e XML sem credenciais
+        run: bash scripts/smoke-container.sh softload-blogger-ci
+      - name: Validar Compose App-only e a revisão configurável
+        env:
+          SOFTLOAD_IMAGE_TAG: ${{ github.sha }}
+        run: docker compose -f infra/compose.vps.yaml config --quiet

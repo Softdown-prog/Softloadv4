@@ -22,7 +22,7 @@ test('encrypted delivery authenticates bytes, repository, run, SHA and service b
     fs.writeFileSync(path.join(folder, 'plain'), plain);
     const env = { ...process.env, DEPLOY_KEY: 'test-only-not-a-real-key',
       GITHUB_REPOSITORY: 'Softdown-prog/Softloadv4', GITHUB_RUN_ID: '123',
-      GITHUB_SHA: 'a'.repeat(40), SERVICE: 'app', AGENT_CHANGED: 'false', DELIVERY_DIR: folder };
+      GITHUB_SHA: 'a'.repeat(40), SERVICE: 'app', DELIVERY_DIR: folder };
     env.ARTIFACT_PASSWORD = 'softload-artifact-v1:' + env.DEPLOY_KEY;
     const cipher = path.join(app, 'image.enc');
     execFileSync('openssl', ['enc', '-aes-256-cbc', '-pbkdf2', '-iter', '200000', '-salt',
@@ -34,7 +34,9 @@ test('encrypted delivery authenticates bytes, repository, run, SHA and service b
     for (const field of ['DEPLOY_KEY', 'GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_SHA']) {
       assert.notEqual(verify({ [field]: 'different' }).status, 0, field);
     }
-    assert.notEqual(verify({ AGENT_CHANGED: 'true' }).status, 0, 'agent artifact cannot be omitted');
+    fs.rmSync(path.join(app, 'image.mac'));
+    assert.notEqual(verify().status, 0, 'required authentication tag cannot be omitted');
+    execFileSync('python3', ['-c', heredoc('PYMAC'), app], { env });
     const encrypted = fs.readFileSync(cipher);
     assert.equal(encrypted.includes(plain), false);
     const corrupt = Buffer.from(encrypted);

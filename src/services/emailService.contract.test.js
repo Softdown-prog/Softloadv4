@@ -61,7 +61,7 @@ test('boas-vindas preserva remetente, idioma, cinco créditos e links personaliz
     assert.equal(mail.subject,'Bem-vindo ao Softload Engine!');
     assert.match(mail.html,/lang="pt-BR"/);
     assert.match(mail.html,/Bem-vindo ao Softload Engine, Ana/);
-    assert.match(mail.html,/5 créditos de IA/);
+    assert.match(mail.html,/gerador gratuitamente/);
     assert.match(mail.html,/https:\/\/softload\.test\/dashboard/);
     assert.match(mail.html,/https:\/\/softload\.test\/dashboard\/upgrade/);
     assert.equal(h.logs.length,1);
@@ -83,13 +83,12 @@ test('recuperação usa link do próprio usuário e continua informando validade
 
 test('email de plano conserva nome, créditos, tokens e prazo, sem cobrança externa', async () => {
     const h=harness({RESEND_API_KEY:'not-real'});
-    await h.api.enviarPlanoAtivado('pagante@example.test','Leo','starter',500,'2026-11-25T12:00:00Z');
+    await h.api.enviarPlanoAtivado('pagante@example.test','Leo','essencial','2026-11-25T12:00:00Z');
     assert.equal(h.sends.length,1);
     const msg=h.sends[0];
-    assert.equal(msg.subject,'Plano Starter ativado! — Softload Engine');
-    assert.match(msg.html,/Plano Starter ativado!/);
-    assert.match(msg.html,/500 créditos/);
-    assert.match(msg.html,/500\.000 tokens/);
+    assert.equal(msg.subject,'Plano Essencial ativado! — Softload Engine');
+    assert.match(msg.html,/Plano Essencial ativado!/);
+    assert.doesNotMatch(msg.html,/créditos de IA|Tokens disponíveis/);
     assert.match(msg.html,/25\/11\/2026/);
     assert.match(msg.html,/não renova automaticamente/);
 });

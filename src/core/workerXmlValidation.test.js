@@ -1,3 +1,4 @@
+require('./test/isolatedTelemetry.cjs');
 'use strict';
 
 // Compilação testada sem gravações Firestore nem credenciais de produção.

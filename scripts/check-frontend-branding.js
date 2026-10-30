@@ -4,7 +4,7 @@ exports.auditarBranding = auditarBranding;
 const fs = require('node:fs');
 const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
-const SCAN_DIRS = ['frontend', 'views', 'public/css', 'public/js', 'public/dist/assets', 'src/routes/adminRoutes.js', 'src/solaris/rag'];
+const SCAN_DIRS = ['views', 'public/css', 'public/js', 'src/routes/adminRoutes.js'];
 const SCAN_EXTS = new Set(['.jsx', '.tsx', '.js', '.mjs', '.ts', '.ejs', '.html', '.css', '.svg', '.json']);
 const BRAND = /chat[\s_-]*gpt/gi;
 // Também rejeita a antiga sigla GPT como rótulo visível nas telas,
@@ -22,8 +22,6 @@ function auditarBranding(root = ROOT) {
             return;
         // No RAG só os JSONs de conteúdo são exibidos/recuperados para o usuário.
         // Identificadores legados em testes e no código interno não são rótulos de UI.
-        if (file.startsWith(path.join(root, 'src/solaris/rag') + path.sep) && path.extname(file) !== '.json')
-            return;
         scanned++;
         const content = fs.readFileSync(file, 'utf8');
         const rel = path.relative(root, file).replaceAll(path.sep, '/');
@@ -32,7 +30,7 @@ function auditarBranding(root = ROOT) {
             const line = content.slice(0, match.index).split('\n').length;
             violations.push(rel + ':' + line + ': ' + match[0]);
         }
-        if (rel.startsWith('frontend/') || rel.startsWith('views/') || rel === 'public/dist/assets/main.js') {
+        if (rel.startsWith('views/') || rel.startsWith('public/')) {
             for (const match of content.matchAll(VISIBLE_GPT)) {
                 const line = content.slice(0, match.index).split('\n').length;
                 violations.push(rel + ':' + line + ': rótulo antigo ' + match[0]);

@@ -19,7 +19,7 @@ const fs   = require('fs') as { readFileSync(arquivo: string, encoding: string):
 const path = require('path') as { join(...partes: string[]): string };
 const { sanitizarEntidadesXml } = require('./xmlEntities') as typeof import('./xmlEntities');
 
-const TEMAS_DIR = path.join(__dirname, '../../../src/rag/rag-ia-compiler/pipeline/temas');
+const TEMAS_DIR = path.join(__dirname, '../../../src/blogger/nichos');
 
 // ==========================================
 // NICHO CSS + JS (carregado do impl.json)

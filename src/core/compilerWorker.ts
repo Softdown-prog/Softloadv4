@@ -13,7 +13,7 @@ declare const console: {
 
 /** API pública do worker preservada para Node/CommonJS e consumidores TypeScript. */
 export interface CompilerWorkerApi {
-    executarCompilacao(body: WorkerCompilerBody): CompiledBloggerTheme;
+    executarCompilacao(body: WorkerCompilerBody, options?: import('./workerOrchestrator').CompilerExecutionOptions): CompiledBloggerTheme;
     validarManifesto: typeof import('./workerInput').validarManifesto;
     validarXmlSaida: typeof import('./workerXmlValidation').validarXmlSaida;
     carregarChassisParaNicho: (nicho: unknown) => string;
@@ -48,7 +48,7 @@ const {
     carregarNichoDossie: typeof import('./compilerEngine/dossieLoader').carregarNichoDossie;
     verificarDomIdsNoOutput: typeof import('./compilerEngine/dossieIntegrityChecker').verificarDomIdsNoOutput;
 };
-const { ENUMS }       = require('../ai/blueprintSchema') as { ENUMS: WorkerManifestDependencies['enums'] };
+const { ENUMS }       = require('../blogger/manifestSchema') as { ENUMS: WorkerManifestDependencies['enums'] };
 const { repararXml }  = require('./repairEngine') as typeof import('./repairEngine');
 const { NICHO_DESIGN_VOICE_MAP, COLOR_DESIGN_VOICE_HINT } = require('./designVoicePresets') as {
     NICHO_DESIGN_VOICE_MAP: WorkerManifestDependencies['nicheVoiceMap'];
