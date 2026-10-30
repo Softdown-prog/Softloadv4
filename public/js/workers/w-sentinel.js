@@ -1,3 +1,4 @@
+"use strict";
 'use strict';
 // ══════════════════════════════════════════════════════════════
 // W-SENTINEL — Sentinel health check, métricas, gráficos e
