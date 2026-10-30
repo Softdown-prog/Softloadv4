@@ -53,7 +53,7 @@
     try {
       if (section === 'inicio') {
         const info = await getJson('/eu/api/kpis');
-        for (const element of root.querySelectorAll('[data-kpi]')) {
+        for (const element of root!.querySelectorAll('[data-kpi]')) {
           const key = element.getAttribute('data-kpi') || '';
           element.textContent = key === 'storageTotal' ? String(info[key] ?? '—') : number(info[key]);
         }
@@ -69,7 +69,7 @@
         say(items.length + ' conta(s) exibida(s). Consulta somente leitura.');
       } else if (section === 'analytics') {
         const data = await getJson('/eu/api/analytics/creditos?dias=30');
-        const groups = Object.entries(data.por_plano || {});
+        const groups = Object.entries(data.por_plano || {}) as [string, Record<string, unknown>][];
         renderTable('admin-analytics', groups.map(([plan, info]) => [
           plan, number(info.usuarios_ativos), number(info.total_interacoes),
           number(info.total_creditos_debitados), number(info.total_tokens)
