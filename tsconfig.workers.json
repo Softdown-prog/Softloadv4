@@ -16,6 +16,7 @@
     "public/js/workers/w-init.ts",
     "public/js/workers/w-log-init.ts",
     "public/js/workers/w-errorlog.ts",
-    "public/js/workers/w-sentinel.ts"
+    "public/js/workers/w-sentinel.ts",
+    "public/js/admin-simples.ts"
   ]
 }
