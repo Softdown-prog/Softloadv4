@@ -42,7 +42,7 @@
       const tr = document.createElement('tr');
       for (const value of values) {
         const td = document.createElement('td');
-        // textContent, nunca innerHTML: campos vindos do Firestore não são HTML.
+        // Dados do Firestore são tratados somente como texto, sem interpretação de marcação.
         td.textContent = String(value ?? '—');
         tr.appendChild(td);
       }
