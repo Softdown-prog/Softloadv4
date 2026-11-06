@@ -194,16 +194,17 @@ try {
     assert.ok(checks>=20,'expected desktop/mobile tests, critical CSS and artifact integrity');
     sacReport.checks.artifact_integrity.status='pass';
     sacReport.checks.p001.source_and_production_artifact_same=true;
-    sacReport.checks.inline_scripts.browser_effect_verified=true;
+    sacReport.checks.inline_scripts.browser_effect_verified=
+      sacReport.checks.inline_scripts.status==='known-beasties-requires-browser';
     sacReport.browser_verified=true;
     sacReport.browser_evidence={
       status:'pass',checks,viewports:[1366,390],
-      scope:'Angular UI, CSS activation, private routes and Docker asset identity',
+      scope:'Angular UI, CSS activation, guest dashboard guard and Docker asset identity',
       guest_bootstrap_mocked:true,checkout_mocked:true,xml_download_mocked:true,
       android_physical_device_verified:false
     };
     assert.equal(sacReport.deployment_authorized,false,'SAC may not authorize deployment');
-    writeFileSync(process.env.SAC_REPORT_FILE,JSON.stringify(sacReport,null,2)+'\\n',{mode:0o600});
+    writeFileSync(process.env.SAC_REPORT_FILE,JSON.stringify(sacReport,null,2)+String.fromCharCode(10),{mode:0o600});
     console.log('SAC_BROWSER_EVIDENCE: '+checks+' scoped checks passed, asset hashes identical, P001 remains '+sacReport.checks.p001.status);
   }
 
