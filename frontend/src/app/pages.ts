@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SoftloadApi, Account } from './api';
+import { SoftloadApi } from './api';
 
 @Component({standalone:true,imports:[RouterLink],changeDetection:ChangeDetectionStrategy.OnPush,template:`
 <main class="container">
