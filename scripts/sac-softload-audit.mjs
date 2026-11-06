@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import {mkdtemp, readdir, lstat, readFile, mkdir, copyFile, cp, rm, writeFile} from 'node:fs/promises';
 import os from 'node:os';
+import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
@@ -134,6 +135,20 @@ try{
   assert.equal(mains.length,1,'Expected exactly one Angular main bundle');
   assert.equal(styles.length,1,'Expected exactly one Angular styles bundle');
   assert.ok(html.includes(mains[0])&&html.includes(styles[0]),'Angular entrypoints not referenced by index');
+  // Bind the audited dist to the *actual* Docker-served application in the
+  // independent Chrome test. A pass is not assigned until hashes match.
+  const digest=async file=>{
+    const target=path.join(stage,file),stat=await lstat(target);
+    assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.size>0&&stat.size<=16*1024*1024,
+      'SAC artifact integrity input is unsafe');
+    return createHash('sha256').update(await readFile(target)).digest('hex');
+  };
+  report.checks.artifact_integrity={
+    status:'pending-runtime-comparison',
+    index_sha256:await digest('index.html'),
+    resources:await Promise.all([mains[0],styles[0],'js/blogger-preview.js']
+      .map(async file=>({file,sha256:await digest(file)})))
+  };
   const result=await verify(stage,{
     schema_version:1,index:'index.html',angular_host:'sl-root',
     mode:'angular-only',angular_entrypoints:mains,assets:styles,
