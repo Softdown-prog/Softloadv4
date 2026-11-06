@@ -117,10 +117,10 @@ try{
   const html=await safeRead(path.join(stage,'index.html'),2*1024*1024);
   // Diagnose executable inline scripts without publishing their source.
   // A script lacking src cannot be certified by P001 static checks.
-  const scripts=[...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)];
+  const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   const inline=scripts.filter(([,attrs,body])=>
-    !/\\bsrc\\s*=/.test(attrs)&&
-    !/\\btype\\s*=\\s*["']application\\/(?:ld\\+)?json["']/.test(attrs)&&
+    !/\bsrc\s*=/.test(attrs)&&
+    !/\btype\s*=\s*["']application\/(?:ld\+)?json["']/.test(attrs)&&
     body.trim().length>0);
   report.checks.html_script_inventory={
     inline_executable_count:inline.length,
