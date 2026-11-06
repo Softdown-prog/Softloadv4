@@ -114,7 +114,11 @@ app.use((req, res, next) => {
     next();
 });
 app.use(session({
-    store: new FirestoreSessionStore(),
+    // Only the isolated Docker smoke may opt into an in-memory session store.
+    // Production (and all ordinary environments) must always use Firestore.
+    store: process.env.NODE_ENV === 'test' && process.env.SOFTLOAD_TEST_MEMORY_SESSION === 'true'
+        ? new session.MemoryStore()
+        : new FirestoreSessionStore(),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
