@@ -49,7 +49,7 @@ jobs:
       - name: Validar Angular em Chromium real (desktop e Android)
         run: |
           set -euo pipefail
-          (cd frontend && npx playwright install --with-deps chromium)
+          google-chrome --version
           cid="$(docker run -d --network bridge -p 127.0.0.1:18080:8080 \
             -e NODE_ENV=test -e SOFTLOAD_USE_ANGULAR=true \
             -e SESSION_SECRET=ci-session-not-for-production \
