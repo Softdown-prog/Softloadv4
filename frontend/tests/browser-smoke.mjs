@@ -2,6 +2,8 @@
 // Docker image. External persistence and payment calls are deliberately mocked:
 // this never creates users, downloads from a paid quota, or starts a charge.
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
 
 const origin=process.env.SOFTLOAD_BROWSER_URL||'http://127.0.0.1:18080';
@@ -17,6 +19,28 @@ const catalog={
   exemplos:[{id:'tech',nome:'Meu Blog Tech',categoria:'Tecnologia',nichoTema:'tecnologia-mag-tech',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'}],
   checkoutEnabled:true,filesEnabled:false
 };
+// Compare actual bytes served by the Docker image with the files inspected by
+// the independent SAC runner. Never infer equivalence from a green build alone.
+const sacReport=process.env.SAC_REPORT_FILE
+  ? JSON.parse(readFileSync(process.env.SAC_REPORT_FILE,'utf8')) : null;
+const integrity=sacReport?.checks?.artifact_integrity;
+if(process.env.SAC_REPORT_FILE){
+  assert.equal(sacReport?.deployment_authorized,false);
+  assert.equal(integrity?.status,'pending-runtime-comparison');
+  assert.match(integrity?.index_sha256||'',/^[a-f0-9]{64}$/);
+  assert.equal(integrity.resources.length,3,'expected Angular main, CSS and preview script');
+}
+async function verifySacArtifact(page){
+  const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+  const checks=[{file:'',sha256:integrity.index_sha256},...integrity.resources];
+  for(const {file,sha256} of checks){
+    assert.ok(file===''||/^(?:main(?:-[a-zA-Z0-9]+)?\\.js|styles(?:-[a-zA-Z0-9]+)?\\.css|js\\/blogger-preview\\.js)$/.test(file),'unexpected artifact path');
+    assert.match(sha256,/^[a-f0-9]{64}$/);
+    const res=await page.request.get(origin+'/'+file,{failOnStatusCode:true});
+    assert.equal(digest(await res.body()),sha256,'served Docker asset drifted from SAC-audited dist: '+file);
+  }
+  console.log('SAC_DOCKER_ARTIFACT_MATCH: index, Angular JS/CSS and procedural preview script');
+}
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
 let checks=0;
 try {
@@ -53,6 +77,7 @@ try {
     // Public landing: navigation is handled by Angular, not EJS.
     let res=await page.goto(origin+'/',{waitUntil:'networkidle'});
     assert.equal(res?.status(),200,'landing HTTP 200');
+    if(integrity&&viewport.width===1366){await verifySacArtifact(page);checks++;}
     await page.getByRole('heading',{name:/Um blog com a/i}).waitFor();
     await page.getByRole('link',{name:'Criar meu template'}).first().click();
     await page.waitForURL('**/criar');
