@@ -50,6 +50,28 @@ const assert = require('node:assert/strict');
   const pricing=await fetch('http://127.0.0.1:8080/planos');
   assert.equal(pricing.status,200,'public pricing route must not require login');
   assert.match(await pricing.text(),/<sl-root\b/);
+  // Exercise the REAL Express bootstrap, not Playwright's isolated mock.
+  // This guards the contract consumed by every standalone Angular page.
+  const bootstrap=await fetch('http://127.0.0.1:8080/api/frontend/bootstrap');
+  assert.equal(bootstrap.status,200,'guest bootstrap must be available');
+  assert.match(bootstrap.headers.get('content-type')||'',/application\/json/);
+  const guest=await bootstrap.json();
+  assert.equal(guest.user,null,'guest bootstrap must not leak a signed-in user');
+  assert.equal(guest.guestMode,true);
+  assert.match(guest.guestToken,/^[a-f0-9]{48}$/,'guest download token must be random 24-byte hex');
+  assert.equal(guest.downloadPath,'/criar/download');
+  for(const key of ['cores','fontes','nichos','exemplos']){
+    assert.ok(Array.isArray(guest[key])&&guest[key].length>0,
+      'Angular catalog must provide '+key);
+  }
+  // Session-bound CSRF token must survive a second request with the same cookie.
+  const cookie=(bootstrap.headers.get('set-cookie')||'').split(';',1)[0];
+  assert.ok(cookie.includes('='),'bootstrap must issue a session cookie');
+  const second=await fetch('http://127.0.0.1:8080/api/frontend/bootstrap',
+    {headers:{cookie}});
+  assert.equal(second.status,200);
+  assert.equal((await second.json()).guestToken,guest.guestToken,
+    'guest CSRF token must remain stable for its session');
   // Exercise the real compiler inside the built image, isolating only telemetry I/O.
   const id = require.resolve('./src/core/telemetria');
   require.cache[id] = {id, filename: id, loaded: true, exports: {registrarCompilacao() {}}};
