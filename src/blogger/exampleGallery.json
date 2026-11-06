@@ -240,5 +240,93 @@
     "typography": "inter",
     "gridLayout": "coluna-unica",
     "sidebarPosition": "none"
+  },
+  {
+    "id": "jornal-semanal",
+    "nome": "Boletim Atual",
+    "descricao": "Portal de notícias em paleta clara, leitura serifada e lista de matérias.",
+    "categoria": "Editorial",
+    "nichoTema": "noticias-mag-news",
+    "colorPreset": "clean-white-ivory",
+    "typography": "roboto-slab",
+    "gridLayout": "lista",
+    "sidebarPosition": "left"
+  },
+  {
+    "id": "dev-oficina",
+    "nome": "Oficina de Código",
+    "descricao": "Artigos de programação em fundo grafite, detalhes metálicos e grade em zigue-zague.",
+    "categoria": "Tecnologia",
+    "nichoTema": "tecnologia-techwind",
+    "colorPreset": "carbon-dark-steel",
+    "typography": "space-grotesk",
+    "gridLayout": "zigzag",
+    "sidebarPosition": "right"
+  },
+  {
+    "id": "gamer-ciano",
+    "nome": "Play Ciano",
+    "descricao": "Blog gamer em ciano e preto com duas colunas para reviews e novidades.",
+    "categoria": "Tecnologia",
+    "nichoTema": "gamer-playerone",
+    "colorPreset": "gamer-dark-cyan",
+    "typography": "oswald",
+    "gridLayout": "dupla",
+    "sidebarPosition": "none"
+  },
+  {
+    "id": "receitas-terra",
+    "nome": "Tempero de Casa",
+    "descricao": "Receitas em tons terrosos, tipografia acolhedora e artigos em lista.",
+    "categoria": "Blogs",
+    "nichoTema": "culinaria-boutique-gourmet",
+    "colorPreset": "warm-amber-terracotta",
+    "typography": "pt-sans",
+    "gridLayout": "lista",
+    "sidebarPosition": "left"
+  },
+  {
+    "id": "natureza-trilhas",
+    "nome": "Trilhas & Ideias",
+    "descricao": "Conteúdo de natureza com verde profundo e postagens em duas colunas.",
+    "categoria": "Blogs",
+    "nichoTema": "natureza-bulma-vegan",
+    "colorPreset": "forest-green-jungle",
+    "typography": "playfair",
+    "gridLayout": "dupla",
+    "sidebarPosition": "right"
+  },
+  {
+    "id": "portfolio-violeta",
+    "nome": "Ateliê Digital",
+    "descricao": "Vitrine de projetos com tons violeta suaves e visual em mosaico.",
+    "categoria": "Criativos",
+    "nichoTema": "portfolio-minimalista",
+    "colorPreset": "luxury-purple-lavender",
+    "typography": "inter",
+    "gridLayout": "mural",
+    "sidebarPosition": "none"
+  },
+  {
+    "id": "saas-claro",
+    "nome": "Produto em Foco",
+    "descricao": "Apresentação de software em fundo claro e disposição em lista.",
+    "categoria": "Negócios",
+    "nichoTema": "saas-nexus",
+    "colorPreset": "clean-white-ivory",
+    "typography": "space-grotesk",
+    "gridLayout": "lista",
+    "sidebarPosition": "none"
+  },
+  {
+    "id": "cursos-claro",
+    "nome": "Roteiro de Estudos",
+    "descricao": "Materiais de estudo com cartões em duas colunas e fonte serifada.",
+    "categoria": "Negócios",
+    "nichoTema": "elearning-academy",
+    "colorPreset": "clean-white-slate",
+    "typography": "roboto-slab",
+    "gridLayout": "dupla",
+    "sidebarPosition": "none"
   }
 ]
