@@ -46,7 +46,7 @@ jobs:
         run: docker build --progress plain -t softload-blogger-ci .
       - name: Iniciar Docker e validar Angular, acesso protegido e XML sem credenciais
         run: bash scripts/smoke-container.sh softload-blogger-ci
-      - name: Validar Angular em Chromium real (desktop e Android)
+      - name: Validar Angular em Chrome (desktop e celular emulado)
         run: |
           set -euo pipefail
           google-chrome --version
