@@ -117,16 +117,11 @@ try {
     fakeUser={uid:'browser-only',nome:'Pessoa de Teste',email:'test@example.invalid',plano:'free'};
     await page.reload();
     const pay=page.getByRole('button',{name:/Continuar para pagamento/});
-    const consentState=await page.evaluate(()=>{
-      const button=[...document.querySelectorAll('button')].find(b=>b.textContent?.includes('Continuar para pagamento'));
-      const checkbox=document.querySelector('input[type="checkbox"]');
-      return {button:button?.outerHTML,buttonDisabled:button?.disabled,
-        checkbox:checkbox?.outerHTML,checked:checkbox?.checked,
-        url:location.pathname};
-    });
-    console.log('CONSENT_GATE_STATE',JSON.stringify(consentState));
     assert.equal(await pay.isDisabled(),true,'consent is required');
     await page.getByRole('checkbox').check();
+    // Signal-driven OnPush updates run on Angular's scheduled render tick.
+    await page.waitForFunction(()=>[...document.querySelectorAll('button')]
+      .some(b=>b.textContent?.includes('Continuar para pagamento')&&!b.disabled));
     assert.equal(await pay.isEnabled(),true);
     await pay.click();
     await page.getByText('Checkout indisponível em homologação.').waitFor();
