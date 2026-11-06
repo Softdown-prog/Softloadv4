@@ -53,14 +53,36 @@ e 12 templates inline**. O PRE002 encontrou 6 arestas e nenhum ciclo;
 PRE003/004/005 não encontraram falhas estruturais, referências suspeitas ou
 erros de parser. Os status dessas três regras permanecem `unverified`.
 
-O P001 registrou `html-resources:unverified` porque o HTML compilado inclui
-um script executável inline, que precisa de inspeção runtime; **não tratar essa
-condição como falha comprovada nem como certificação estática**.
-O teste independente com Chrome em **1366 px** e celular emulado em **390 px**
-observou as rotas, prévia, download XML simulado, formulário de aceite,
-checkout simulado e páginas legais: **17 verificações, nenhuma exceção JS**
-na execução de referência. Isso não é prova de Android físico nem de
-pagamento Mercado Pago real.
+O P001 registrou `html-resources:unverified` porque o HTML otimizado pelo
+Beasties (integrado ao build Angular) injeta um **script inline de 163 bytes**
+para restaurar o atributo `media` das folhas CSS não críticas. **Remover esse
+script só para satisfazer a regra estática quebraria o carregamento de estilos.**
+A auditoria aceita exclusivamente esse trecho conhecido ou ausência total de
+scripts inline; qualquer código inline inesperado reprova o CI. O resultado
+do P001 continua `unverified`, pois a regra não executa JavaScript.
+
+A validação complementar em Chrome verifica que o navegador realmente ativa
+as folhas CSS em desktop e celular emulado e que não sobram atributos
+`data-beasties-media` pendentes. Não se confunde essa prova de runtime com
+um `pass` do P001. O navegador também verifica páginas, prévia, downloads
+XML simulados, checkout sem cobrança e a correspondência **SHA-256** de
+`index.html`, JS Angular, CSS e código procedural entre o estágio auditado
+e o container Docker que entrega a aplicação.
+
+O smoke do container, sem acesso à rede, valida todas as rotas privadas
+`/dashboard/*`, as duas páginas `/eu*`, a API de arquivos autenticada
+e o acesso público a `/planos`, além de compilar XML de três nichos reais.
+O workflow de deploy repete esse smoke **na imagem de release efetiva,
+antes de criptografá-la e enviá-la à VPS**.
+
+Resultados históricos verificáveis:
+- [CI 42151883568](https://github.com/Softdown-prog/Softloadv4/actions/runs/42151883568):
+  18 verificações Chrome e 4 arquivos auditados idênticos aos servidos por Docker.
+- [CI 42153281686](https://github.com/Softdown-prog/Softloadv4/actions/runs/42153281686):
+  smoke das rotas protegidas da aplicação aprovado.
+
+Esses testes não constituem prova de Android físico nem de pagamento real no
+Mercado Pago, não substituem homologação de credenciais e não autorizam deploy.
 
 ## Reproduzir em checkout descartável
 
