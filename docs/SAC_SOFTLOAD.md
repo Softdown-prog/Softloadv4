@@ -86,10 +86,10 @@ Mercado Pago, não substituem homologação de credenciais e não autorizam depl
 
 ## Reproduzir em checkout descartável
 
-Execute em um ambiente Node 24 de CI, com a revisão SAC fixada:
+O Angular utiliza o `frontend/package-lock.json` testado e versionado; tanto o CI quanto a imagem Docker de release executam `npm ci`, não `npm install`. Alterações nas dependências exigem atualização revisada do lockfile e repetição dos gates SAC/Chrome. Execute em um ambiente Node 24 de CI, com a revisão SAC fixada:
 
 ```sh
-npm --prefix frontend install --no-audit --no-fund
+npm --prefix frontend ci --no-audit --no-fund
 npm --prefix frontend run typecheck
 npm --prefix frontend run build
 git clone --no-checkout https://github.com/Softdown-prog/Data_libray.git .sac-tools
