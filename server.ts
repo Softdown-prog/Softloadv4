@@ -35,6 +35,7 @@ interface ServerExpress {
 interface SessionModule {
     (options: { store: object; secret: string | undefined; resave: boolean; saveUninitialized: boolean; proxy: boolean; cookie: { secure: boolean; httpOnly: boolean; sameSite: string; maxAge: number } }): unknown;
     Store: new () => object;
+    MemoryStore: new () => object;
 }
 type SessionReadCallback = (error: unknown, session?: PersistedServerSession | null) => void;
 type SessionWriteCallback = (error: unknown) => void;
@@ -161,7 +162,11 @@ app.use((req: ServerRequest, res: ServerResponse, next: () => void) => {
 });
 
 app.use(session({
-    store: new FirestoreSessionStore(),
+    // Only the isolated Docker smoke may opt into an in-memory session store.
+    // Production (and all ordinary environments) must always use Firestore.
+    store: process.env.NODE_ENV === 'test' && process.env.SOFTLOAD_TEST_MEMORY_SESSION === 'true'
+        ? new session.MemoryStore()
+        : new FirestoreSessionStore(),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
