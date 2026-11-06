@@ -174,7 +174,7 @@ try{
   report.checks.p001={
     status:result.status,
     evidence:result.evidence.map(x=>({assertion:x.assertion,status:x.status})),
-    source_and_production_artifact_same:false
+    source_and_production_artifact_same:null // awaiting independent Docker/Chrome SHA256 verification
   };
 }finally{await rm(stage,{recursive:true,force:true});}
 
