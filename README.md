@@ -48,7 +48,7 @@ npm --prefix frontend run test
 npm --prefix frontend run build
 ```
 
-O Docker faz o build Angular em estágio separado e entrega o HTML via Express em produção.
+**Hospedagem:** frontend Angular e backend Express ficam ambos na VPS, juntos na imagem Docker do Softload. O estágio de build do Angular ocorre no CI, mas o HTML, os assets e as APIs são servidos pelo container Node/Express atrás do Caddy da VPS. Cloudflare pode atuar como DNS/proxy; **Cloudflare Pages não faz parte do deploy**.
 `/api/frontend/bootstrap` retorna dados do editor e o token de testes públicos; o compilador XML e os pagamentos continuam no backend.
 Em ambientes legados de teste (`NODE_ENV=test`), o fallback EJS permanece disponível até a substituição dos contratos antigos.
 Não usar Angular e EJS como duas interfaces paralelas em produção.
