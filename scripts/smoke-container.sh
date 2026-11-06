@@ -22,11 +22,11 @@ const assert = require('node:assert/strict');
     assert.equal(response.status, 200, route);
     const html=await response.text();
     assert.match(html, /<html/i, route);
-    assert.match(html, /<sl-root\\b/i, route + ' must render canonical Angular shell');
+    assert.match(html, /<sl-root\b/i, route + ' must render canonical Angular shell');
   }
   const editor = await fetch('http://127.0.0.1:8080/criar');
   assert.equal(editor.status,200,'guest editor must load');
-  assert.match(await editor.text(),/<sl-root\\b/i,'guest editor must be Angular');
+  assert.match(await editor.text(),/<sl-root\b/i,'guest editor must be Angular');
   const protectedPage = await fetch('http://127.0.0.1:8080/dashboard', {redirect: 'manual'});
   assert.equal(protectedPage.status, 302);
   assert.match(protectedPage.headers.get('location'), /^\/login/);
