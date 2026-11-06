@@ -29,6 +29,12 @@ if(process.env.SAC_REPORT_FILE){
   assert.equal(integrity?.status,'pending-runtime-comparison');
   assert.match(integrity?.index_sha256||'',/^[a-f0-9]{64}$/);
   assert.equal(integrity.resources.length,3,'expected Angular main, CSS and preview script');
+  if(sacReport?.checks?.p001?.status==='pass' &&
+     sacReport?.checks?.inline_scripts?.status==='known-beasties-requires-browser'){
+    assert.deepEqual(sacReport.checks.p001.recognized_inline_scripts,
+      ['angular-critical-css-media-restore'],
+      'SAC-P001 static pass must record exact helper that browser verifies');
+  }
 }
 async function verifySacArtifact(page){
   const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
