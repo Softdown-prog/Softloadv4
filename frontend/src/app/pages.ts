@@ -11,7 +11,7 @@ import { SoftloadApi } from './api';
   <p class="lead">Crie templates XML para Blogger, do zero ou por nichos. Escolha o estilo, visualize a estrutura e baixe para usar no Blogger.</p>
   <div class="flex" style="margin-top:30px">
     <a routerLink="/criar" class="button">Criar meu template</a>
-    <a routerLink="/dashboard/plano-essencial" class="button button-outline">Conhecer o Essencial</a>
+    <a routerLink="/planos" class="button button-outline">Conhecer o Essencial</a>
   </div>
   <p class="muted small">Teste sem cadastro · Até 2 downloads por sessão · Sem inteligência artificial</p>
 </section>
@@ -199,15 +199,25 @@ export class AccountPage {readonly api=inject(SoftloadApi);constructor(){void th
     <li>Prévia ilustrativa e XML validado pelo compilador</li>
   </ul>
   <p class="muted small">O checkout e a ativação dependem da confirmação no Mercado Pago. Arquivos novos sujeitos à política poderão ser eliminados depois da vigência e cinco dias de recuperação.</p>
-  <label class="check-line"><input type="checkbox" [(ngModel)]="accepted" name="accepted">
-  <span>Li e aceito os <a href="/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, incluindo os prazos de armazenamento e recuperação.</span></label>
   <div style="margin-top:24px">
     @if(api.data();as d){
-      @if(d.checkoutEnabled){
-        <button class="button" style="width:100%" [disabled]="busy()||!accepted" (click)="checkout()">{{busy()?'Preparando pagamento…':'Continuar para pagamento de R$ 5'}}</button>
-      } @else {<button class="button" disabled style="width:100%">Pagamento temporariamente indisponível</button>
-        <p class="muted">A homologação do checkout ainda está em andamento. Nenhuma cobrança será iniciada.</p>}
-    }@else{<p class="muted">Carregando condições de contratação…</p>}
+      @if (d.user) {
+        <label class="check-line"><input type="checkbox" [(ngModel)]="accepted" name="accepted">
+          <span>Li e aceito os <a href="/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, incluindo os prazos de armazenamento e recuperação.</span>
+        </label>
+        <div style="margin-top:20px">
+          @if(d.checkoutEnabled){
+            <button class="button" style="width:100%" [disabled]="busy()||!accepted" (click)="checkout()">{{busy()?'Preparando pagamento…':'Continuar para pagamento de R$ 5'}}</button>
+          } @else {
+            <button class="button" disabled style="width:100%">Pagamento temporariamente indisponível</button>
+            <p class="muted">A homologação do checkout ainda está em andamento. Nenhuma cobrança será iniciada.</p>
+          }
+        </div>
+      } @else {
+        <a href="/login" class="button" style="width:100%">Entrar ou criar conta para contratar</a>
+        <p class="muted small">Você pode conhecer o plano sem cadastro. A contratação requer uma conta autenticada.</p>
+      }
+    } @else {<p class="muted">Carregando condições de contratação…</p>}
     @if(message()){<p class="status error" role="alert">{{message()}}</p>}
   </div>
 </div>
