@@ -12,7 +12,7 @@ const {db}=require('../services/firebase');
 const {currentStorageLimit,DAY}=require('../services/essentialStoragePolicy.cjs');
 const compiler=require('./dashboard_routes/compiler');
 const angularIndex=path.resolve(__dirname,'../../angular/index.html');
-const pages=['/','/criar','/login','/register','/recover','/dashboard',
+const pages=['/','/criar','/planos','/login','/register','/recover','/dashboard',
  '/dashboard/gerador-blogger','/dashboard/historico','/dashboard/arquivos',
  '/dashboard/configuracoes','/dashboard/upgrade','/dashboard/plano-essencial',
  '/contato','/privacidade','/termos-de-uso','/eu','/eu/usuarios'];
