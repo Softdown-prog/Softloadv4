@@ -30,12 +30,12 @@
     "dotenv": "^18.0.9",
     "ejs": "^7.0.2",
     "express": "^4.22.3",
-    "express-rate-limit": "^8.7.1",
+    "express-rate-limit": "^8.7.2",
     "express-session": "^1.19.0",
     "fast-xml-parser": "^5.11.2",
     "firebase-admin": "^13.8.0",
     "mercadopago": "^2.12.0",
-    "nodemailer": "^10.2.1"
+    "nodemailer": "^10.3.1"
   },
   "devDependencies": {
     "bootstrap": "^5.3.8",
