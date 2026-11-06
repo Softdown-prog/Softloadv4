@@ -8,7 +8,7 @@ const path=require('node:path');
 
 function inventariar(tracked,lista) {
   const entries=new Set(tracked),comFonte=x=>entries.has(x.replace(/\.jsx?$/, m=>m==='.jsx'?'.tsx':'.ts').replace(/\.(?:cjs|mjs)$/,'.ts'));
-  const excluir=x=>/(?:\.test\.|\.spec\.|__testUtils__|__tests__|\/test\/|\.e2e\.)/.test(x)
+  const excluir=x=>/(?:\.test\.|\.spec\.|__testUtils__|__tests__|\/test\/|\/tests\/|\.e2e\.)/.test(x)
     ||x.startsWith('public/dist/')||x.startsWith('examples/')||x.startsWith('src/solaris/code-examples/')
     ||x==='scripts/check-typescript-remaining.cjs';
   const candidatos=[...entries].filter(x=>/\.(?:js|jsx|cjs|mjs)$/.test(x)&&!excluir(x)&&!comFonte(x)).sort();
