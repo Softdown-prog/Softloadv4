@@ -6,7 +6,7 @@ instalado no container comercial ou no worker compartilhado da VPS.
 
 ## Fonte independente e imutável
 
-O workflow baixa a revisão pública `97d5ae71844b56cfb073b5202c2f32398e9d532a`
+O workflow baixa a revisão pública `8ef12c4a938c2366ecc96ac0516402e11e6d3ab7`
 de `Softdown-prog/Data_libray`, com `persist-credentials:false`, para
 `.sac-tools/`. O runner `scripts/sac-softload-audit.mjs` verifica o SHA local,
 enumera somente `frontend/src/` (arquivos regulares limitados) e chama as
@@ -46,6 +46,22 @@ contagens e códigos fixos. É arquivado por 14 dias em `softload-sac-report`
 Todo relatório registra `deployment_authorized:false`, inclusive quando o
 CI é verde. A decisão de publicação cabe aos gates de CI/deploy, não ao SAC.
 
+## Atualização do SAC P001 (revisão testada separadamente)
+
+A revisão `8ef12c4a938c2366ecc96ac0516402e11e6d3ab7` da Data Library reconhece o helper *somente* quando
+seu JavaScript coincide exatamente com a assinatura conhecida do Angular 22,
+o script está no `body` sem atributos e existe uma folha CSS adiada
+`<link rel="stylesheet" media="print" data-beasties-media="...">` no `head`.
+Scripts extras, manipulados ou com atributos não são automaticamente aprovados.
+Essa mudança pode fazer `SAC-P001=pass` no escopo **estático** do dist,
+mas **não** executa JS: permanece obrigatória a verificação real em Chrome
+da restauração do CSS e dos hashes do mesmo artefato servido pelo Docker.
+
+A atualização é opt-in e pinada no CI de PR e no pré-deploy; a revisão
+multistack ainda é experimental e **não** participa do build XML Blogger,
+que mantém seus próprios validadores de XML e testes de compilação.
+O relatório registra `deployment_authorized:false` mesmo se P001 passar.
+
 ## Primeira auditoria do Softload
 
 Na revisão inicial foram analisados **5 arquivos TypeScript, 12 componentes
@@ -58,13 +74,13 @@ Beasties (integrado ao build Angular) injeta um **script inline de 163 bytes**
 para restaurar o atributo `media` das folhas CSS não críticas. **Remover esse
 script só para satisfazer a regra estática quebraria o carregamento de estilos.**
 A auditoria aceita exclusivamente esse trecho conhecido ou ausência total de
-scripts inline; qualquer código inline inesperado reprova o CI. O resultado
-do P001 continua `unverified`, pois a regra não executa JavaScript.
+scripts inline; qualquer código inline inesperado reprova o CI. Na **primeira auditoria** o P001 permaneceu `unverified`, pois a regra antiga não
+reconhecia a exceção estritamente delimitada para esse helper do Angular.
 
 A validação complementar em Chrome verifica que o navegador realmente ativa
 as folhas CSS em desktop e celular emulado e que não sobram atributos
 `data-beasties-media` pendentes. Não se confunde essa prova de runtime com
-um `pass` do P001. O navegador também verifica páginas, prévia, downloads
+a checagem estática do P001. O navegador também verifica páginas, prévia, downloads
 XML simulados, checkout sem cobrança e a correspondência **SHA-256** de
 `index.html`, JS Angular, CSS e código procedural entre o estágio auditado
 e o container Docker que entrega a aplicação.
@@ -93,7 +109,7 @@ npm --prefix frontend ci --no-audit --no-fund
 npm --prefix frontend run typecheck
 npm --prefix frontend run build
 git clone --no-checkout https://github.com/Softdown-prog/Data_libray.git .sac-tools
-git -C .sac-tools checkout 97d5ae71844b56cfb073b5202c2f32398e9d532a
+git -C .sac-tools checkout 8ef12c4a938c2366ecc96ac0516402e11e6d3ab7
 npm ci --prefix .sac-tools/packages/angular-postcompiler --ignore-scripts --no-audit --no-fund
 SAC_ANGULAR_BUILD_PASSED=true node scripts/sac-softload-audit.mjs
 ```
