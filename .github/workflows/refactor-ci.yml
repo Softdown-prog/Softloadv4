@@ -5,6 +5,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# CI de PR: descartar testes de commits obsoletos na mesma branch.
+# Nunca reutilizar o grupo de deploy, que não pode ser interrompido.
+concurrency:
+  group: softload-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
     name: TypeScript, Blogger, cobranÃ§a e Docker
