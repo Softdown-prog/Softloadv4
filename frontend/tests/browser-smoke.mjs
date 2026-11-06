@@ -21,7 +21,8 @@ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-
 let checks=0;
 try {
   for(const viewport of [{width:1366,height:860},{width:390,height:844}]){
-    const context=await browser.newContext({viewport,acceptDownloads:true});
+    const mobile=viewport.width<600;
+    const context=await browser.newContext({viewport,acceptDownloads:true,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:mobile?2:1});
     const page=await context.newPage();
     const pageErrors=[];
     let fakeUser=null;
