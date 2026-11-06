@@ -129,16 +129,20 @@ try{
     inline_lengths:inline.map(([,attrs,body])=>Buffer.byteLength(body,'utf8'))
   };
   console.log('SAC_HTML_SCRIPT_INVENTORY '+JSON.stringify(report.checks.html_script_inventory));
-  // Diagnostics are limited to browser-public generated HTML, never backend or
-  // private data. Print only the tiny inline snippet, temporarily, to locate its
-  // origin and decide whether it is safe to externalize rather than suppress P001.
-  for(const [,attrs,body] of inline){
-    assert.ok(body.length<=256,'inline script requires manual review; length exceeded');
-    console.log('SAC_INLINE_SCRIPT_ORIGIN '+JSON.stringify({
-      attrs:attrs.trim().slice(0,120),
-      source:body.trim()
-    }));
-  }
+  // Angular's Beasties critical-CSS inliner emits this tiny inline script
+  // to restore noncritical stylesheet media. Removing it is NOT a safe fix
+  // for P001. Accept only this fixed known browser-public snippet and require
+  // a separate real-Chrome assertion proving stylesheet activation.
+  const beastiesMediaRestore="document.querySelectorAll('link[data-beasties-media]').forEach(function(l){l.media=l.getAttribute('data-beasties-media');l.removeAttribute('data-beasties-media')})";
+  const knownBeasties=inline.length===1&&inline[0][2].trim()===beastiesMediaRestore;
+  const noInline=inline.length===0;
+  report.checks.inline_scripts={
+    status:noInline?'absent':knownBeasties?'known-beasties-requires-browser':'unexpected',
+    unexpected:!knownBeasties&&!noInline,
+    browser_required:knownBeasties,
+    deployment_authorized:false
+  };
+  if(!knownBeasties&&!noInline)console.error('SAC_INLINE_SCRIPT_UNEXPECTED: review generated HTML and bundle before merge');
   const assets=await readdir(stage);
   const mains=assets.filter(n=>/^main(?:-[a-zA-Z0-9]+)?\.js$/.test(n));
   const styles=assets.filter(n=>/^styles(?:-[a-zA-Z0-9]+)?\.css$/.test(n));
@@ -181,7 +185,8 @@ const suspicious=bindings.potential_event_handlers_not_declared_locally+
   bindings.potential_interpolation_members_not_declared_locally;
 const provenFail=['pre002','pre003'].some(x=>report.checks[x].status==='fail')||
   bindings.template_parser_error_count>0||
-  ['fail','infra-error'].includes(report.checks.p001.status);
+  ['fail','infra-error'].includes(report.checks.p001.status)||
+  report.checks.inline_scripts.unexpected;
 report.status=provenFail?'fail':(
   suspicious>0||report.checks.p001.status!=='pass'
     ?'needs-review':'observed');
