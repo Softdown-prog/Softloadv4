@@ -31,7 +31,9 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
             @if (category() === 'Todos' || category() === example.categoria) {
               <button type="button" [disabled]="busy()" (click)="selectExample(example)" [attr.aria-pressed]="selected() === example.id">
                 <span class="sample" [style.background]="exampleColor(example,boot.cores)">{{example.nome.slice(0,1)}}</span>
-                <strong>{{example.nome}}</strong><br><span class="small muted">{{example.categoria}}</span>
+                <strong>{{example.nome}}</strong>
+                <span class="small muted">{{example.categoria}}</span>
+                @if (example.descricao) { <span class="small muted">{{example.descricao}}</span> }
               </button>
             }
           }
