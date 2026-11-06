@@ -126,6 +126,9 @@ try{
     mode:'angular-only',angular_entrypoints:mains,assets:styles,
     legacy_react_entrypoints:['legacy-react.js']
   });
+  if(result.status!=='pass')console.error('SAC-P001-DIAGNOSTIC',JSON.stringify(
+    result.evidence.filter(x=>x.status!=='pass').map(x=>({assertion:x.assertion,status:x.status,
+      message:typeof x.message==='string'?x.message.slice(0,160):null}))));
   report.checks.p001={
     status:result.status,
     evidence:result.evidence.map(x=>({assertion:x.assertion,status:x.status})),
