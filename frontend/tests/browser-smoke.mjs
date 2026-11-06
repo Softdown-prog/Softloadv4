@@ -34,7 +34,7 @@ async function verifySacArtifact(page){
   const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
   const checks=[{file:'',sha256:integrity.index_sha256},...integrity.resources];
   for(const {file,sha256} of checks){
-    assert.ok(file===''||/^(?:main(?:-[a-zA-Z0-9]+)?\\.js|styles(?:-[a-zA-Z0-9]+)?\\.css|js\\/blogger-preview\\.js)$/.test(file),'unexpected artifact path');
+    assert.ok(file===''||/^(?:main(?:-[a-zA-Z0-9]+)?\.js|styles(?:-[a-zA-Z0-9]+)?\.css|js\/blogger-preview\.js)$/.test(file),'unexpected artifact path');
     assert.match(sha256,/^[a-f0-9]{64}$/);
     const res=await page.request.get(origin+'/'+file,{failOnStatusCode:true});
     assert.equal(digest(await res.body()),sha256,'served Docker asset drifted from SAC-audited dist: '+file);
