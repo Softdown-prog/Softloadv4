@@ -1,13 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SoftloadApi, Example, Option } from './api';
+import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, type EditorFields } from './editor-state';
 
 interface Preview { render(value: Record<string, unknown>): void; setDevice(device: string): void; }
 interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): Preview; }
-interface EditorFields {
-  modo: 'novo' | 'modelo'; nichoTema: string; siteName: string;
-  colorPreset: string; typography: string; gridLayout: string; sidebarPosition: string;
-}
 @Component({
   standalone:true, selector:'sl-editor', imports:[FormsModule], changeDetection:ChangeDetectionStrategy.OnPush,
   template:`
@@ -130,7 +127,7 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     this.stage=value;
     this.mountPreview();
   }
-  readonly fields=signal<EditorFields>({modo:'novo',nichoTema:'',siteName:'Meu Blog Azul',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'});
+  readonly fields=signal<EditorFields>({...INITIAL_EDITOR_FIELDS});
   readonly device=signal('desktop'); readonly category=signal('Todos'); readonly selected=signal('');
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
   readonly downloadUrl=signal('');readonly downloadName=signal('template-blogger.xml');
@@ -189,9 +186,7 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     if(this.busy())return;
     this.invalidateXml();
     this.selected.set(e.id);
-    this.fields.set({modo:'modelo',nichoTema:e.nichoTema,siteName:e.nome,
-      colorPreset:e.colorPreset||'tech-blue',typography:e.typography||'inter',
-      gridLayout:e.gridLayout||'revista',sidebarPosition:e.sidebarPosition||'right'});
+    this.fields.set(fieldsFromExample(e));
     this.failed.set(false);
     this.message.set('Exemplo aplicado. Personalize e gere seu XML.');
     this.updatePreview();
@@ -199,7 +194,7 @@ export class EditorPage implements AfterViewInit, OnDestroy {
   surprise(boot: {cores:Option[];fontes:Option[]}):void {
     const choices:{[K in 'colorPreset'|'typography'|'gridLayout'|'sidebarPosition']:string[]}={
       colorPreset:boot.cores.map(x=>x.id),typography:boot.fontes.map(x=>x.id),
-      gridLayout:['lista','dupla','revista','quadrado','mural','coluna-unica','zigzag'],sidebarPosition:['left','right','none']
+      gridLayout:[...GRID_LAYOUTS],sidebarPosition:[...SIDEBAR_POSITIONS]
     };
     const random=(xs:string[])=>{const buf=new Uint32Array(1);crypto.getRandomValues(buf);return xs[buf[0]%xs.length]||'';};
     if(this.busy())return;
@@ -224,8 +219,8 @@ export class EditorPage implements AfterViewInit, OnDestroy {
       const next={...this.fields()};
       if(raw.colorPreset&&boot.cores.some(c=>c.id===raw.colorPreset))next.colorPreset=raw.colorPreset;
       if(raw.typography&&boot.fontes.some(c=>c.id===raw.typography))next.typography=raw.typography;
-      if(raw.sidebarPosition&&['left','right','none'].includes(raw.sidebarPosition))next.sidebarPosition=raw.sidebarPosition;
-      if(raw.gridLayout&&['lista','dupla','revista','quadrado','mural','coluna-unica','zigzag'].includes(raw.gridLayout))next.gridLayout=raw.gridLayout;
+      if(raw.sidebarPosition&&SIDEBAR_POSITIONS.includes(raw.sidebarPosition))next.sidebarPosition=raw.sidebarPosition;
+      if(raw.gridLayout&&GRID_LAYOUTS.includes(raw.gridLayout))next.gridLayout=raw.gridLayout;
       this.fields.set(next);
     }catch{ /* Dados locais podem ser antigos ou inválidos. */ }
   }
