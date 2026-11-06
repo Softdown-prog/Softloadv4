@@ -2,11 +2,13 @@
 
 ## Objetivo
 
-A interface de produção é exclusivamente Angular 22 em `frontend/`. O Express permanece responsável pelos contratos do negócio; o NestJS será migrado separadamente, sem reescrever o motor XML.
+A interface de produção é exclusivamente Angular 22 em `frontend/`. **Frontend e backend são hospedados na mesma VPS**. O Express permanece responsável pelos contratos do negócio; o NestJS será migrado separadamente, sem reescrever o motor XML.
 
 - Build de `frontend/`: Node.js 24 + TypeScript 6 (isolado do TypeScript 7 do compilador).
 - Runtime da API: Node.js 22, Express, Firestore, Firebase Auth, GCS e Mercado Pago.
-- Docker: estágio `angular-build` gera bundles com hash no `public/` e guarda `index.html` em `angular/`. Ele é enviado com `Cache-Control: no-store`, impedindo HTML de uma conta em cache de borda.
+- Docker: estágio `angular-build` gera bundles com hash no `public/` e guarda `index.html` em `angular/`. O container Node/Express serve tanto o frontend Angular como as APIs pela **mesma VPS e mesma origem**; o HTML é enviado com `Cache-Control: no-store`.
+- Entrada pública: o **Caddy já compartilhado na VPS** continua fazendo proxy HTTPS para o container do Softload. Cloudflare pode continuar apenas como DNS/proxy externo; **não utilizar Cloudflare Pages nem hospedar frontend em outro provedor**.
+- Deployment: manter o contrato v3 App-only e **uma imagem Docker de produção**. O build pode ocorrer no GitHub Actions, mas o frontend compilado e o backend rodam na VPS; não criar serviço, porta ou domínio público separados para Angular.
 - A SPA se comunica com a mesma origem do backend; não armazena tokens de autenticação nem segredos no navegador.
 - `/api/frontend/bootstrap` expõe metadados permitidos do gerador e emite o token CSRF por sessão para convidados.
 - `/api/frontend/files` expõe apenas os arquivos que pertencem ao usuário autenticado, mantendo o mesmo token CSRF dos endpoints de upload e exclusão.
