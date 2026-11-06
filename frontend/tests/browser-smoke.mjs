@@ -16,7 +16,7 @@ const catalog={
   ],
   fontes:[{id:'inter',nome:'Inter'},{id:'playfair',nome:'Playfair'}],
   nichos:[{id:'tecnologia-mag-tech',nome:'Tecnologia',pageType:'blogger-conteudo',aviso:'Blog de tecnologia'}],
-  exemplos:[{id:'tech',nome:'Meu Blog Tech',categoria:'Tecnologia',nichoTema:'tecnologia-mag-tech',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'}],
+  exemplos:[{id:'tech',nome:'Meu Blog Tech',descricao:'Notícias e análises do universo tecnológico.',categoria:'Tecnologia',nichoTema:'tecnologia-mag-tech',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'}],
   checkoutEnabled:true,filesEnabled:false
 };
 // Compare actual bytes served by the Docker image with the files inspected by
@@ -101,6 +101,9 @@ try {
     assert.equal(await page.getByRole('link',{name:'Plano Essencial'}).getAttribute('href'),'/planos');
     checks++;
 
+    // Descriptions are part of the production API and help distinguish presets.
+    await page.getByText('Notícias e análises do universo tecnológico.').waitFor();
+    checks++;
     // The gallery selection updates form fields and the isolated iframe.
     await page.getByRole('button',{name:/Meu Blog Tech/}).click();
     await page.waitForFunction(()=>[...document.querySelectorAll('.gallery button')]
