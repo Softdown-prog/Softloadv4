@@ -115,6 +115,19 @@ try{
   await mkdir(path.join(stage,'js'),{recursive:true});
   await copyFile(path.join(root,'public/js/blogger-preview.js'),path.join(stage,'js/blogger-preview.js'));
   const html=await safeRead(path.join(stage,'index.html'),2*1024*1024);
+  // Diagnose executable inline scripts without publishing their source.
+  // A script lacking src cannot be certified by P001 static checks.
+  const scripts=[...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)];
+  const inline=scripts.filter(([,attrs,body])=>
+    !/\\bsrc\\s*=/.test(attrs)&&
+    !/\\btype\\s*=\\s*["']application\\/(?:ld\\+)?json["']/.test(attrs)&&
+    body.trim().length>0);
+  report.checks.html_script_inventory={
+    inline_executable_count:inline.length,
+    external_script_count:scripts.length-inline.length,
+    inline_lengths:inline.map(([,attrs,body])=>Buffer.byteLength(body,'utf8'))
+  };
+  console.log('SAC_HTML_SCRIPT_INVENTORY '+JSON.stringify(report.checks.html_script_inventory));
   const assets=await readdir(stage);
   const mains=assets.filter(n=>/^main(?:-[a-zA-Z0-9]+)?\.js$/.test(n));
   const styles=assets.filter(n=>/^styles(?:-[a-zA-Z0-9]+)?\.css$/.test(n));
