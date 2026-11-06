@@ -8,6 +8,8 @@ WORKDIR /work/frontend
 COPY frontend/package.json ./
 RUN npm install --no-audit --no-fund
 COPY frontend/ ./
+# Contract tests verify the real Express-to-Angular gateway.
+COPY src/routes/angular-shell.cjs /work/src/routes/angular-shell.cjs
 RUN npm run typecheck && npm run test && npm run build
 
 # Vendorização somente de Bootstrap e Chart.js. Instala dependências de
