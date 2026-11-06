@@ -42,6 +42,29 @@ jobs:
           npm --prefix frontend run typecheck
           npm --prefix frontend run test
           npm --prefix frontend run build
+      # SAC tools are independently pinned and isolated from backend/VPS credentials.
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Data_libray
+          ref: 97d5ae71844b56cfb073b5202c2f32398e9d532a
+          path: .sac-tools
+          persist-credentials: false
+      - name: Instalar analisador SAC independente
+        run: |
+          npm ci --prefix .sac-tools/packages/angular-postcompiler --ignore-scripts --no-audit --no-fund
+      - name: Auditar Angular real com SAC PRE002/PRE003/PRE004/PRE005/P001
+        env:
+          SAC_ANGULAR_BUILD_PASSED: 'true'
+          SAC_REPORT_FILE: ${{ runner.temp }}/softload-sac-audit.json
+        run: node scripts/sac-softload-audit.mjs
+      - name: Preservar relatório SAC para revisão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-sac-report
+          path: ${{ runner.temp }}/softload-sac-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verificar boot do aplicativo
         run: docker build --progress plain -t softload-blogger-ci .
       - name: Iniciar Docker e validar Angular, acesso protegido e XML sem credenciais
