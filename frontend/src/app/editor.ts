@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SoftloadApi, Example, Option } from './api';
-import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, type EditorFields } from './editor-state';
+import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
 
 interface Preview { render(value: Record<string, unknown>): void; setDevice(device: string): void; }
 interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): Preview; }
@@ -214,14 +214,10 @@ export class EditorPage implements AfterViewInit, OnDestroy {
   }
   private restore(boot:{cores:Option[]; fontes:Option[]; nichos:Option[]}):void {
     try {
-      const raw=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}') as Partial<EditorFields>;
-      if(!raw||typeof raw!=='object'||Array.isArray(raw))return;
-      const next={...this.fields()};
-      if(raw.colorPreset&&boot.cores.some(c=>c.id===raw.colorPreset))next.colorPreset=raw.colorPreset;
-      if(raw.typography&&boot.fontes.some(c=>c.id===raw.typography))next.typography=raw.typography;
-      if(raw.sidebarPosition&&SIDEBAR_POSITIONS.includes(raw.sidebarPosition))next.sidebarPosition=raw.sidebarPosition;
-      if(raw.gridLayout&&GRID_LAYOUTS.includes(raw.gridLayout))next.gridLayout=raw.gridLayout;
-      this.fields.set(next);
+      const stored:unknown=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}');
+      this.fields.set(restoreEditorFields(this.fields(),stored,{
+        colors:boot.cores.map(c=>c.id),fonts:boot.fontes.map(f=>f.id),niches:boot.nichos.map(n=>n.id)
+      }));
     }catch{ /* Dados locais podem ser antigos ou inválidos. */ }
   }
   async download():Promise<void>{
