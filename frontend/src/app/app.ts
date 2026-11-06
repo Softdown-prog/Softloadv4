@@ -7,6 +7,7 @@ import { HomePage, AuthPage, DashboardPage, HistoryPage, FilesPage, AccountPage,
 export const routes: Routes = [
   {path:'', component:HomePage, title:'Softload — Templates Blogger'},
   {path:'criar', component:EditorPage, title:'Criar template Blogger'},
+  {path:'planos', component:PlanPage, title:'Plano Essencial — Softload'},
   {path:'login', component:AuthPage, data:{mode:'login'}, title:'Entrar — Softload'},
   {path:'register', component:AuthPage, data:{mode:'register'}, title:'Criar conta — Softload'},
   {path:'recover', component:AuthPage, data:{mode:'recover'}, title:'Recuperar senha — Softload'},
