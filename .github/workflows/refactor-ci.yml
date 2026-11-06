@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Softdown-prog/Data_libray
-          ref: 97d5ae71844b56cfb073b5202c2f32398e9d532a
+          ref: 8ef12c4a938c2366ecc96ac0516402e11e6d3ab7
           path: .sac-tools
           persist-credentials: false
       - name: Instalar analisador SAC independente
