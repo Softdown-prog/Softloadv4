@@ -24,10 +24,11 @@ try {
     const context=await browser.newContext({viewport,acceptDownloads:true});
     const page=await context.newPage();
     const pageErrors=[];
+    let fakeUser=null;
     page.on('pageerror',error=>pageErrors.push(error.message));
 
     await page.route('**/api/frontend/bootstrap',async route=>{
-      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(catalog)});
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({...catalog,user:fakeUser})});
     });
     await page.route('**/criar/download',async route=>{
       assert.equal(route.request().method(),'POST');
@@ -100,10 +101,19 @@ try {
     await page.getByRole('heading',{name:'Entrar',exact:true}).waitFor();
     checks++;
 
-    // Exercise real Angular checkout interactions, intercepting the charge API.
+    // Prices must have a public, refreshable URL; payment requires login.
     await page.goto(origin+'/');
     await page.getByRole('link',{name:'Conhecer o Essencial'}).click();
-    await page.waitForURL('**/dashboard/plano-essencial');
+    await page.waitForURL('**/planos');
+    await page.getByRole('link',{name:'Entrar ou criar conta para contratar'}).waitFor();
+    let pricing=await page.goto(origin+'/planos');
+    assert.equal(pricing?.status(),200,'public pricing URL must survive hard refresh');
+    await page.getByRole('link',{name:'Entrar ou criar conta para contratar'}).waitFor();
+    checks++;
+
+    // Simulated authenticated UI: all checkout requests are intercepted.
+    fakeUser={uid:'browser-only',nome:'Pessoa de Teste',email:'test@example.invalid',plano:'free'};
+    await page.reload();
     const pay=page.getByRole('button',{name:/Continuar para pagamento/});
     assert.equal(await pay.isDisabled(),true,'consent is required');
     await page.getByRole('checkbox').check();
@@ -120,7 +130,7 @@ try {
     }
     assert.deepEqual(pageErrors,[],'Angular runtime console errors for '+viewport.width+'px');
     await context.close();
-    console.log('BROWSER_SMOKE_OK: '+viewport.width+'px, 7 flows, no runtime exceptions');
+    console.log('BROWSER_SMOKE_OK: '+viewport.width+'px, 8 flows, no runtime exceptions');
   }
   console.log('BROWSER_SMOKE_OK_TOTAL: '+checks+' checks, XML/payment mocked, Express routes live');
 } finally {
