@@ -56,6 +56,28 @@ jobs:
           npm --prefix frontend run typecheck
           npm --prefix frontend run test
           npm --prefix frontend run build
+      # O SAC roda no Actions, nunca recebe acesso ao daemon Docker da VPS.
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Data_libray
+          ref: 97d5ae71844b56cfb073b5202c2f32398e9d532a
+          path: .sac-tools
+          persist-credentials: false
+      - name: Instalar pós-compilador SAC fixado
+        run: npm ci --prefix .sac-tools/packages/angular-postcompiler --ignore-scripts --no-audit --no-fund
+      - name: Auditar Angular real contra SAC antes da publicação
+        env:
+          SAC_ANGULAR_BUILD_PASSED: 'true'
+          SAC_REPORT_FILE: ${{ runner.temp }}/softload-sac-audit.json
+        run: node scripts/sac-softload-audit.mjs
+      - name: Guardar evidência SAC da revisão publicada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-sac-release
+          path: ${{ runner.temp }}/softload-sac-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Validar nomes antigos nas páginas EJS e CSS
         run: node scripts/check-frontend-branding.js
 
