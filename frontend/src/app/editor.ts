@@ -119,8 +119,17 @@ interface EditorFields {
 })
 export class EditorPage implements AfterViewInit, OnDestroy {
   readonly api = inject(SoftloadApi);
-  @ViewChild('frame') private frame?: ElementRef<HTMLIFrameElement>;
-  @ViewChild('stage') private stage?: ElementRef<HTMLElement>;
+  private frame?: ElementRef<HTMLIFrameElement>;
+  private stage?: ElementRef<HTMLElement>;
+  // A prévia existe somente após o bootstrap; os setters evitam corrida com @if.
+  @ViewChild('frame') set frameElement(value: ElementRef<HTMLIFrameElement> | undefined) {
+    this.frame=value;
+    this.mountPreview();
+  }
+  @ViewChild('stage') set stageElement(value: ElementRef<HTMLElement> | undefined) {
+    this.stage=value;
+    this.mountPreview();
+  }
   fields: EditorFields = {modo:'novo',nichoTema:'',siteName:'Meu Blog Azul',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'};
   readonly device=signal('desktop'); readonly category=signal('Todos'); readonly selected=signal('');
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
