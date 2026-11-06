@@ -12,3 +12,6 @@ node_modules
 frontend/node_modules
 frontend/dist
 frontend/.angular
+
+# Ferramenta SAC independente: apenas runner descartável do GitHub Actions
+.sac-tools
