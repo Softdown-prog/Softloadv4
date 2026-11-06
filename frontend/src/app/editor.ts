@@ -90,7 +90,7 @@ interface EditorFields {
             <hr class="divider"/>
             <p class="muted small">
               {{boot.user ? 'Conta gratuita: 2 downloads adicionais; Essencial com limite ampliado.' : 'Sem cadastro: até 2 downloads nesta sessão.'}}
-              <a href="/dashboard/plano-essencial">Plano Essencial</a>.
+              <a href="/planos">Plano Essencial</a>.
             </p>
             <button class="button" type="submit" style="width:100%" [disabled]="busy() || !form.valid">
               {{busy() ? 'Validando XML…' : 'Gerar e baixar XML'}}
