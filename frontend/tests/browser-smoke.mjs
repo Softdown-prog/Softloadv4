@@ -103,6 +103,9 @@ try {
 
     // The gallery selection updates form fields and the isolated iframe.
     await page.getByRole('button',{name:/Meu Blog Tech/}).click();
+    await page.waitForFunction(()=>[...document.querySelectorAll('.gallery button')]
+      .some(b=>b.textContent?.includes('Meu Blog Tech')&&b.getAttribute('aria-pressed')==='true'));
+    checks++;
     // The editor uses OnPush and signals: assert settled DOM after render,
     // not the stale input value from the click's synchronous frame.
     await page.waitForFunction(() => {
@@ -113,6 +116,11 @@ try {
         input.value==='Meu Blog Tech' && button?.getAttribute('aria-pressed')==='true';
     });
     await page.locator('#siteName').fill('Blog de Teste Angular');
+    // Manual editing must immediately unselect the now-different gallery model.
+    await page.waitForFunction(()=>[...document.querySelectorAll('.gallery button')]
+      .filter(b=>b.textContent?.includes('Meu Blog Tech'))
+      .every(b=>b.getAttribute('aria-pressed')==='false'));
+    checks++;
     await page.getByRole('button',{name:'Celular'}).click();
     await page.waitForFunction(()=>document.querySelector('.preview-window')?.getAttribute('data-device')==='mobile');
     await page.waitForFunction(()=>document.querySelector('.preview-window iframe')?.srcdoc?.includes('Blog de Teste Angular'));
@@ -125,6 +133,28 @@ try {
     ]);
     assert.equal(download.suggestedFilename(),'blog-teste.xml');
     await page.getByRole('link',{name:'Baixar XML novamente'}).waitFor();
+    // The generated XML belongs to the old settings: changing layout must
+    // revoke that old download link, not silently offer a stale template.
+    await page.locator('#gridLayout').selectOption('lista');
+    await page.getByRole('link',{name:'Baixar XML novamente'}).waitFor({state:'detached'});
+    await page.getByText('Você alterou o template. Gere um novo XML para essas escolhas.').waitFor();
+    assert.equal(await page.locator('#gridLayout').inputValue(),'lista');
+    checks++;
+    // "Salvar escolhas" must restore the full editable configuration on reload,
+    // not only the palette. It stays browser-local and consumes no server quota.
+    await page.locator('#siteName').fill('Meu Blog Salvo');
+    await page.locator('#sidebarPosition').selectOption('left');
+    await page.getByRole('button',{name:'Salvar escolhas'}).click();
+    await page.getByText('Escolhas salvas neste dispositivo.').waitFor();
+    await page.reload();
+    await page.getByRole('heading',{name:'Configurar template'}).waitFor();
+    await page.waitForFunction(()=>
+      document.querySelector('#siteName')?.value==='Meu Blog Salvo' &&
+      document.querySelector('#gridLayout')?.value==='lista' &&
+      document.querySelector('#sidebarPosition')?.value==='left' &&
+      document.querySelector('#modo')?.value==='modelo');
+    assert.equal(await page.locator('#nichoTema').inputValue(),'tecnologia-mag-tech');
+    checks++;
     checks++;
 
     // Auth screens are real routed components; no Firebase request is made.
@@ -184,14 +214,14 @@ try {
     }
     assert.deepEqual(pageErrors,[],'Angular runtime console errors for '+viewport.width+'px');
     await context.close();
-    console.log('BROWSER_SMOKE_OK: '+viewport.width+'px, 8 flows, no runtime exceptions');
+    console.log('BROWSER_SMOKE_OK: '+viewport.width+'px, editor selection/stale XML and other flows, no runtime exceptions');
   }
   console.log('BROWSER_SMOKE_OK_TOTAL: '+checks+' checks, XML/payment mocked, Express routes live');
   // Emit a single joined audit artifact ONLY after all browser assertions
   // pass. A static P001 "unverified" must stay "unverified"; this evidence
   // proves the scoped Docker asset identity and checked UI behaviors.
   if(sacReport){
-    assert.ok(checks>=20,'expected desktop/mobile tests, critical CSS and artifact integrity');
+    assert.ok(checks>=26,'expected desktop/mobile reactive editor, persistence, critical CSS and artifact identity checks');
     sacReport.checks.artifact_integrity.status='pass';
     sacReport.checks.p001.source_and_production_artifact_same=true;
     sacReport.checks.inline_scripts.browser_effect_verified=

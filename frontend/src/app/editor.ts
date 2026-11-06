@@ -1,13 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, computed, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SoftloadApi, Example, Option } from './api';
+import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
 
 interface Preview { render(value: Record<string, unknown>): void; setDevice(device: string): void; }
 interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): Preview; }
-interface EditorFields {
-  modo: 'novo' | 'modelo'; nichoTema: string; siteName: string;
-  colorPreset: string; typography: string; gridLayout: string; sidebarPosition: string;
-}
 @Component({
   standalone:true, selector:'sl-editor', imports:[FormsModule], changeDetection:ChangeDetectionStrategy.OnPush,
   template:`
@@ -25,14 +22,14 @@ interface EditorFields {
         </div>
         <div class="flex" style="margin-bottom:18px">
           <button class="button button-small" [class.button-outline]="category() !== 'Todos'" (click)="category.set('Todos')">Todos</button>
-          @for (cat of categories(boot.exemplos); track cat) {
+          @for (cat of categories(); track cat) {
             <button class="button button-small" [class.button-outline]="category() !== cat" (click)="category.set(cat)">{{cat}}</button>
           }
         </div>
         <div class="gallery">
           @for (example of boot.exemplos; track example.id) {
             @if (category() === 'Todos' || category() === example.categoria) {
-              <button type="button" (click)="selectExample(example)" [attr.aria-pressed]="selected() === example.id">
+              <button type="button" [disabled]="busy()" (click)="selectExample(example)" [attr.aria-pressed]="selected() === example.id">
                 <span class="sample" [style.background]="exampleColor(example,boot.cores)">{{example.nome.slice(0,1)}}</span>
                 <strong>{{example.nome}}</strong><br><span class="small muted">{{example.categoria}}</span>
               </button>
@@ -46,46 +43,46 @@ interface EditorFields {
           <form (ngSubmit)="download()" #form="ngForm">
             <div class="field">
               <label for="modo">Como começar?</label>
-              <select id="modo" name="modo" [(ngModel)]="fields.modo" (ngModelChange)="updatePreview()">
+              <select id="modo" name="modo" [ngModel]="fields().modo" (ngModelChange)="changeField('modo',$event)" [disabled]="busy()">
                 <option value="novo">Começar do zero</option><option value="modelo">A partir de um nicho</option>
               </select>
             </div>
-            @if (fields.modo === 'modelo') {
+            @if (fields().modo === 'modelo') {
               <div class="field"><label for="nichoTema">Nicho de partida</label>
-                <select id="nichoTema" name="nichoTema" [(ngModel)]="fields.nichoTema" (ngModelChange)="updatePreview()" required>
+                <select id="nichoTema" name="nichoTema" [ngModel]="fields().nichoTema" (ngModelChange)="changeField('nichoTema',$event)" required [disabled]="busy()">
                   @for (niche of boot.nichos; track niche.id) { <option [value]="niche.id">{{niche.nome}}</option> }
                 </select>
                 <span class="small muted">{{chosenNiche(boot.nichos)?.aviso || 'Os nichos usam os componentes existentes do compilador.'}}</span>
               </div>
             }
             <div class="field"><label for="siteName">Nome do blog</label>
-              <input id="siteName" name="siteName" [(ngModel)]="fields.siteName" minlength="2" maxlength="60" required (ngModelChange)="updatePreview()"/>
+              <input id="siteName" name="siteName" [ngModel]="fields().siteName" minlength="2" maxlength="60" required (ngModelChange)="changeField('siteName',$event)" [disabled]="busy()"/>
             </div>
             <div class="field"><label for="colorPreset">Paleta de cores</label>
-              <select id="colorPreset" name="colorPreset" [(ngModel)]="fields.colorPreset" (ngModelChange)="updatePreview()">
+              <select id="colorPreset" name="colorPreset" [ngModel]="fields().colorPreset" (ngModelChange)="changeField('colorPreset',$event)" [disabled]="busy()">
                 @for (c of boot.cores; track c.id) {<option [value]="c.id">{{c.nome}}</option>}
               </select>
             </div>
             <div class="field"><label for="typography">Tipografia</label>
-              <select id="typography" name="typography" [(ngModel)]="fields.typography" (ngModelChange)="updatePreview()">
+              <select id="typography" name="typography" [ngModel]="fields().typography" (ngModelChange)="changeField('typography',$event)" [disabled]="busy()">
                 @for (f of boot.fontes; track f.id) {<option [value]="f.id">{{f.nome}}</option>}
               </select>
             </div>
             <div class="field"><label for="gridLayout">Layout das postagens</label>
-              <select id="gridLayout" name="gridLayout" [(ngModel)]="fields.gridLayout" (ngModelChange)="updatePreview()">
+              <select id="gridLayout" name="gridLayout" [ngModel]="fields().gridLayout" (ngModelChange)="changeField('gridLayout',$event)" [disabled]="busy()">
                 <option value="revista">Revista · 3 colunas</option><option value="dupla">Duas colunas</option>
                 <option value="lista">Lista</option><option value="quadrado">Mosaico</option>
                 <option value="mural">Mural compacto</option><option value="coluna-unica">Uma coluna</option><option value="zigzag">Zigue-zague</option>
               </select>
             </div>
             <div class="field"><label for="sidebarPosition">Barra lateral</label>
-              <select id="sidebarPosition" name="sidebarPosition" [(ngModel)]="fields.sidebarPosition" (ngModelChange)="updatePreview()">
+              <select id="sidebarPosition" name="sidebarPosition" [ngModel]="fields().sidebarPosition" (ngModelChange)="changeField('sidebarPosition',$event)" [disabled]="busy()">
                 <option value="right">Direita</option><option value="left">Esquerda</option><option value="none">Sem barra lateral</option>
               </select>
             </div>
             <div class="flex">
-              <button class="button button-outline button-small" type="button" (click)="surprise(boot)">Surpreenda-me</button>
-              <button class="button button-outline button-small" type="button" (click)="save()">Salvar escolhas</button>
+              <button class="button button-outline button-small" type="button" [disabled]="busy()" (click)="surprise(boot)">Surpreenda-me</button>
+              <button class="button button-outline button-small" type="button" [disabled]="busy()" (click)="save()">Salvar escolhas</button>
             </div>
             <hr class="divider"/>
             <p class="muted small">
@@ -130,80 +127,106 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     this.stage=value;
     this.mountPreview();
   }
-  fields: EditorFields = {modo:'novo',nichoTema:'',siteName:'Meu Blog Azul',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'};
+  readonly fields=signal<EditorFields>({...INITIAL_EDITOR_FIELDS});
   readonly device=signal('desktop'); readonly category=signal('Todos'); readonly selected=signal('');
+  readonly categories=computed(()=>[...new Set((this.api.data()?.exemplos||[]).map(e=>e.categoria||'Outros'))]);
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
   readonly downloadUrl=signal('');readonly downloadName=signal('template-blogger.xml');
   private preview?: Preview;
   constructor() {
     void this.api.bootstrap().then(boot => {
-      if (!this.fields.nichoTema) this.fields.nichoTema=boot.nichos[0]?.id || '';
+      if (!this.fields().nichoTema) this.fields.update(fields=>({...fields,nichoTema:boot.nichos[0]?.id || ''}));
       this.restore(boot);
       this.updatePreview();
     }).catch(() => {});
   }
   ngAfterViewInit(): void { this.mountPreview(); }
   ngOnDestroy(): void { if (this.downloadUrl()) URL.revokeObjectURL(this.downloadUrl()); }
-  categories(examples: Example[]): string[] { return [...new Set(examples.map(e=>e.categoria||'Outros'))]; }
-  chosenNiche(niches: Option[]): Option | undefined {return niches.find(n => n.id===this.fields.nichoTema);}
+  chosenNiche(niches: Option[]): Option | undefined {return niches.find(n => n.id===this.fields().nichoTema);}
   exampleColor(e: Example, colors: Option[]): string { return colors.find(c=>c.id===e.colorPreset)?.hex || '#155e75'; }
   private mountPreview(): void {
     const api=(window as Window & {SoftloadBloggerPreview?:PreviewGlobal}).SoftloadBloggerPreview;
-    if (!api || !this.frame || !this.stage) return;
+    if (!api || !this.frame || !this.stage || this.preview) return;
     this.preview=api.mount(this.frame.nativeElement,this.stage.nativeElement);
+    this.preview.setDevice(this.device());
     this.updatePreview();
   }
-  updatePreview(): void {
-    if (!this.preview) this.mountPreview();
+  // Centralize updates so OnPush form, gallery and XML always agree.
+  changeField<K extends keyof EditorFields>(key:K,value:EditorFields[K]):void {
+    if(this.busy()||this.fields()[key]===value)return;
+    this.fields.update(fields=>({...fields,[key]:value}));
+    this.selected.set('');
+    this.failed.set(false);
+    if(this.invalidateXml())this.message.set('Você alterou o template. Gere um novo XML para essas escolhas.');
+    this.updatePreview();
+  }
+  private invalidateXml():boolean {
+    const previous=this.downloadUrl();
+    if(!previous)return false;
+    URL.revokeObjectURL(previous);
+    this.downloadUrl.set('');
+    this.downloadName.set('template-blogger.xml');
+    return true;
+  }
+  updatePreview():void {
+    if(!this.preview)this.mountPreview();
     const boot=this.api.data();
-    if(!boot || !this.preview) return;
-    const color=boot.cores.find(c=>c.id===this.fields.colorPreset);
+    if(!boot||!this.preview)return;
+    const fields=this.fields();
+    const color=boot.cores.find(c=>c.id===fields.colorPreset);
     this.preview.render({
-      siteName:this.fields.siteName || 'Meu Blog', niche:this.fields.modo==='modelo'?this.fields.nichoTema:'',
-      pageType:this.fields.modo==='modelo'?this.chosenNiche(boot.nichos)?.pageType:'blogger-conteudo',
+      siteName:fields.siteName||'Meu Blog',niche:fields.modo==='modelo'?fields.nichoTema:'',
+      pageType:fields.modo==='modelo'?this.chosenNiche(boot.nichos)?.pageType:'blogger-conteudo',
       accent:color?.hex,bg:color?.bg,surface:color?.surface,text:color?.text,footer:color?.footer,
-      typography:this.fields.typography,layout:this.fields.gridLayout,side:this.fields.sidebarPosition
+      typography:fields.typography,layout:fields.gridLayout,side:fields.sidebarPosition
     });
   }
   setDevice(device:'desktop'|'tablet'|'mobile'):void {this.device.set(device);this.preview?.setDevice(device);}
   selectExample(e:Example):void {
-    this.selected.set(e.id); this.fields={modo:'modelo',nichoTema:e.nichoTema,siteName:e.nome,
-      colorPreset:e.colorPreset||'tech-blue',typography:e.typography||'inter',
-      gridLayout:e.gridLayout||'revista',sidebarPosition:e.sidebarPosition||'right'};
+    if(this.busy())return;
+    this.invalidateXml();
+    this.selected.set(e.id);
+    this.fields.set(fieldsFromExample(e));
+    this.failed.set(false);
     this.message.set('Exemplo aplicado. Personalize e gere seu XML.');
     this.updatePreview();
   }
   surprise(boot: {cores:Option[];fontes:Option[]}):void {
     const choices:{[K in 'colorPreset'|'typography'|'gridLayout'|'sidebarPosition']:string[]}={
       colorPreset:boot.cores.map(x=>x.id),typography:boot.fontes.map(x=>x.id),
-      gridLayout:['lista','dupla','revista','quadrado','mural','coluna-unica','zigzag'],sidebarPosition:['left','right','none']
+      gridLayout:[...GRID_LAYOUTS],sidebarPosition:[...SIDEBAR_POSITIONS]
     };
     const random=(xs:string[])=>{const buf=new Uint32Array(1);crypto.getRandomValues(buf);return xs[buf[0]%xs.length]||'';};
-    for(const k of Object.keys(choices) as Array<keyof typeof choices>)this.fields[k]=random(choices[k]);
+    if(this.busy())return;
+    const next={...this.fields()};
+    for(const k of Object.keys(choices) as Array<keyof typeof choices>)next[k]=random(choices[k]);
+    this.fields.set(next);
+    this.selected.set('');
+    this.invalidateXml();
+    this.failed.set(false);
     this.message.set('Novo estilo escolhido. Confira a prévia.');
     this.updatePreview();
   }
   save():void {
-    try { localStorage.setItem('softload-blogger-estilo-v1',JSON.stringify(this.fields));
+    try { localStorage.setItem('softload-blogger-estilo-v1',JSON.stringify(this.fields()));
       this.message.set('Escolhas salvas neste dispositivo.'); }
     catch {this.message.set('Não foi possível salvar no navegador, mas você pode gerar XML.');}
   }
   private restore(boot:{cores:Option[]; fontes:Option[]; nichos:Option[]}):void {
     try {
-      const previous=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}') as Partial<EditorFields>;
-      if(previous.colorPreset&&boot.cores.some(c=>c.id===previous.colorPreset))this.fields.colorPreset=previous.colorPreset;
-      if(previous.typography&&boot.fontes.some(c=>c.id===previous.typography))this.fields.typography=previous.typography;
-      if(previous.sidebarPosition&&['left','right','none'].includes(previous.sidebarPosition))this.fields.sidebarPosition=previous.sidebarPosition;
-      if(previous.gridLayout&&['lista','dupla','revista','quadrado','mural','coluna-unica','zigzag'].includes(previous.gridLayout))this.fields.gridLayout=previous.gridLayout;
+      const stored:unknown=JSON.parse(localStorage.getItem('softload-blogger-estilo-v1')||'{}');
+      this.fields.set(restoreEditorFields(this.fields(),stored,{
+        colors:boot.cores.map(c=>c.id),fonts:boot.fontes.map(f=>f.id),niches:boot.nichos.map(n=>n.id)
+      }));
     }catch{ /* Dados locais podem ser antigos ou inválidos. */ }
   }
   async download():Promise<void>{
     if(this.busy())return;
     const boot=this.api.data();if(!boot){this.message.set('As opções ainda estão carregando.');return;}
-    if(this.fields.siteName.trim().length<2){this.failed.set(true);this.message.set('Informe um nome com pelo menos 2 caracteres.');return;}
+    if(this.fields().siteName.trim().length<2){this.failed.set(true);this.message.set('Informe um nome com pelo menos 2 caracteres.');return;}
     this.busy.set(true);this.failed.set(false);this.message.set('Compilando e validando o XML…');
-    if(this.downloadUrl()){URL.revokeObjectURL(this.downloadUrl());this.downloadUrl.set('');}
-    const params=new URLSearchParams({...this.fields, guestToken:boot.guestToken});
+    this.invalidateXml();
+    const params=new URLSearchParams({...this.fields(), guestToken:boot.guestToken});
     try{
       const r=await fetch(boot.downloadPath,{method:'POST',credentials:'same-origin',redirect:'follow',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=utf-8','Accept':'application/xml','X-Requested-With':'XMLHttpRequest'},body:params.toString()});
       const mime=r.headers.get('content-type')||'';
