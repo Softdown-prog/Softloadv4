@@ -15,7 +15,7 @@ test('production image publication depends on Blogger editor, XML compilation an
 });
 test('public Angular Blogger verification rejects legacy presentation and broken guest editor',()=>{
   const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/deploy.yml'),'utf8');
-  const check=workflow.split('name: Confirm public Blogger landing and guest editor are live')[1];
+  const check=workflow.split('name: Confirm canonical Angular landing and guest editor are live')[1];
   assert.ok(check, 'Missing production Blogger smoke');
   assert.match(check, /curl --fail --silent --show-error --compressed/);
   assert.match(check, /--connect-timeout 15 --max-time 120 --retry 2 --retry-delay 3 --retry-all-errors/);
