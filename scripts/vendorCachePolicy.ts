@@ -25,7 +25,7 @@ export function setPublicStaticHeaders(
     publicRoot: string = DEFAULT_PUBLIC,
 ): void {
     const relative = path.relative(publicRoot, filePath);
-    if (relative === path.join('dist', 'assets', 'main.js') || relative.startsWith('vendor' + path.sep)) {
+    if (relative === path.join('dist', 'assets', 'main.js') || relative.startsWith('vendor' + path.sep) || relative.startsWith(path.join('assets', 'legal') + path.sep) || relative === path.join('js', 'blogger-preview.js')) {
         res.setHeader('Cache-Control', 'no-store, max-age=0');
     }
 }
