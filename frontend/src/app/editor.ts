@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, computed, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SoftloadApi, Example, Option } from './api';
 import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
@@ -22,7 +22,7 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
         </div>
         <div class="flex" style="margin-bottom:18px">
           <button class="button button-small" [class.button-outline]="category() !== 'Todos'" (click)="category.set('Todos')">Todos</button>
-          @for (cat of categories(boot.exemplos); track cat) {
+          @for (cat of categories(); track cat) {
             <button class="button button-small" [class.button-outline]="category() !== cat" (click)="category.set(cat)">{{cat}}</button>
           }
         </div>
@@ -129,6 +129,7 @@ export class EditorPage implements AfterViewInit, OnDestroy {
   }
   readonly fields=signal<EditorFields>({...INITIAL_EDITOR_FIELDS});
   readonly device=signal('desktop'); readonly category=signal('Todos'); readonly selected=signal('');
+  readonly categories=computed(()=>[...new Set((this.api.data()?.exemplos||[]).map(e=>e.categoria||'Outros'))]);
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
   readonly downloadUrl=signal('');readonly downloadName=signal('template-blogger.xml');
   private preview?: Preview;
@@ -141,7 +142,6 @@ export class EditorPage implements AfterViewInit, OnDestroy {
   }
   ngAfterViewInit(): void { this.mountPreview(); }
   ngOnDestroy(): void { if (this.downloadUrl()) URL.revokeObjectURL(this.downloadUrl()); }
-  categories(examples: Example[]): string[] { return [...new Set(examples.map(e=>e.categoria||'Outros'))]; }
   chosenNiche(niches: Option[]): Option | undefined {return niches.find(n => n.id===this.fields().nichoTema);}
   exampleColor(e: Example, colors: Option[]): string { return colors.find(c=>c.id===e.colorPreset)?.hex || '#155e75'; }
   private mountPreview(): void {
