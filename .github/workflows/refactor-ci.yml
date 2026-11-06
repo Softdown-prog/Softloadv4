@@ -44,8 +44,29 @@ jobs:
           npm --prefix frontend run build
       - name: Verificar boot do aplicativo
         run: docker build --progress plain -t softload-blogger-ci .
-      - name: Iniciar Docker e validar EJS, acesso protegido e XML sem credenciais
+      - name: Iniciar Docker e validar Angular, acesso protegido e XML sem credenciais
         run: bash scripts/smoke-container.sh softload-blogger-ci
+      - name: Validar Angular em Chromium real (desktop e Android)
+        run: |
+          set -euo pipefail
+          (cd frontend && npx playwright install --with-deps chromium)
+          cid="$(docker run -d --network bridge -p 127.0.0.1:18080:8080 \
+            -e NODE_ENV=test -e SOFTLOAD_USE_ANGULAR=true \
+            -e SESSION_SECRET=ci-session-not-for-production \
+            -e FIREBASE_API_KEY=ci-only -e FIREBASE_APP_ID=ci-only \
+            -e GOOGLE_CLOUD_PROJECT=blogger-ci \
+            -e FIRESTORE_EMULATOR_HOST=127.0.0.1:9 softload-blogger-ci)"
+          trap 'docker rm -f "$cid" >/dev/null || true' EXIT
+          healthy=0
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:18080/login >/dev/null; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+          test "$healthy" -eq 1
+          SOFTLOAD_BROWSER_URL=http://127.0.0.1:18080 npm --prefix frontend run test:e2e
       - name: Validar Compose App-only e a revisão configurável
         env:
           SOFTLOAD_IMAGE_TAG: ${{ github.sha }}
