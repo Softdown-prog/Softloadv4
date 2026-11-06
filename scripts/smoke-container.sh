@@ -27,9 +27,29 @@ const assert = require('node:assert/strict');
   const editor = await fetch('http://127.0.0.1:8080/criar');
   assert.equal(editor.status,200,'guest editor must load');
   assert.match(await editor.text(),/<sl-root\b/i,'guest editor must be Angular');
-  const protectedPage = await fetch('http://127.0.0.1:8080/dashboard', {redirect: 'manual'});
-  assert.equal(protectedPage.status, 302);
-  assert.match(protectedPage.headers.get('location'), /^\/login/);
+  // Guard every private hard-refresh route at Express level, not just in
+  // Angular's client router. This container has no real Firebase access.
+  for (const route of [
+    '/dashboard','/dashboard/gerador-blogger','/dashboard/historico',
+    '/dashboard/arquivos','/dashboard/configuracoes','/dashboard/upgrade',
+    '/dashboard/plano-essencial'
+  ]) {
+    const page=await fetch('http://127.0.0.1:8080'+route,{redirect:'manual'});
+    assert.equal(page.status,302,'guest must not load '+route);
+    assert.match(page.headers.get('location')||'',/^\/login\?/,'guest login redirect '+route);
+  }
+  for(const route of ['/eu','/eu/usuarios']){
+    const page=await fetch('http://127.0.0.1:8080'+route,{redirect:'manual'});
+    assert.equal(page.status,404,'private admin route must be hidden '+route);
+  }
+  const files=await fetch('http://127.0.0.1:8080/api/frontend/files',{
+    headers:{accept:'application/json'},redirect:'manual'
+  });
+  assert.equal(files.status,401,'private files API must not expose account data');
+  assert.match(files.headers.get('content-type')||'',/application\/json/);
+  const pricing=await fetch('http://127.0.0.1:8080/planos');
+  assert.equal(pricing.status,200,'public pricing route must not require login');
+  assert.match(await pricing.text(),/<sl-root\b/);
   // Exercise the real compiler inside the built image, isolating only telemetry I/O.
   const id = require.resolve('./src/core/telemetria');
   require.cache[id] = {id, filename: id, loaded: true, exports: {registrarCompilacao() {}}};

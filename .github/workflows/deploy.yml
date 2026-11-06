@@ -52,10 +52,32 @@ jobs:
           node-version: '24'
       - name: Verificar frontend Angular canônico
         run: |
-          npm --prefix frontend install --no-audit --no-fund
+          npm --prefix frontend ci --no-audit --no-fund
           npm --prefix frontend run typecheck
           npm --prefix frontend run test
           npm --prefix frontend run build
+      # O SAC roda no Actions, nunca recebe acesso ao daemon Docker da VPS.
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Data_libray
+          ref: 97d5ae71844b56cfb073b5202c2f32398e9d532a
+          path: .sac-tools
+          persist-credentials: false
+      - name: Instalar pós-compilador SAC fixado
+        run: npm ci --prefix .sac-tools/packages/angular-postcompiler --ignore-scripts --no-audit --no-fund
+      - name: Auditar Angular real contra SAC antes da publicação
+        env:
+          SAC_ANGULAR_BUILD_PASSED: 'true'
+          SAC_REPORT_FILE: ${{ runner.temp }}/softload-sac-audit.json
+        run: node scripts/sac-softload-audit.mjs
+      - name: Guardar evidência SAC da revisão publicada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-sac-release
+          path: ${{ runner.temp }}/softload-sac-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Validar nomes antigos nas páginas EJS e CSS
         run: node scripts/check-frontend-branding.js
 
@@ -179,6 +201,14 @@ jobs:
           docker run --rm --entrypoint sh "$image" -c 'test ! -d /usr/src/app/.git'
           echo "[BUILD] Commit SHA verified; .git absent from production container"
 
+      - name: Verificar segurança das rotas Angular no container de release
+        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'app' && steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Exatamente a imagem que será criptografada e enviada à VPS.
+          # Execução isolada sem rede, banco de dados ou cobranças.
+          bash scripts/smoke-container.sh "softload-app:${GITHUB_SHA}"
       # Medição real da imagem Docker (não confundir com bytes versionados no Git).
       - name: Report Docker image size
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
