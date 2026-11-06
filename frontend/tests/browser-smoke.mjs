@@ -62,7 +62,15 @@ try {
 
     // The gallery selection updates form fields and the isolated iframe.
     await page.getByRole('button',{name:/Meu Blog Tech/}).click();
-    assert.equal(await page.locator('#siteName').inputValue(),'Meu Blog Tech');
+    // The editor uses OnPush and signals: assert settled DOM after render,
+    // not the stale input value from the click's synchronous frame.
+    await page.waitForFunction(() => {
+      const input=document.querySelector('#siteName');
+      const button=[...document.querySelectorAll('button')].find(
+        b=>b.textContent?.includes('Meu Blog Tech'));
+      return input instanceof HTMLInputElement &&
+        input.value==='Meu Blog Tech' && button?.getAttribute('aria-pressed')==='true';
+    });
     await page.locator('#siteName').fill('Blog de Teste Angular');
     await page.getByRole('button',{name:'Celular'}).click();
     await page.waitForFunction(()=>document.querySelector('.preview-window')?.getAttribute('data-device')==='mobile');
