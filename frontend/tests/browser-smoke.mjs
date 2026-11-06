@@ -140,6 +140,21 @@ try {
     await page.getByText('Você alterou o template. Gere um novo XML para essas escolhas.').waitFor();
     assert.equal(await page.locator('#gridLayout').inputValue(),'lista');
     checks++;
+    // "Salvar escolhas" must restore the full editable configuration on reload,
+    // not only the palette. It stays browser-local and consumes no server quota.
+    await page.locator('#siteName').fill('Meu Blog Salvo');
+    await page.locator('#sidebarPosition').selectOption('left');
+    await page.getByRole('button',{name:'Salvar escolhas'}).click();
+    await page.getByText('Escolhas salvas neste dispositivo.').waitFor();
+    await page.reload();
+    await page.getByRole('heading',{name:'Configurar template'}).waitFor();
+    await page.waitForFunction(()=>
+      document.querySelector('#siteName')?.value==='Meu Blog Salvo' &&
+      document.querySelector('#gridLayout')?.value==='lista' &&
+      document.querySelector('#sidebarPosition')?.value==='left' &&
+      document.querySelector('#modo')?.value==='modelo');
+    assert.equal(await page.locator('#nichoTema').inputValue(),'tecnologia-mag-tech');
+    checks++;
     checks++;
 
     // Auth screens are real routed components; no Firebase request is made.
@@ -206,7 +221,7 @@ try {
   // pass. A static P001 "unverified" must stay "unverified"; this evidence
   // proves the scoped Docker asset identity and checked UI behaviors.
   if(sacReport){
-    assert.ok(checks>=26,'expected desktop/mobile reactive editor, critical CSS and artifact identity checks');
+    assert.ok(checks>=26,'expected desktop/mobile reactive editor, persistence, critical CSS and artifact identity checks');
     sacReport.checks.artifact_integrity.status='pass';
     sacReport.checks.p001.source_and_production_artifact_same=true;
     sacReport.checks.inline_scripts.browser_effect_verified=
