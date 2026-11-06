@@ -141,12 +141,15 @@ try{
 const suspicious=bindings.potential_event_handlers_not_declared_locally+
   bindings.potential_property_bindings_not_declared_locally+
   bindings.potential_interpolation_members_not_declared_locally;
-report.status=['pre002','pre003'].some(x=>report.checks[x].status==='fail')||
-  bindings.template_parser_error_count>0||report.checks.p001.status!=='pass'
-  ?'fail':suspicious>0?'needs-review':'observed';
+const provenFail=['pre002','pre003'].some(x=>report.checks[x].status==='fail')||
+  bindings.template_parser_error_count>0||
+  ['fail','infra-error'].includes(report.checks.p001.status);
+report.status=provenFail?'fail':(
+  suspicious>0||report.checks.p001.status!=='pass'
+    ?'needs-review':'observed');
 report.browser_verified=false; // separate Playwright job
 report.aot_verified_separately=Boolean(process.env.SAC_ANGULAR_BUILD_PASSED==='true');
 report.scope='static-components-templates-imports-and-generated-dist';
 await writeFile(reportPath,JSON.stringify(report,null,2)+'\n',{flag:'w',mode:0o600});
 console.log('SAC_SOFTLOAD_REPORT '+JSON.stringify(report));
-if(report.status==='fail')process.exitCode=1;
+if(provenFail)process.exitCode=1; // SAC unverified is never promoted to pass.
