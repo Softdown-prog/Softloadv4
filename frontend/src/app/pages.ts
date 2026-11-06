@@ -202,12 +202,12 @@ export class AccountPage {readonly api=inject(SoftloadApi);constructor(){void th
   <div style="margin-top:24px">
     @if(api.data();as d){
       @if (d.user) {
-        <label class="check-line"><input type="checkbox" [(ngModel)]="accepted" name="accepted">
+        <label class="check-line"><input type="checkbox" [ngModel]="accepted()" (ngModelChange)="accepted.set($event)" name="accepted">
           <span>Li e aceito os <a href="/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, incluindo os prazos de armazenamento e recuperação.</span>
         </label>
         <div style="margin-top:20px">
           @if(d.checkoutEnabled){
-            <button class="button" style="width:100%" [disabled]="busy()||!accepted" (click)="checkout()">{{busy()?'Preparando pagamento…':'Continuar para pagamento de R$ 5'}}</button>
+            <button class="button" style="width:100%" [disabled]="busy()||!accepted()" (click)="checkout()">{{busy()?'Preparando pagamento…':'Continuar para pagamento de R$ 5'}}</button>
           } @else {
             <button class="button" disabled style="width:100%">Pagamento temporariamente indisponível</button>
             <p class="muted">A homologação do checkout ainda está em andamento. Nenhuma cobrança será iniciada.</p>
@@ -224,10 +224,10 @@ export class AccountPage {readonly api=inject(SoftloadApi);constructor(){void th
 </main>`})
 export class PlanPage {
   readonly api=inject(SoftloadApi);readonly busy=signal(false);readonly message=signal('');
-  accepted=false;
+  readonly accepted=signal(false);
   constructor(){void this.api.bootstrap().catch(()=>{});}
   async checkout():Promise<void>{
-    if(this.busy()||!this.accepted||!this.api.data()?.checkoutEnabled)return;
+    if(this.busy()||!this.accepted()||!this.api.data()?.checkoutEnabled||!this.api.data()?.user)return;
     this.busy.set(true);this.message.set('');
     try{
       const r=await this.api.post<{checkoutUrl:string}>('/dashboard/checkout-create',{plano:'essencial',aceitePoliticaArmazenamento:true});
