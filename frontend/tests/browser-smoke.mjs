@@ -117,6 +117,14 @@ try {
     fakeUser={uid:'browser-only',nome:'Pessoa de Teste',email:'test@example.invalid',plano:'free'};
     await page.reload();
     const pay=page.getByRole('button',{name:/Continuar para pagamento/});
+    const consentState=await page.evaluate(()=>{
+      const button=[...document.querySelectorAll('button')].find(b=>b.textContent?.includes('Continuar para pagamento'));
+      const checkbox=document.querySelector('input[type="checkbox"]');
+      return {button:button?.outerHTML,buttonDisabled:button?.disabled,
+        checkbox:checkbox?.outerHTML,checked:checkbox?.checked,
+        url:location.pathname};
+    });
+    console.log('CONSENT_GATE_STATE',JSON.stringify(consentState));
     assert.equal(await pay.isDisabled(),true,'consent is required');
     await page.getByRole('checkbox').check();
     assert.equal(await pay.isEnabled(),true);
