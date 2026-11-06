@@ -89,7 +89,8 @@ jobs:
             sleep 2
           done
           test "$healthy" -eq 1
-          SOFTLOAD_BROWSER_URL=http://127.0.0.1:18080 npm --prefix frontend run test:e2e
+          SAC_REPORT_FILE="${{ runner.temp }}/softload-sac-audit.json" \
+            SOFTLOAD_BROWSER_URL=http://127.0.0.1:18080 npm --prefix frontend run test:e2e
       - name: Validar Compose App-only e a revisão configurável
         env:
           SOFTLOAD_IMAGE_TAG: ${{ github.sha }}
