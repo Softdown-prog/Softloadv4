@@ -201,6 +201,14 @@ jobs:
           docker run --rm --entrypoint sh "$image" -c 'test ! -d /usr/src/app/.git'
           echo "[BUILD] Commit SHA verified; .git absent from production container"
 
+      - name: Verificar segurança das rotas Angular no container de release
+        if: steps.latest_before_build.outputs.proceed == 'true' && matrix.service == 'app' && steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Exatamente a imagem que será criptografada e enviada à VPS.
+          # Execução isolada sem rede, banco de dados ou cobranças.
+          bash scripts/smoke-container.sh "softload-app:${GITHUB_SHA}"
       # Medição real da imagem Docker (não confundir com bytes versionados no Git).
       - name: Report Docker image size
         if: steps.latest_before_build.outputs.proceed == 'true' && steps.changes.outputs.changed == 'true'
