@@ -17,7 +17,7 @@ const catalog={
   exemplos:[{id:'tech',nome:'Meu Blog Tech',categoria:'Tecnologia',nichoTema:'tecnologia-mag-tech',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'}],
   checkoutEnabled:true,filesEnabled:false
 };
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
 let checks=0;
 try {
   for(const viewport of [{width:1366,height:860},{width:390,height:844}]){
