@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "baselineCommit": "11cb4a502afeb8063b4a9249a81d1d02bfac803c",
-  "description": "Invent\u00e1rio do app Blogger. Sem runtime Agent, Forge ou ferramentas de IA no projeto.",
+  "description": "Inventário do app Blogger. Sem runtime Agent, Forge ou ferramentas de IA no projeto.",
   "runtime": [
     "public/js/workers/w-errorlog.js",
     "public/js/workers/w-init.js",
@@ -20,6 +20,7 @@
     "src/services/storageService.js"
   ],
   "tooling": [
-    "scripts/livePublicCompilerSmoke.cjs"
+    "scripts/livePublicCompilerSmoke.cjs",
+    "scripts/sac-softload-audit.mjs"
   ]
 }
