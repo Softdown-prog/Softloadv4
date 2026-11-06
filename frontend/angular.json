@@ -19,7 +19,13 @@
             "styles": [
               "src/styles.css"
             ],
-            "assets": []
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets"
+              }
+            ]
           },
           "configurations": {
             "production": {
