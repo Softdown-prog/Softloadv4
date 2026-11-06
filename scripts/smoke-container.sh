@@ -3,7 +3,7 @@
 set -euo pipefail
 image="${1:?production image required}"
 cid="$(docker run -d --network none \
-  -e NODE_ENV=test -e SESSION_SECRET=ci-session-not-for-production \
+  -e NODE_ENV=test -e SOFTLOAD_USE_ANGULAR=true -e SESSION_SECRET=ci-session-not-for-production \
   -e FIREBASE_API_KEY=ci-only -e FIREBASE_APP_ID=ci-only \
   -e GOOGLE_CLOUD_PROJECT=blogger-ci \
   -e FIRESTORE_EMULATOR_HOST=127.0.0.1:9 "$image")"
@@ -20,8 +20,13 @@ const assert = require('node:assert/strict');
   for (const route of ['/', '/login', '/recover']) {
     const response = await fetch('http://127.0.0.1:8080' + route);
     assert.equal(response.status, 200, route);
-    assert.match(await response.text(), /<html/i, route);
+    const html=await response.text();
+    assert.match(html, /<html/i, route);
+    assert.match(html, /<sl-root\b/i, route + ' must render canonical Angular shell');
   }
+  const editor = await fetch('http://127.0.0.1:8080/criar');
+  assert.equal(editor.status,200,'guest editor must load');
+  assert.match(await editor.text(),/<sl-root\b/i,'guest editor must be Angular');
   const protectedPage = await fetch('http://127.0.0.1:8080/dashboard', {redirect: 'manual'});
   assert.equal(protectedPage.status, 302);
   assert.match(protectedPage.headers.get('location'), /^\/login/);
@@ -36,6 +41,6 @@ const assert = require('node:assert/strict');
     assert.deepEqual(validarSemanticaBlogger(xmlFinal).erros, []);
     assert.match(xmlFinal, /Blog1/);
   }
-  console.log('CONTAINER_SMOKE_OK: EJS, authenticated boundary, three real Blogger XML niches');
+  console.log('CONTAINER_SMOKE_OK: Angular, authenticated boundary, three real Blogger XML niches');
 })().catch(error => {console.error(error); process.exitCode = 1;});
 NODE

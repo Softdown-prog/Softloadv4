@@ -1,0 +1,30 @@
+{
+  "name": "softload-angular",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "ng build --configuration production",
+    "build:dev": "ng build --configuration development",
+    "typecheck": "tsc --noEmit --project tsconfig.app.json",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "node tests/browser-smoke.mjs"
+  },
+  "dependencies": {
+    "@angular/common": "~22.2.0",
+    "@angular/compiler": "~22.2.0",
+    "@angular/core": "~22.2.0",
+    "@angular/forms": "~22.2.0",
+    "@angular/platform-browser": "~22.2.0",
+    "@angular/router": "~22.2.0",
+    "rxjs": "^7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/build": "~22.2.0",
+    "@angular/cli": "~22.2.0",
+    "@angular/compiler-cli": "~22.2.0",
+    "typescript": "~6.0.0",
+    "playwright": "1.56.1"
+  }
+}

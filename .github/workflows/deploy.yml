@@ -47,6 +47,15 @@ jobs:
         run: node --test src/routes/publicBlogger.contract.test.cjs
       - run: npm run test:quality
       - run: npm run build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar frontend Angular canônico
+        run: |
+          npm --prefix frontend install --no-audit --no-fund
+          npm --prefix frontend run typecheck
+          npm --prefix frontend run test
+          npm --prefix frontend run build
       - name: Validar nomes antigos nas páginas EJS e CSS
         run: node scripts/check-frontend-branding.js
 
@@ -599,7 +608,7 @@ jobs:
 
       # Produto comercial agora é Blogger EJS. O deploy deve conferir a
       # landing e o editor anônimo ao vivo, não o React legado.
-      - name: Confirm public Blogger landing and guest editor are live
+      - name: Confirm canonical Angular landing and guest editor are live
         if: steps.latest.outputs.proceed == 'true'
         shell: bash
         env:
@@ -619,10 +628,9 @@ jobs:
           const fs = require('node:fs');
           const landing = fs.readFileSync(process.argv[2], 'utf8');
           const editor = fs.readFileSync(process.argv[3], 'utf8');
-          if (!landing.includes('Experimentar gratuitamente') || !landing.includes('href="/criar"') ||
-              !editor.includes('id="generator-form"') || !editor.includes('action="/criar/download"') ||
-              !editor.includes('name="guestToken"')) {
-            console.error('[DEPLOY] Blogger público não está íntegro; verifique landing e editor.');
+          if (!landing.includes('<sl-root') || !editor.includes('<sl-root') ||
+              !landing.includes('main-') || !editor.includes('main-')) {
+            console.error('[DEPLOY] Angular canônico indisponível no domínio.');
             process.exit(1);
           }
           if (/A7 Forge|href="\/dashboard\/forge-2d"|\/dist\/assets\/main\.js/.test(landing+editor)) {

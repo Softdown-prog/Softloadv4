@@ -29,13 +29,18 @@ function classify(response) {
   const editorHtml = await editor.text();
   console.log('[LIVE] /criar:', classify(editor), 'body bytes=' + editorHtml.length);
   assert.equal(editor.status,200,'Guest editor unavailable');
-  const token = editorHtml.match(/name="guestToken"\s+value="([a-f\d]{48})"/);
-  assert.ok(token,'Editor rendered without guest token');
-  const setCookie = editor.headers.get('set-cookie') || '';
+  assert.match(editorHtml, /<sl-root\b/, 'Angular shell not served');
+  const bootResponse = await req('/api/frontend/bootstrap');
+  assert.equal(bootResponse.status, 200, 'Angular bootstrap not available');
+  const boot = await bootResponse.json();
+  assert.equal(boot.guestMode, true, 'Guest mode should be active');
+  assert.match(boot.guestToken, /^[a-f\d]{48}$/, 'Bootstrap did not return guest CSRF token');
+  assert.equal(boot.downloadPath, '/criar/download');
+  const setCookie = bootResponse.headers.get('set-cookie') || '';
   const sessionCookie = setCookie.match(/(?:^|,\s*)(connect\.sid=[^;]+)/)?.[1] || setCookie.split(';')[0];
-  assert.ok(/^connect\.sid=/.test(sessionCookie),'Editor has no session cookie');
+  assert.ok(/^connect\.sid=/.test(sessionCookie),'Bootstrap has no session cookie');
   const form = new URLSearchParams({
-    guestToken: token[1], modo:'novo', siteName:'Teste Smoke Softload',
+    guestToken: boot.guestToken, modo:'novo', siteName:'Teste Smoke Softload',
     colorPreset:'tech-blue', typography:'inter', gridLayout:'revista',
     sidebarPosition:'right',
   });
