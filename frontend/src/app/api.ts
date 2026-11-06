@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 export interface Account { uid: string; nome?: string; email: string; plano?: string; is_super_admin?: boolean; }
 export interface Option { id: string; nome: string; hex?: string; bg?: string; surface?: string; text?: string; footer?: string; pageType?: string; aviso?: string | null; }
-export interface Example { id: string; nome: string; categoria?: string; nichoTema: string; colorPreset?: string; typography?: string; gridLayout?: string; sidebarPosition?: string; }
+export interface Example { id: string; nome: string; descricao?: string; categoria?: string; nichoTema: string; colorPreset?: string; typography?: string; gridLayout?: string; sidebarPosition?: string; }
 export interface BootstrapData {
   user: Account | null;
   guestMode: boolean;
