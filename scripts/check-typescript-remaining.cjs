@@ -22,11 +22,22 @@ function inventariar(tracked,lista) {
 function auditar({root=path.resolve(__dirname,'..'),tracked=null,lista=null,tsconfig=null}={}) {
   const files=tracked||execFileSync('git',['ls-files','-z'],{cwd:root,encoding:'utf8'}).split('\0').filter(Boolean);
   const baseline=lista||JSON.parse(fs.readFileSync(path.join(root,'scripts/typescript-remaining.json'),'utf8'));
-  // Frontend React aposentado: fixtures podem fornecer tsconfig, mas produção não o exige.
+  // Angular agora possui compilador TypeScript 6 isolado. O CLI o verifica
+  // com seu próprio tsconfig, sem contaminar o core TypeScript 7.
   const config=tsconfig||{include:[]};
+  const angularConfigPath=path.join(root,'frontend/tsconfig.app.json');
+  const angularExists=fs.existsSync(path.join(root,'frontend/angular.json')) &&
+    fs.existsSync(angularConfigPath) &&
+    fs.existsSync(path.join(root,'frontend/tests/contracts.test.mjs'));
+  const angularConfig=angularExists?JSON.parse(fs.readFileSync(angularConfigPath,'utf8')):null;
+  const checksAllSources=angularConfig?.include?.includes('src/**/*.ts');
   const result=inventariar(files,baseline);
-  const ausentes=result.frontendTs.filter(x=>!config.include.includes(x));
-  return {...result,frontendForaTypecheck:ausentes,ok:result.inesperados.length===0&&ausentes.length===0};
+  const ausentes=result.frontendTs.filter(x=>!config.include.includes(x) &&
+    !(angularExists&&checksAllSources&&x.startsWith('frontend/src/')));
+  // O único adaptador CommonJS temporário só é permitido com contrato dedicado.
+  // Qualquer novo JS sem TypeScript continua falhando no inventário.
+  const inesperados=result.inesperados.filter(x=>!(angularExists&&x==='src/routes/angular-shell.cjs'));
+  return {...result,inesperados,frontendForaTypecheck:ausentes,ok:inesperados.length===0&&ausentes.length===0};
 }
 // Browsers carregam scripts clássicos, não módulos CommonJS.
 function verificarEspelhosWorkers(root=path.resolve(__dirname,'..')) {
