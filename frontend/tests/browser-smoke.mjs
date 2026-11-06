@@ -77,6 +77,22 @@ try {
     // Public landing: navigation is handled by Angular, not EJS.
     let res=await page.goto(origin+'/',{waitUntil:'networkidle'});
     assert.equal(res?.status(),200,'landing HTTP 200');
+    // Angular/Beasties injects a tiny media-restoration script during
+    // critical CSS inlining. Verify its intended browser effect instead of
+    // stripping it to trick the static SAC P001 rule into returning "pass".
+    const cssState=await page.evaluate(()=>{
+      const styles=[...document.querySelectorAll('link[rel="stylesheet"]')];
+      return {
+        leftoverBeastiesLinks:document.querySelectorAll('link[data-beasties-media]').length,
+        angularStyles:styles.filter(el => /(?:^|\/)styles(?:-[A-Za-z0-9]+)?\.css(?:\?|$)/.test(el.getAttribute('href')||''))
+          .map(el=>({media:el.media,loaded:el.sheet!==null,restored:!el.hasAttribute('data-beasties-media')}))
+      };
+    });
+    assert.equal(cssState.leftoverBeastiesLinks,0,'Angular Beasties CSS media restoration did not complete');
+    assert.ok(cssState.angularStyles.some(s=>s.loaded&&s.restored&&s.media!=='print'),
+      'Angular stylesheet unavailable or media stuck in print mode');
+    checks++;
+
     if(integrity&&viewport.width===1366){await verifySacArtifact(page);checks++;}
     await page.getByRole('heading',{name:/Um blog com a/i}).waitFor();
     await page.getByRole('link',{name:'Criar meu template'}).first().click();
