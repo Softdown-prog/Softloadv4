@@ -129,6 +129,16 @@ try{
     inline_lengths:inline.map(([,attrs,body])=>Buffer.byteLength(body,'utf8'))
   };
   console.log('SAC_HTML_SCRIPT_INVENTORY '+JSON.stringify(report.checks.html_script_inventory));
+  // Diagnostics are limited to browser-public generated HTML, never backend or
+  // private data. Print only the tiny inline snippet, temporarily, to locate its
+  // origin and decide whether it is safe to externalize rather than suppress P001.
+  for(const [,attrs,body] of inline){
+    assert.ok(body.length<=256,'inline script requires manual review; length exceeded');
+    console.log('SAC_INLINE_SCRIPT_ORIGIN '+JSON.stringify({
+      attrs:attrs.trim().slice(0,120),
+      source:body.trim()
+    }));
+  }
   const assets=await readdir(stage);
   const mains=assets.filter(n=>/^main(?:-[a-zA-Z0-9]+)?\.js$/.test(n));
   const styles=assets.filter(n=>/^styles(?:-[a-zA-Z0-9]+)?\.css$/.test(n));
