@@ -33,6 +33,15 @@ jobs:
         run: node --test src/services/mercadoPagoBlogger.integration.test.cjs
       - name: Preparar assets locais
         run: npm run build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar aplicação Angular canônica
+        run: |
+          npm --prefix frontend install --no-audit --no-fund
+          npm --prefix frontend run typecheck
+          npm --prefix frontend run test
+          npm --prefix frontend run build
       - name: Verificar boot do aplicativo
         run: docker build --progress plain -t softload-blogger-ci .
       - name: Iniciar Docker e validar EJS, acesso protegido e XML sem credenciais
