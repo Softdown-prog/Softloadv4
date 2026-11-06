@@ -5,8 +5,9 @@
 # Angular 22 usa Node 24 e TypeScript 6, isolados do motor Blogger TypeScript 7.
 FROM node:24-slim AS angular-build
 WORKDIR /work/frontend
-COPY frontend/package.json ./
-RUN npm install --no-audit --no-fund
+# Fixed dependency tree: same npm lockfile used in CI and release.
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 # Contract tests verify the real Express-to-Angular gateway.
 COPY src/routes/angular-shell.cjs /work/src/routes/angular-shell.cjs
