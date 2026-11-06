@@ -57,14 +57,6 @@ jobs:
           SAC_ANGULAR_BUILD_PASSED: 'true'
           SAC_REPORT_FILE: ${{ runner.temp }}/softload-sac-audit.json
         run: node scripts/sac-softload-audit.mjs
-      - name: Preservar relatório SAC para revisão
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: softload-sac-report
-          path: ${{ runner.temp }}/softload-sac-audit.json
-          if-no-files-found: ignore
-          retention-days: 14
       - name: Verificar boot do aplicativo
         run: docker build --progress plain -t softload-blogger-ci .
       - name: Iniciar Docker e validar Angular, acesso protegido e XML sem credenciais
@@ -91,6 +83,14 @@ jobs:
           test "$healthy" -eq 1
           SAC_REPORT_FILE="${{ runner.temp }}/softload-sac-audit.json" \
             SOFTLOAD_BROWSER_URL=http://127.0.0.1:18080 npm --prefix frontend run test:e2e
+      - name: Preservar relatório SAC para revisão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: softload-sac-report
+          path: ${{ runner.temp }}/softload-sac-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Validar Compose App-only e a revisão configurável
         env:
           SOFTLOAD_IMAGE_TAG: ${{ github.sha }}
