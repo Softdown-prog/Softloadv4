@@ -1,6 +1,14 @@
 # syntax=docker/dockerfile:1
-# IMAGEM DO APP DE PRODUÇÃO: Blogger em Node + EJS, sem React/Forge.
+# IMAGEM DO APP DE PRODUÇÃO: Angular canônico + API Node/Express.
 # Aplicação independente; receptor v3 App, health checks e rollback.
+
+# Angular 22 usa Node 24 e TypeScript 6, isolados do motor Blogger TypeScript 7.
+FROM node:24-slim AS angular-build
+WORKDIR /work/frontend
+COPY frontend/package.json ./
+RUN npm install --no-audit --no-fund
+COPY frontend/ ./
+RUN npm run typecheck && npm run test && npm run build
 
 # Vendorização somente de Bootstrap e Chart.js. Instala dependências de
 # desenvolvimento no BUILD, sem executar Vite/React nem copiar o bundle.
@@ -32,6 +40,12 @@ COPY scripts/vendorCachePolicy.js ./scripts/vendorCachePolicy.js
 COPY scripts/vendorTemplateRefs.js ./scripts/vendorTemplateRefs.js
 COPY scripts/vendorAssets.js ./scripts/vendorAssets.js
 COPY --from=vendor /usr/src/app/public/vendor ./public/vendor
+# Assets versionados Angular sob /, mas index separado para no-store.
+COPY --from=angular-build /work/frontend/dist/softload/browser/ ./angular-dist/
+RUN mkdir -p ./angular && cp ./angular-dist/index.html ./angular/index.html \
+    && cp -a ./angular-dist/. ./public/ && rm ./public/index.html \
+    && rm -rf ./angular-dist \
+    && test -s ./angular/index.html && test -f ./public/assets/legal/terms.html
 
 # Testes não destrutivos, em build. Manter o mesmo grafo de require de
 # produção; nenhum endpoint externo ou job do Agent é executado.
