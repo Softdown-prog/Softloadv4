@@ -57,6 +57,7 @@ try {
     await page.getByRole('link',{name:'Criar meu template'}).first().click();
     await page.waitForURL('**/criar');
     await page.getByRole('heading',{name:'Configurar template'}).waitFor();
+    assert.equal(await page.getByRole('link',{name:'Plano Essencial'}).getAttribute('href'),'/planos');
     checks++;
 
     // The gallery selection updates form fields and the isolated iframe.
