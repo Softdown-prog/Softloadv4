@@ -3,7 +3,7 @@
 set -euo pipefail
 image="${1:?production image required}"
 cid="$(docker run -d --network none \
-  -e NODE_ENV=test -e SOFTLOAD_USE_ANGULAR=true -e SESSION_SECRET=ci-session-not-for-production \
+  -e NODE_ENV=test -e SOFTLOAD_USE_ANGULAR=true -e SOFTLOAD_TEST_MEMORY_SESSION=true -e SESSION_SECRET=ci-session-not-for-production \
   -e FIREBASE_API_KEY=ci-only -e FIREBASE_APP_ID=ci-only \
   -e GOOGLE_CLOUD_PROJECT=blogger-ci \
   -e FIRESTORE_EMULATOR_HOST=127.0.0.1:9 "$image")"
@@ -54,6 +54,8 @@ const assert = require('node:assert/strict');
   // This guards the contract consumed by every standalone Angular page.
   const bootstrap=await fetch('http://127.0.0.1:8080/api/frontend/bootstrap');
   assert.equal(bootstrap.status,200,'guest bootstrap must be available');
+  assert.equal(bootstrap.headers.get('cache-control'),'no-store',
+    'session bootstrap must never be cached by proxies or browsers');
   assert.match(bootstrap.headers.get('content-type')||'',/application\/json/);
   const guest=await bootstrap.json();
   assert.equal(guest.user,null,'guest bootstrap must not leak a signed-in user');
@@ -72,6 +74,12 @@ const assert = require('node:assert/strict');
   assert.equal(second.status,200);
   assert.equal((await second.json()).guestToken,guest.guestToken,
     'guest CSRF token must remain stable for its session');
+  const other=await fetch('http://127.0.0.1:8080/api/frontend/bootstrap');
+  assert.equal(other.status,200,'second guest session must initialize');
+  const distinctGuest=await other.json();
+  assert.match(distinctGuest.guestToken,/^[a-f0-9]{48}$/);
+  assert.notEqual(distinctGuest.guestToken,guest.guestToken,
+    'new guest must not reuse another session CSRF token');
   // Exercise the real compiler inside the built image, isolating only telemetry I/O.
   const id = require.resolve('./src/core/telemetria');
   require.cache[id] = {id, filename: id, loaded: true, exports: {registrarCompilacao() {}}};
