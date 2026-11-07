@@ -1,4 +1,5 @@
-import {ForbiddenException,Inject,Injectable,UnauthorizedException} from '@nestjs/common';
+import {Inject,Injectable} from '@nestjs/common';
+import {AccessContractException} from './response-contract.js';
 import type {CanActivate,ExecutionContext} from '@nestjs/common';
 
 // Abstraction deliberately excludes firebase-admin. A real reader MUST be
@@ -77,11 +78,11 @@ export class PremiumGuard implements CanActivate {
     const decision=await decidePremium(request,this.reader);
     if(decision.allow)return true;
     if(decision.reason==='session'){
-      throw new UnauthorizedException({erro:'Sessão expirada. Faça login novamente.'});
+      throw new AccessContractException('premium',401,{erro:'Sessão expirada. Faça login novamente.'});
     }
     const message=decision.reason==='expired'
       ? 'Sua licença Premium expirou. Renove em /dashboard/upgrade.'
       : 'Recurso disponível apenas no plano Premium. Acesse /dashboard/upgrade.';
-    throw new ForbiddenException({erro:message,plano_necessario:'premium'});
+    throw new AccessContractException('premium',403,{erro:message,plano_necessario:'premium'});
   }
 }
