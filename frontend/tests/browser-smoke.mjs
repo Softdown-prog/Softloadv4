@@ -75,6 +75,10 @@ try {
     });
     await page.route('**/dashboard/checkout-create',async route=>{
       assert.equal(route.request().method(),'POST');
+      // A missing Accept header makes the legacy middleware redirect to HTML
+      // on session denial instead of preserving the 401/403 JSON API contract.
+      assert.equal(await route.request().headerValue('accept'),'application/json');
+      assert.match(await route.request().headerValue('content-type')||'',/^application\/json(?:;|$)/i);
       assert.deepEqual(JSON.parse(route.request().postData()||'{}'),
         {plano:'essencial',aceitePoliticaArmazenamento:true});
       await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({erro:'Checkout indisponível em homologação.'})});
