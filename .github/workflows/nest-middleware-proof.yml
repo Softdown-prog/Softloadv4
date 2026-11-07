@@ -1,0 +1,31 @@
+name: Softload - NestJS middleware proof (isolated)
+on:
+  pull_request:
+    paths:
+      - 'nest-middleware/**'
+      - 'src/middlewares/accessPolicy.ts'
+      - 'src/middlewares/accessPolicy.js'
+      - 'src/middlewares/accessPolicy.test.js'
+      - '.github/workflows/nest-middleware-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  middleware:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Legacy-independent access policy regressions
+        run: node --test src/middlewares/accessPolicy.test.js
+      # Pilot only: Nest is not added to the production root lockfile/image.
+      # Do not migrate production until Express 5 is validated and a lockfile is committed.
+      - name: Install isolated exact Nest 12 runtime without scripts
+        run: npm install --prefix nest-middleware --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Compile isolated Nest TypeScript sources
+        run: npm --prefix nest-middleware run build
+      - name: Prove real Nest DI and HTTP guard behavior
+        run: npm --prefix nest-middleware test
