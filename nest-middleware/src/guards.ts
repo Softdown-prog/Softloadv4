@@ -1,7 +1,8 @@
 import 'reflect-metadata';
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { createRequire } from 'node:module';
+import {AccessContractException} from './response-contract.js';
 
 // This probe does not load the legacy server, Firebase or commercial routes.
 // At runtime dist/guards.js resolves the same pure policy used by Express.
@@ -16,7 +17,7 @@ function assertAccess(scope:'session'|'admin'|'worker',context:ExecutionContext)
   const decision=decideAccess(scope,req);
   if(decision.allow)return true;
   if(decision.reason==='not-found')throw new NotFoundException();
-  throw new UnauthorizedException(
+  throw new AccessContractException('session',401,
     decision.transport==='json'
       ? {error:'Sessão expirada. Recarregue a página e faça login novamente.'}
       : {error:'Sessão expirada. Faça login novamente.'}

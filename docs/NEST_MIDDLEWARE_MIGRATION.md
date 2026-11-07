@@ -23,9 +23,27 @@ com sessões artificiais, para testar 401/404/200:
 
 Os testes HTTP do piloto verificam `401` sem sessão, `403` sem Premium,
 `200` com Premium ativo ou renovado e `403` quando a verificação falha.
-O status `403` do Nest vale para as rotas **JSON do piloto**; a equivalência
-da navegação HTML, que no Express redireciona para o upgrade, precisa de um
-adaptador de resposta antes de migrar qualquer rota comercial.
+O `AccessContractFilter` implementa agora o **contrato de navegação HTML**
+sem alterar os erros de API: para `GET /dashboard/nest-proof/session` e
+`/premium` (rotas exclusivamente de teste), a sessão ausente recebe `302`
+para login e o Premium negado recebe `302` para upgrade. Requisições
+`/api/*`, `Accept: application/json` e `XMLHttpRequest` preservam
+`401/403` com o corpo JSON esperado. O filtro só captura denegações de
+autorização explicitamente tipadas; um `404` ou `500` de outra origem
+continua sendo tratado pelo Nest normalmente.
+
+A suíte `nest-middleware/test/express-premium.parity.test.mjs` executa
+**o middleware Express real** com Firestore substituído por um adaptador em
+memória, e compara sua decisão à função `decidePremium` do Nest nos mesmos
+8 cenários: sem login, Premium válido, free, expiração sem renovação,
+renovação posterior ao webhook, sessão inativa reativada, falha de banco em
+Premium vencido e falha de banco em sessão inativa. Também compara atualização
+da sessão e chave de lookup normalizada em lowercase. Não chama a API real
+nem aceita credenciais vindas do cliente.
+
+**A cobertura HTML ainda não equivale a renderizar EJS**, nem garante
+compatibilidade de cookies Firestore, do Express 5 ou da navegação comercial:
+o filtro existe apenas na aplicação Nest efêmera criada pelos testes.
 
 As decisões são compartilhadas pela fonte tipada `src/middlewares/accessPolicy.ts`, sem
 Firebase, I/O ou execução de código de terceiros. Não aceitar papel
@@ -54,7 +72,8 @@ provar compatibilidade Express 5.
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
    JSON 401; Premium pode reler Firestore após renovação; admin/worker 404).
    O piloto já cobre Premium com um leitor simulado, mas **ainda não** cobre
-   o adaptador Firestore real nem o redirecionamento HTML.
+   o adaptador Firestore real nem os templates EJS/cookies comerciais. Os
+   redirecionamentos HTTP de navegação já têm uma prova Nest isolada.
 2. Migrar Express 4 → 5 em PR separado, revisar rotas catch-all, parsers,
    cookie, `express-session`, limite de requisições e webhook.
 3. Criar factory do servidor legado sem `listen()` e remover 404 catch-all
