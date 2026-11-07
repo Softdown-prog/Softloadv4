@@ -7,7 +7,7 @@ interface AdminGuardResponse {
 }
 type NextGuard = () => unknown;
 declare const require: (id: string) => {decideAccess(scope: string, request: unknown): {allow: boolean}};
-const {decideAccess}=require('./accessPolicy.cjs');
+const {decideAccess}=require('./accessPolicy.js');
 function exigirSuperAdmin(req: AdminGuardRequest, res: AdminGuardResponse, next: NextGuard): unknown {
     if (decideAccess('admin',req).allow) return next();
     res.status(404).render('pages/404');
