@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { decideAccess } = require('./accessPolicy.cjs');
+const { decideAccess } = require('./accessPolicy.js');
 function exigirWorkerAccess(req, res, next) {
     if (decideAccess('worker', req).allow)
         return next();
