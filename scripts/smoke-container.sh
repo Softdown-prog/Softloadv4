@@ -66,6 +66,24 @@ const assert = require('node:assert/strict');
     assert.ok(Array.isArray(guest[key])&&guest[key].length>0,
       'Angular catalog must provide '+key);
   }
+  // Docker must expose the real newly curated presets, not only the Angular
+  // browser mock. These are compile-ready niche IDs, not placeholder cards.
+  assert.ok(guest.exemplos.length>=30,'expected at least 30 compiler-backed examples');
+  const mustExist=new Map([
+    ['jornal-semanal','noticias-mag-news'],
+    ['dev-oficina','tecnologia-techwind'],
+    ['gamer-ciano','gamer-playerone'],
+    ['receitas-terra','culinaria-boutique-gourmet'],
+    ['natureza-trilhas','natureza-bulma-vegan'],
+    ['portfolio-violeta','portfolio-minimalista'],
+    ['saas-claro','saas-nexus'],
+    ['cursos-claro','elearning-academy']
+  ]);
+  for(const [id,nicho] of mustExist){
+    const example=guest.exemplos.find(e=>e.id===id);
+    assert.ok(example,'missing Docker-served Blogger example '+id);
+    assert.equal(example.nichoTema,nicho,'wrong compiler niche for '+id);
+  }
   // Session-bound CSRF token must survive a second request with the same cookie.
   const cookie=(bootstrap.headers.get('set-cookie')||'').split(';',1)[0];
   assert.ok(cookie.includes('='),'bootstrap must issue a session cookie');
