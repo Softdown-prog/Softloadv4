@@ -3,8 +3,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Controller,Get,Module,UseGuards} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
-import {MiddlewareModule} from '../src/middleware.module.mjs';
-import {SessionGuard,SuperAdminGuard,WorkerGuard} from '../src/guards.mjs';
+import {MiddlewareModule} from '../dist/middleware.module.js';
+import {SessionGuard,SuperAdminGuard,WorkerGuard} from '../dist/guards.js';
 
 // Genuine Nest dependency injection: proves the providers are registered.
 test('Nest module resolves all three scoped guard providers',async()=>{
