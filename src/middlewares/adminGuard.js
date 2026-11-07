@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const { decideAccess } = require('./accessPolicy.cjs');
 function exigirSuperAdmin(req, res, next) {
-    if (req.session?.user?.is_super_admin === true)
+    if (decideAccess('admin', req).allow)
         return next();
     res.status(404).render('pages/404');
 }
