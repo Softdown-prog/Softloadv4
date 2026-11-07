@@ -7,7 +7,7 @@ interface WorkerGuardResponse {
 }
 type NextWorkerGuard = () => unknown;
 declare const require: (id: string) => {decideAccess(scope: string, request: unknown): {allow: boolean}};
-const {decideAccess}=require('./accessPolicy.cjs');
+const {decideAccess}=require('./accessPolicy.js');
 function exigirWorkerAccess(req: WorkerGuardRequest, res: WorkerGuardResponse, next: NextWorkerGuard): unknown {
     if (decideAccess('worker',req).allow) return next();
     res.status(404).render('pages/404');
