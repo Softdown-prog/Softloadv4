@@ -13,7 +13,9 @@ export class PremiumAccessModule {
     return {
       module:PremiumAccessModule,
       providers:[{provide:PREMIUM_STATUS_READER,useValue:reader},PremiumGuard],
-      exports:[PremiumGuard],
+      // The controller module resolves method guard dependencies in its own
+      // DI scope; export the reader token as well as the Guard itself.
+      exports:[PremiumGuard,PREMIUM_STATUS_READER],
     };
   }
 }
