@@ -20,7 +20,7 @@ const app=path.join(root,'frontend');
 const sourceRoot=path.join(app,'src');
 const dist=path.join(app,'dist','softload','browser');
 const toolsRoot=path.join(root,'.sac-tools');
-const requiredCommit='97d5ae71844b56cfb073b5202c2f32398e9d532a';
+const requiredCommit='8ef12c4a938c2366ecc96ac0516402e11e6d3ab7';
 const reportPath=process.env.SAC_REPORT_FILE||path.join(os.tmpdir(),'softload-sac-audit.json');
 const require=createRequire(path.join(app,'package.json'));
 const ts=require('typescript');
@@ -171,9 +171,18 @@ try{
   if(result.status!=='pass')console.error('SAC-P001-DIAGNOSTIC',JSON.stringify(
     result.evidence.filter(x=>x.status!=='pass').map(x=>({assertion:x.assertion,status:x.status,
       message:typeof x.message==='string'?x.message.slice(0,160):null}))));
+  // Preserve the stable upstream allowlist code. A generic static "pass"
+  // without the expected helper evidence must never certify executable inline JS.
+  const inlineEvidence=result.evidence.find(x=>x.assertion==='html-resources');
+  const recognized=Array.isArray(inlineEvidence?.recognized_inline_scripts)
+    ? inlineEvidence.recognized_inline_scripts : [];
+  if(knownBeasties && result.status==='pass')
+    assert.deepEqual(recognized,['angular-critical-css-media-restore'],
+      'P001 pass requires exact Angular critical-CSS helper recognition');
   report.checks.p001={
     status:result.status,
     evidence:result.evidence.map(x=>({assertion:x.assertion,status:x.status})),
+    recognized_inline_scripts:recognized.filter(x=>x==='angular-critical-css-media-restore'),
     source_and_production_artifact_same:null // awaiting independent Docker/Chrome SHA256 verification
   };
 }finally{await rm(stage,{recursive:true,force:true});}
