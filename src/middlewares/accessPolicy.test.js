@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {decideAccess,wantsJson}=require('./accessPolicy.cjs');
+const {decideAccess,wantsJson}=require('./accessPolicy.js');
 const req=(session,path='/dashboard')=>({path,session,get:(name)=>
   name==='accept'?'text/html':name==='x-requested-with'?'':'undefined'});
 test('legacy session decisions are strict, and APIs get JSON instead of redirect',()=>{
