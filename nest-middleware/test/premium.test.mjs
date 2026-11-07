@@ -1,10 +1,11 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {decidePremium} from '../dist/premium.js';
+import {PremiumAccessModule} from '../dist/premium.module.js';
 
 const NOW=Date.parse('2026-11-06T12:00:00.000Z');
 const past='2024-01-01T00:00:00.000Z';
-const future='2030-01-01T00:00:00.000Z';
+const future='2099-01-01T00:00:00.000Z';
 function makeReader(records={},options={}){
  const calls=[];
  return {calls,async findByEmail(email){
@@ -50,4 +51,9 @@ test('inactive session rechecks a successful webhook renewal and rejects missing
  assert.deepEqual(reader.calls,['paid@example.com']);
  assert.deepEqual(await decidePremium({session:{user:{is_active:false}}},reader,NOW),
    {allow:false,reason:'inactive'});
+});
+
+test('Premium module refuses to start without an explicitly injected reader',()=>{
+  assert.throws(()=>PremiumAccessModule.register(null),/requires a PremiumStatusReader/);
+  assert.throws(()=>PremiumAccessModule.register({}),/requires a PremiumStatusReader/);
 });
