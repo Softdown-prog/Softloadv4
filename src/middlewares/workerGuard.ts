@@ -6,9 +6,10 @@ interface WorkerGuardResponse {
     status(code: number): { render(view: string): unknown };
 }
 type NextWorkerGuard = () => unknown;
+declare const require: (id: string) => {decideAccess(scope: string, request: unknown): {allow: boolean}};
+const {decideAccess}=require('./accessPolicy.cjs');
 function exigirWorkerAccess(req: WorkerGuardRequest, res: WorkerGuardResponse, next: NextWorkerGuard): unknown {
-    const email = req.session?.user?.email || '';
-    if (email.toLowerCase() === 'softloady@gmail.com') return next();
+    if (decideAccess('worker',req).allow) return next();
     res.status(404).render('pages/404');
 }
 
