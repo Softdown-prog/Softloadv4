@@ -3,7 +3,8 @@ on:
   pull_request:
     paths:
       - 'nest-middleware/**'
-      - 'src/middlewares/accessPolicy.cjs'
+      - 'src/middlewares/accessPolicy.ts'
+      - 'src/middlewares/accessPolicy.js'
       - 'src/middlewares/accessPolicy.test.js'
       - '.github/workflows/nest-middleware-proof.yml'
   workflow_dispatch:
