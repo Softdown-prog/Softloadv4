@@ -48,7 +48,7 @@ const premiumReader={
 class ProbeModule {}
 Module({imports:[MiddlewareModule,PremiumAccessModule.register(premiumReader)],controllers:[ProbeController]})(ProbeModule);
 test('Nest HTTP guard chain enforces 401 / concealed 404 / permitted 200',async()=>{
-  const app=await NestFactory.create(ProbeModule,{logger:false});
+  const app=await NestFactory.create(ProbeModule,{logger:['error'],abortOnError:false});
   app.use((req,_res,next)=>{
     const fixture=req.headers['x-test-session'];
     req.session=fixture==='user' ? {user:{uid:'test'}} :
