@@ -15,9 +15,11 @@ com sessões artificiais, para testar 401/404/200:
 - `SuperAdminGuard`: oculta rotas administrativas (404);
 - `WorkerGuard`: conserva a allowlist rígida do painel workers.
 
-A decisão é compartilhada por `src/middlewares/accessPolicy.cjs`, sem
+As decisões são compartilhadas pela fonte tipada `src/middlewares/accessPolicy.ts`, sem
 Firebase, I/O ou execução de código de terceiros. Não aceitar papel
 administrativo enviado pelo cliente no corpo, cabeçalhos ou URL.
+
+O espelho `accessPolicy.js` é validado pelo verificador TypeScript 6, sem código JS independente.
 
 ## Por que ainda não montar Nest no Express comercial
 
