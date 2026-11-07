@@ -11,7 +11,7 @@ function loadLegacy(name){
   const module={exports:{}};
   const localRequire=(id)=>{
     if(id==='../services/firebase')return {db:{collection:()=>{throw Error('Unexpected database access in guard parity test');}}};
-    if(id==='./accessPolicy.cjs')return moduleRequire('./accessPolicy.cjs');
+    if(id==='./accessPolicy.js')return moduleRequire('./accessPolicy.js');
     throw Error('Unexpected dependency '+id);
   };
   vm.runInNewContext(fs.readFileSync(current,'utf8'),{
