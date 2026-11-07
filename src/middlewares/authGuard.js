@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * - Usuário PREMIUM: acesso total + 100MB no Cloud Storage
  */
 const { db } = require('../services/firebase');
+const { decideAccess, wantsJson } = require('./accessPolicy.cjs');
 // Consulta o Firestore para confirmar o status real da assinatura.
 // Usado quando o premium_ate da SESSÃO parece vencido antes de bloquear —
 // a sessão dura até 24h e não é atualizada automaticamente quando o webhook
@@ -40,7 +41,7 @@ function aplicarRenovacaoNaSessao(req, dados) {
 }
 // Exige apenas estar logado (free ou premium)
 function exigirLogin(req, res, next) {
-    if (req.session && req.session.user) {
+    if (decideAccess('session', req).allow) {
         return next();
     }
     if (ehRequisicaoApi(req)) {
@@ -52,14 +53,7 @@ function exigirLogin(req, res, next) {
 // Necessário para que rotas /api/* bloqueadas devolvam 403 JSON em vez de
 // um redirect 302 → HTML, o que quebra o parser response.json() do front-end.
 function ehRequisicaoApi(req) {
-    if (req.path && req.path.startsWith('/api/'))
-        return true;
-    const accept = (req.get('accept') || '').toLowerCase();
-    if (accept.includes('application/json'))
-        return true;
-    if ((req.get('x-requested-with') || '').toLowerCase() === 'xmlhttprequest')
-        return true;
-    return false;
+    return wantsJson(req);
 }
 function bloquearAcesso(req, res, motivo) {
     if (ehRequisicaoApi(req)) {
