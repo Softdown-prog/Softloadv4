@@ -35,7 +35,12 @@ export class SoftloadApi {
     return this.loading;
   }
   async json<T>(url: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(url, {credentials: 'same-origin', headers: {'Accept':'application/json', ...(init?.headers ?? {})}, ...init});
+    // Build headers last: RequestInit.headers in a POST must not overwrite the
+    // JSON content negotiation used by Express/Nest authorization contracts.
+    // Headers also accepts object, tuple and Headers instances safely.
+    const headers = new Headers(init?.headers);
+    headers.set('Accept', 'application/json');
+    const response = await fetch(url, {credentials: 'same-origin', ...init, headers});
     if (!response.ok) {
       let message = 'Falha ao acessar o servidor.';
       try { const body: {erro?:string;error?:string} = await response.json(); message = body.erro || body.error || message; }
