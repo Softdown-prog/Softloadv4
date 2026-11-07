@@ -32,6 +32,15 @@ para login e o Premium negado recebe `302` para upgrade. Requisições
 autorização explicitamente tipadas; um `404` ou `500` de outra origem
 continua sendo tratado pelo Nest normalmente.
 
+A suíte `nest-middleware/test/express-premium.parity.test.mjs` executa
+**o middleware Express real** com Firestore substituído por um adaptador em
+memória, e compara sua decisão à função `decidePremium` do Nest nos mesmos
+8 cenários: sem login, Premium válido, free, expiração sem renovação,
+renovação posterior ao webhook, sessão inativa reativada, falha de banco em
+Premium vencido e falha de banco em sessão inativa. Também compara atualização
+da sessão e chave de lookup normalizada em lowercase. Não chama a API real
+nem aceita credenciais vindas do cliente.
+
 **A cobertura HTML ainda não equivale a renderizar EJS**, nem garante
 compatibilidade de cookies Firestore, do Express 5 ou da navegação comercial:
 o filtro existe apenas na aplicação Nest efêmera criada pelos testes.
