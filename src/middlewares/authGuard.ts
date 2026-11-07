@@ -23,7 +23,7 @@ interface AuthDatabase { collection(name: string): { doc(id: string): { get(): P
  */
 
 const { db } = require('../services/firebase') as { db: AuthDatabase };
-const { decideAccess, wantsJson } = require('./accessPolicy.cjs') as {
+const { decideAccess, wantsJson } = require('./accessPolicy.js') as {
     decideAccess(scope: string, request: unknown): {allow: boolean};
     wantsJson(request: unknown): boolean;
 };
