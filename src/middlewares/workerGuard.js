@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const { decideAccess } = require('./accessPolicy.cjs');
 function exigirWorkerAccess(req, res, next) {
-    const email = req.session?.user?.email || '';
-    if (email.toLowerCase() === 'softloady@gmail.com')
+    if (decideAccess('worker', req).allow)
         return next();
     res.status(404).render('pages/404');
 }
