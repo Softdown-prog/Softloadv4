@@ -14,6 +14,18 @@ com sessões artificiais, para testar 401/404/200:
 - `SessionGuard`: sessão autenticada;
 - `SuperAdminGuard`: oculta rotas administrativas (404);
 - `WorkerGuard`: conserva a allowlist rígida do painel workers.
+- `PremiumGuard`: serviço Nest com `PremiumAccessModule.register(reader)`, 
+  capaz de revalidar a assinatura vencida/inativa após um webhook. O leitor
+  de status é **injetado explicitamente** (sem import de Firebase no piloto)
+  e os testes usam respostas em memória, inclusive falha de banco. O módulo
+  não é montado no backend Express, e a leitura real de Firestore ainda não
+  foi implementada para Nest.
+
+Os testes HTTP do piloto verificam `401` sem sessão, `403` sem Premium,
+`200` com Premium ativo ou renovado e `403` quando a verificação falha.
+O status `403` do Nest vale para as rotas **JSON do piloto**; a equivalência
+da navegação HTML, que no Express redireciona para o upgrade, precisa de um
+adaptador de resposta antes de migrar qualquer rota comercial.
 
 As decisões são compartilhadas pela fonte tipada `src/middlewares/accessPolicy.ts`, sem
 Firebase, I/O ou execução de código de terceiros. Não aceitar papel
@@ -41,15 +53,20 @@ provar compatibilidade Express 5.
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
    JSON 401; Premium pode reler Firestore após renovação; admin/worker 404).
-   O guard Nest atual cobre somente sessão/admin/worker, **não** Premium.
+   O piloto já cobre Premium com um leitor simulado, mas **ainda não** cobre
+   o adaptador Firestore real nem o redirecionamento HTML.
 2. Migrar Express 4 → 5 em PR separado, revisar rotas catch-all, parsers,
    cookie, `express-session`, limite de requisições e webhook.
 3. Criar factory do servidor legado sem `listen()` e remover 404 catch-all
    na hora de acoplar Nest, mantendo ordens de middleware e sessão Firestore.
 4. Montar Nest via `ExpressAdapter`, migrar uma rota protegida de baixo
    risco com testes HTTP equivalentes e só depois mover as demais.
-5. Levar autenticação Premium e rate limiting para Guards/Providers/Middleware
-   com testes de expiração/renovação de assinatura e falha do Firestore.
+5. Acoplar o leitor real de assinatura com testes de integração, mantendo a
+   consulta à coleção correta, e levar rate limiting para Middleware/Providers.
+   Um fluxo legado de reativação de sessões inativas aceita o campo
+   `is_active` vindo do banco sem conferir `premium_ate` nesse ramo; essa
+   regra preexistente precisa de revisão separada, sem mudar permissões
+   silenciosamente durante a migração.
 6. Validar Angular/Chrome, SAC, Docker, download Blogger, pagamento simulado,
    sessão e rollback antes de qualquer merge que afete produção.
 
