@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * - Usuário PREMIUM: acesso total + 100MB no Cloud Storage
  */
 const { db } = require('../services/firebase');
-const { decideAccess, wantsJson } = require('./accessPolicy.cjs');
+const { decideAccess, wantsJson } = require('./accessPolicy.js');
 // Consulta o Firestore para confirmar o status real da assinatura.
 // Usado quando o premium_ate da SESSÃO parece vencido antes de bloquear —
 // a sessão dura até 24h e não é atualizada automaticamente quando o webhook
