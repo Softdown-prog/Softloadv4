@@ -41,3 +41,20 @@ O SAC atualizado verifica **o aplicativo Angular e seus artefatos de build**;
 a validade do XML Blogger continua responsabilidade dos validadores e testes
 do compilador. Nenhuma conexão com IA, pagamentos ou banco é necessária para
 testar os exemplos.
+
+## Cobertura combinatória do compilador
+
+O workflow `Softload - Qualidade XML Blogger` executa
+`npm run test:quality`. Além da prova básica de 16 estruturas, a
+matriz determinística de 7 perfis cobre **16 estruturas × 7 combinações =
+112 compilações reais**. Cada combinação utiliza cores e fontes dos
+catálogos oficiais, exercita as 7 grades, 3 posições de sidebar e
+as 6 tipografias. A saída precisa conter `Blog1` e passar pelos três
+validadores XML do compilador. A telemetria é desabilitada; não há rede,
+banco, IA, cobrança nem download comercial nessa matriz.
+
+Essa matriz não tenta combinar todas as paletas disponíveis (o produto
+permite muito mais que 112 combinações) e não é evidência de renderização
+visual perfeita de cada uma. O Chrome verifica a aplicação Angular e a
+prévia em cenários representativos. A versão atual não cria novos chassis
+e não garante layouts dedicados para nichos ainda em fallback.
