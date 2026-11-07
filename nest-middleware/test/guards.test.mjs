@@ -41,7 +41,7 @@ const premiumReader={
   async findByEmail(email){
     if(email==='offline@example.com')throw Error('mock Firestore unavailable');
     if(email==='paid@example.com')
-      return {is_active:true,plano:'essencial',premium_ate:'2030-01-01T00:00:00.000Z'};
+      return {is_active:true,plano:'essencial',premium_ate:'2099-01-01T00:00:00.000Z'};
     return null;
   }
 };
@@ -54,7 +54,7 @@ test('Nest HTTP guard chain enforces 401 / concealed 404 / permitted 200',async(
     req.session=fixture==='user' ? {user:{uid:'test'}} :
       fixture==='admin' ? {user:{uid:'test',is_super_admin:true}} :
       fixture==='worker' ? {user:{uid:'test',email:'SOFTLOADY@GMAIL.COM'}} :
-      fixture==='paid' ? {user:{email:'paid@example.com',is_active:true,premium_ate:'2030-01-01T00:00:00.000Z'}} :
+      fixture==='paid' ? {user:{email:'paid@example.com',is_active:true,premium_ate:'2099-01-01T00:00:00.000Z'}} :
       fixture==='renewed' ? {user:{email:'paid@example.com',is_active:true,premium_ate:'2020-01-01T00:00:00.000Z'}} :
       fixture==='inactive' ? {user:{email:'paid@example.com',is_active:false}} :
       fixture==='expired' ? {user:{email:'old@example.com',is_active:true,premium_ate:'2020-01-01T00:00:00.000Z'}} :
