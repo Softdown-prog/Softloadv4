@@ -12,7 +12,6 @@ import {ExpressAdapter} from '@nestjs/platform-express';
 const rootRequire=createRequire(new URL('../../server.js',import.meta.url));
 const express4=rootRequire('express');
 const session=rootRequire('express-session');
-const express5=new ExpressAdapter().getInstance().constructor;
 const compiled=readFileSync(new URL('../../server.js',import.meta.url),'utf8');
 const ast=ts.createSourceFile('server.js',compiled,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
 
