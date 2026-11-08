@@ -231,6 +231,28 @@ para reativar uma sessão, reproduzindo a correção comercial do PR #149.
 Inclui casos de vencimento, ausência de data e data inválida. Nenhum
 pagamento, Firestore real ou rota comercial foi ativado em Nest nesta etapa.
 
+## Rollback entre Express 4 e Express 5 com a mesma sessão
+
+A suíte `nest-middleware/test/express5-session-firestore.parity.test.mjs`
+agora inclui mudanças de runtime nos **dois sentidos**: Express 4 → 5 → 4
+e Express 5 → 4 → 5. Cada etapa usa um servidor HTTP real em porta efêmera,
+o `express-session` do lockfile de produção e o **FirestoreSessionStore
+comercial extraído diretamente por AST de `server.js`**. A coleção Firestore
+é simulada em memória e permanece compartilhada ao encerrar e reabrir cada
+servidor. Com o mesmo `SESSION_SECRET`, o cookie original e o cookie criado
+na versão candidata continuam válidos ao fazer rollback, sem login novo.
+Também prova a ausência de rotação desnecessária, HTML autenticado, falha
+fechada durante indisponibilidade do armazenamento, recuperação após a
+falha, propagação de erro HTTP 503 ao não conseguir revogar a sessão e
+revogação visível nas duas versões. Uma assinatura de cookie com segredo
+diferente **deve ser rejeitada** (401), mesmo com o documento presente.
+
+**Limite:** é uma homologação offline do contrato HTTP, não rollback na
+VPS, nem Firestore real, nem integração do servidor Nest em produção. O
+`SESSION_SECRET` precisa permanecer igual nos deployments; a execução
+de um rollback real ainda depende de build, artefato, banco, proxy HTTPS e
+testes operacionais próprios. Os testes não usam credenciais ou pagamentos.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
