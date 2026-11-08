@@ -279,6 +279,29 @@ CSRF ou rate limiter distribuído em múltiplas réplicas. Antes da troca
 real, confirmar a ordem da cadeia de erros com Nest e as configurações
 reais de proxy em ambiente controlado.
 
+## Erros legados e 404 na porta compartilhada
+
+O teste da porta única `express5-single-port-bootstrap.test.mjs` agora
+monta a `mountLegacyFallback(app,{nestOwnsNotFound:true})` **real**
+após os routers legados, mas antes de registrar Nest. Essa opção preserva
+o handler Express de erros para `next(err)` sem interceptar rotas
+desconhecidas e sem ocultar os controllers Nest. O modo comercial continua
+chamando `mountLegacyFallback(app)` sem opção: ele mantém o 404 Express
+e o mesmo único listener de produção.
+
+O novo `LegacyErrorContractFilter` é instalado **apenas na prova Nest
+isolada**. Converte 404 Nest para a página EJS comercial (inclusive
+`/api/*` desconhecido), falhas internas 500/503 para a resposta genérica
+JSON em API/XHR e para EJS em navegação. Não devolve mensagens de exceção
+privadas. Continua respeitando os redirects/401 do `AccessContractFilter`
+e os erros de validação 4xx. A suíte executa erros controlados em rotas
+Nest e Express no mesmo processo e verifica status, tipo de resposta,
+cache dinâmico e ausência de detalhes internos.
+
+**Limites:** o filtro ainda não está registrado na VPS, não testa logging
+ou telemetria reais, CSRF nem transporte proxy/TLS de produção. A porta
+compartilhada continua restrita ao CI.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
