@@ -184,6 +184,32 @@ com banco em memória, sem chamar Firebase nem Mercado Pago. Ela também roda
 no workflow Nest e no `npm test` de produção. Contas legadas já ativas com
 data ausente não são alteradas automaticamente nesta revisão.
 
+## Factory do servidor legado e prova de porta única
+
+O backend comercial mantém o **Express 4 e a porta atual**. A montagem de
+middlewares, EJS, rotas, sessão Firestore e health foi encapsulada na
+`createLegacyApp(app = express())` de `server.ts` / `server.js`, sem
+abrir socket. A instalação de `404` e erro Express fica isolada em
+`mountLegacyFallback(app)`; o entrypoint de produção chama as duas
+funções na **ordem preexistente**, depois executa seu **único** `listen()`.
+A ordem do cache, parsers, sessão, rotas e handlers não foi alterada.
+O Sentinel e o tratamento de SIGTERM permanecem no entrypoint.
+
+No piloto `nest-middleware/test/express5-single-port-bootstrap.test.mjs`,
+a suíte lê a função **real** do `server.js` por AST, injeta um Express 5
+compatível com o adapter Nest, configura dependências externas como mocks
+sem rede e chama `NestFactory.create(..., new ExpressAdapter(app))`. Somente
+o Nest chama `listen()` naquele teste: GET EJS do login e GET API legado
+respondem junto ao endpoint Nest protegido por `SessionGuard`, usando
+o **mesmo cookie express-session e MemoryStore efêmero**. O teste também
+confirma o fallback Express 4 e 404 no modo comercial original.
+Não é um bootstrap Nest habilitado em produção, nem testa o Firestore real,
+Mercado Pago real, deploy reversível ou todos os handlers comerciais.
+
+**Passo seguinte:** preservar o tratamento de erro e a política de
+roteamento quando um endpoint de baixo risco for movido definitivamente
+para Nest, sem catch-all Express antecipado nem dois listeners HTTP.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
