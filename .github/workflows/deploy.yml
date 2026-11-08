@@ -3,8 +3,15 @@ name: Deploy Softload VPS
 on:
   push:
     branches: [main]
+    # Mudanças exclusivas de testes/documentação do piloto não precisam
+    # construir ou publicar uma nova imagem da aplicação na VPS.
+    # Pushes que também mudem código/artefatos comerciais continuam no deploy.
     paths-ignore:
       - .github/workflows/vps-artifact-transport-check.yml
+      - .github/workflows/nest-middleware-proof.yml
+      - .github/workflows/deploy.yml
+      - 'nest-middleware/**'
+      - docs/NEST_MIDDLEWARE_MIGRATION.md
   workflow_dispatch:
 
 # Uma revisão por vez. Build no GitHub; artefato autenticado/criptografado
