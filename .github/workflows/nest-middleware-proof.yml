@@ -21,6 +21,11 @@ jobs:
           node-version: '24'
       - name: Legacy-independent access policy regressions
         run: node --test src/middlewares/accessPolicy.test.js
+      # The session parity proof imports the EXACT production Express 4 and
+      # express-session versions from the root lockfile. Install production
+      # dependencies without lifecycle scripts, Firebase calls or secrets.
+      - name: Install pinned legacy HTTP/session dependencies for offline parity
+        run: npm ci --omit=dev --legacy-peer-deps --ignore-scripts --no-audit --no-fund
       # Isolated pilot: use the reviewed lockfile, never install unlocked
       # transitive dependencies. Does not change the production image.
       - name: Install reproducible Nest 12 dependencies

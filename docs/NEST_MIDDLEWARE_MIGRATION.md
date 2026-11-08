@@ -99,6 +99,29 @@ A atualização do `express` na raiz e a adaptação de `server.listen` para
 receber erros na callback ainda devem ser avaliadas em PR próprio. O processo
 Nest continua separado da porta de produção.
 
+## Paridade HTTP de sessão com Express 4 e Express 5
+
+A prova isolada `nest-middleware/test/express5-session-firestore.parity.test.mjs`
+usa **o `express-session@1.19.0` real e o Express 4.22.3 do lockfile
+de produção**, mais o Express 5 do adapter NestJS. O workflow instala as
+dependências comerciais com `npm ci --omit=dev --legacy-peer-deps
+--ignore-scripts` somente no runner, sem credenciais nem scripts de instalação.
+
+O teste extrai por AST o `FirestoreSessionStore` e a chamada exata
+`session({...})` de `server.js` e executa esses trechos isoladamente com
+uma coleção Firestore **em memória**. Não inicializa `server.js`, Firebase
+nem Mercado Pago. Nos dois Express, exercita o middleware de login real,
+o cookie assinado com atributos Secure/HttpOnly/SameSite, o salvamento após
+login simulado, a leitura após recriar o servidor, a rejeição de cookie
+adulterado, o bloqueio quando a leitura do banco falha, o logout que exclui
+o registro e a exclusão de registros vencidos. As respostas e decisões são
+comparadas.
+
+Esta prova não substitui testes contra uma instância Firestore real, nem
+confirma atualização contínua de cookies, HTTPS/Caddy em produção, EJS,
+webhooks assinados, revalidação de pagamento ou rollback. **O runtime de
+produção continua em Express 4** até a homologação integral da issue #141.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
