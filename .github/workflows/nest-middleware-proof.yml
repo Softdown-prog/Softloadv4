@@ -21,54 +21,12 @@ jobs:
           node-version: '24'
       - name: Legacy-independent access policy regressions
         run: node --test src/middlewares/accessPolicy.test.js
-      # Staging proof: generate the experimental lockfile on a disposable
-      # runner. It will be reviewed and committed separately before swapping
-      # this step to npm ci. No production dependency is changed.
-      - name: Generate reviewable isolated Nest dependency lockfile
-        run: npm install --prefix nest-middleware --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Verify generated lockfile installs cleanly
+      # Isolated pilot: use the reviewed lockfile, never install unlocked
+      # transitive dependencies. Does not change the production image.
+      - name: Install reproducible Nest 12 dependencies
         run: npm ci --prefix nest-middleware --ignore-scripts --no-audit --no-fund
-      - name: Export Nest lockfile for review
-        uses: actions/upload-artifact@v4
-        with:
-          name: nest-middleware-lockfile
-          path: nest-middleware/package-lock.json
-          if-no-files-found: error
-          retention-days: 1
       - name: Compile isolated Nest TypeScript sources
         run: npm --prefix nest-middleware run build
       - name: Prove real Nest DI and HTTP guard behavior
         run: npm --prefix nest-middleware test
 
-  # Temporary controlled handoff: only this own-repo review branch can write
-  # the generated lockfile, after the isolated Nest tests have succeeded.
-  # Remove this job and all write permissions before merging the PR.
-  record_lockfile:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'chore/nest-reproducible-lockfile-20261108' && github.event.pull_request.head.repo.full_name == github.repository }}
-    needs: middleware
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Generate lockfile without running lifecycle scripts
-        run: npm install --prefix nest-middleware --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Record isolated lockfile on the exact review branch
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add nest-middleware/package-lock.json
-          if git diff --cached --quiet; then
-            echo 'Lockfile already committed'
-            exit 0
-          fi
-          git commit -m 'build(nest): pin dependency graph for reproducible npm ci'
-          git push origin "HEAD:refs/heads/${HEAD_REF}"
