@@ -116,27 +116,13 @@ async function exigirPlanoAtivo(req: AuthGuardRequest, res: AuthGuardResponse, n
     }
 
     if (!user.is_active) {
-        // Sessão pode estar desatualizada após pagamento aprovado pelo webhook.
-        // Consulta o DB para confirmar o status real antes de bloquear o acesso.
-        // user.email vem da sessão e pode estar com case misto — lowercase no lookup
-        // garante consistência com o doc ID salvo pelo registerService.
-        try {
-            const emailKey = (user.email || '').toLowerCase();
-            if (emailKey) {
-                const snap = await db.collection('clientes_premium').doc(emailKey).get();
-                if (snap.exists) {
-                    const dados = snap.data();
-                    if (dados.is_active === true) {
-                        req.session!.user!.is_active = true;
-                        req.session!.user!.plano = dados.plano || 'premium';
-                        if (dados.premium_ate) req.session!.user!.premium_ate = dados.premium_ate;
-                        return next();
-                    }
-                }
-            }
-        } catch (err) {
-            // Falha de DB nunca deve virar 500 — degradamos para o bloqueio padrão
-            console.warn('[AUTH] Falha ao verificar status no DB:', (err as Error).message);
+        // Uma renovação por webhook pode estar ausente da sessão atual.
+        // Exigir data futura no banco: is_active sozinho não comprova pagamento
+        // vigente e pode permanecer true em um registro de cobrança vencida.
+        const dados = await buscarStatusPremiumAtual(user.email);
+        if (assinaturaRenovada(dados)) {
+            aplicarRenovacaoNaSessao(req, dados);
+            return next();
         }
         return bloquearAcesso(req, res);
     }

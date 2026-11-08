@@ -170,6 +170,20 @@ mensagem de nova tentativa; somente o sucesso redireciona para o login.
 O contrato foi incluído no teste da rota real e na prova HTTP Express 4/5.
 O workflow isolado também executa em pushes relevantes para `main`.
 
+## Renovação Premium com data válida no Firestore
+
+O middleware comercial `exigirPlanoAtivo` tinha uma inconsistência: quando
+a sessão estava inativa, `is_active: true` em `clientes_premium` bastava
+para liberar a ferramenta, mesmo com `premium_ate` vencido, ausente ou
+inválido. Agora o ramo de reativação usa o mesmo validador já adotado para
+sessões vencidas: exige **ativação explícita e data Premium válida no futuro**.
+Falha do banco mantém o acesso bloqueado (HTTP 403 ou redirecionamento HTML);
+uma assinatura efetivamente renovada atualiza a sessão antes de continuar.
+A suíte `src/middlewares/authGuard.test.js` executa o guard comercial real
+com banco em memória, sem chamar Firebase nem Mercado Pago. Ela também roda
+no workflow Nest e no `npm test` de produção. Contas legadas já ativas com
+data ausente não são alteradas automaticamente nesta revisão.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
@@ -185,10 +199,9 @@ O workflow isolado também executa em pushes relevantes para `main`.
    risco com testes HTTP equivalentes e só depois mover as demais.
 5. Acoplar o leitor real de assinatura com testes de integração, mantendo a
    consulta à coleção correta, e levar rate limiting para Middleware/Providers.
-   Um fluxo legado de reativação de sessões inativas aceita o campo
-   `is_active` vindo do banco sem conferir `premium_ate` nesse ramo; essa
-   regra preexistente precisa de revisão separada, sem mudar permissões
-   silenciosamente durante a migração.
+   A reativação de sessões inativas agora verifica `is_active` **e**
+   `premium_ate` futuro no Firestore (teste unitário do guard real).
+   A lógica de migração ainda precisa provar a revalidação completa.
 6. Validar Angular/Chrome, SAC, Docker, download Blogger, pagamento simulado,
    sessão e rollback antes de qualquer merge que afete produção.
 
