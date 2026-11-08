@@ -231,8 +231,10 @@ router.get('/logout', (req, res) => {
     if (!req.session)
         return res.redirect('/login');
     req.session.destroy((err) => {
-        if (err)
+        if (err) {
             console.error('[AUTH] Erro ao destruir sessão:', err);
+            return res.status(503).send('Não foi possível encerrar a sessão. Tente novamente.');
+        }
         res.redirect('/login?sucesso=Sessão encerrada com segurança.');
     });
 });

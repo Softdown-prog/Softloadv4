@@ -39,7 +39,7 @@ const production=findProductionSessionDefinitions();
 
 function fakeFirestore(){
   const records=new Map();
-  let unavailable=false;
+  let unavailable=false, deleteUnavailable=false;
   const clone=value=>JSON.parse(JSON.stringify(value));
   const db={
     collection(name){
@@ -53,12 +53,19 @@ function fakeFirestore(){
             return {exists:value!==undefined,data:()=>clone(value)};
           },
           async set(value){records.set(sid,clone(value));},
-          async delete(){records.delete(sid);}
+          async delete(){
+            if(deleteUnavailable)throw Error('simulated Firestore delete failure');
+            records.delete(sid);
+          }
         };
       }};
     }
   };
-  return {db,records,setUnavailable(value){unavailable=value}};
+  return {
+    db,records,
+    setUnavailable(value){unavailable=value},
+    setDeleteUnavailable(value){deleteUnavailable=value}
+  };
 }
 function legacySessionMiddleware(db){
   // Evaluate *only* the actual store declaration and session(...) call from
@@ -163,6 +170,14 @@ async function scenario(express,label){
     assert.equal((await request(server.base,'/api/proof/private',{cookie})).status,
       200,label+' session restored when Firestore is reachable');
 
+    // Sem confirmação de exclusão, o cookie antigo continua válido.
+    fake.setDeleteUnavailable(true);
+    const failedLogout=await request(server.base,'/probe/logout',{cookie});
+    assert.equal(failedLogout.status,503,label+' failed revocation reported');
+    assert.equal(fake.records.size,1,label+' session record not removed');
+    assert.equal((await request(server.base,'/api/proof/private',{cookie})).status,
+      200,label+' old cookie stays valid if deletion fails');
+    fake.setDeleteUnavailable(false);
     const logout=await request(server.base,'/probe/logout',{cookie});
     assert.equal(logout.status,204,label+' logout');
     assert.equal(fake.records.size,0,label+' Firestore document removed on logout');

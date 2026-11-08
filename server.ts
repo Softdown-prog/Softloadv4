@@ -115,8 +115,14 @@ class FirestoreSessionStore extends session.Store {
     }
 
     async destroy(sid: string, cb: SessionWriteCallback) {
-        try { await this.col.doc(sid).delete(); } catch {}
-        cb(null);
+        try {
+            await this.col.doc(sid).delete();
+            cb(null);
+        } catch (e) {
+            // Uma falha de exclusão não pode ser reportada como logout seguro.
+            console.error('[SESSION] Falha ao apagar sessão:', (e as Error).message);
+            cb(e);
+        }
     }
 }
 

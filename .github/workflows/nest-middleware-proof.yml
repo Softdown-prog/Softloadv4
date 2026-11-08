@@ -1,5 +1,15 @@
 name: Softload - NestJS middleware proof (isolated)
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'nest-middleware/**'
+      - 'server.ts'
+      - 'server.js'
+      - 'src/routes/authRoutes.ts'
+      - 'src/routes/authRoutes.js'
+      - 'src/routes/authRoutes.test.js'
+      - '.github/workflows/nest-middleware-proof.yml'
   pull_request:
     paths:
       - 'nest-middleware/**'
@@ -21,6 +31,8 @@ jobs:
           node-version: '24'
       - name: Legacy-independent access policy regressions
         run: node --test src/middlewares/accessPolicy.test.js
+      - name: Legacy logout error contract
+        run: node --test src/routes/authRoutes.test.js
       # The session parity proof imports the EXACT production Express 4 and
       # express-session versions from the root lockfile. Install production
       # dependencies without lifecycle scripts, Firebase calls or secrets.

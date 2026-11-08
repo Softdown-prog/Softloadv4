@@ -16,6 +16,8 @@ interface AuthRequest {
 interface AuthResponse {
     redirect(path: string): void;
     render(view: string, locals?: Record<string, string>): void;
+    status(code: number): AuthResponse;
+    send(body: string): void;
 }
 type AuthHandler = (req: AuthRequest, res: AuthResponse) => unknown;
 interface AuthRouter {
@@ -310,7 +312,10 @@ router.post('/recover', recoverLimiter, async (req, res) => {
 router.get('/logout', (req, res) => {
     if (!req.session) return res.redirect('/login');
     req.session.destroy((err) => {
-        if (err) console.error('[AUTH] Erro ao destruir sessão:', err);
+        if (err) {
+            console.error('[AUTH] Erro ao destruir sessão:', err);
+            return res.status(503).send('Não foi possível encerrar a sessão. Tente novamente.');
+        }
         res.redirect('/login?sucesso=Sessão encerrada com segurança.');
     });
 });

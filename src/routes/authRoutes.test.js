@@ -118,3 +118,20 @@ test('logout destrói sessão e redireciona',async()=>{
     assert.deepEqual(h.sessions,['destroyed']);
     assert.match(h.redirects[0],/^\/login\?sucesso=/);
 });
+
+test('logout não anuncia sucesso se a revogação no Firestore falhar',async()=>{
+    const h=harness();
+    const req=h.request({}, {destroy:cb=>cb(new Error('simulated store outage'))});
+    const events=[];
+    const res={
+        status(code){events.push(['status',code]);return this;},
+        send(message){events.push(['send',message]);},
+        redirect(url){events.push(['redirect',url]);}
+    };
+    await h.invoke('GET','/logout',req,res);
+    assert.deepEqual(events,[
+        ['status',503],
+        ['send','Não foi possível encerrar a sessão. Tente novamente.']
+    ]);
+    assert.deepEqual(h.redirects,[]);
+});

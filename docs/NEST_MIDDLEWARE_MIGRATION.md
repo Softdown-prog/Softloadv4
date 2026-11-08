@@ -114,13 +114,25 @@ nem Mercado Pago. Nos dois Express, exercita o middleware de login real,
 o cookie assinado com atributos Secure/HttpOnly/SameSite, o salvamento após
 login simulado, a leitura após recriar o servidor, a rejeição de cookie
 adulterado, o bloqueio quando a leitura do banco falha, o logout que exclui
-o registro e a exclusão de registros vencidos. As respostas e decisões são
-comparadas.
+o registro e a exclusão de registros vencidos. Também verifica que a
+exclusão recusada pelo Firestore retorna erro (sem fingir logout concluído),
+preservando o registro até a exclusão ser confirmada. As respostas e decisões
+são comparadas.
 
 Esta prova não substitui testes contra uma instância Firestore real, nem
 confirma atualização contínua de cookies, HTTPS/Caddy em produção, EJS,
 webhooks assinados, revalidação de pagamento ou rollback. **O runtime de
 produção continua em Express 4** até a homologação integral da issue #141.
+
+## Corrigir falsa confirmação de logout
+
+O `FirestoreSessionStore.destroy()` devolve erro ao `express-session`
+quando o Firestore não confirma a exclusão do documento. Antes a falha
+era silenciosa, deixando um cookie persistente ainda válido com a mensagem
+de logout bem-sucedido. A rota `GET /logout` agora devolve HTTP 503 com
+mensagem de nova tentativa; somente o sucesso redireciona para o login.
+O contrato foi incluído no teste da rota real e na prova HTTP Express 4/5.
+O workflow isolado também executa em pushes relevantes para `main`.
 
 ## Sequência para migração de verdade
 
