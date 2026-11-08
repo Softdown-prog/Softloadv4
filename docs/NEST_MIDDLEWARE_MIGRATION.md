@@ -142,6 +142,24 @@ executam o handler de pagamento, conciliação, `payment.get()`, assinatura
 de notificações reais ou efeito de webhooks duplicados. O Express comercial
 ainda permanece na versão 4.
 
+## Compatibilidade da renderização EJS e das rotas de autenticação
+
+A suíte `nest-middleware/test/express5-ejs.parity.test.mjs` monta, em
+servidores HTTP efêmeros separados, os **routers GET reais**
+`authRoutes.js` e `contatoRoutes.js` com Express 4 e com Express 5
+do piloto Nest. As views EJS `auth-simples`, `contato` e os partials
+`header`, `icon`, `cookies` e `footer-blogger` são lidos diretamente
+do repositório (sem HTML fictício). Verifica equivalência das respostas
+HTML e redirecionamentos de login/registro/recuperação, tags noindex,
+versão dos assets, política `no-store` e escape de mensagem maliciosa na
+query da página de contato.
+
+O estado da sessão e as variáveis globais de template são simulados
+com os mesmos nomes usados em `server.js`. O teste **não** executa
+autenticação Firebase, envio de contato, sessão Firestore verdadeira,
+POSTs comerciais ou requisições externas. É um gate de renderização EJS,
+não uma homologação integral do backend Express 5.
+
 ## Corrigir falsa confirmação de logout
 
 O `FirestoreSessionStore.destroy()` devolve erro ao `express-session`
