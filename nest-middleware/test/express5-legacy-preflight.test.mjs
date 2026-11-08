@@ -4,6 +4,7 @@ import {readFileSync,readdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {join,relative} from 'node:path';
 import {runInNewContext} from 'node:vm';
+import {once} from 'node:events';
 import {createRequire} from 'node:module';
 import ts from 'typescript';
 import {ExpressAdapter} from '@nestjs/platform-express';
@@ -165,6 +166,7 @@ test('legacy login, admin, worker and Premium guards preserve HTTP contracts on 
 
   const server=app.listen(0,'127.0.0.1');
   try{
+    await once(server,'listening');
     const address=server.address();
     assert.ok(address&&typeof address!=='string');
     const base='http://127.0.0.1:'+address.port;
