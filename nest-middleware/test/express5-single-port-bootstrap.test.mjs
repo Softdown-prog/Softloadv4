@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {runInNewContext} from 'node:vm';
 import {once} from 'node:events';
-import {Controller,Get,Module,UseGuards} from '@nestjs/common';
+import {Controller,Get,Module,UseGuards,BadRequestException,ServiceUnavailableException} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {ExpressAdapter} from '@nestjs/platform-express';
 import ts from 'typescript';
@@ -15,6 +15,7 @@ import {MiddlewareModule} from '../dist/middleware.module.js';
 import {LegacyRedirectModule} from '../dist/legacy-redirect.module.js';
 import {SessionGuard} from '../dist/guards.js';
 import {AccessContractFilter} from '../dist/response-contract.js';
+import {LegacyErrorContractFilter} from '../dist/legacy-error-contract.js';
 
 // The *real* server.js factory is extracted by AST; requiring server.js
 // would run environment validation, Firebase, monitoring and a listener.
@@ -73,8 +74,12 @@ function makeLegacyFactory(express){
   const dashboardRoutes=express.Router();
   dashboardRoutes.get('/dashboard/legacy-proof',(req,res)=>
     res.json({legacy:true,user:req.session?.user?.uid??null}));
+  dashboardRoutes.get('/dashboard/legacy-failure',(_req,_res,next)=>
+    next(Object.assign(Error('private-legacy-dashboard-error'),{status:503})));
   const apiRoutes=express.Router();
   apiRoutes.get('/api/legacy-proof',(_req,res)=>res.json({source:'legacy-api'}));
+  apiRoutes.get('/api/legacy-failure',(_req,_res,next)=>
+    next(Object.assign(Error('private-legacy-api-error'),{status:503})));
   const emptyRouter=()=>express.Router();
   const sentinelWorker={getStatus(){return {running:false};}};
   const db={collection(name){
@@ -114,13 +119,29 @@ function makeLegacyFactory(express){
 
 class BridgeController {
   get(){return {nest:true,user:'authenticated'};}
+  unavailable(){throw new ServiceUnavailableException('private-nest-unavailable');}
+  unexpected(){throw Error('private-nest-unknown-error');}
+  invalid(){throw new BadRequestException('missing required field');}
 }
 Controller('api/nest-proof')(BridgeController);
 const descriptor=Object.getOwnPropertyDescriptor(BridgeController.prototype,'get');
 Get('shared-port')(BridgeController.prototype,'get',descriptor);
 UseGuards(SessionGuard)(BridgeController.prototype,'get',descriptor);
+for(const [method,route] of [
+  ['unavailable','unavailable'],['unexpected','unexpected'],['invalid','invalid']
+]){
+  const desc=Object.getOwnPropertyDescriptor(BridgeController.prototype,method);
+  Get(route)(BridgeController.prototype,method,desc);
+}
+class DashboardErrorController {
+  unavailable(){throw new ServiceUnavailableException('private-nest-dashboard-error');}
+}
+Controller('dashboard/nest-proof')(DashboardErrorController);
+Get('unavailable')(DashboardErrorController.prototype,'unavailable',
+  Object.getOwnPropertyDescriptor(DashboardErrorController.prototype,'unavailable'));
 class BridgeModule {}
-Module({imports:[MiddlewareModule,LegacyRedirectModule],controllers:[BridgeController]})(BridgeModule);
+Module({imports:[MiddlewareModule,LegacyRedirectModule],
+  controllers:[BridgeController,DashboardErrorController]})(BridgeModule);
 
 async function fetchText(base,uri,headers={}){
   const response=await fetch(base+uri,{headers,redirect:'manual'});
@@ -141,6 +162,11 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
   assert.equal(registered.filter(route=>route==='/dashboard/blogger-ai').length,0,
     'do not mount the Express redirect when Nest explicitly owns it');
 
+  // The actual Express error middleware must be after legacy routes and
+  // before Nest. Its legacy catch-all 404 must NOT swallow Nest controllers.
+  const {fallback}=makeLegacyFactory(express5);
+  fallback(expressApp,{nestOwnsNotFound:true});
+
   // Fixture login happens in the same express-session middleware/MemoryStore
   // as the production factory; it is not a second process or session store.
   expressApp.get('/offline/bridge-login',(req,res)=>{
@@ -150,7 +176,7 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
   const nest=await NestFactory.create(BridgeModule,new ExpressAdapter(expressApp),{
     logger:false,abortOnError:false
   });
-  nest.useGlobalFilters(new AccessContractFilter());
+  nest.useGlobalFilters(new AccessContractFilter(),new LegacyErrorContractFilter());
   try{
     // Nest is the ONLY listener; legacy factory never calls listen().
     await nest.listen(0,'127.0.0.1');
@@ -184,8 +210,46 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
     const authorized=await fetchText(base,'/api/nest-proof/shared-port',{cookie});
     assert.equal(authorized.status,200,'Nest must read the SAME session cookie');
     assert.deepEqual(JSON.parse(authorized.body),{nest:true,user:'authenticated'});
-    assert.equal((await fetchText(base,'/no-such-path')).status,404,
-      'Nest owns the unmatched route when legacy fallback is deferred');
+    const notFound=await fetchText(base,'/no-such-path');
+    assert.equal(notFound.status,404,'Nest owns the unmatched route');
+    assert.match(notFound.headers.get('content-type')??'',/text\/html/);
+    assert.match(notFound.body,/Página não encontrada/,'Nest 404 renders legacy EJS');
+    const missingApi=await fetchText(base,'/api/unknown-resource');
+    assert.equal(missingApi.status,404,'missing legacy API still responds 404');
+    assert.match(missingApi.headers.get('content-type')??'',/text\/html/,
+      'legacy unknown API paths return EJS, not Nest JSON');
+    assert.match(missingApi.body,/Página não encontrada/);
+    for(const uri of ['/api/legacy-failure','/api/nest-proof/unavailable',
+      '/api/nest-proof/unexpected']){
+      const failure=await fetchText(base,uri);
+      assert.equal(failure.status,uri.endsWith('unexpected')?500:503,uri);
+      assert.match(failure.headers.get('content-type')??'',/application\/json/);
+      assert.deepEqual(JSON.parse(failure.body),
+        {erro:'Erro interno do servidor. Tente novamente.'},uri);
+      assert.doesNotMatch(failure.body,/private-/);
+    }
+    for(const uri of ['/dashboard/legacy-failure','/dashboard/nest-proof/unavailable']){
+      const failure=await fetchText(base,uri);
+      assert.equal(failure.status,503,uri);
+      assert.match(failure.headers.get('content-type')??'',/text\/html/);
+      assert.match(failure.body,/Página não encontrada/);
+      assert.doesNotMatch(failure.body,/private-/);
+      const xhr=await fetchText(base,uri,{'x-requested-with':'XMLHttpRequest'});
+      assert.equal(xhr.status,503,uri+' XHR');
+      assert.deepEqual(JSON.parse(xhr.body),
+        {erro:'Erro interno do servidor. Tente novamente.'});
+    }
+    const invalid=await fetchText(base,'/api/nest-proof/invalid');
+    assert.equal(invalid.status,400,'ordinary Nest client error remains 400');
+    assert.equal(JSON.parse(invalid.body).message,'missing required field');
+    const noSessionAgain=await fetchText(base,'/api/nest-proof/shared-port');
+    assert.equal(noSessionAgain.status,401,'access contract must outrank generic filter');
+    assert.equal(JSON.parse(noSessionAgain.body).error,
+      'Sessão expirada. Recarregue a página e faça login novamente.');
+    for(const uri of ['/api/legacy-failure','/api/nest-proof/unavailable']){
+      const response=await fetchText(base,uri);
+      assert.equal(response.headers.get('cache-control'),'no-store',uri);
+    }
   }finally{await nest.close();}
 });
 

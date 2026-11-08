@@ -269,8 +269,13 @@ app.get('/health', async (req, res) => {
 
 // O Nest registra suas próprias rotas e handlers finais. Até a migração,
 // a produção segue instalando os handlers Express na ordem original.
-function mountLegacyFallback(app: ServerApp): void {
-app.use((req: ServerRequest, res: ServerResponse) => res.status(404).render('pages/404'));
+function mountLegacyFallback(
+    app: ServerApp,
+    options: { nestOwnsNotFound?: boolean } = {},
+): void {
+if (options.nestOwnsNotFound !== true) {
+    app.use((req: ServerRequest, res: ServerResponse) => res.status(404).render('pages/404'));
+}
 
 // Global error handler — evita 500 silencioso (tela branca) quando next(err) é chamado.
 // Rotas /api/* recebem JSON; navegação HTML recebe a página 404 genérica com status 500.
