@@ -253,6 +253,32 @@ VPS, nem Firestore real, nem integração do servidor Nest em produção. O
 de um rollback real ainda depende de build, artefato, banco, proxy HTTPS e
 testes operacionais próprios. Os testes não usam credenciais ou pagamentos.
 
+## Paridade real de rate limiting e fallback Express 4/5
+
+O gate `nest-middleware/test/express5-limiter-errors.parity.test.mjs`
+executa os **routers comerciais reais** `authRoutes.js` e
+`contatoRoutes.js` em Express 4 e Express 5 efêmeros, com
+`express-rate-limit` real do lockfile comercial. Exercita os limites
+por IP de login (10 por 15 minutos), cadastro (5 por hora), recuperação
+(5 por 15 minutos) e contato (1 por minuto). Após atingir o limite,
+confere as respostas de redirecionamento próprias dos formulários,
+headers RateLimit padrão e isolamento entre dois IPs atrás do proxy.
+O teste usa apenas tentativas offline inválidas; nenhum Firebase, envio
+de e-mail nem cobrança é chamado.
+
+No mesmo gate, a função `mountLegacyFallback` real de `server.js` é
+extraída por AST e instalada após rotas de falha controlada. Compara
+404 renderizado em EJS, erro genérico JSON para APIs e XHR, erro HTML,
+status HTTP, política `no-store` e não exposição de mensagens internas.
+Também registra explicitamente o **contrato atual**: caminhos `/api/*`
+desconhecidos recebem HTML 404 do fallback legado, não JSON 404.
+
+Isso comprova paridade de **Express 4 versus Express 5 isolados**;
+não configura os filtros globais do Nest, não prova proxies de produção,
+CSRF ou rate limiter distribuído em múltiplas réplicas. Antes da troca
+real, confirmar a ordem da cadeia de erros com Nest e as configurações
+reais de proxy em ambiente controlado.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
