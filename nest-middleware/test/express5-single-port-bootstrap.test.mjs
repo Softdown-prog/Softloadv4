@@ -12,6 +12,7 @@ import {NestFactory} from '@nestjs/core';
 import {ExpressAdapter} from '@nestjs/platform-express';
 import ts from 'typescript';
 import {MiddlewareModule} from '../dist/middleware.module.js';
+import {LegacyRedirectModule} from '../dist/legacy-redirect.module.js';
 import {SessionGuard} from '../dist/guards.js';
 import {AccessContractFilter} from '../dist/response-contract.js';
 
@@ -119,7 +120,7 @@ const descriptor=Object.getOwnPropertyDescriptor(BridgeController.prototype,'get
 Get('shared-port')(BridgeController.prototype,'get',descriptor);
 UseGuards(SessionGuard)(BridgeController.prototype,'get',descriptor);
 class BridgeModule {}
-Module({imports:[MiddlewareModule],controllers:[BridgeController]})(BridgeModule);
+Module({imports:[MiddlewareModule,LegacyRedirectModule],controllers:[BridgeController]})(BridgeModule);
 
 async function fetchText(base,uri,headers={}){
   const response=await fetch(base+uri,{headers,redirect:'manual'});
@@ -129,7 +130,16 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
   {timeout:30000},async()=>{
   const expressApp=new ExpressAdapter().getInstance();
   const {factory}=makeLegacyFactory(express5);
-  assert.strictEqual(factory(expressApp),expressApp,'must decorate the injected app');
+  const registered=[];
+  const originalGet=expressApp.get.bind(expressApp);
+  expressApp.get=(route,...args)=>{
+    if(typeof route==='string' && route.startsWith('/'))registered.push(route);
+    return originalGet(route,...args);
+  };
+  assert.strictEqual(factory(expressApp,{nestOwnsBloggerRedirect:true}),expressApp,
+    'must decorate injected app and delegate exactly one legacy redirect');
+  assert.equal(registered.filter(route=>route==='/dashboard/blogger-ai').length,0,
+    'do not mount the Express redirect when Nest explicitly owns it');
 
   // Fixture login happens in the same express-session middleware/MemoryStore
   // as the production factory; it is not a second process or session store.
@@ -154,6 +164,13 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
     assert.match(html.body,/Entre na sua conta/);
     assert.match(html.body,/offline-bridge-rev/);
     assert.equal((await fetchText(base,'/health')).status,200);
+    const redirect=await fetchText(base,'/dashboard/blogger-ai?legacy=1');
+    assert.equal(redirect.status,301,'Nest must own migrated noncommercial GET');
+    assert.equal(redirect.headers.get('location'),'/dashboard/gerador-blogger');
+    assert.equal(redirect.headers.get('cache-control'),'no-store');
+    const redirectedHead=await fetch(base+'/dashboard/blogger-ai',{method:'HEAD',redirect:'manual'});
+    assert.equal(redirectedHead.status,301);
+    assert.equal(redirectedHead.headers.get('location'),'/dashboard/gerador-blogger');
     const anonymous=await fetchText(base,'/api/nest-proof/shared-port',
       {accept:'application/json'});
     assert.equal(anonymous.status,401,'Nest guard consumes the legacy session');
@@ -185,6 +202,10 @@ test('production factory keeps legacy 404 and error middleware on Express 4',
     assert.ok(addr&&typeof addr!=='string');
     const base='http://127.0.0.1:'+addr.port;
     assert.equal((await fetchText(base,'/api/legacy-proof')).status,200);
+    const oldRedirect=await fetchText(base,'/dashboard/blogger-ai?legacy=1');
+    assert.equal(oldRedirect.status,301,'Express 4 owns redirect by default');
+    assert.equal(oldRedirect.headers.get('location'),'/dashboard/gerador-blogger');
+    assert.equal(oldRedirect.headers.get('cache-control'),'no-store');
     const missing=await fetchText(base,'/no-such-path');
     assert.equal(missing.status,404);
     assert.match(missing.body,/<!DOCTYPE html>/,'real EJS 404 page');

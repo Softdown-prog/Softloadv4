@@ -66,8 +66,14 @@ const fixtures=[
   records:{},fail:true,expected:'expired',dbCalls:1},
  {name:'Firestore unavailable denies inactive session',user:{email:'free@example.com',is_active:false,plano:'free'},
   records:{},fail:true,expected:'inactive',dbCalls:1},
+ ...[past,null,'not-a-date',''].map(expiry=>({
+  name:'inactive session with invalid or expired Firestore deadline '+String(expiry),
+  user:{email:'Paid@Example.com',is_active:false,plano:'free'},
+  records:{'paid@example.com':{is_active:true,plano:'essencial',premium_ate:expiry}},
+  expected:'inactive',dbCalls:1
+ })),
 ];
-test('legacy Express Premium and Nest decisions agree across eight offline scenarios',async()=>{
+test('legacy Express Premium and Nest decisions agree across expiry and renewal scenarios',async()=>{
   for(const scenario of fixtures){
     const legacy=loadExpressPremium(scenario.records,scenario.fail);
     const express=await expressOutcome(legacy,clone(scenario.user));

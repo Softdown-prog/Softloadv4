@@ -53,6 +53,19 @@ test('inactive session rechecks a successful webhook renewal and rejects missing
    {allow:false,reason:'inactive'});
 });
 
+test('inactive sessions cannot regain access from expired, missing or invalid Firestore deadlines',async()=>{
+ for(const deadline of [past,null,'not-a-date','']){
+   const reader=makeReader({'paid@example.com':{
+     is_active:true,plano:'essencial',premium_ate:deadline
+   }});
+   const user={email:'PAID@example.com',is_active:false,plano:'free'};
+   assert.deepEqual(await decidePremium({session:{user}},reader,NOW),
+     {allow:false,reason:'inactive'},String(deadline));
+   assert.equal(user.is_active,false);
+   assert.equal(user.plano,'free');
+   assert.deepEqual(reader.calls,['paid@example.com']);
+ }
+});
 test('Premium module refuses to start without an explicitly injected reader',()=>{
   assert.throws(()=>PremiumAccessModule.register(null),/requires a PremiumStatusReader/);
   assert.throws(()=>PremiumAccessModule.register({}),/requires a PremiumStatusReader/);
