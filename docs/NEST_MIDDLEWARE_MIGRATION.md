@@ -74,6 +74,31 @@ deploy do novo backend. Antes de habilitar Nest em produção, ainda é
 necessário homologar Express 5, rever Node 22/24 na imagem real e verificar
 sessões Firestore, autenticação, rotas HTML/API, webhooks e rollback.
 
+## Pré-validação Express 5 sem substituir produção
+
+A suíte isolada `nest-middleware/test/express5-legacy-preflight.test.mjs`
+usa o Express 5 real presente no adapter do NestJS, sem modificar a
+dependência Express 4 do aplicativo:
+
+- Lê os arquivos JS/CJS **executados em produção** (`server.js` e
+  `src/routes/`), extrai com o parser TypeScript os caminhos literais de
+  `app/router.get/post/use/...` (inclusive o array de páginas Angular) e
+  tenta registrar **todos** no Express 5. Caminhos dinâmicos novos exigem
+  inspeção explícita e falham, em vez de serem ignorados silenciosamente.
+- Executa os middlewares comerciais reais de login, admin, worker e Premium
+  numa aplicação HTTP Express 5 descartável, com contas e Firestore simulados.
+  Verifica redirecionamento HTML, JSON 401/403, 404 de áreas ocultas,
+  autorização Premium renovada e a leitura da chave de query `data.id` do
+  webhook (sem executar cobrança nem verificar assinatura real).
+
+Esta é **uma pré-validação limitada**, não uma prova de migração completa:
+não monta todos os handlers comerciais no Express 5, não renderiza EJS real,
+não cria nem persiste cookies com `express-session`/`FirestoreSessionStore`,
+não executa o fluxo real assinado do Mercado Pago e não prova rollback.
+A atualização do `express` na raiz e a adaptação de `server.listen` para
+receber erros na callback ainda devem ser avaliadas em PR próprio. O processo
+Nest continua separado da porta de produção.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
