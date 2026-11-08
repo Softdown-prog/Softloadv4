@@ -21,11 +21,12 @@ jobs:
           node-version: '24'
       - name: Legacy-independent access policy regressions
         run: node --test src/middlewares/accessPolicy.test.js
-      # Pilot only: Nest is not added to the production root lockfile/image.
-      # Do not migrate production until Express 5 is validated and a lockfile is committed.
-      - name: Install isolated exact Nest 12 runtime without scripts
-        run: npm install --prefix nest-middleware --ignore-scripts --no-audit --no-fund --package-lock=false
+      # Isolated pilot: use the reviewed lockfile, never install unlocked
+      # transitive dependencies. Does not change the production image.
+      - name: Install reproducible Nest 12 dependencies
+        run: npm ci --prefix nest-middleware --ignore-scripts --no-audit --no-fund
       - name: Compile isolated Nest TypeScript sources
         run: npm --prefix nest-middleware run build
       - name: Prove real Nest DI and HTTP guard behavior
         run: npm --prefix nest-middleware test
+
