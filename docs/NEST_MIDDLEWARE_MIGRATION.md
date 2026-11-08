@@ -60,12 +60,19 @@ compatibilidade: não usar `NestFactory.create(..., new ExpressAdapter(app))`
 com o Express 4 atual.
 
 Nesta fase a prova Nest fica isolada, sem qualquer alteração em
-`package.json` e `package-lock.json` da produção. **Ainda não existe um
-lockfile reproduzível para o subprojeto experimental**; por isso o workflow
-instala dependências em runner descartável e é apenas uma prova, nunca um gate
-de aprovação de deploy. Antes de habilitar um Nest em produção, gerar e
-revisar um lockfile, usar `npm ci`, rever a versão de Node da imagem e
-provar compatibilidade Express 5.
+`package.json` e `package-lock.json` da produção. O subprojeto possui
+`nest-middleware/package-lock.json` próprio (npm lockfile v3), gerado no
+Node 24, revisado e versionado. O workflow isolado instala com
+`npm ci --prefix nest-middleware --ignore-scripts`, compila TypeScript e
+testa os Guards e contratos HTTP. O lockfile congela **inclusive dependências
+transitivas**, mas não habilita por si só o Nest na VPS nem comprova
+compatibilidade de cookies e sessions do backend comercial. O Nest permanece
+fora da imagem Docker de produção.
+
+A prova é um gate técnico **do piloto isolado**, não uma autorização de
+deploy do novo backend. Antes de habilitar Nest em produção, ainda é
+necessário homologar Express 5, rever Node 22/24 na imagem real e verificar
+sessões Firestore, autenticação, rotas HTML/API, webhooks e rollback.
 
 ## Sequência para migração de verdade
 
