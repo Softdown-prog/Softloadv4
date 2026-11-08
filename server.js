@@ -82,136 +82,148 @@ class FirestoreSessionStore extends session.Store {
         }
     }
 }
-const app = express();
 const isProd = process.env.NODE_ENV === 'production';
-// Necessário para Cloud Run: o Load Balancer do Google é um proxy
-app.set('trust proxy', 1);
-// Segurança: Helmet (CSP, X-Frame-Options, HSTS…) + CORS
-// Devem vir antes de qualquer rota ou middleware que produza resposta.
-app.use(helmetMiddleware);
-app.use(corsMiddleware);
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-// Os chunks versionados permanecem cacheáveis. O entrypoint /dist/assets/main.js
-// tem nome fixo e precisa ser revalidado em todo acesso: caches de borda que
-// ignoram querystrings não podem manter uma interface antiga por um ano.
-app.use(express.static(path.join(__dirname, 'public'), {
-    maxAge: '1y', immutable: true,
-    setHeaders(res, filePath) {
-        setPublicStaticHeaders(res, filePath, path.join(__dirname, 'public'));
-    },
-}));
-// Sem isso, nem o navegador nem o Cloudflare (proxy na frente do domínio de
-// produção) tinham qualquer sinal de que o HTML renderizado no servidor
-// (EJS) não deve ser cacheado — visitantes recorrentes (típico em mobile)
-// podiam continuar recebendo uma página antiga inteira, com as tags
-// <script>/<link> apontando pro ?v=<gitSha> de um deploy anterior, e nunca
-// chegavam a pedir os assets novos pro servidor. Pior: sem isso, uma página
-// renderizada com dado de UMA sessão logada podia em tese ser cacheada pelo
-// Cloudflare e servida pra outro visitante da mesma URL. Roda antes das
-// rotas — como express.static() já respondeu e encerrou a cadeia pros
-// arquivos estáticos que bate, isso só afeta páginas/APIs dinâmicas.
-app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store');
-    next();
-});
-app.use(session({
-    // Only the isolated Docker smoke may opt into an in-memory session store.
-    // Production (and all ordinary environments) must always use Firestore.
-    store: process.env.NODE_ENV === 'test' && process.env.SOFTLOAD_TEST_MEMORY_SESSION === 'true'
-        ? new session.MemoryStore()
-        : new FirestoreSessionStore(),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    proxy: true,
-    cookie: {
-        secure: isProd,
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000
-    }
-}));
-// Injeta variáveis globais em todas as views
-app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
-    res.locals.currentPath = req.path;
-    res.locals.firebaseApiKey = process.env.FIREBASE_API_KEY;
-    res.locals.firebaseAppId = process.env.FIREBASE_APP_ID;
-    res.locals.bloggerCheckoutEnabled = process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true';
-    res.locals.bloggerFilesEnabled = process.env.SOFTLOAD_LITE_FILES_ENABLED === 'true';
-    res.locals.mpCheckoutUrl = process.env.MP_CHECKOUT_URL || '#';
-    res.locals.gitSha = buildInfo.gitSha;
-    next();
-});
-// Migrado pro app React (frontend/pages/Landing.jsx) — mesmo raciocínio
-// já usado nas outras bridges: o único local que a landing dependia
-// (query.conta === 'apagada', pro toast de conta excluída) é lido
-// client-side via useSearchParams em vez de vir do EJS.
-// Angular é a interface canônica de produção; o Express mantém APIs e POSTs.
-app.use(require('./src/routes/angular-shell.cjs'));
-app.get('/', (req, res) => res.render('pages/landing-blogger'));
-app.get('/termos-de-uso', (req, res) => res.render('pages/termos-de-uso'));
-app.get('/privacidade', (req, res) => res.render('pages/privacidade'));
-app.use('/', authRoutes);
-// Ferramenta Blogger pública; login só para ampliar a cota e acessar arquivos.
-app.use('/', require('./src/routes/publicBlogger.cjs'));
-app.use('/', dashboardRoutes);
-app.use('/', contatoRoutes);
-app.use('/', apiRoutes);
-app.use('/', adminRoutes);
-app.use('/', workersRoutes);
-// URL antiga agora leva ao gerador procedural Blogger, não a um chat removido.
-app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/gerador-blogger'));
-// Endpoint de diagnóstico — acesso público, sem dados sensíveis
-app.get('/health', async (req, res) => {
-    const envs = {
-        FIREBASE_API_KEY: !!process.env.FIREBASE_API_KEY,
-        FIREBASE_APP_ID: !!process.env.FIREBASE_APP_ID,
-        SESSION_SECRET: !!process.env.SESSION_SECRET,
-        RESEND_API_KEY: !!process.env.RESEND_API_KEY,
-        MP_ACCESS_TOKEN: !!process.env.MP_ACCESS_TOKEN,
-        GCS_BUCKET_NAME: !!process.env.GCS_BUCKET_NAME,
-    };
-    let firestoreOk = false;
-    try {
-        await db.collection('sessions').limit(1).get();
-        firestoreOk = true;
-    }
-    catch (e) {
-        // falha silenciosa — resultado refletido em firestoreOk
-    }
-    const allEnvsOk = Object.values(envs).every(Boolean);
-    res.status(200).json({
-        status: 'ok',
-        envs,
-        firestore: firestoreOk,
-        sentinel: sentinelWorker.getStatus(),
-        // Confirma qual commit está de fato rodando neste container — grava
-        // em /health porque o próprio pipeline de deploy não é confiável
-        // hoje (ver /eu, deploy.yml). "dev-local" fora de um build Docker.
-        deploy: {
-            gitSha: buildInfo.gitSha,
-            gitDate: buildInfo.gitDate,
-            buildTime: buildInfo.buildTime,
+// Monta middlewares e rotas sem assumir uma porta HTTP. A produção continua
+// usando Express 4; o piloto pode injetar Express 5 sem subir outro processo.
+function createLegacyApp(app = express()) {
+    // Necessário para Cloud Run: o Load Balancer do Google é um proxy
+    app.set('trust proxy', 1);
+    // Segurança: Helmet (CSP, X-Frame-Options, HSTS…) + CORS
+    // Devem vir antes de qualquer rota ou middleware que produza resposta.
+    app.use(helmetMiddleware);
+    app.use(corsMiddleware);
+    app.set('view engine', 'ejs');
+    app.set('views', path.join(__dirname, 'views'));
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
+    // Os chunks versionados permanecem cacheáveis. O entrypoint /dist/assets/main.js
+    // tem nome fixo e precisa ser revalidado em todo acesso: caches de borda que
+    // ignoram querystrings não podem manter uma interface antiga por um ano.
+    app.use(express.static(path.join(__dirname, 'public'), {
+        maxAge: '1y', immutable: true,
+        setHeaders(res, filePath) {
+            setPublicStaticHeaders(res, filePath, path.join(__dirname, 'public'));
         },
+    }));
+    // Sem isso, nem o navegador nem o Cloudflare (proxy na frente do domínio de
+    // produção) tinham qualquer sinal de que o HTML renderizado no servidor
+    // (EJS) não deve ser cacheado — visitantes recorrentes (típico em mobile)
+    // podiam continuar recebendo uma página antiga inteira, com as tags
+    // <script>/<link> apontando pro ?v=<gitSha> de um deploy anterior, e nunca
+    // chegavam a pedir os assets novos pro servidor. Pior: sem isso, uma página
+    // renderizada com dado de UMA sessão logada podia em tese ser cacheada pelo
+    // Cloudflare e servida pra outro visitante da mesma URL. Roda antes das
+    // rotas — como express.static() já respondeu e encerrou a cadeia pros
+    // arquivos estáticos que bate, isso só afeta páginas/APIs dinâmicas.
+    app.use((req, res, next) => {
+        res.set('Cache-Control', 'no-store');
+        next();
     });
-});
-app.use((req, res) => res.status(404).render('pages/404'));
-// Global error handler — evita 500 silencioso (tela branca) quando next(err) é chamado.
-// Rotas /api/* recebem JSON; navegação HTML recebe a página 404 genérica com status 500.
-app.use((err, req, res, next) => {
-    console.error('[SERVER] Erro não tratado:', err.message);
-    const isApi = req.path.startsWith('/api/') ||
-        (req.get('accept') || '').includes('application/json') ||
-        (req.get('x-requested-with') || '').toLowerCase() === 'xmlhttprequest';
-    if (isApi) {
-        return res.status(err.status || 500).json({ erro: 'Erro interno do servidor. Tente novamente.' });
-    }
-    res.status(err.status || 500).render('pages/404');
-});
+    app.use(session({
+        // Only the isolated Docker smoke may opt into an in-memory session store.
+        // Production (and all ordinary environments) must always use Firestore.
+        store: process.env.NODE_ENV === 'test' && process.env.SOFTLOAD_TEST_MEMORY_SESSION === 'true'
+            ? new session.MemoryStore()
+            : new FirestoreSessionStore(),
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        proxy: true,
+        cookie: {
+            secure: isProd,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        }
+    }));
+    // Injeta variáveis globais em todas as views
+    app.use((req, res, next) => {
+        res.locals.user = req.session.user || null;
+        res.locals.currentPath = req.path;
+        res.locals.firebaseApiKey = process.env.FIREBASE_API_KEY;
+        res.locals.firebaseAppId = process.env.FIREBASE_APP_ID;
+        res.locals.bloggerCheckoutEnabled = process.env.BLOGGER_ESSENCIAL_CHECKOUT_ENABLED === 'true';
+        res.locals.bloggerFilesEnabled = process.env.SOFTLOAD_LITE_FILES_ENABLED === 'true';
+        res.locals.mpCheckoutUrl = process.env.MP_CHECKOUT_URL || '#';
+        res.locals.gitSha = buildInfo.gitSha;
+        next();
+    });
+    // Migrado pro app React (frontend/pages/Landing.jsx) — mesmo raciocínio
+    // já usado nas outras bridges: o único local que a landing dependia
+    // (query.conta === 'apagada', pro toast de conta excluída) é lido
+    // client-side via useSearchParams em vez de vir do EJS.
+    // Angular é a interface canônica de produção; o Express mantém APIs e POSTs.
+    app.use(require('./src/routes/angular-shell.cjs'));
+    app.get('/', (req, res) => res.render('pages/landing-blogger'));
+    app.get('/termos-de-uso', (req, res) => res.render('pages/termos-de-uso'));
+    app.get('/privacidade', (req, res) => res.render('pages/privacidade'));
+    app.use('/', authRoutes);
+    // Ferramenta Blogger pública; login só para ampliar a cota e acessar arquivos.
+    app.use('/', require('./src/routes/publicBlogger.cjs'));
+    app.use('/', dashboardRoutes);
+    app.use('/', contatoRoutes);
+    app.use('/', apiRoutes);
+    app.use('/', adminRoutes);
+    app.use('/', workersRoutes);
+    // URL antiga agora leva ao gerador procedural Blogger, não a um chat removido.
+    app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/gerador-blogger'));
+    // Endpoint de diagnóstico — acesso público, sem dados sensíveis
+    app.get('/health', async (req, res) => {
+        const envs = {
+            FIREBASE_API_KEY: !!process.env.FIREBASE_API_KEY,
+            FIREBASE_APP_ID: !!process.env.FIREBASE_APP_ID,
+            SESSION_SECRET: !!process.env.SESSION_SECRET,
+            RESEND_API_KEY: !!process.env.RESEND_API_KEY,
+            MP_ACCESS_TOKEN: !!process.env.MP_ACCESS_TOKEN,
+            GCS_BUCKET_NAME: !!process.env.GCS_BUCKET_NAME,
+        };
+        let firestoreOk = false;
+        try {
+            await db.collection('sessions').limit(1).get();
+            firestoreOk = true;
+        }
+        catch (e) {
+            // falha silenciosa — resultado refletido em firestoreOk
+        }
+        const allEnvsOk = Object.values(envs).every(Boolean);
+        res.status(200).json({
+            status: 'ok',
+            envs,
+            firestore: firestoreOk,
+            sentinel: sentinelWorker.getStatus(),
+            // Confirma qual commit está de fato rodando neste container — grava
+            // em /health porque o próprio pipeline de deploy não é confiável
+            // hoje (ver /eu, deploy.yml). "dev-local" fora de um build Docker.
+            deploy: {
+                gitSha: buildInfo.gitSha,
+                gitDate: buildInfo.gitDate,
+                buildTime: buildInfo.buildTime,
+            },
+        });
+    });
+    return app;
+}
+// O Nest registra suas próprias rotas e handlers finais. Até a migração,
+// a produção segue instalando os handlers Express na ordem original.
+function mountLegacyFallback(app) {
+    app.use((req, res) => res.status(404).render('pages/404'));
+    // Global error handler — evita 500 silencioso (tela branca) quando next(err) é chamado.
+    // Rotas /api/* recebem JSON; navegação HTML recebe a página 404 genérica com status 500.
+    app.use((err, req, res, next) => {
+        console.error('[SERVER] Erro não tratado:', err.message);
+        const isApi = req.path.startsWith('/api/') ||
+            (req.get('accept') || '').includes('application/json') ||
+            (req.get('x-requested-with') || '').toLowerCase() === 'xmlhttprequest';
+        if (isApi) {
+            return res.status(err.status || 500).json({ erro: 'Erro interno do servidor. Tente novamente.' });
+        }
+        res.status(err.status || 500).render('pages/404');
+    });
+}
+// Produção: mesma instância Express 4, mesmos handlers e único listener.
+// O bootstrap Nest em Express 5 só acontece nos testes isolados.
+const app = createLegacyApp();
+mountLegacyFallback(app);
 // Verificação agregada da outbox GCS. Jamais expor emails ou conteúdo de recibos.
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
