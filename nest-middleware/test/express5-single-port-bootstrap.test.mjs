@@ -6,6 +6,7 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {runInNewContext} from 'node:vm';
+import {once} from 'node:events';
 import {Controller,Get,Module,UseGuards} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {ExpressAdapter} from '@nestjs/platform-express';
@@ -179,6 +180,7 @@ test('production factory keeps legacy 404 and error middleware on Express 4',
   fallback(expressApp);
   const server=expressApp.listen(0,'127.0.0.1');
   try{
+    await once(server,'listening');
     const addr=server.address();
     assert.ok(addr&&typeof addr!=='string');
     const base='http://127.0.0.1:'+addr.port;
