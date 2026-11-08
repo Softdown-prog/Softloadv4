@@ -124,6 +124,24 @@ confirma atualização contínua de cookies, HTTPS/Caddy em produção, EJS,
 webhooks assinados, revalidação de pagamento ou rollback. **O runtime de
 produção continua em Express 4** até a homologação integral da issue #141.
 
+## HMAC de webhook e parsers: pré-validação Express 4/5
+
+A prova `nest-middleware/test/express5-webhook.parity.test.mjs`
+extrai **a função `verificarAssinaturaMP()` do `apiRoutes.js` comercial**
+e as expressões reais de `express.urlencoded({extended:true})` e
+`express.json()` de `server.js`. Com `express@4.22.3` e Express 5 do
+piloto NestJS, executa requisições HTTP em portas efêmeras separadas para
+comparar aceitação/rejeição da assinatura HMAC, `x-request-id`, `x-signature`,
+a query literal `data.id`, dados JSON e formulário, além de corpos
+malformados ou superiores ao limite padrão dos parsers. Todos os segredos,
+IDs e payloads são simulados, sem SDK Mercado Pago, Firestore nem chamadas
+de rede externas.
+
+**Limite**: os testes exercitam o verificador HMAC **real**, mas não
+executam o handler de pagamento, conciliação, `payment.get()`, assinatura
+de notificações reais ou efeito de webhooks duplicados. O Express comercial
+ainda permanece na versão 4.
+
 ## Corrigir falsa confirmação de logout
 
 O `FirestoreSessionStore.destroy()` devolve erro ao `express-session`
