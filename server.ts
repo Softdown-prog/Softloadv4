@@ -130,7 +130,10 @@ const isProd = process.env.NODE_ENV === 'production';
 
 // Monta middlewares e rotas sem assumir uma porta HTTP. A produção continua
 // usando Express 4; o piloto pode injetar Express 5 sem subir outro processo.
-function createLegacyApp(app: ServerApp = express()): ServerApp {
+function createLegacyApp(
+    app: ServerApp = express(),
+    options: { nestOwnsBloggerRedirect?: boolean } = {},
+): ServerApp {
 
 // Necessário para Cloud Run: o Load Balancer do Google é um proxy
 app.set('trust proxy', 1);
@@ -220,7 +223,10 @@ app.use('/', apiRoutes);
 app.use('/', adminRoutes);
 app.use('/', workersRoutes);
 // URL antiga agora leva ao gerador procedural Blogger, não a um chat removido.
-app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/gerador-blogger'));
+// A opção só é usada no teste Nest. Em produção, Express é o único dono.
+if (options.nestOwnsBloggerRedirect !== true) {
+    app.get('/dashboard/blogger-ai', (req, res) => res.redirect(301, '/dashboard/gerador-blogger'));
+}
 
 // Endpoint de diagnóstico — acesso público, sem dados sensíveis
 app.get('/health', async (req, res) => {

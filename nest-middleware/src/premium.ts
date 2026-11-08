@@ -24,6 +24,11 @@ async function findStatus(reader:PremiumStatusReader,email?:string):Promise<Prem
   try{return await reader.findByEmail(email.toLowerCase());}
   catch{return null;} // outage must never grant Premium access
 }
+function isCurrentPremium(record:PremiumRecord|null,now:number):record is PremiumRecord & {premium_ate:string} {
+  if(record?.is_active!==true || !record.premium_ate)return false;
+  const expires=Date.parse(record.premium_ate);
+  return Number.isFinite(expires) && expires>=now;
+}
 function restoreSession(user:PremiumUser,record:PremiumRecord):void {
   user.is_active=true;
   user.plano=record.plano||user.plano||'premium';
@@ -46,9 +51,7 @@ export async function decidePremium(
     const expires=Date.parse(user.premium_ate);
     if(Number.isFinite(expires)&&expires<now){
       const record=await findStatus(reader,user.email);
-      const renewed=record?.is_active===true && !!record.premium_ate &&
-        Number.isFinite(Date.parse(record.premium_ate)) && Date.parse(record.premium_ate)>=now;
-      if(renewed){
+      if(isCurrentPremium(record,now)){
         restoreSession(user,record);
         return {allow:true};
       }
@@ -59,9 +62,9 @@ export async function decidePremium(
   }
   if(!user.is_active){
     const record=await findStatus(reader,user.email);
-    // Mirrors the legacy inactive-session branch. Enforcing expiry also here
-    // needs its own policy change and parity tests before replacing Express.
-    if(record?.is_active===true){
+    // Matches the hardened commercial Express guard: is_active alone
+    // never proves an entitlement is still paid for.
+    if(isCurrentPremium(record,now)){
       restoreSession(user,record);
       return {allow:true};
     }

@@ -210,6 +210,27 @@ Mercado Pago real, deploy reversível ou todos os handlers comerciais.
 roteamento quando um endpoint de baixo risco for movido definitivamente
 para Nest, sem catch-all Express antecipado nem dois listeners HTTP.
 
+## Prova da primeira rota real delegada ao Nest (somente CI)
+
+A URL antiga `GET /dashboard/blogger-ai`, que redireciona com **301**
+para `/dashboard/gerador-blogger`, foi escolhida por ser não comercial,
+sem autenticação e sem chamadas externas. O Express 4 comercial continua
+registrando a rota normalmente. O parâmetro explícito
+`nestOwnsBloggerRedirect: true` da `createLegacyApp` é usado **somente
+no teste isolado** para não registrar a mesma rota no Express 5:
+`LegacyRedirectModule` assume a URL no Nest, no **mesmo processo, porta
+e sessão** que as rotas legadas. A suíte prova status 301, Location,
+Cache-Control no-store, HEAD, funcionamento dos endpoints legados,
+SessionGuard com cookie compartilhado, 404 Nest e rollback do ownership
+para o Express 4. Não adicionamos guard ao redirect público, pois isso
+alteraria o contrato anterior.
+
+A suíte de equivalência Premium também foi atualizada: o piloto Nest
+passou a exigir `is_active: true` **e** `premium_ate` válido no futuro
+para reativar uma sessão, reproduzindo a correção comercial do PR #149.
+Inclui casos de vencimento, ausência de data e data inválida. Nenhum
+pagamento, Firestore real ou rota comercial foi ativado em Nest nesta etapa.
+
 ## Sequência para migração de verdade
 
 1. Registrar o contrato atual em testes (login HTML redireciona, API recebe
