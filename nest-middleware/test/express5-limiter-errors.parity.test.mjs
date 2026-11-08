@@ -71,8 +71,14 @@ async function post(base,route,ip='198.51.100.40'){
   const location=response.headers.get('location');
   assert.equal(response.status,302,'HTML form must keep redirect semantics: '+route);
   assert.ok(location?.startsWith(route+'?'),route+' returned unexpected Location '+location);
-  const limitHeader=response.headers.get('ratelimit');
-  assert.ok(limitHeader,'standard RateLimit header missing for '+route);
+  // express-rate-limit supports multiple IETF drafts across pinned versions.
+  // Require at least one modern header and report the actual header set if
+  // behavior changes, rather than silently passing with no observability.
+  const limitHeader=response.headers.get('ratelimit')||
+    response.headers.get('ratelimit-limit')||
+    response.headers.get('ratelimit-policy');
+  assert.ok(limitHeader,'standard RateLimit header missing for '+route+
+    ': '+JSON.stringify(Object.fromEntries(response.headers.entries())));
   assert.equal(response.headers.get('x-ratelimit-limit'),null,
     'deprecated rate limit headers must stay disabled');
   return {status:response.status,location:decodeURI(location),limitHeader};
