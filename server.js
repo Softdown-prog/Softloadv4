@@ -82,8 +82,10 @@ class FirestoreSessionStore extends session.Store {
         }
     }
 }
-const app = express();
 const isProd = process.env.NODE_ENV === 'production';
+// Monta middlewares e rotas sem assumir uma porta HTTP. A produção continua
+// usando Express 4; o piloto pode injetar Express 5 sem subir outro processo.
+function createLegacyApp(app = express()) {
 // Necessário para Cloud Run: o Load Balancer do Google é um proxy
 app.set('trust proxy', 1);
 // Segurança: Helmet (CSP, X-Frame-Options, HSTS…) + CORS
@@ -199,6 +201,11 @@ app.get('/health', async (req, res) => {
         },
     });
 });
+    return app;
+}
+// O Nest registra suas próprias rotas e handlers finais. Até a migração,
+// a produção segue instalando os handlers Express na ordem original.
+function mountLegacyFallback(app) {
 app.use((req, res) => res.status(404).render('pages/404'));
 // Global error handler — evita 500 silencioso (tela branca) quando next(err) é chamado.
 // Rotas /api/* recebem JSON; navegação HTML recebe a página 404 genérica com status 500.
@@ -212,6 +219,11 @@ app.use((err, req, res, next) => {
     }
     res.status(err.status || 500).render('pages/404');
 });
+}
+// Produção: mesma instância Express 4, mesmos handlers e único listener.
+// O bootstrap Nest em Express 5 só acontece nos testes isolados.
+const app = createLegacyApp();
+mountLegacyFallback(app);
 // Verificação agregada da outbox GCS. Jamais expor emails ou conteúdo de recibos.
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
