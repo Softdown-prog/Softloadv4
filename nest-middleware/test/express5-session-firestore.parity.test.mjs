@@ -67,7 +67,7 @@ function fakeFirestore(){
     setDeleteUnavailable(value){deleteUnavailable=value}
   };
 }
-function legacySessionMiddleware(db){
+function legacySessionMiddleware(db,secret='offline-session-contract-secret'){
   // Evaluate *only* the actual store declaration and session(...) call from
   // server.js; never execute server boot, Firebase initialization or payments.
   const Store=runInNewContext('('+production.storeClass+')',{
@@ -75,7 +75,7 @@ function legacySessionMiddleware(db){
   },{filename:'production-FirestoreSessionStore.js'});
   const environment={
     session,FirestoreSessionStore:Store,isProd:true,
-    process:{env:{NODE_ENV:'production',SESSION_SECRET:'offline-session-contract-secret',
+    process:{env:{NODE_ENV:'production',SESSION_SECRET:secret,
       SOFTLOAD_TEST_MEMORY_SESSION:'false'}}
   };
   return runInNewContext('('+production.sessionCall+')',environment,
@@ -96,10 +96,10 @@ function loginGuard(){
 }
 const exigirLogin=loginGuard();
 
-async function serve(express,db){
+async function serve(express,db,{secret='offline-session-contract-secret'}={}){
   const app=express();
   app.set('trust proxy',1);
-  app.use(legacySessionMiddleware(db));
+  app.use(legacySessionMiddleware(db,secret));
   app.get('/api/proof/private',exigirLogin,(req,res)=>{
     res.json({uid:req.session.user.uid,plano:req.session.user.plano});
   });
@@ -208,4 +208,109 @@ test('real express-session and production FirestoreSessionStore have Express 4/5
   // Nest's ExpressAdapter creates a genuine Express 5 application.
   const five=await scenario(()=>new ExpressAdapter().getInstance(),'Express 5');
   assert.deepEqual(five,four);
+});
+
+
+// A real rollback retains the signed cookie and the Firestore session ID.
+// Both HTTP versions must point at the same persisted store and use the same
+// SESSION_SECRET. This deliberately restarts HTTP servers while preserving the
+// in-memory Firestore document backing the actual production Store logic.
+async function switchAndRollback(firstAdapter,secondAdapter,label){
+  const firestore=fakeFirestore();
+  let original=await serve(firstAdapter,firestore.db);
+  let candidate=null,rolledBack=null,differentSecret=null;
+  const close=async server=>{if(server)await server.close();};
+  try {
+    const originalLogin=await request(original.base,'/probe/login',{method:'POST'});
+    assert.equal(originalLogin.status,200,label+' initial login');
+    const initialCookie=originalLogin.setCookie.split(';',1)[0];
+    assert.match(initialCookie,/^connect\.sid=/,label+' signed initial cookie');
+    assert.equal(firestore.records.size,1,label+' one durable session document');
+    const stored=[...firestore.records.values()][0];
+    assert.equal(stored.sess.user.uid,'offline-user',label+' production store persisted the user');
+
+    candidate=await serve(secondAdapter,firestore.db);
+    const upgraded=await request(candidate.base,'/api/proof/private',{cookie:initialCookie});
+    assert.equal(upgraded.status,200,label+' candidate must accept old cookie');
+    assert.deepEqual(JSON.parse(upgraded.body),{uid:'offline-user',plano:'free'});
+    assert.equal(upgraded.setCookie,'',label+' candidate must not rotate an unchanged cookie');
+    assert.equal((await request(candidate.base,'/dashboard/proof/private',
+      {cookie:initialCookie,accept:'text/html'})).status,200,
+      label+' candidate HTML session continuity');
+
+    // A wrong cookie-signing secret is an explicit rollback blocker, even if
+    // both runtimes can read the same underlying Firestore document.
+    differentSecret=await serve(secondAdapter,firestore.db,
+      {secret:'offline-different-secret-do-not-use'});
+    assert.equal((await request(differentSecret.base,'/api/proof/private',
+      {cookie:initialCookie})).status,401,label+' mismatched SESSION_SECRET denied');
+    assert.equal(firestore.records.size,1,label+' mismatched secret cannot erase session');
+    await close(differentSecret);
+    differentSecret=null;
+
+    // The original process is retired, then brought back: this is a real
+    // direction switch of HTTP runtimes, not only side-by-side parity.
+    await close(original);
+    original=null;
+    rolledBack=await serve(firstAdapter,firestore.db);
+    assert.equal((await request(rolledBack.base,'/api/proof/private',
+      {cookie:initialCookie})).status,200,label+' rollback reuses original signed cookie');
+
+    // Sessions created by the candidate must ALSO remain usable after
+    // rollback. No client-side reauthentication or cookie rewrite required.
+    const candidateLogin=await request(candidate.base,'/probe/login',{method:'POST'});
+    assert.equal(candidateLogin.status,200,label+' candidate login');
+    const candidateCookie=candidateLogin.setCookie.split(';',1)[0];
+    assert.match(candidateCookie,/^connect\.sid=/);
+    assert.notEqual(candidateCookie,initialCookie,label+' sessions have unique IDs');
+    assert.equal(firestore.records.size,2,label+' both sessions persisted in shared store');
+    assert.equal((await request(rolledBack.base,'/api/proof/private',
+      {cookie:candidateCookie})).status,200,
+      label+' rolled-back runtime accepts cookie minted by candidate');
+
+    firestore.setUnavailable(true);
+    for(const current of [candidate,rolledBack]){
+      for(const cookie of [initialCookie,candidateCookie]){
+        assert.equal((await request(current.base,'/api/proof/private',{cookie})).status,
+          401,label+' neither runtime grants sessions without a Firestore read');
+      }
+    }
+    firestore.setUnavailable(false);
+    assert.equal((await request(candidate.base,'/api/proof/private',
+      {cookie:initialCookie})).status,200,label+' candidate recovers after outage');
+    assert.equal((await request(rolledBack.base,'/api/proof/private',
+      {cookie:candidateCookie})).status,200,label+' rollback recovers after outage');
+
+    firestore.setDeleteUnavailable(true);
+    assert.equal((await request(candidate.base,'/probe/logout',
+      {cookie:initialCookie})).status,503,label+' failed candidate logout is not confirmed');
+    assert.equal(firestore.records.size,2,label+' failed revoke keeps both records');
+    assert.equal((await request(rolledBack.base,'/api/proof/private',
+      {cookie:initialCookie})).status,200,label+' failed revoke cannot fake cookie invalidation');
+    firestore.setDeleteUnavailable(false);
+
+    assert.equal((await request(rolledBack.base,'/probe/logout',
+      {cookie:initialCookie})).status,204,label+' rollback can revoke original session');
+    assert.equal((await request(candidate.base,'/api/proof/private',
+      {cookie:initialCookie})).status,401,label+' candidate observes rollback revocation');
+    assert.equal((await request(candidate.base,'/probe/logout',
+      {cookie:candidateCookie})).status,204,label+' candidate can revoke its session');
+    assert.equal((await request(rolledBack.base,'/api/proof/private',
+      {cookie:candidateCookie})).status,401,label+' rollback observes candidate revocation');
+    assert.equal(firestore.records.size,0,label+' no active sessions left after logout');
+  } finally {
+    await Promise.all([close(original),close(candidate),close(rolledBack),close(differentSecret)]);
+  }
+}
+
+test('rollback from Express 5 to Express 4 preserves both directions of session cookies',
+  {timeout:30000},async()=>{
+  await switchAndRollback(express4,()=>new ExpressAdapter().getInstance(),
+    'Express 4 => Express 5 => Express 4');
+});
+
+test('reverse switch from Express 5 to Express 4 also preserves session cookies',
+  {timeout:30000},async()=>{
+  await switchAndRollback(()=>new ExpressAdapter().getInstance(),express4,
+    'Express 5 => Express 4 => Express 5');
 });
