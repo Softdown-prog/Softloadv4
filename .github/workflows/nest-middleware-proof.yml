@@ -9,6 +9,9 @@ on:
       - 'src/routes/authRoutes.ts'
       - 'src/routes/authRoutes.js'
       - 'src/routes/authRoutes.test.js'
+      - 'src/middlewares/authGuard.ts'
+      - 'src/middlewares/authGuard.js'
+      - 'src/middlewares/authGuard.test.js'
       - '.github/workflows/nest-middleware-proof.yml'
   pull_request:
     paths:
@@ -16,6 +19,9 @@ on:
       - 'src/middlewares/accessPolicy.ts'
       - 'src/middlewares/accessPolicy.js'
       - 'src/middlewares/accessPolicy.test.js'
+      - 'src/middlewares/authGuard.ts'
+      - 'src/middlewares/authGuard.js'
+      - 'src/middlewares/authGuard.test.js'
       - '.github/workflows/nest-middleware-proof.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +39,8 @@ jobs:
         run: node --test src/middlewares/accessPolicy.test.js
       - name: Legacy logout error contract
         run: node --test src/routes/authRoutes.test.js
+      - name: Real premium renewal and expiry guard
+        run: node --test src/middlewares/authGuard.test.js
       # The session parity proof imports the EXACT production Express 4 and
       # express-session versions from the root lockfile. Install production
       # dependencies without lifecycle scripts, Firebase calls or secrets.
