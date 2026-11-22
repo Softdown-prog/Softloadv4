@@ -3,32 +3,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SoftloadApi } from './api';
 
-@Component({standalone:true,imports:[RouterLink],changeDetection:ChangeDetectionStrategy.OnPush,template:`
-<main class="container">
-<section class="hero-card hero">
-  <span class="eyebrow">Softload Blogger · Sem IA</span>
-  <h1>Um blog com a<br> sua identidade.</h1>
-  <p class="lead">Crie templates XML para Blogger, do zero ou por nichos. Escolha o estilo, visualize a estrutura e baixe para usar no Blogger.</p>
-  <div class="flex" style="margin-top:30px">
-    <a routerLink="/criar" class="button">Criar meu template</a>
-    <a routerLink="/planos" class="button button-outline">Conhecer o Essencial</a>
-  </div>
-  <p class="muted small">Teste sem cadastro · Até 2 downloads por sessão · Sem inteligência artificial</p>
-</section>
-<section class="cards-top">
-  <p class="eyebrow">Seu espaço de criação</p>
-  <h2>Personalize, visualize e publique.</h2>
-  <div class="grid">
-    <article class="panel"><span class="pill">01 / Estrutura</span><h3 style="margin-top:17px">Nichos e layouts</h3><p class="muted">Comece com um nicho ou página-base, personalize a grade de posts e a barra lateral.</p></article>
-    <article class="panel"><span class="pill">02 / Aparência</span><h3 style="margin-top:17px">Cores e fontes</h3><p class="muted">Escolha a identidade visual. A prévia acompanha as opções selecionadas.</p></article>
-    <article class="panel"><span class="pill">03 / Entrega</span><h3 style="margin-top:17px">XML validado</h3><p class="muted">O compilador verifica o XML antes do download. Teste a importação em seu Blogger.</p></article>
-  </div>
-</section>
-<section class="panel space-between" style="margin-top:35px"><div><h2>Pronto para criar?</h2><p class="muted">Você pode começar gratuitamente, direto do navegador.</p></div><a routerLink="/criar" class="button">Abrir editor</a></section>
-</main>
-`})
-export class HomePage {}
-
 @Component({standalone:true,imports:[],changeDetection:ChangeDetectionStrategy.OnPush,template:`
 <main class="container"><section class="panel" style="max-width:535px;margin:0 auto">
 <p class="eyebrow">Softload · Área da conta</p>

@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/cor
 import { RouterLink, RouterOutlet, Routes } from '@angular/router';
 import { SoftloadApi } from './api';
 import { EditorPage } from './editor';
-import { HomePage, AuthPage, DashboardPage, HistoryPage, FilesPage, AccountPage, PlanPage, ContactPage, LegalPage, AdminPage } from './pages';
+import { HomePage } from './home/home';
+import { AuthPage, DashboardPage, HistoryPage, FilesPage, AccountPage, PlanPage, ContactPage, LegalPage, AdminPage } from './pages';
 
 export const routes: Routes = [
-  {path:'', component:HomePage, title:'Softload — Templates Blogger'},
+  {path:'', component:HomePage, title:'Softload — Editor de templates para Blogger'},
   {path:'criar', component:EditorPage, title:'Criar template Blogger'},
   {path:'planos', component:PlanPage, title:'Plano Essencial — Softload'},
   {path:'login', component:AuthPage, data:{mode:'login'}, title:'Entrar — Softload'},
