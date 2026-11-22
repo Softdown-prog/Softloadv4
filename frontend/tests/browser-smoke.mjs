@@ -104,8 +104,28 @@ try {
     checks++;
 
     if(integrity&&viewport.width===1366){await verifySacArtifact(page);checks++;}
-    await page.getByRole('heading',{name:/Um blog com a/i}).waitFor();
-    await page.getByRole('link',{name:'Criar meu template'}).first().click();
+    await page.getByRole('heading',{name:'Crie o visual do seu blog.'}).waitFor();
+    const palette=page.getByRole('group',{name:'Paleta da prévia'});
+    const blue=palette.getByRole('button',{name:'Azul'});
+    const coral=palette.getByRole('button',{name:'Coral'});
+    const sample=page.locator('.sample-blog');
+    assert.equal(await blue.getAttribute('aria-pressed'),'true');
+    const initialColor=await sample.evaluate(el=>getComputedStyle(el).backgroundColor);
+    await coral.click();
+    await page.locator('.sample-blog[data-palette="coral"]').waitFor();
+    assert.notEqual(await sample.evaluate(el=>getComputedStyle(el).backgroundColor),initialColor);
+    assert.equal(await coral.getAttribute('aria-pressed'),'true');
+    assert.equal(await blue.getAttribute('aria-pressed'),'false');
+    if(mobile){
+      const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
+      assert.ok(dimensions.scroll<=dimensions.width+2,
+        'mobile landing horizontal overflow: '+JSON.stringify(dimensions));
+    }
+    checks++;
+    await page.getByRole('link',{name:'Como funciona'}).click();
+    await page.waitForURL('**/#como-funciona');
+    await page.getByRole('heading',{name:'Do primeiro ajuste ao XML.'}).waitFor();
+    await page.getByRole('link',{name:'Criar meu template'}).click();
     await page.waitForURL('**/criar');
     await page.getByRole('heading',{name:'Configurar template'}).waitFor();
     assert.equal(await page.getByRole('link',{name:'Plano Essencial'}).getAttribute('href'),'/planos');

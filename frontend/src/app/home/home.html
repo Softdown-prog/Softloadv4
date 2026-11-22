@@ -1,0 +1,95 @@
+<main class="landing">
+  <div class="container">
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="kicker">Editor de templates para Blogger</p>
+        <h1 id="intro-title">Crie o visual <em>do seu blog.</em></h1>
+        <p class="intro-description">Escolha um modelo ou comece do zero. Ajuste cores, fontes e layout, veja a prévia e baixe o XML para instalar no Blogger.</p>
+        <div class="intro-actions">
+          <a routerLink="/criar" class="button landing-button">
+            Criar meu template <span aria-hidden="true">→</span>
+          </a>
+          <a href="#como-funciona" class="text-link">Como funciona <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="trial-note"><span aria-hidden="true">✓</span> Até 2 downloads grátis por sessão, sem cadastro.</p>
+      </div>
+
+      <figure class="demo">
+        <figcaption class="demo-bar">
+          <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Prévia ilustrativa</span>
+          <span class="demo-format" aria-hidden="true">.xml</span>
+        </figcaption>
+
+        <div class="sample-blog" [attr.data-palette]="palette()" aria-hidden="true">
+          <div class="sample-header">
+            <strong>Horizonte<span>.</span></strong>
+            <div><span>Início</span><span>Diário</span><span>Sobre</span></div>
+          </div>
+          <div class="sample-feature">
+            <div class="sample-feature-copy">
+              <span>Diário de viagem</span>
+              <strong>Para além<br>do mapa.</strong>
+            </div>
+            <div class="sample-art">
+              <span class="art-sun"></span>
+              <span class="art-ridge art-ridge-far"></span>
+              <span class="art-ridge art-ridge-near"></span>
+            </div>
+          </div>
+          <div class="sample-posts">
+            <span>Últimas histórias</span>
+            <div class="sample-post-grid">
+              <div><b></b><i></i><i></i></div>
+              <div><b></b><i></i><i></i></div>
+              <div><b></b><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-controls" role="group" aria-label="Paleta da prévia">
+          <span>Teste uma cor</span>
+          <div class="palette-options">
+            @for (option of palettes; track option.id) {
+              <button type="button" class="palette-option" [attr.data-palette]="option.id"
+                [attr.aria-pressed]="palette() === option.id" (click)="palette.set(option.id)">
+                <span class="swatch" aria-hidden="true"></span>{{ option.name }}
+              </button>
+            }
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <section id="como-funciona" class="workflow" aria-labelledby="workflow-title">
+      <h2 id="workflow-title">Do primeiro ajuste ao XML.</h2>
+      <ol class="workflow-steps">
+        <li>
+          <h3>Escolha uma base</h3>
+          <p>Comece do zero ou use um modelo de nicho como ponto de partida.</p>
+        </li>
+        <li>
+          <h3>Personalize e visualize</h3>
+          <p>Combine cores, fontes e layouts de postagem. Confira a prévia em computador, tablet ou celular.</p>
+        </li>
+        <li>
+          <h3>Baixe e importe</h3>
+          <p>O Softload valida o XML antes do download. No Blogger, abra <strong>Tema → Restaurar</strong> para importar o arquivo.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="offer" aria-labelledby="offer-title">
+      <div>
+        <p class="kicker">Plano Essencial</p>
+        <h2 id="offer-title">Crie mais versões do seu blog.</h2>
+        <p>Gerações e downloads de XML ilimitados durante o acesso ativo, sujeitos aos limites técnicos de proteção.</p>
+      </div>
+      <div class="offer-price">
+        <p><strong>R$ 5,00</strong> <span>/ 30 dias</span></p>
+        <p>Pagamento único, sem renovação automática.</p>
+        <a routerLink="/planos" class="button landing-button">Conhecer o Essencial <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+  </div>
+</main>
