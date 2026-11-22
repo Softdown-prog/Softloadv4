@@ -410,6 +410,10 @@
 }
 
 .offer-price p:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
   margin: 0;
   line-height: 1.1;
 }
@@ -428,6 +432,7 @@
 @media (max-width: 850px) {
   .intro {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
 
   .intro h1 {
@@ -439,16 +444,21 @@
     width: min(100%, 620px);
   }
 
-  .intro {
-    justify-items: center;
-  }
-
   .intro-description {
     font-size: 1.05rem;
   }
 }
 
 @media (max-width: 660px) {
+  .intro-actions {
+    column-gap: 14px;
+  }
+
+  .intro-actions .landing-button {
+    gap: 8px;
+    padding-inline: 15px;
+  }
+
   .workflow-steps,
   .offer {
     grid-template-columns: 1fr;
@@ -464,9 +474,5 @@
 @media (max-width: 350px) {
   .intro h1 {
     font-size: 2.9rem;
-  }
-
-  .intro-actions {
-    column-gap: 14px;
   }
 }

@@ -108,9 +108,12 @@ try {
     const palette=page.getByRole('group',{name:'Paleta da prévia'});
     const blue=palette.getByRole('button',{name:'Azul'});
     const coral=palette.getByRole('button',{name:'Coral'});
+    const sample=page.locator('.sample-blog');
     assert.equal(await blue.getAttribute('aria-pressed'),'true');
+    const initialColor=await sample.evaluate(el=>getComputedStyle(el).backgroundColor);
     await coral.click();
     await page.locator('.sample-blog[data-palette="coral"]').waitFor();
+    assert.notEqual(await sample.evaluate(el=>getComputedStyle(el).backgroundColor),initialColor);
     assert.equal(await coral.getAttribute('aria-pressed'),'true');
     assert.equal(await blue.getAttribute('aria-pressed'),'false');
     if(mobile){
