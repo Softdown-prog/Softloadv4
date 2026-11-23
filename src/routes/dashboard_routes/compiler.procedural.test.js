@@ -16,7 +16,7 @@ function app(user={uid:'uid-123',email:'teste@example.com',plano:'free'},options
     express:{Router:()=>router},
     'express-rate-limit':()=> (_req,_res,next)=>next(),
     '../../middlewares/authGuard':{exigirLogin:()=>{}},
-    '../../core/compilerWorker':{executarCompilacao:(o)=>{
+    '../../core/compilerWorker':{carregarChassisParaNicho:require('../../core/compilerWorker').carregarChassisParaNicho,executarCompilacao:(o)=>{
       compilation++;
       assert.equal(o.colorPreset,'tech-blue');
       return {slug:'teste',xmlFinal:"<html><b:widget id='Blog1' type='Blog'/></html>"};
@@ -73,6 +73,7 @@ test('página SSR inclui todos os nichos reais, sem React/Gemini',()=>{
   a.map.get.get('/dashboard/gerador-blogger')({session:{user:{email:'u@example.com'}}},r);
   assert.equal(r.payload.view,'pages/gerador-blogger');
   assert.equal(r.payload.locals.nichos.length,2);
+  assert.ok(r.payload.locals.nichos.every(niche=>!niche.gridConfigurable&&niche.sidebarConfigurable));
   const view=fs.readFileSync(require('node:path').join(__dirname,'../../../views/pages/gerador-blogger.ejs'),'utf8');
   assert.match(view,/Criar do zero/);assert.match(view,/Personalizar um nicho/);
   assert.doesNotMatch(view,/react-root|\/dist\/assets\/main\.js|Gemini.*generateContent/);

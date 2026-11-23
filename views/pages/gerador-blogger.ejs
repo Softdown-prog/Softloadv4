@@ -134,7 +134,7 @@
             <label for="nichoTema" class="form-label">Nicho de partida</label>
             <select class="form-select" id="nichoTema" name="nichoTema" disabled>
               <% nichos.forEach(function(n) { %>
-                <option value="<%= n.id %>" data-aviso="<%= n.aviso || '' %>" data-page-type="<%= n.pageType || 'blogger-conteudo' %>"><%= n.nome %></option>
+                <option value="<%= n.id %>" data-aviso="<%= n.aviso || '' %>" data-page-type="<%= n.pageType || 'blogger-conteudo' %>" data-grid-configurable="<%= n.gridConfigurable !== false %>" data-sidebar-configurable="<%= n.sidebarConfigurable !== false %>"><%= n.nome %></option>
               <% }); %>
             </select>
             <p id="nicho-aviso" class="hint mt-1 mb-0"></p>
@@ -151,7 +151,7 @@
             </div>
             <div class="col-12 col-md-6"><label for="typography">Fonte</label>
               <select id="typography" name="typography" class="form-select">
-                <% fontes.forEach(function(f) { %><option value="<%= f.id %>" <%= f.id==='inter'?'selected':'' %>><%= f.nome %></option><% }); %>
+                <% fontes.forEach(function(f) { %><option value="<%= f.id %>" data-font-family="<%= f.fontFamily %>" data-heading-weight="<%= f.headingWeight %>" data-line-height="<%= f.lineHeight %>" data-letter-spacing="<%= f.letterSpacing %>" <%= f.id==='inter'?'selected':'' %>><%= f.nome %></option><% }); %>
               </select>
             </div>
             <div class="col-12 col-md-6"><label for="gridLayout">Postagens na página</label>
@@ -244,16 +244,21 @@
   function refresh() {
     const useNiche=mode()==='modelo';
     wrapper.hidden=!useNiche;niche.disabled=!useNiche;
-    document.getElementById('nicho-aviso').textContent=useNiche ? (niche.selectedOptions[0].dataset.aviso||'Este nicho utiliza componentes existentes do compilador.') : '';
+    const selected=useNiche?niche.selectedOptions[0]?.dataset:undefined;
+    document.getElementById('nicho-aviso').textContent=selected?.aviso||'';
     const colors=document.getElementById('colorPreset').selectedOptions[0]?.dataset||{};
+    const typography=document.getElementById('typography');
+    const grid=document.getElementById('gridLayout');
+    const sidebar=document.getElementById('sidebarPosition');
+    grid.disabled=selected?.gridConfigurable==='false';
+    sidebar.disabled=selected?.sidebarConfigurable==='false';
     preview?.render({
       siteName:document.getElementById('siteName').value||'Meu Blog',
       niche:useNiche?niche.value:'',
-      pageType:useNiche?niche.selectedOptions[0]?.dataset.pageType:'blogger-conteudo',
+      pageType:selected?.pageType,gridConfigurable:!grid.disabled,sidebarConfigurable:!sidebar.disabled,
       accent:colors.hex,bg:colors.bg,surface:colors.surface,text:colors.text,footer:colors.footer,
-      typography:document.getElementById('typography').value,
-      layout:document.getElementById('gridLayout').value,
-      side:document.getElementById('sidebarPosition').value
+      typography:typography.value,font:typography.selectedOptions[0]?.dataset,
+      layout:grid.value,side:sidebar.value
     });
   }
 
@@ -299,7 +304,7 @@
   const fields=['colorPreset','typography','gridLayout','sidebarPosition'];
   function secureIndex(length){const values=new Uint32Array(1);crypto.getRandomValues(values);return values[0]%length;}
   document.getElementById('surpreender-estilo').addEventListener('click',()=>{
-    for(const id of fields){const select=document.getElementById(id);if(select.options.length)select.selectedIndex=secureIndex(select.options.length);}
+    for(const id of fields){const select=document.getElementById(id);if(!select.disabled&&select.options.length)select.selectedIndex=secureIndex(select.options.length);}
     refresh();document.getElementById('form-message').textContent='Novo estilo sorteado. Confira a prévia e baixe seu XML.';
   });
   document.getElementById('salvar-escolhas').addEventListener('click',()=>{

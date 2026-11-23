@@ -1,9 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, computed, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SoftloadApi, Example, Option } from './api';
+import { SoftloadApi, Example, NicheOption, Option } from './api';
 import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
 
-interface Preview { render(value: Record<string, unknown>): void; setDevice(device: string): void; }
+type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
+interface Preview { render(value: Record<string, unknown>): void; setDevice(device: PreviewDevice): void; destroy(): void; }
 interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): Preview; }
 @Component({
   standalone:true, selector:'sl-editor', imports:[FormsModule], changeDetection:ChangeDetectionStrategy.OnPush,
@@ -16,6 +17,7 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
     </div>
     @if (api.error()) { <p role="alert" class="status error">{{api.error()}}</p> }
     @if (api.data(); as boot) {
+      @let niche = activeNiche();
       <section class="panel" aria-labelledby="gallery-title" style="margin-bottom:18px">
         <div class="space-between"><div><p class="eyebrow">Inspiração</p><h2 id="gallery-title">Comece por um exemplo</h2></div>
           <span class="pill">{{boot.exemplos.length}} estilos editáveis</span>
@@ -54,7 +56,6 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
                 <select id="nichoTema" name="nichoTema" [ngModel]="fields().nichoTema" (ngModelChange)="changeField('nichoTema',$event)" required [disabled]="busy()">
                   @for (niche of boot.nichos; track niche.id) { <option [value]="niche.id">{{niche.nome}}</option> }
                 </select>
-                <span class="small muted">{{chosenNiche(boot.nichos)?.aviso || 'Os nichos usam os componentes existentes do compilador.'}}</span>
               </div>
             }
             <div class="field"><label for="siteName">Nome do blog</label>
@@ -71,16 +72,26 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
               </select>
             </div>
             <div class="field"><label for="gridLayout">Layout das postagens</label>
-              <select id="gridLayout" name="gridLayout" [ngModel]="fields().gridLayout" (ngModelChange)="changeField('gridLayout',$event)" [disabled]="busy()">
+              <select id="gridLayout" name="gridLayout" [ngModel]="fields().gridLayout" (ngModelChange)="changeField('gridLayout',$event)"
+                [disabled]="busy() || niche?.gridConfigurable === false"
+                [attr.aria-describedby]="niche?.gridConfigurable === false ? 'grid-layout-hint' : null">
                 <option value="revista">Revista · 3 colunas</option><option value="dupla">Duas colunas</option>
                 <option value="lista">Lista</option><option value="quadrado">Mosaico</option>
                 <option value="mural">Mural compacto</option><option value="coluna-unica">Uma coluna</option><option value="zigzag">Zigue-zague</option>
               </select>
+              @if (niche?.gridConfigurable === false) {
+                <span id="grid-layout-hint" class="small muted">{{niche?.aviso || 'Este modelo usa um layout de postagens próprio.'}}</span>
+              }
             </div>
             <div class="field"><label for="sidebarPosition">Barra lateral</label>
-              <select id="sidebarPosition" name="sidebarPosition" [ngModel]="fields().sidebarPosition" (ngModelChange)="changeField('sidebarPosition',$event)" [disabled]="busy()">
+              <select id="sidebarPosition" name="sidebarPosition" [ngModel]="fields().sidebarPosition" (ngModelChange)="changeField('sidebarPosition',$event)"
+                [disabled]="busy() || niche?.sidebarConfigurable === false"
+                [attr.aria-describedby]="niche?.sidebarConfigurable === false ? 'sidebar-hint' : null">
                 <option value="right">Direita</option><option value="left">Esquerda</option><option value="none">Sem barra lateral</option>
               </select>
+              @if (niche?.sidebarConfigurable === false) {
+                <span id="sidebar-hint" class="small muted">Este modelo tem uma estrutura lateral fixa.</span>
+              }
             </div>
             <div class="flex">
               <button class="button button-outline button-small" type="button" [disabled]="busy()" (click)="surprise(boot)">Surpreenda-me</button>
@@ -99,16 +110,16 @@ interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): P
           </form>
         </section>
         <section class="panel" aria-labelledby="preview-title">
-          <div class="space-between"><div><p class="eyebrow">Visualização</p><h2 id="preview-title">Prévia responsiva</h2></div>
-          <span class="pill">Simulação no navegador</span></div>
-          <p class="muted small">Uma ilustração local; a aparência final deve ser conferida importando o XML em um blog de testes.</p>
-          <div class="preview-toolbar">
-            <button type="button" class="button button-small" [class.button-outline]="device() !== 'desktop'" (click)="setDevice('desktop')">Computador</button>
-            <button type="button" class="button button-small" [class.button-outline]="device() !== 'tablet'" (click)="setDevice('tablet')">Tablet</button>
-            <button type="button" class="button button-small" [class.button-outline]="device() !== 'mobile'" (click)="setDevice('mobile')">Celular</button>
+          <h2 id="preview-title">Prévia responsiva</h2>
+          <p class="muted small">A prévia usa postagens de exemplo. Confira os widgets e as fontes carregadas pelo tema depois de importar o XML no Blogger.</p>
+          <div class="preview-toolbar" role="group" aria-label="Tamanho da prévia">
+            @for (size of previewDevices; track size.id) {
+              <button type="button" class="button button-small" [class.button-outline]="device() !== size.id"
+                [attr.aria-pressed]="device() === size.id" (click)="setDevice(size.id)">{{size.label}}</button>
+            }
           </div>
           <div class="preview-window" #stage><iframe #frame sandbox="" referrerpolicy="no-referrer" title="Prévia ilustrativa do Blogger"></iframe></div>
-          <p class="muted small">{{device() === 'desktop' ? '1080' : device() === 'tablet' ? '768' : '390'}} px — Prévia ilustrativa. Nenhum download consumido.</p>
+          <p class="muted small">{{device() === 'desktop' ? '1080' : device() === 'tablet' ? '768' : '390'}} px · A prévia é gratuita.</p>
         </section>
       </div>
     }
@@ -130,7 +141,15 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     this.mountPreview();
   }
   readonly fields=signal<EditorFields>({...INITIAL_EDITOR_FIELDS});
-  readonly device=signal('desktop'); readonly category=signal('Todos'); readonly selected=signal('');
+  readonly previewDevices = [
+    { id:'desktop', label:'Computador' }, { id:'tablet', label:'Tablet' }, { id:'mobile', label:'Celular' }
+  ] as const;
+  readonly device=signal<PreviewDevice>(window.matchMedia('(max-width: 600px)').matches ? 'mobile' : 'desktop');
+  readonly category=signal('Todos'); readonly selected=signal('');
+  readonly activeNiche=computed<NicheOption | undefined>(() => {
+    const fields=this.fields();
+    return fields.modo==='modelo' ? this.api.data()?.nichos.find(niche=>niche.id===fields.nichoTema) : undefined;
+  });
   readonly categories=computed(()=>[...new Set((this.api.data()?.exemplos||[]).map(e=>e.categoria||'Outros'))]);
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
   readonly downloadUrl=signal('');readonly downloadName=signal('template-blogger.xml');
@@ -143,8 +162,10 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     }).catch(() => {});
   }
   ngAfterViewInit(): void { this.mountPreview(); }
-  ngOnDestroy(): void { if (this.downloadUrl()) URL.revokeObjectURL(this.downloadUrl()); }
-  chosenNiche(niches: Option[]): Option | undefined {return niches.find(n => n.id===this.fields().nichoTema);}
+  ngOnDestroy(): void {
+    this.preview?.destroy();
+    if (this.downloadUrl()) URL.revokeObjectURL(this.downloadUrl());
+  }
   exampleColor(e: Example, colors: Option[]): string { return colors.find(c=>c.id===e.colorPreset)?.hex || '#155e75'; }
   private mountPreview(): void {
     const api=(window as Window & {SoftloadBloggerPreview?:PreviewGlobal}).SoftloadBloggerPreview;
@@ -175,15 +196,17 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     const boot=this.api.data();
     if(!boot||!this.preview)return;
     const fields=this.fields();
+    const niche=this.activeNiche();
     const color=boot.cores.find(c=>c.id===fields.colorPreset);
+    const font=boot.fontes.find(f=>f.id===fields.typography);
     this.preview.render({
       siteName:fields.siteName||'Meu Blog',niche:fields.modo==='modelo'?fields.nichoTema:'',
-      pageType:fields.modo==='modelo'?this.chosenNiche(boot.nichos)?.pageType:'blogger-conteudo',
+      pageType:niche?.pageType,gridConfigurable:niche?.gridConfigurable,sidebarConfigurable:niche?.sidebarConfigurable,
       accent:color?.hex,bg:color?.bg,surface:color?.surface,text:color?.text,footer:color?.footer,
-      typography:fields.typography,layout:fields.gridLayout,side:fields.sidebarPosition
+      typography:fields.typography,font,layout:fields.gridLayout,side:fields.sidebarPosition
     });
   }
-  setDevice(device:'desktop'|'tablet'|'mobile'):void {this.device.set(device);this.preview?.setDevice(device);}
+  setDevice(device:PreviewDevice):void {this.device.set(device);this.preview?.setDevice(device);}
   selectExample(e:Example):void {
     if(this.busy())return;
     this.invalidateXml();
@@ -201,7 +224,12 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     const random=(xs:string[])=>{const buf=new Uint32Array(1);crypto.getRandomValues(buf);return xs[buf[0]%xs.length]||'';};
     if(this.busy())return;
     const next={...this.fields()};
-    for(const k of Object.keys(choices) as Array<keyof typeof choices>)next[k]=random(choices[k]);
+    const niche=this.activeNiche();
+    for(const k of Object.keys(choices) as Array<keyof typeof choices>) {
+      if (k==='gridLayout' && niche?.gridConfigurable===false) continue;
+      if (k==='sidebarPosition' && niche?.sidebarConfigurable===false) continue;
+      next[k]=random(choices[k]);
+    }
     this.fields.set(next);
     this.selected.set('');
     this.invalidateXml();
