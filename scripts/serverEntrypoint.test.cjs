@@ -62,12 +62,20 @@ test('boot rejects invalid environment before loading services or listening', ()
 
 test('boot preserves middleware order, secure cookies, static cache and dynamic no-store', () => {
     const f = fixture(); assert.equal(f.middlewares[0][0], 'helmet'); assert.equal(f.middlewares[1][0], 'cors');
+    assert.ok(f.calls.some(([type, key, value]) => type === 'setting' && key === 'query parser' && value === 'extended'));
     assert.equal(f.state.session.cookie.secure, true); assert.equal(f.state.session.cookie.httpOnly, true); assert.equal(f.state.session.cookie.sameSite, 'lax');
     assert.equal(f.state.session.saveUninitialized, false); assert.equal(f.state.static.options.immutable, true);
     const res = response(), req = { path: '/dashboard', get: () => '', session: { user: { uid: 'u' } } };
     for (const [handler] of f.middlewares) if (typeof handler === 'function' && handler.length === 3) handler(req, res, () => {});
+    assert.equal(JSON.stringify(req.body), '{}');
     assert.equal(res.headers['Cache-Control'], 'no-store'); assert.equal(res.locals.gitSha, 'tested-sha'); assert.equal(res.locals.user.uid, 'u');
     assert.equal(f.state.listener.host, '0.0.0.0');
+});
+
+test('Express 5 listen failure exits before starting monitoring', () => {
+    const f = fixture();
+    assert.throws(() => f.state.listener.callback(Error('EADDRINUSE')), error => error.exitCode === 1);
+    assert.ok(!f.calls.some(([name]) => name === 'sentinel:start'));
 });
 
 test('session store round-trips JSON, expires records, fails closed on reads and propagates write errors', async () => {

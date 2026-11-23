@@ -7,13 +7,13 @@ import {runInNewContext} from 'node:vm';
 import {createRequire} from 'node:module';
 import {once} from 'node:events';
 import {ExpressAdapter} from '@nestjs/platform-express';
+import express4 from 'express4';
 
 // Run real commercial GET routers and EJS views without Firebase, mail,
 // payments, or credentialed network calls. The production server stays on 4.
 const repo=fileURLToPath(new URL('../../',import.meta.url));
 const rootRequire=createRequire(new URL('../../server.js',import.meta.url));
 const pilotRequire=createRequire(import.meta.resolve('@nestjs/platform-express'));
-const express4=rootRequire('express');
 const express5=pilotRequire('express');
 const authSource=readFileSync(join(repo,'src/routes/authRoutes.js'),'utf8');
 const contactSource=readFileSync(join(repo,'src/routes/contatoRoutes.js'),'utf8');

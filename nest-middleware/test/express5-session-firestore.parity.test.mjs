@@ -5,12 +5,12 @@ import {runInNewContext} from 'node:vm';
 import {createRequire} from 'node:module';
 import {once} from 'node:events';
 import ts from 'typescript';
+import express4 from 'express4';
 import {ExpressAdapter} from '@nestjs/platform-express';
 
 // Exact production express-session dependency, installed from the root lockfile.
-// Express 4 also comes from that lockfile. Express 5 is Nest's pinned adapter.
+// Express 4 is a test-only rollback baseline. Express 5 is Nest's pinned adapter.
 const rootRequire=createRequire(new URL('../../server.js',import.meta.url));
-const express4=rootRequire('express');
 const session=rootRequire('express-session');
 const compiled=readFileSync(new URL('../../server.js',import.meta.url),'utf8');
 const ast=ts.createSourceFile('server.js',compiled,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
