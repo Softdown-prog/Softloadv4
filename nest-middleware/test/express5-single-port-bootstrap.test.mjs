@@ -22,7 +22,7 @@ import {LegacyErrorContractFilter} from '../dist/legacy-error-contract.js';
 const root=fileURLToPath(new URL('../../',import.meta.url));
 const productionRequire=createRequire(new URL('../../server.js',import.meta.url));
 const adapterRequire=createRequire(import.meta.resolve('@nestjs/platform-express'));
-const express4=productionRequire('express');
+const productionExpress=productionRequire('express');
 const express5=adapterRequire('express');
 const session=productionRequire('express-session');
 const path=productionRequire('node:path');
@@ -78,6 +78,9 @@ function makeLegacyFactory(express){
     next(Object.assign(Error('private-legacy-dashboard-error'),{status:503})));
   const apiRoutes=express.Router();
   apiRoutes.get('/api/legacy-proof',(_req,res)=>res.json({source:'legacy-api'}));
+  apiRoutes.post('/api/legacy-request-proof',(req,res)=>res.json({query:req.query,body:req.body}));
+  apiRoutes.post('/api/raw-request-proof',express.raw({type:'application/octet-stream'}),
+    (req,res)=>res.json({raw:req.body.toString('hex')}));
   apiRoutes.get('/api/legacy-failure',(_req,_res,next)=>
     next(Object.assign(Error('private-legacy-api-error'),{status:503})));
   const emptyRouter=()=>express.Router();
@@ -253,10 +256,13 @@ test('actual legacy factory and Nest guards share one Express 5 app and listener
   }finally{await nest.close();}
 });
 
-test('production factory keeps legacy 404 and error middleware on Express 4',
+test('commercial Express 5 keeps legacy request parsing, redirect and 404 contracts',
   {timeout:30000},async()=>{
-  const {factory,fallback}=makeLegacyFactory(express4);
-  const expressApp=factory(express4());
+  assert.match(productionRequire('express/package.json').version,/^5\./);
+  const baselineRequire=createRequire(import.meta.url);
+  assert.match(baselineRequire('express4/package.json').version,/^4\./);
+  const {factory,fallback}=makeLegacyFactory(productionExpress);
+  const expressApp=factory();
   // The commercial entrypoint installs its fallback after the factory.
   fallback(expressApp);
   const server=expressApp.listen(0,'127.0.0.1');
@@ -267,12 +273,25 @@ test('production factory keeps legacy 404 and error middleware on Express 4',
     const base='http://127.0.0.1:'+addr.port;
     assert.equal((await fetchText(base,'/api/legacy-proof')).status,200);
     const oldRedirect=await fetchText(base,'/dashboard/blogger-ai?legacy=1');
-    assert.equal(oldRedirect.status,301,'Express 4 owns redirect by default');
+    assert.equal(oldRedirect.status,301);
     assert.equal(oldRedirect.headers.get('location'),'/dashboard/gerador-blogger');
     assert.equal(oldRedirect.headers.get('cache-control'),'no-store');
     const missing=await fetchText(base,'/no-such-path');
     assert.equal(missing.status,404);
     assert.match(missing.body,/<!DOCTYPE html>/,'real EJS 404 page');
+    const empty=await fetch(base+'/api/legacy-request-proof?filter%5Btag%5D=blog',{method:'POST'});
+    assert.equal(empty.status,200);
+    assert.deepEqual(await empty.json(),{query:{filter:{tag:'blog'}},body:{}});
+    const form=await fetch(base+'/api/legacy-request-proof',{
+      method:'POST',body:new URLSearchParams({name:'Blogger'})
+    });
+    assert.equal(form.status,200);
+    assert.deepEqual(await form.json(),{query:{},body:{name:'Blogger'}});
+    const upload=await fetch(base+'/api/raw-request-proof',{
+      method:'POST',headers:{'content-type':'application/octet-stream'},body:Buffer.from([0,42,255])
+    });
+    assert.equal(upload.status,200);
+    assert.deepEqual(await upload.json(),{raw:'002aff'});
   }finally{
     await new Promise((resolve,reject)=>server.close(err=>err?reject(err):resolve()));
   }

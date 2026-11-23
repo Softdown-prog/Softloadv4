@@ -1,11 +1,12 @@
 # Softload v4 — Migração da caixa de middlewares para NestJS
 
-## Estado inicial e limites da etapa
+## Estado do servidor comercial
 
-O servidor comercial continua em `server.js` (Express **4**): sessão
-Firestore, CORS, headers, rate limiting, rotas de autenticação, Premium,
-webhooks Mercado Pago, Angular e compilador Blogger não foram trocados.
-**Nada neste diretório sobe um segundo servidor em produção.**
+O servidor comercial roda em `server.js` com Express **5** e mantém uma
+única porta, as rotas Express existentes e o armazenamento de sessões
+no Firestore. A migração preserva o parser de query e o tratamento de
+formulários sem corpo herdados do Express 4. O Express 4.22.3 fica
+no lockfile isolado do piloto, como referência de paridade e rollback.
 
 O `nest-middleware/` é uma prova isolada que usa os pacotes reais de
 NestJS 12, não um mock de framework. `MiddlewareModule` registra três
@@ -53,14 +54,8 @@ O espelho `accessPolicy.js` é validado pelo verificador TypeScript 6, sem códi
 
 ## Por que ainda não montar Nest no Express comercial
 
-O servidor é Express 4 e Nest moderno usa Express 5. A documentação oficial
-de migração exige atualizar Express **antes** de montar Nest no servidor
-existente, ou migrar tudo de uma vez. Há diferenças de roteamento e
-compatibilidade: não usar `NestFactory.create(..., new ExpressAdapter(app))`
-com o Express 4 atual.
-
-Nesta fase a prova Nest fica isolada, sem qualquer alteração em
-`package.json` e `package-lock.json` da produção. O subprojeto possui
+A atualização do Express é uma etapa independente. A montagem do Nest em
+produção continua pendente de homologação na issue #141. O subprojeto possui
 `nest-middleware/package-lock.json` próprio (npm lockfile v3), gerado no
 Node 24, revisado e versionado. O workflow isolado instala com
 `npm ci --prefix nest-middleware --ignore-scripts`, compila TypeScript e
@@ -69,12 +64,11 @@ transitivas**, mas não habilita por si só o Nest na VPS nem comprova
 compatibilidade de cookies e sessions do backend comercial. O Nest permanece
 fora da imagem Docker de produção.
 
-A prova é um gate técnico **do piloto isolado**, não uma autorização de
-deploy do novo backend. Antes de habilitar Nest em produção, ainda é
-necessário homologar Express 5, rever Node 22/24 na imagem real e verificar
+A prova é um gate técnico **do piloto isolado**. Antes de habilitar Nest em
+produção, é preciso homologar a montagem na mesma porta e verificar as
 sessões Firestore, autenticação, rotas HTML/API, webhooks e rollback.
 
-## Pré-validação Express 5 sem substituir produção
+## Pré-validação histórica da migração para Express 5
 
 A suíte isolada `nest-middleware/test/express5-legacy-preflight.test.mjs`
 usa o Express 5 real presente no adapter do NestJS, sem modificar a
@@ -102,8 +96,8 @@ Nest continua separado da porta de produção.
 ## Paridade HTTP de sessão com Express 4 e Express 5
 
 A prova isolada `nest-middleware/test/express5-session-firestore.parity.test.mjs`
-usa **o `express-session@1.19.0` real e o Express 4.22.3 do lockfile
-de produção**, mais o Express 5 do adapter NestJS. O workflow instala as
+usa **o `express-session@1.19.0` real da produção e o Express 4.22.3
+do lockfile isolado**, mais o Express 5 do adapter NestJS. O workflow instala as
 dependências comerciais com `npm ci --omit=dev --legacy-peer-deps
 --ignore-scripts` somente no runner, sem credenciais nem scripts de instalação.
 
@@ -121,8 +115,7 @@ são comparadas.
 
 Esta prova não substitui testes contra uma instância Firestore real, nem
 confirma atualização contínua de cookies, HTTPS/Caddy em produção, EJS,
-webhooks assinados, revalidação de pagamento ou rollback. **O runtime de
-produção continua em Express 4** até a homologação integral da issue #141.
+webhooks assinados, revalidação de pagamento ou rollback em produção.
 
 ## HMAC de webhook e parsers: pré-validação Express 4/5
 
@@ -139,8 +132,7 @@ de rede externas.
 
 **Limite**: os testes exercitam o verificador HMAC **real**, mas não
 executam o handler de pagamento, conciliação, `payment.get()`, assinatura
-de notificações reais ou efeito de webhooks duplicados. O Express comercial
-ainda permanece na versão 4.
+de notificações reais ou efeito de webhooks duplicados.
 
 ## Compatibilidade da renderização EJS e das rotas de autenticação
 
@@ -186,7 +178,7 @@ data ausente não são alteradas automaticamente nesta revisão.
 
 ## Factory do servidor legado e prova de porta única
 
-O backend comercial mantém o **Express 4 e a porta atual**. A montagem de
+O backend comercial mantém a **porta atual**. A montagem de
 middlewares, EJS, rotas, sessão Firestore e health foi encapsulada na
 `createLegacyApp(app = express())` de `server.ts` / `server.js`, sem
 abrir socket. A instalação de `404` e erro Express fica isolada em
@@ -202,7 +194,7 @@ sem rede e chama `NestFactory.create(..., new ExpressAdapter(app))`. Somente
 o Nest chama `listen()` naquele teste: GET EJS do login e GET API legado
 respondem junto ao endpoint Nest protegido por `SessionGuard`, usando
 o **mesmo cookie express-session e MemoryStore efêmero**. O teste também
-confirma o fallback Express 4 e 404 no modo comercial original.
+confirma o fallback e o 404 no modo comercial.
 Não é um bootstrap Nest habilitado em produção, nem testa o Firestore real,
 Mercado Pago real, deploy reversível ou todos os handlers comerciais.
 
@@ -214,7 +206,7 @@ para Nest, sem catch-all Express antecipado nem dois listeners HTTP.
 
 A URL antiga `GET /dashboard/blogger-ai`, que redireciona com **301**
 para `/dashboard/gerador-blogger`, foi escolhida por ser não comercial,
-sem autenticação e sem chamadas externas. O Express 4 comercial continua
+sem autenticação e sem chamadas externas. O Express comercial continua
 registrando a rota normalmente. O parâmetro explícito
 `nestOwnsBloggerRedirect: true` da `createLegacyApp` é usado **somente
 no teste isolado** para não registrar a mesma rota no Express 5:
@@ -222,7 +214,7 @@ no teste isolado** para não registrar a mesma rota no Express 5:
 e sessão** que as rotas legadas. A suíte prova status 301, Location,
 Cache-Control no-store, HEAD, funcionamento dos endpoints legados,
 SessionGuard com cookie compartilhado, 404 Nest e rollback do ownership
-para o Express 4. Não adicionamos guard ao redirect público, pois isso
+para o Express comercial. Não adicionamos guard ao redirect público, pois isso
 alteraria o contrato anterior.
 
 A suíte de equivalência Premium também foi atualizada: o piloto Nest
@@ -309,8 +301,8 @@ compartilhada continua restrita ao CI.
    O piloto já cobre Premium com um leitor simulado, mas **ainda não** cobre
    o adaptador Firestore real nem os templates EJS/cookies comerciais. Os
    redirecionamentos HTTP de navegação já têm uma prova Nest isolada.
-2. Migrar Express 4 → 5 em PR separado, revisar rotas catch-all, parsers,
-   cookie, `express-session`, limite de requisições e webhook.
+2. Migrar Express 4 → 5 em PR separado. Os testes cobrem rotas catch-all,
+   parsers, cookie, `express-session`, limite de requisições e webhook.
 3. Criar factory do servidor legado sem `listen()` e remover 404 catch-all
    na hora de acoplar Nest, mantendo ordens de middleware e sessão Firestore.
 4. Montar Nest via `ExpressAdapter`, migrar uma rota protegida de baixo

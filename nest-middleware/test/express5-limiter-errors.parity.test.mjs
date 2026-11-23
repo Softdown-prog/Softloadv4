@@ -8,13 +8,13 @@ import {runInNewContext} from 'node:vm';
 import {once} from 'node:events';
 import ts from 'typescript';
 import {ExpressAdapter} from '@nestjs/platform-express';
+import express4 from 'express4';
 
 // Actual commercial routers / error handler; only their external dependencies
 // are stubbed. No payment, Firebase, email, or remote network is exercised.
 const root=fileURLToPath(new URL('../../',import.meta.url));
 const productionRequire=createRequire(new URL('../../server.js',import.meta.url));
 const adapterRequire=createRequire(import.meta.resolve('@nestjs/platform-express'));
-const express4=productionRequire('express');
 const express5=adapterRequire('express');
 const rateLimit=productionRequire('express-rate-limit');
 const authSource=readFileSync(join(root,'src/routes/authRoutes.js'),'utf8');

@@ -83,11 +83,13 @@ class FirestoreSessionStore extends session.Store {
     }
 }
 const isProd = process.env.NODE_ENV === 'production';
-// Monta middlewares e rotas sem assumir uma porta HTTP. A produção continua
-// usando Express 4; o piloto pode injetar Express 5 sem subir outro processo.
+// Monta middlewares e rotas sem assumir uma porta HTTP. O piloto pode
+// fornecer a instância do adapter Nest sem subir outro processo.
 function createLegacyApp(app = express(), options = {}) {
     // Necessário para Cloud Run: o Load Balancer do Google é um proxy
     app.set('trust proxy', 1);
+    // O Express 5 usa o parser simples por padrão. Preserve as queries antigas.
+    app.set('query parser', 'extended');
     // Segurança: Helmet (CSP, X-Frame-Options, HSTS…) + CORS
     // Devem vir antes de qualquer rota ou middleware que produza resposta.
     app.use(helmetMiddleware);
@@ -96,6 +98,11 @@ function createLegacyApp(app = express(), options = {}) {
     app.set('views', path.join(__dirname, 'views'));
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
+    app.use((req, _res, next) => {
+        // Formulários legados tratam corpo ausente como um objeto vazio.
+        req.body ??= {};
+        next();
+    });
     // Os chunks versionados permanecem cacheáveis. O entrypoint /dist/assets/main.js
     // tem nome fixo e precisa ser revalidado em todo acesso: caches de borda que
     // ignoram querystrings não podem manter uma interface antiga por um ano.
@@ -225,13 +232,17 @@ function mountLegacyFallback(app, options = {}) {
         res.status(err.status || 500).render('pages/404');
     });
 }
-// Produção: mesma instância Express 4, mesmos handlers e único listener.
-// O bootstrap Nest em Express 5 só acontece nos testes isolados.
+// A aplicação comercial usa Express 5 com um único listener.
+// O bootstrap Nest só acontece nos testes isolados.
 const app = createLegacyApp();
 mountLegacyFallback(app);
 // Verificação agregada da outbox GCS. Jamais expor emails ou conteúdo de recibos.
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', (error) => {
+    if (error) {
+        console.error('[HTTP] Não foi possível iniciar o servidor:', error.message);
+        process.exit(1);
+    }
     if (isProd) {
         console.log(`🚀 Motor Online em https://softload.analysepro.com`);
     }

@@ -7,12 +7,12 @@ import {once} from 'node:events';
 import crypto from 'node:crypto';
 import ts from 'typescript';
 import {ExpressAdapter} from '@nestjs/platform-express';
+import express4 from 'express4';
 
 // HTTP contract only: no API client, Firestore, paid checkout or real secrets.
-// Express 4 is from the production lockfile; Express 5 is from Nest's lockfile.
+// Express 4 is the rollback baseline pinned alongside Nest's Express 5.
 const productionRequire=createRequire(new URL('../../server.js',import.meta.url));
 const nestRequire=createRequire(import.meta.resolve('@nestjs/platform-express'));
-const express4=productionRequire('express');
 const express5=nestRequire('express');
 const secret='offline-webhook-hmac-secret-not-for-production';
 const source=readFileSync(new URL('../../src/routes/apiRoutes.js',import.meta.url),'utf8');

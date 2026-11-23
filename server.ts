@@ -9,7 +9,7 @@ interface ServerDocument {
 }
 interface ServerCollection { doc(id: string): ServerDocument; limit(count: number): { get(): Promise<unknown> } }
 interface ServerDatabase { collection(name: string): ServerCollection }
-interface ServerRequest { path: string; get(name: string): string | undefined; session: { user?: unknown } }
+interface ServerRequest { body?: unknown; path: string; get(name: string): string | undefined; session: { user?: unknown } }
 interface ServerResponse {
     locals: Record<string, unknown>;
     set(name: string, value: string): unknown;
@@ -24,7 +24,7 @@ interface ServerApp {
     set(name: string, value: unknown): unknown;
     use(...args: unknown[]): unknown;
     get(path: string, handler: (req: ServerRequest, res: ServerResponse) => unknown): unknown;
-    listen(port: number | string, host: string, callback: () => void): unknown;
+    listen(port: number | string, host: string, callback: (error?: Error) => void): unknown;
 }
 interface ServerExpress {
     (): ServerApp;
@@ -128,8 +128,8 @@ class FirestoreSessionStore extends session.Store {
 
 const isProd = process.env.NODE_ENV === 'production';
 
-// Monta middlewares e rotas sem assumir uma porta HTTP. A produção continua
-// usando Express 4; o piloto pode injetar Express 5 sem subir outro processo.
+// Monta middlewares e rotas sem assumir uma porta HTTP. O piloto pode
+// fornecer a instância do adapter Nest sem subir outro processo.
 function createLegacyApp(
     app: ServerApp = express(),
     options: { nestOwnsBloggerRedirect?: boolean } = {},
@@ -137,6 +137,8 @@ function createLegacyApp(
 
 // Necessário para Cloud Run: o Load Balancer do Google é um proxy
 app.set('trust proxy', 1);
+// O Express 5 usa o parser simples por padrão. Preserve as queries antigas.
+app.set('query parser', 'extended');
 
 // Segurança: Helmet (CSP, X-Frame-Options, HSTS…) + CORS
 // Devem vir antes de qualquer rota ou middleware que produza resposta.
@@ -147,6 +149,11 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use((req: ServerRequest, _res: ServerResponse, next: () => void) => {
+    // Formulários legados tratam corpo ausente como um objeto vazio.
+    req.body ??= {};
+    next();
+});
 
 // Os chunks versionados permanecem cacheáveis. O entrypoint /dist/assets/main.js
 // tem nome fixo e precisa ser revalidado em todo acesso: caches de borda que
@@ -292,14 +299,18 @@ app.use((err: ServerFailure, req: ServerRequest, res: ServerResponse, next: () =
 
 }
 
-// Produção: mesma instância Express 4, mesmos handlers e único listener.
-// O bootstrap Nest em Express 5 só acontece nos testes isolados.
+// A aplicação comercial usa Express 5 com um único listener.
+// O bootstrap Nest só acontece nos testes isolados.
 const app = createLegacyApp();
 mountLegacyFallback(app);
 
 // Verificação agregada da outbox GCS. Jamais expor emails ou conteúdo de recibos.
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', (error) => {
+    if (error) {
+        console.error('[HTTP] Não foi possível iniciar o servidor:', error.message);
+        process.exit(1);
+    }
     if (isProd) {
         console.log(`🚀 Motor Online em https://softload.analysepro.com`);
     } else {
