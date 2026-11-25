@@ -66,6 +66,15 @@ const assert = require('node:assert/strict');
     assert.ok(Array.isArray(guest[key])&&guest[key].length>0,
       'Angular catalog must provide '+key);
   }
+  const news=guest.nichos.find(niche=>niche.id==='noticias-mag-news');
+  const portfolio=guest.nichos.find(niche=>niche.id==='portfolio-minimalista');
+  const playfair=guest.fontes.find(font=>font.id==='playfair');
+  assert.equal(news?.gridConfigurable,false,'news must use the native grid');
+  assert.equal(news?.sidebarConfigurable,true,'news has a configurable sidebar');
+  assert.equal(portfolio?.gridConfigurable,true,'portfolio must accept grid presets');
+  assert.equal(portfolio?.sidebarConfigurable,false,'portfolio has no configurable sidebar');
+  assert.match(playfair?.fontFamily||'',/Playfair Display/);
+  assert.equal(playfair?.headingWeight,'900');
   // Docker must expose the real newly curated presets, not only the Angular
   // browser mock. These are compile-ready niche IDs, not placeholder cards.
   assert.ok(guest.exemplos.length>=30,'expected at least 30 compiler-backed examples');
