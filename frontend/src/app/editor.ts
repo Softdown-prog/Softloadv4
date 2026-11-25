@@ -1,134 +1,58 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, computed, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SoftloadApi, Example, NicheOption, Option } from './api';
-import { INITIAL_EDITOR_FIELDS, GRID_LAYOUTS, SIDEBAR_POSITIONS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
+import { INITIAL_EDITOR_FIELDS, fieldsFromExample, restoreEditorFields, type EditorFields } from './editor-state';
 
 type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
 interface Preview { render(value: Record<string, unknown>): void; setDevice(device: PreviewDevice): void; destroy(): void; }
 interface PreviewGlobal { mount(frame: HTMLIFrameElement, stage: HTMLElement): Preview; }
+const steps = [
+  { id: 'modelo', label: 'Modelo' },
+  { id: 'identidade', label: 'Identidade' },
+  { id: 'layout', label: 'Layout' },
+  { id: 'revisao', label: 'Revisão' },
+] as const;
+type EditorStep = (typeof steps)[number]['id'];
+
+const layoutOptions = [
+  { id: 'revista', label: 'Revista · 3 colunas' },
+  { id: 'dupla', label: 'Duas colunas' },
+  { id: 'lista', label: 'Lista' },
+  { id: 'quadrado', label: 'Mosaico' },
+  { id: 'mural', label: 'Mural compacto' },
+  { id: 'coluna-unica', label: 'Uma coluna' },
+  { id: 'zigzag', label: 'Zigue-zague' },
+];
+
+const sidebarOptions = [
+  { id: 'right', label: 'Direita' },
+  { id: 'left', label: 'Esquerda' },
+  { id: 'none', label: 'Sem barra lateral' },
+];
+
 @Component({
-  standalone:true, selector:'sl-editor', imports:[FormsModule], changeDetection:ChangeDetectionStrategy.OnPush,
-  template:`
-  <main class="container">
-    <div class="section-head">
-      <p class="eyebrow">Estúdio de criação · Blogger XML</p>
-      <h1>Seu blog, do seu jeito.</h1>
-      <p class="lead">Escolha uma estrutura, personalize as cores e baixe o XML validado pelo nosso compilador procedural. Sem IA.</p>
-    </div>
-    @if (api.error()) { <p role="alert" class="status error">{{api.error()}}</p> }
-    @if (api.data(); as boot) {
-      @let niche = activeNiche();
-      <section class="panel" aria-labelledby="gallery-title" style="margin-bottom:18px">
-        <div class="space-between"><div><p class="eyebrow">Inspiração</p><h2 id="gallery-title">Comece por um exemplo</h2></div>
-          <span class="pill">{{boot.exemplos.length}} estilos editáveis</span>
-        </div>
-        <div class="flex" style="margin-bottom:18px">
-          <button class="button button-small" [class.button-outline]="category() !== 'Todos'" (click)="category.set('Todos')">Todos</button>
-          @for (cat of categories(); track cat) {
-            <button class="button button-small" [class.button-outline]="category() !== cat" (click)="category.set(cat)">{{cat}}</button>
-          }
-        </div>
-        <div class="gallery">
-          @for (example of boot.exemplos; track example.id) {
-            @if (category() === 'Todos' || category() === example.categoria) {
-              <button type="button" [disabled]="busy()" (click)="selectExample(example)" [attr.aria-pressed]="selected() === example.id">
-                <span class="sample" [style.background]="exampleColor(example,boot.cores)">{{example.nome.slice(0,1)}}</span>
-                <strong>{{example.nome}}</strong>
-                <span class="small muted">{{example.categoria}}</span>
-                @if (example.descricao) { <span class="small muted">{{example.descricao}}</span> }
-              </button>
-            }
-          }
-        </div>
-      </section>
-      <div class="grid-two" style="grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)">
-        <section class="panel" aria-labelledby="editor-title">
-          <p class="eyebrow">Editor</p><h2 id="editor-title">Configurar template</h2>
-          <form (ngSubmit)="download()" #form="ngForm">
-            <div class="field">
-              <label for="modo">Como começar?</label>
-              <select id="modo" name="modo" [ngModel]="fields().modo" (ngModelChange)="changeField('modo',$event)" [disabled]="busy()">
-                <option value="novo">Começar do zero</option><option value="modelo">A partir de um nicho</option>
-              </select>
-            </div>
-            @if (fields().modo === 'modelo') {
-              <div class="field"><label for="nichoTema">Nicho de partida</label>
-                <select id="nichoTema" name="nichoTema" [ngModel]="fields().nichoTema" (ngModelChange)="changeField('nichoTema',$event)" required [disabled]="busy()">
-                  @for (niche of boot.nichos; track niche.id) { <option [value]="niche.id">{{niche.nome}}</option> }
-                </select>
-              </div>
-            }
-            <div class="field"><label for="siteName">Nome do blog</label>
-              <input id="siteName" name="siteName" [ngModel]="fields().siteName" minlength="2" maxlength="60" required (ngModelChange)="changeField('siteName',$event)" [disabled]="busy()"/>
-            </div>
-            <div class="field"><label for="colorPreset">Paleta de cores</label>
-              <select id="colorPreset" name="colorPreset" [ngModel]="fields().colorPreset" (ngModelChange)="changeField('colorPreset',$event)" [disabled]="busy()">
-                @for (c of boot.cores; track c.id) {<option [value]="c.id">{{c.nome}}</option>}
-              </select>
-            </div>
-            <div class="field"><label for="typography">Tipografia</label>
-              <select id="typography" name="typography" [ngModel]="fields().typography" (ngModelChange)="changeField('typography',$event)" [disabled]="busy()">
-                @for (f of boot.fontes; track f.id) {<option [value]="f.id">{{f.nome}}</option>}
-              </select>
-            </div>
-            <div class="field"><label for="gridLayout">Layout das postagens</label>
-              <select id="gridLayout" name="gridLayout" [ngModel]="fields().gridLayout" (ngModelChange)="changeField('gridLayout',$event)"
-                [disabled]="busy() || niche?.gridConfigurable === false"
-                [attr.aria-describedby]="niche?.gridConfigurable === false ? 'grid-layout-hint' : null">
-                <option value="revista">Revista · 3 colunas</option><option value="dupla">Duas colunas</option>
-                <option value="lista">Lista</option><option value="quadrado">Mosaico</option>
-                <option value="mural">Mural compacto</option><option value="coluna-unica">Uma coluna</option><option value="zigzag">Zigue-zague</option>
-              </select>
-              @if (niche?.gridConfigurable === false) {
-                <span id="grid-layout-hint" class="small muted">{{niche?.aviso || 'Este modelo usa um layout de postagens próprio.'}}</span>
-              }
-            </div>
-            <div class="field"><label for="sidebarPosition">Barra lateral</label>
-              <select id="sidebarPosition" name="sidebarPosition" [ngModel]="fields().sidebarPosition" (ngModelChange)="changeField('sidebarPosition',$event)"
-                [disabled]="busy() || niche?.sidebarConfigurable === false"
-                [attr.aria-describedby]="niche?.sidebarConfigurable === false ? 'sidebar-hint' : null">
-                <option value="right">Direita</option><option value="left">Esquerda</option><option value="none">Sem barra lateral</option>
-              </select>
-              @if (niche?.sidebarConfigurable === false) {
-                <span id="sidebar-hint" class="small muted">Este modelo tem uma estrutura lateral fixa.</span>
-              }
-            </div>
-            <div class="flex">
-              <button class="button button-outline button-small" type="button" [disabled]="busy()" (click)="surprise(boot)">Surpreenda-me</button>
-              <button class="button button-outline button-small" type="button" [disabled]="busy()" (click)="save()">Salvar escolhas</button>
-            </div>
-            <hr class="divider"/>
-            <p class="muted small">
-              {{boot.user ? 'Conta gratuita: 2 downloads adicionais; Essencial com limite ampliado.' : 'Sem cadastro: até 2 downloads nesta sessão.'}}
-              <a href="/planos">Plano Essencial</a>.
-            </p>
-            <button class="button" type="submit" style="width:100%" [disabled]="busy() || !form.valid">
-              {{busy() ? 'Validando XML…' : 'Gerar e baixar XML'}}
-            </button>
-            <p class="status" [class.error]="failed()" role="status" aria-live="polite">{{message()}}</p>
-            @if (downloadUrl()) {<a [href]="downloadUrl()" [download]="downloadName()" class="button button-outline" style="width:100%">Baixar XML novamente</a>}
-          </form>
-        </section>
-        <section class="panel" aria-labelledby="preview-title">
-          <h2 id="preview-title">Prévia responsiva</h2>
-          <p class="muted small">A prévia usa postagens de exemplo. Confira os widgets e as fontes carregadas pelo tema depois de importar o XML no Blogger.</p>
-          <div class="preview-toolbar" role="group" aria-label="Tamanho da prévia">
-            @for (size of previewDevices; track size.id) {
-              <button type="button" class="button button-small" [class.button-outline]="device() !== size.id"
-                [attr.aria-pressed]="device() === size.id" (click)="setDevice(size.id)">{{size.label}}</button>
-            }
-          </div>
-          <div class="preview-window" #stage><iframe #frame sandbox="" referrerpolicy="no-referrer" title="Prévia ilustrativa do Blogger"></iframe></div>
-          <p class="muted small">{{device() === 'desktop' ? '1080' : device() === 'tablet' ? '768' : '390'}} px · A prévia é gratuita.</p>
-        </section>
-      </div>
-    }
-  </main>
-  `,
-  styles:[`@media(max-width:920px){.grid-two{grid-template-columns:1fr!important}}`]
+  standalone: true,
+  selector: 'sl-editor',
+  imports: [FormsModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './editor.html',
+  styleUrl: './editor.css',
 })
 export class EditorPage implements AfterViewInit, OnDestroy {
   readonly api = inject(SoftloadApi);
+  private readonly route = inject(ActivatedRoute);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly steps = steps;
+  readonly layoutOptions = layoutOptions;
+  readonly sidebarOptions = sidebarOptions;
+  readonly step = signal<EditorStep>('modelo');
+  readonly stepIndex = computed(() => steps.findIndex(step => step.id === this.step()));
+  readonly previewOnly = signal(false);
+  readonly draftMessage = signal('');
+  readonly fieldError = signal('');
+  readonly palette = computed(() => this.api.data()?.cores.find(color => color.id === this.fields().colorPreset));
+  readonly font = computed(() => this.api.data()?.fontes.find(font => font.id === this.fields().typography));
   private frame?: ElementRef<HTMLIFrameElement>;
   private stage?: ElementRef<HTMLElement>;
   // A prévia existe somente após o bootstrap; os setters evitam corrida com @if.
@@ -144,20 +68,36 @@ export class EditorPage implements AfterViewInit, OnDestroy {
   readonly previewDevices = [
     { id:'desktop', label:'Computador' }, { id:'tablet', label:'Tablet' }, { id:'mobile', label:'Celular' }
   ] as const;
-  readonly device=signal<PreviewDevice>(window.matchMedia('(max-width: 600px)').matches ? 'mobile' : 'desktop');
+  readonly device = signal<PreviewDevice>(
+    window.matchMedia('(max-width: 600px)').matches ? 'mobile' :
+      window.matchMedia('(max-width: 835px)').matches ? 'tablet' : 'desktop'
+  );
   readonly category=signal('Todos'); readonly selected=signal('');
   readonly activeNiche=computed<NicheOption | undefined>(() => {
     const fields=this.fields();
     return fields.modo==='modelo' ? this.api.data()?.nichos.find(niche=>niche.id===fields.nichoTema) : undefined;
   });
-  readonly categories=computed(()=>[...new Set((this.api.data()?.exemplos||[]).map(e=>e.categoria||'Outros'))]);
+  readonly categories = computed(() => [...new Set((this.api.data()?.exemplos || []).map(example => example.categoria || 'Outros'))]);
+  readonly matchingExamples = computed(() => (this.api.data()?.exemplos || []).filter(example =>
+    this.category() === 'Todos' || this.category() === (example.categoria || 'Outros')));
+  readonly showAllExamples = signal(false);
+  readonly exampleLimit = 6;
+  readonly visibleExamples = computed(() => this.showAllExamples()
+    ? this.matchingExamples() : this.matchingExamples().slice(0, this.exampleLimit));
   readonly message=signal('O XML é validado antes do download.'); readonly busy=signal(false);readonly failed=signal(false);
   readonly downloadUrl=signal('');readonly downloadName=signal('template-blogger.xml');
   private preview?: Preview;
   constructor() {
     void this.api.bootstrap().then(boot => {
       if (!this.fields().nichoTema) this.fields.update(fields=>({...fields,nichoTema:boot.nichos[0]?.id || ''}));
-      this.restore(boot);
+      const modelId = this.route.snapshot.queryParamMap.get('modelo');
+      const model = boot.exemplos.find(example => example.id === modelId);
+      if (model) {
+        this.selectExample(model);
+        this.step.set('identidade');
+      } else {
+        this.restore(boot);
+      }
       this.updatePreview();
     }).catch(() => {});
   }
@@ -166,7 +106,62 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     this.preview?.destroy();
     if (this.downloadUrl()) URL.revokeObjectURL(this.downloadUrl());
   }
-  exampleColor(e: Example, colors: Option[]): string { return colors.find(c=>c.id===e.colorPreset)?.hex || '#155e75'; }
+  exampleColor(example: Example, colors: Option[]): string {
+    return colors.find(color => color.id === example.colorPreset)?.hex || '#4933d5';
+  }
+
+  filterExamples(category: string): void {
+    this.category.set(category);
+    this.showAllExamples.set(false);
+  }
+
+  private validateName(): boolean {
+    const name = this.fields().siteName.trim();
+    return name.length >= 2 && name.length <= 60;
+  }
+
+  goToStep(next: EditorStep): void {
+    if (this.busy()) return;
+    const needsName = next === 'layout' || next === 'revisao';
+    const invalidName = needsName && !this.validateName();
+    const target = invalidName ? 'identidade' : next;
+    this.step.set(target);
+    this.previewOnly.set(false);
+    this.fieldError.set(invalidName ? 'Informe um nome com 2 a 60 caracteres.' : '');
+    requestAnimationFrame(() => {
+      const selector = invalidName ? '#siteName' : '#step-title';
+      this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus();
+    });
+  }
+
+  back(): void {
+    const previous = steps[this.stepIndex() - 1];
+    if (previous) this.goToStep(previous.id);
+  }
+
+  submitStep(): void {
+    const next = steps[this.stepIndex() + 1];
+    if (next) this.goToStep(next.id);
+    else void this.download();
+  }
+
+  showPreview(visible: boolean): void {
+    this.previewOnly.set(visible);
+    requestAnimationFrame(() => {
+      const selector = visible ? '#preview-title' : '#step-title';
+      this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus();
+    });
+  }
+
+  layoutName(): string {
+    if (this.activeNiche()?.gridConfigurable === false) return 'Estrutura do modelo';
+    return layoutOptions.find(option => option.id === this.fields().gridLayout)?.label || '';
+  }
+
+  sidebarName(): string {
+    if (this.activeNiche()?.sidebarConfigurable === false) return 'Estrutura do modelo';
+    return sidebarOptions.find(option => option.id === this.fields().sidebarPosition)?.label || '';
+  }
   private mountPreview(): void {
     const api=(window as Window & {SoftloadBloggerPreview?:PreviewGlobal}).SoftloadBloggerPreview;
     if (!api || !this.frame || !this.stage || this.preview) return;
@@ -179,6 +174,8 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     if(this.busy()||this.fields()[key]===value)return;
     this.fields.update(fields=>({...fields,[key]:value}));
     this.selected.set('');
+    this.draftMessage.set('');
+    if (key === 'siteName') this.fieldError.set('');
     this.failed.set(false);
     if(this.invalidateXml())this.message.set('Você alterou o template. Gere um novo XML para essas escolhas.');
     this.updatePreview();
@@ -197,8 +194,8 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     if(!boot||!this.preview)return;
     const fields=this.fields();
     const niche=this.activeNiche();
-    const color=boot.cores.find(c=>c.id===fields.colorPreset);
-    const font=boot.fontes.find(f=>f.id===fields.typography);
+    const color = this.palette();
+    const font = this.font();
     this.preview.render({
       siteName:fields.siteName||'Meu Blog',niche:fields.modo==='modelo'?fields.nichoTema:'',
       pageType:niche?.pageType,gridConfigurable:niche?.gridConfigurable,sidebarConfigurable:niche?.sidebarConfigurable,
@@ -212,35 +209,41 @@ export class EditorPage implements AfterViewInit, OnDestroy {
     this.invalidateXml();
     this.selected.set(e.id);
     this.fields.set(fieldsFromExample(e));
+    this.draftMessage.set('');
+    this.fieldError.set('');
     this.failed.set(false);
     this.message.set('Exemplo aplicado. Personalize e gere seu XML.');
     this.updatePreview();
   }
-  surprise(boot: {cores:Option[];fontes:Option[]}):void {
-    const choices:{[K in 'colorPreset'|'typography'|'gridLayout'|'sidebarPosition']:string[]}={
-      colorPreset:boot.cores.map(x=>x.id),typography:boot.fontes.map(x=>x.id),
-      gridLayout:[...GRID_LAYOUTS],sidebarPosition:[...SIDEBAR_POSITIONS]
+  surprise(boot: { cores: Option[]; fontes: Option[] }): void {
+    if (this.busy()) return;
+    const random = (options: Option[]) => {
+      const draw = crypto.getRandomValues(new Uint32Array(1))[0];
+      return options[draw % options.length]?.id;
     };
-    const random=(xs:string[])=>{const buf=new Uint32Array(1);crypto.getRandomValues(buf);return xs[buf[0]%xs.length]||'';};
-    if(this.busy())return;
-    const next={...this.fields()};
-    const niche=this.activeNiche();
-    for(const k of Object.keys(choices) as Array<keyof typeof choices>) {
-      if (k==='gridLayout' && niche?.gridConfigurable===false) continue;
-      if (k==='sidebarPosition' && niche?.sidebarConfigurable===false) continue;
-      next[k]=random(choices[k]);
-    }
-    this.fields.set(next);
+    this.fields.update(fields => ({
+      ...fields,
+      colorPreset: random(boot.cores) ?? fields.colorPreset,
+      typography: random(boot.fontes) ?? fields.typography,
+    }));
     this.selected.set('');
+    this.draftMessage.set('');
     this.invalidateXml();
     this.failed.set(false);
     this.message.set('Novo estilo escolhido. Confira a prévia.');
     this.updatePreview();
   }
-  save():void {
-    try { localStorage.setItem('softload-blogger-estilo-v1',JSON.stringify(this.fields()));
-      this.message.set('Escolhas salvas neste dispositivo.'); }
-    catch {this.message.set('Não foi possível salvar no navegador, mas você pode gerar XML.');}
+  save(): void {
+    if (!this.validateName()) {
+      this.draftMessage.set('Informe um nome com 2 a 60 caracteres para salvar.');
+      return;
+    }
+    try {
+      localStorage.setItem('softload-blogger-estilo-v1', JSON.stringify({ ...this.fields(), step: this.step() }));
+      this.draftMessage.set('Rascunho salvo neste navegador.');
+    } catch {
+      this.draftMessage.set('Não foi possível salvar o rascunho neste navegador.');
+    }
   }
   private restore(boot:{cores:Option[]; fontes:Option[]; nichos:Option[]}):void {
     try {
@@ -248,12 +251,16 @@ export class EditorPage implements AfterViewInit, OnDestroy {
       this.fields.set(restoreEditorFields(this.fields(),stored,{
         colors:boot.cores.map(c=>c.id),fonts:boot.fontes.map(f=>f.id),niches:boot.nichos.map(n=>n.id)
       }));
+      if (stored && typeof stored === 'object' && 'step' in stored) {
+        const savedStep = steps.find(step => step.id === stored.step);
+        if (savedStep) this.step.set(savedStep.id);
+      }
     }catch{ /* Dados locais podem ser antigos ou inválidos. */ }
   }
   async download():Promise<void>{
     if(this.busy())return;
     const boot=this.api.data();if(!boot){this.message.set('As opções ainda estão carregando.');return;}
-    if(this.fields().siteName.trim().length<2){this.failed.set(true);this.message.set('Informe um nome com pelo menos 2 caracteres.');return;}
+    if (!this.validateName()) { this.goToStep('identidade'); this.fieldError.set('Informe um nome com 2 a 60 caracteres.'); return; }
     this.busy.set(true);this.failed.set(false);this.message.set('Compilando e validando o XML…');
     this.invalidateXml();
     const params=new URLSearchParams({...this.fields(), guestToken:boot.guestToken});

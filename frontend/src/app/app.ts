@@ -36,7 +36,8 @@ export const routes: Routes = [
       <nav class="navigation container" aria-label="Navegação principal">
         <a routerLink="/" class="brand"><span class="brand-mark">S</span><span>softload<span class="brand-dot">.</span></span></a>
         <div class="nav-actions">
-          <a routerLink="/criar">Criar template</a>
+          <a class="nav-editor" routerLink="/criar">Criar template</a>
+          <a class="nav-guide" href="/#como-funciona">Como funciona</a>
           @if (api.data()?.user) {
             <a routerLink="/dashboard">Meu painel</a>
             <a href="/logout" class="nav-muted">Sair</a>
