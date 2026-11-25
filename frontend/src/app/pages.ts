@@ -42,10 +42,15 @@ export class AuthPage {
     <a routerLink="/dashboard/arquivos" class="panel"><h3>Arquivos na nuvem</h3><p class="muted">Envie e gerencie seus arquivos e cotas disponíveis.</p></a>
     <a routerLink="/dashboard/plano-essencial" class="panel"><h3>Plano Essencial</h3><p class="muted">R$ 5,00 por 30 dias, sem renovação automática.</p></a>
     <a routerLink="/dashboard/configuracoes" class="panel"><h3>Minha conta</h3><p class="muted">Confira seu cadastro, preferências e informações.</p></a>
+    @if (api.data()?.user?.is_super_admin === true) {
+      <a href="/eu" class="panel"><h3>Administração</h3><p class="muted">Cadastros e recuperação de pagamentos.</p></a>
+    }
   </div>
 </main>
 `})
-export class DashboardPage {}
+export class DashboardPage {
+  protected readonly api = inject(SoftloadApi);
+}
 
 interface HistoricItem {id:string;arquivo:string;siteName:string;tamanhoBytes:number;criadoEm:string;}
 @Component({standalone:true,changeDetection:ChangeDetectionStrategy.OnPush,template:`
@@ -251,46 +256,5 @@ export class LegalPage implements OnInit {
       if(!r.ok)throw new Error('Documento indisponível.');
       this.html.set(await r.text());
     }catch(e){this.error.set(e instanceof Error?e.message:'Documento indisponível.');}
-  }
-}
-
-interface AdminUser {email:string;nome:string;plano:string;is_active:boolean;storage_usado_mb:string;}
-@Component({standalone:true,changeDetection:ChangeDetectionStrategy.OnPush,template:`
-<main class="container"><p class="eyebrow">Administração · Acesso restrito</p><h1>Softload · Administração</h1>
-@if(error()){<p role="alert" class="status error">{{error()}}</p>}
-<div class="grid" style="margin-bottom:20px">
-  @for(metric of metrics();track metric.key){<div class="panel"><p class="muted">{{metric.key}}</p><div class="metric">{{metric.value}}</div></div>}
-</div>
-<section class="panel"><div class="space-between"><h2>Usuários</h2><button class="button button-outline button-small" (click)="refresh()">Atualizar</button></div>
-<div class="table-scroll"><table><thead><tr><th>Conta</th><th>Plano</th><th>Armazenamento</th><th>Ação</th></tr></thead>
-<tbody>@for(u of users();track u.email){<tr><td>{{u.nome}}<br><span class="muted small">{{u.email}}</span></td>
-<td>{{u.plano}} {{u.is_active?'· ativo':''}}</td><td>{{u.storage_usado_mb}} MB</td>
-<td><button class="button button-outline button-small" [disabled]="busy()" (click)="changePlan(u)">{{u.is_active?'Revogar':'Ativar Essencial'}}</button></td></tr>}</tbody></table></div>
-@if(nextCursor()){<button class="button button-outline button-small" style="margin-top:15px" (click)="more()">Mais usuários</button>}
-</section></main>`})
-export class AdminPage implements OnInit {
-  private readonly api=inject(SoftloadApi);
-  readonly metrics=signal<Array<{key:string;value:string}>>([]);readonly users=signal<AdminUser[]>([]);
-  readonly nextCursor=signal<string|null>(null);readonly error=signal('');readonly busy=signal(false);
-  ngOnInit():void{void this.refresh();}
-  async refresh():Promise<void> {
-    this.error.set('');
-    try {const [k,u]=await Promise.all([this.api.json<Record<string,string|number>>('/eu/api/kpis'),this.api.json<{usuarios:AdminUser[];nextCursor:string|null}>('/eu/api/usuarios?limit=25')]);
-      this.metrics.set(Object.entries(k).map(([key,value])=>({key,value:String(value)})));this.users.set(u.usuarios);this.nextCursor.set(u.nextCursor);
-    }catch(e){this.error.set(e instanceof Error?e.message:'Administração indisponível.');}
-  }
-  async more():Promise<void>{
-    const cursor=this.nextCursor();if(!cursor)return;
-    try{const u=await this.api.json<{usuarios:AdminUser[];nextCursor:string|null}>('/eu/api/usuarios?limit=25&cursor='+encodeURIComponent(cursor));
-      this.users.update(old=>[...old,...u.usuarios]);this.nextCursor.set(u.nextCursor);
-    }catch(e){this.error.set(e instanceof Error?e.message:'Não foi possível carregar mais usuários.');}
-  }
-  async changePlan(u:AdminUser):Promise<void>{
-    const action=u.is_active?'revogar o acesso':'ativar 30 dias Essencial';
-    if(this.busy()||!confirm('Deseja '+action+' para '+u.email+'?'))return;
-    this.busy.set(true);
-    try{await this.api.post('/eu/api/usuario/'+encodeURIComponent(u.email)+'/premium',{ativo:!u.is_active,plano:u.is_active?'free':'essencial'});await this.refresh();}
-    catch(e){this.error.set(e instanceof Error?e.message:'Falha ao alterar a conta.');}
-    finally{this.busy.set(false);}
   }
 }

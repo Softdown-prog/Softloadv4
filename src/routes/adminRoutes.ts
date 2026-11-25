@@ -94,6 +94,7 @@ async function listarUsuarios(limit = 50, cursor: string | null = null) {
             email: d.email || doc.id,
             nome: d.nome || '—',
             plano: d.plano || 'free',
+            premium_ate: d.premium_ate && Number.isFinite(Date.parse(d.premium_ate)) ? d.premium_ate : null,
             is_active: d.is_active || false,
             storage_usado_mb: (d.storage_usado_mb || 0).toFixed(2),
             tentativas_compilacao: d.tentativas_compilacao || 0,
