@@ -23,7 +23,8 @@ test('boot API mantém checkout e webhook sem importar RAG/limpeza Solaris',()=>
     '../services/storageService':{STORAGE_LIMITS_MB:{free:5}},
     '../services/emailService':{enviarPlanoAtivado:()=>Promise.resolve()},
     'mercadopago':{MercadoPagoConfig:class {},Payment:class {},Preference:class {}},
-    '../middlewares/authGuard':{exigirLogin:()=>{}}
+    '../middlewares/authGuard':{exigirLogin:()=>{}},
+    '../middlewares/adminGuard':{exigirSuperAdmin:()=>{}}
   };
   const module={exports:{}};
   const script=fs.readFileSync(path.join(__dirname,'apiRoutes.js'),'utf8');
@@ -40,6 +41,7 @@ test('boot API mantém checkout e webhook sem importar RAG/limpeza Solaris',()=>
   assert.equal(module.exports,router);
   assert.equal(routes.has('POST /dashboard/checkout-create'),true);
   assert.equal(routes.has('POST /webhook/mercado-pago'),true);
+  assert.equal(routes.has('POST /eu/api/pagamentos/recuperar'),true);
   assert.equal([...routes.keys()].some(path => path.includes('/internal/')), false);
   assert.equal(imports.some(name => /creditService|\/(?:solaris|rag)|gemini|openai/.test(name)), false);
 });
