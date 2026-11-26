@@ -1,0 +1,219 @@
+<main class="studio">
+  <div class="container studio-container">
+    <header class="studio-heading">
+      <div>
+        <a routerLink="/" class="back-link"><span aria-hidden="true">←</span> Softload</a>
+        <h1>Crie seu template</h1>
+        <p>Configure seu tema para o Blogger e confira a prévia enquanto edita.</p>
+      </div>
+      @if (api.data()) {
+        <div class="draft-actions">
+          <button class="studio-secondary" type="button" [disabled]="busy()" (click)="save()">Salvar rascunho</button>
+          <p class="draft-status" role="status">{{ draftMessage() }}</p>
+        </div>
+      }
+    </header>
+
+    @if (api.error()) {
+      <p role="alert" class="studio-error">{{ api.error() }}</p>
+    }
+
+    @if (api.data(); as boot) {
+      @let niche = activeNiche();
+      <nav class="step-nav" aria-label="Etapas de criação">
+        <ol>
+          @for (item of steps; track item.id; let index = $index) {
+            <li>
+              <button type="button" [attr.aria-current]="step() === item.id ? 'step' : null"
+                [class.step-past]="index < stepIndex()" [disabled]="busy()" (click)="goToStep(item.id)">
+                <span aria-hidden="true" class="step-number">{{ index + 1 }}</span>
+                <span>{{ item.label }}</span>
+              </button>
+            </li>
+          }
+        </ol>
+      </nav>
+
+      <div class="mobile-view" role="group" aria-label="Área do editor">
+        <button type="button" [attr.aria-pressed]="!previewOnly()" (click)="showPreview(false)">Ajustes</button>
+        <button type="button" [attr.aria-pressed]="previewOnly()" (click)="showPreview(true)">Ver prévia</button>
+      </div>
+
+      <div class="studio-grid" [class.preview-only]="previewOnly()">
+        <section class="studio-panel settings-panel" aria-labelledby="step-title">
+          <form (ngSubmit)="submitStep()">
+            @switch (step()) {
+              @case ('modelo') {
+                <div class="panel-intro">
+                  <h2 id="step-title" tabindex="-1">Escolha o ponto de partida</h2>
+                  <p>Comece com uma base nova ou aproveite a estrutura de um nicho.</p>
+                </div>
+                <div class="field">
+                  <label for="modo">Como começar?</label>
+                  <select id="modo" name="modo" [ngModel]="fields().modo" (ngModelChange)="changeField('modo', $event)" [disabled]="busy()">
+                    <option value="novo">Começar do zero</option>
+                    <option value="modelo">A partir de um nicho</option>
+                  </select>
+                </div>
+                @if (fields().modo === 'modelo') {
+                  <div class="field">
+                    <label for="nichoTema">Nicho de partida</label>
+                    <select id="nichoTema" name="nichoTema" [ngModel]="fields().nichoTema"
+                      (ngModelChange)="changeField('nichoTema', $event)" [disabled]="busy()">
+                      @for (option of boot.nichos; track option.id) { <option [value]="option.id">{{ option.nome }}</option> }
+                    </select>
+                  </div>
+                }
+                @if (boot.exemplos.length) {
+                  <section class="model-options" aria-labelledby="gallery-title">
+                    <h3 id="gallery-title">Modelos prontos para editar</h3>
+                    <div class="category-filter" role="group" aria-label="Filtrar modelos por categoria">
+                      <button type="button" [attr.aria-pressed]="category() === 'Todos'" (click)="filterExamples('Todos')">Todos</button>
+                      @for (item of categories(); track item) {
+                        <button type="button" [attr.aria-pressed]="category() === item" (click)="filterExamples(item)">{{ item }}</button>
+                      }
+                    </div>
+                    <div class="gallery model-gallery">
+                      @for (example of visibleExamples(); track example.id) {
+                        <button type="button" [disabled]="busy()" [attr.aria-pressed]="selected() === example.id"
+                          (click)="selectExample(example)">
+                          <span class="model-swatch" [style.--model-color]="exampleColor(example, boot.cores)" aria-hidden="true"></span>
+                          <strong>{{ example.nome }}</strong>
+                          <span>{{ example.categoria || 'Outros' }}</span>
+                          @if (example.descricao) { <small>{{ example.descricao }}</small> }
+                        </button>
+                      }
+                    </div>
+                    @if (!showAllExamples() && matchingExamples().length > exampleLimit) {
+                      <button class="studio-secondary more-models" type="button" (click)="showAllExamples.set(true)">Mostrar mais modelos</button>
+                    }
+                  </section>
+                }
+              }
+
+              @case ('identidade') {
+                <div class="panel-intro">
+                  <h2 id="step-title" tabindex="-1">Dê identidade ao blog</h2>
+                  <p>Escolha o nome que vai aparecer no cabeçalho e dê um estilo ao conteúdo.</p>
+                </div>
+                <div class="field">
+                  <label for="siteName">Nome do blog</label>
+                  <input id="siteName" name="siteName" [ngModel]="fields().siteName" minlength="2" maxlength="60" required
+                    (ngModelChange)="changeField('siteName', $event)" [disabled]="busy()"
+                    [attr.aria-invalid]="fieldError() ? 'true' : null" [attr.aria-describedby]="fieldError() ? 'name-error' : null">
+                  @if (fieldError()) { <p class="studio-error" id="name-error" role="alert">{{ fieldError() }}</p> }
+                </div>
+                <div class="field">
+                  <label for="colorPreset">Paleta de cores</label>
+                  <select id="colorPreset" name="colorPreset" [ngModel]="fields().colorPreset"
+                    (ngModelChange)="changeField('colorPreset', $event)" [disabled]="busy()">
+                    @for (color of boot.cores; track color.id) { <option [value]="color.id">{{ color.nome }}</option> }
+                  </select>
+                  @if (palette(); as color) {
+                    <div class="palette-sample" aria-hidden="true">
+                      <span [style.background]="color.hex"></span><span [style.background]="color.bg"></span>
+                      <span [style.background]="color.surface"></span><span [style.background]="color.text"></span>
+                    </div>
+                  }
+                </div>
+                <div class="field">
+                  <label for="typography">Tipografia</label>
+                  <select id="typography" name="typography" [ngModel]="fields().typography"
+                    (ngModelChange)="changeField('typography', $event)" [disabled]="busy()">
+                    @for (option of boot.fontes; track option.id) { <option [value]="option.id">{{ option.nome }}</option> }
+                  </select>
+                </div>
+                <button class="studio-secondary" type="button" [disabled]="busy()" (click)="surprise(boot)">Sortear cores e fonte</button>
+              }
+
+              @case ('layout') {
+                <div class="panel-intro">
+                  <h2 id="step-title" tabindex="-1">Organize o conteúdo</h2>
+                  <p>Defina como suas postagens e a barra lateral aparecem no tema.</p>
+                </div>
+                <div class="field">
+                  <label for="gridLayout">Layout das postagens</label>
+                  <select id="gridLayout" name="gridLayout" [ngModel]="fields().gridLayout"
+                    (ngModelChange)="changeField('gridLayout', $event)" [disabled]="busy() || niche?.gridConfigurable === false"
+                    [attr.aria-describedby]="niche?.gridConfigurable === false ? 'grid-layout-hint' : null">
+                    @for (option of layoutOptions; track option.id) { <option [value]="option.id">{{ option.label }}</option> }
+                  </select>
+                  @if (niche?.gridConfigurable === false) {
+                    <small id="grid-layout-hint">{{ niche?.aviso || 'Este modelo usa um layout de postagens próprio.' }}</small>
+                  }
+                </div>
+                <div class="field">
+                  <label for="sidebarPosition">Barra lateral</label>
+                  <select id="sidebarPosition" name="sidebarPosition" [ngModel]="fields().sidebarPosition"
+                    (ngModelChange)="changeField('sidebarPosition', $event)" [disabled]="busy() || niche?.sidebarConfigurable === false"
+                    [attr.aria-describedby]="niche?.sidebarConfigurable === false ? 'sidebar-hint' : null">
+                    @for (option of sidebarOptions; track option.id) { <option [value]="option.id">{{ option.label }}</option> }
+                  </select>
+                  @if (niche?.sidebarConfigurable === false) {
+                    <small id="sidebar-hint">Este modelo tem uma estrutura lateral fixa.</small>
+                  }
+                </div>
+              }
+
+              @case ('revisao') {
+                <div class="panel-intro">
+                  <h2 id="step-title" tabindex="-1">Revise e baixe o XML</h2>
+                  <p>Confira as escolhas antes de gerar o tema.</p>
+                </div>
+                <dl class="review-list">
+                  <div><dt>Nome</dt><dd>{{ fields().siteName }}</dd></div>
+                  <div><dt>Base</dt><dd>{{ niche?.nome || 'Começar do zero' }}</dd></div>
+                  <div><dt>Paleta</dt><dd>{{ palette()?.nome || fields().colorPreset }}</dd></div>
+                  <div><dt>Tipografia</dt><dd>{{ font()?.nome || fields().typography }}</dd></div>
+                  <div><dt>Postagens</dt><dd>{{ layoutName() }}</dd></div>
+                  <div><dt>Barra lateral</dt><dd>{{ sidebarName() }}</dd></div>
+                </dl>
+                <p class="review-note">No Blogger, abra <strong>Tema → Restaurar</strong> para importar o arquivo XML.</p>
+                <p class="review-note">
+                  {{ boot.user ? 'A conta gratuita inclui 2 downloads. O Essencial libera novos downloads durante o período ativo.' : 'Sem cadastro, você tem até 2 downloads nesta sessão.' }}
+                  <a routerLink="/planos">Plano Essencial</a>
+                </p>
+              }
+            }
+
+            <div class="step-actions">
+              @if (stepIndex() > 0) {
+                <button class="studio-secondary" type="button" [disabled]="busy()" (click)="back()">Voltar</button>
+              }
+              <button class="button studio-primary" type="submit" [disabled]="busy()">
+                @if (step() === 'revisao') { {{ busy() ? 'Validando XML…' : 'Gerar e baixar XML' }} }
+                @else { Continuar <span aria-hidden="true">→</span> }
+              </button>
+            </div>
+            @if (step() === 'revisao') {
+              <p class="compile-status" [class.studio-error]="failed()" role="status">{{ message() }}</p>
+              @if (downloadUrl()) {
+                <a class="studio-secondary" [href]="downloadUrl()" [download]="downloadName()">Baixar XML novamente</a>
+              }
+            }
+          </form>
+        </section>
+
+        <section class="studio-panel preview-panel" aria-labelledby="preview-title">
+          <div class="preview-heading">
+            <div>
+              <h2 id="preview-title" tabindex="-1">Prévia do template</h2>
+              <p>Conteúdo de exemplo. Os widgets e as fontes reais podem variar no Blogger.</p>
+            </div>
+            <button type="button" class="studio-secondary preview-expand" (click)="showPreview(!previewOnly())">
+              {{ previewOnly() ? 'Voltar aos ajustes' : 'Ampliar prévia' }}
+            </button>
+          </div>
+          <div class="preview-toolbar" role="group" aria-label="Tamanho da prévia">
+            @for (size of previewDevices; track size.id) {
+              <button type="button" [attr.aria-pressed]="device() === size.id" (click)="setDevice(size.id)">{{ size.label }}</button>
+            }
+          </div>
+          <div class="preview-window" #stage><iframe #frame sandbox="" referrerpolicy="no-referrer" title="Prévia ilustrativa do Blogger"></iframe></div>
+        </section>
+      </div>
+    } @else if (!api.error()) {
+      <p class="loading" role="status">Carregando modelos e opções do editor…</p>
+    }
+  </div>
+</main>
