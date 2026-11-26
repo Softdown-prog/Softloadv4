@@ -5,10 +5,10 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { exigirLogin } = require('../../middlewares/authGuard');
-const { executarCompilacao } = require('../../core/compilerWorker');
+const { executarCompilacao, carregarChassisParaNicho } = require('../../core/compilerWorker');
 const { validarXmlCompilado, validarXmlEstrutura, validarSemanticaBlogger } = require('../../core/xmlValidator');
 const { COLOR_PRESETS, TYPOGRAPHY_PRESETS } = require('../../core/presets');
-const { NICHO_PAGE_TYPE_MAP, PAGE_TYPES_SEM_CHASSIS_DEDICADO } = require('../../core/nichoTaxonomy');
+const { NICHO_PAGE_TYPE_MAP } = require('../../core/nichoTaxonomy');
 const { listarExemplos } = require('../../blogger/exampleGallery');
 const { db } = require('../../services/firebase');
 
@@ -28,14 +28,40 @@ const MAX_FREE_DOWNLOADS = 2;
 const limite = rateLimit({windowMs:60000, limit:8, standardHeaders:'draft-8', legacyHeaders:false,
   message:'Muitas gerações em pouco tempo. Tente novamente mais tarde.'});
 
-function catalogo() {
-  return Object.keys(NICHO_PAGE_TYPE_MAP).sort((a,b) =>
+interface PublicNiche {
+  id: string;
+  nome: string;
+  pageType: string;
+  gridConfigurable: boolean;
+  sidebarConfigurable: boolean;
+  aviso: string | null;
+}
+
+let cachedCatalog: PublicNiche[] | undefined;
+
+function catalogo(): PublicNiche[] {
+  return cachedCatalog ??= Object.keys(NICHO_PAGE_TYPE_MAP).sort((a,b) =>
     (NICHO_NOMES[a] || a).localeCompare(NICHO_NOMES[b] || b, 'pt-BR')
-  ).map(id => ({
-    id, nome:NICHO_NOMES[id] || id, pageType:NICHO_PAGE_TYPE_MAP[id],
-    aviso: PAGE_TYPES_SEM_CHASSIS_DEDICADO.has(NICHO_PAGE_TYPE_MAP[id])
-      ? 'Utiliza a estrutura de blog enquanto não há estrutura dedicada.' : null
-  }));
+  ).map(id => {
+    const chassis = carregarChassisParaNicho(id).replace(/<!--[\s\S]*?-->/g, '');
+    const gridConfigurable = /class=(['"])[^'"]*\[\[GRID_CLASS\]\][^'"]*\1/.test(chassis);
+    const sidebarConfigurable = /<aside\b[^>]*\bclass=(['"])[^'"]*\bcol-lg-4\b[^'"]*\1/.test(chassis);
+    return {
+      id, nome:NICHO_NOMES[id] || id, pageType:NICHO_PAGE_TYPE_MAP[id],
+      gridConfigurable, sidebarConfigurable,
+      aviso: gridConfigurable ? null : 'Este modelo usa um layout de postagens próprio.'
+    };
+  });
+}
+
+function publicPresets() {
+  return {
+    cores:Object.entries(COLOR_PRESETS).map(([id,p]: any)=>({id,nome:p.label,hex:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg})),
+    fontes:Object.entries(TYPOGRAPHY_PRESETS).map(([id,p]: any)=>({
+      id,nome:p.label,fontFamily:p.fontFamily,headingWeight:p.headingWeight,
+      lineHeight:p.lineHeight,letterSpacing:p.letterSpacing
+    }))
+  };
 }
 function normalizar(body: any) {
   const nome = typeof body?.siteName === 'string' ? body.siteName.trim() : '';
@@ -111,8 +137,7 @@ async function debitarTesteGratuito(user: any) {
 }
 router.get('/dashboard/gerador-blogger', exigirLogin, (req: any,res: any) => {
   res.render('pages/gerador-blogger', {activePage:'gerador-blogger',user:req.session.user,
-    nichos:catalogo(), cores:Object.entries(COLOR_PRESETS).map(([id,p]: any)=>({id,nome:p.label,hex:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg})),
-    fontes:Object.entries(TYPOGRAPHY_PRESETS).map(([id,p]: any)=>({id,nome:p.label})),
+    nichos:catalogo(), ...publicPresets(),
     exemplos:listarExemplos(),
     gratuitoLimite:MAX_FREE_DOWNLOADS, guestMode:false, downloadPath:'/dashboard/gerador-blogger/download', guestToken:''});
 });
@@ -148,6 +173,6 @@ router.get('/dashboard/compiler-blogger-xml', exigirLogin, (_req: any,res: any) 
 router.publicCompile = compilarSemIa;
 router.publicCatalog = catalogo;
 router.publicExamples = listarExemplos;
-router.publicPresets = () => ({cores:Object.entries(COLOR_PRESETS).map(([id,p]: any)=>({id,nome:p.label,hex:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg})),fontes:Object.entries(TYPOGRAPHY_PRESETS).map(([id,p]: any)=>({id,nome:p.label}))});
+router.publicPresets = publicPresets;
 module.exports = router;
 export {};

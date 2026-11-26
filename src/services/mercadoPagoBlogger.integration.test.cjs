@@ -9,11 +9,14 @@ const ejs=require('ejs');
 
 const source=fs.readFileSync(path.join(__dirname,'../routes/apiRoutes.js'),'utf8');
 const DAY=86400000;
+const recoveryPath='/eu/api/pagamentos/recuperar';
 function setup(options={}){
   const routes={get:new Map(),post:new Map()};
   const calls={preferences:0,payments:0,usersUpdated:0,receipts:0,intentCreates:0,externalRefs:[],idempotencyKeys:[],reviewWrites:0};
   const intents=new Map();
   const reconciliations=new Map();
+  const receipts=new Map(), adminLogs=new Map();
+  let previousTransaction=Promise.resolve();
   const paymentById=options.paymentById||{};
   const account=options.account||{email:'buyer@example.test',uid:'firebase-user-123',plano:'free',
     is_active:false,plano_pendente:'essencial',nome:'Cliente'};
@@ -25,44 +28,52 @@ function setup(options={}){
         kind:'intent',id,
         async create(data){calls.intentCreates++;intents.set(id,{...data})},
         async get(){return{exists:intents.has(id),data:()=>intents.get(id)}}
-      }:{kind:name==='softload_mp_payments'?'receipt':name==='softload_mp_reconciliations'?'review':'other',id}
+      }:{kind:name==='softload_mp_payments'?'receipt':name==='softload_mp_reconciliations'?'review':name==='admin_logs'?'adminLog':'other',id}
     }),
-    runTransaction:async task=>{
-      if(options.failTransaction)throw Error('Firestore offline');
-      return task({
-        get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists}:
-          ref.kind==='review'?{exists:reconciliations.has(ref.id),data:()=>reconciliations.get(ref.id)}:
-          ref.kind==='intent'?{exists:intents.has(ref.id),data:()=>intents.get(ref.id)}:
-          {exists:true,data:()=>account},
-        create:(ref,value)=>{
-          if(ref.kind==='review'){reconciliations.set(ref.id,{...value});calls.reviewWrites++;return}
-          calls.receipts++;
-        },
-        update:(ref,update)=>{
-          if(ref.kind==='review'){Object.assign(reconciliations.get(ref.id),update);calls.reviewWrites++;return}
-          if(ref.kind==='intent'){Object.assign(intents.get(ref.id),update);return}
-          calls.usersUpdated++;Object.assign(account,update)
-        }
+    runTransaction:task=>{
+      const transaction=previousTransaction.then(()=>{
+        if(options.failTransaction)throw Error('Firestore offline');
+        return task({
+          get:async ref=>ref.kind==='receipt'?{exists:!!options.receiptExists||receipts.has(ref.id),data:()=>receipts.get(ref.id)}:
+            ref.kind==='review'?{exists:reconciliations.has(ref.id),data:()=>reconciliations.get(ref.id)}:
+            ref.kind==='intent'?{exists:intents.has(ref.id),data:()=>intents.get(ref.id)}:
+            {exists:true,data:()=>account},
+          create:(ref,value)=>{
+            if(ref.kind==='review'){reconciliations.set(ref.id,{...value});calls.reviewWrites++;return}
+            if(ref.kind==='adminLog'){adminLogs.set(ref.id,{...value});return;}
+            assert.equal(ref.kind,'receipt');
+            receipts.set(ref.id,{...value});
+            calls.receipts++;
+          },
+          update:(ref,update)=>{
+            if(ref.kind==='review'){Object.assign(reconciliations.get(ref.id),update);calls.reviewWrites++;return}
+            if(ref.kind==='intent'){Object.assign(intents.get(ref.id),update);return}
+            calls.usersUpdated++;Object.assign(account,update)
+          }
+        });
       });
+      previousTransaction=transaction.catch(()=>{});
+      return transaction;
     },
     batch:()=>({update(){},async commit(){}})
   };
   const router={
     get:(uri,...handlers)=>routes.get.set(uri,handlers.at(-1)),
-    post:(uri,...handlers)=>routes.post.set(uri,handlers.at(-1))
+    post:(uri,...handlers)=>routes.post.set(uri,handlers)
   };
   const env={MP_ACCESS_TOKEN:'test-token',MP_WEBHOOK_SECRET:'test-secret',
     BLOGGER_ESSENCIAL_CHECKOUT_ENABLED:options.checkoutEnabled?'true':'false',
     BASE_URL:'https://softload.analysepro.com',NODE_ENV:'test'};
   const mock={
-    express:{Router:()=>router},'express-rate-limit':()=>()=>{},
+    express:{Router:()=>router},'express-rate-limit':()=>(_req,_res,next)=>next(),
     '../services/firebase':{db},
     '../services/creditService':{PLAN_CREDITS:{essencial:0,starter:150,pro:600,studio:1200,free:0},
       GPT_PLAN_CREDITS:{essencial:0},BLOGGERAI_PLAN_CREDITS:{essencial:0}},
     '../services/mpPlanRules':require('./mpPlanRules'),
     '../services/storageService':{STORAGE_LIMITS_MB:{}},
     '../services/emailService':{enviarPlanoAtivado:async()=>{}},
-    '../middlewares/authGuard':{exigirLogin:()=>{}},
+    '../middlewares/authGuard':{exigirLogin:(_req,_res,next)=>next()},
+    '../middlewares/adminGuard':require('../middlewares/adminGuard'),
     mercadopago:{
       MercadoPagoConfig:class{},
       Preference:class{async create({body}){calls.preferences++;calls.externalRefs.push(body.external_reference);
@@ -86,9 +97,21 @@ function setup(options={}){
     session:{user:{email:'buyer@example.test',uid:'firebase-user-123',nome:'Cliente'}},
     protocol:'https',get:()=> 'softload.analysepro.com',...more});
   async function post(route,req=request()){
-    const handler=routes.post.get(route);assert.ok(handler,'Missing '+route);
-    const res={code:200,status(n){this.code=n;return this},json(x){this.body=x;return this},send(x){this.body=x;return this}};
-    await handler(req,res);return res;
+    const handlers=routes.post.get(route);assert.ok(handlers,'Missing '+route);
+    const res={code:200,status(n){this.code=n;return this},json(x){this.body=x;return this},send(x){this.body=x;return this},render(view){this.view=view;return this}};
+    async function dispatch(index){
+      await handlers[index](req,res,()=>dispatch(index+1));
+    }
+    await dispatch(0);return res;
+  }
+  function recoveryRequest(id='123',email=account.email,{
+    admin=true,origin='https://softload.analysepro.com',contentType='application/json'
+  }={}){
+    const headers={host:'softload.analysepro.com',origin,'content-type':contentType};
+    return request({pagamentoId:id,email},{
+      get:name=>headers[name.toLowerCase()],
+      session:{user:{email:'operator@example.test',is_super_admin:admin}},
+    });
   }
   function signedRequest(id='123',bodyId=id){
     const ts=String(Date.now()),requestId='request-test-123';
@@ -98,7 +121,7 @@ function setup(options={}){
       query:{'data.id':id},headers:{'x-signature':'ts='+ts+',v1='+signature,'x-request-id':requestId}
     });
   }
-  return{post,request,signedRequest,calls,account,env,intents,paymentById,reconciliations};
+  return{post,request,signedRequest,recoveryRequest,calls,account,env,intents,paymentById,reconciliations,receipts,adminLogs};
 }
 test('legacy AI plans cannot be purchased by either checkout',async()=>{
   const f=setup({checkoutEnabled:true});
@@ -308,4 +331,92 @@ test('initiated legacy purchases settle without rewriting archived credit balanc
   assert.deepEqual([f.account.creditos,f.account.creditos_gpt,f.account.creditos_bloggerai],[77,12,31]);
   assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
   assert.equal(f.calls.receipts,1);
+});
+
+
+async function approvedBloggerPurchase(f,id='123') {
+  assert.equal((await f.post('/dashboard/checkout-create',
+    f.request({plano:'essencial',aceitePoliticaArmazenamento:true}))).code,200);
+  const payment={id,status:'approved',currency_id:'BRL',transaction_amount:5,
+    external_reference:f.calls.externalRefs.at(-1)};
+  f.paymentById[id]=payment;
+  return payment;
+}
+
+test('recuperação exige superadmin e POST JSON da origem do painel',async()=>{
+  const f=setup();
+  const forbidden=await f.post(recoveryPath,f.recoveryRequest('123',f.account.email,{admin:false}));
+  assert.equal(forbidden.code,404);
+  assert.equal(forbidden.view,'pages/404');
+  for(const options of [{origin:'https://outra.analysepro.com'},{contentType:'application/x-www-form-urlencoded'}]){
+    assert.equal((await f.post(recoveryPath,f.recoveryRequest('123',f.account.email,options))).code,403);
+  }
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest('invalid'))).code,400);
+  assert.equal(f.calls.payments,0);
+});
+
+test('recuperação valida conta, moeda, valor e status no provedor',async()=>{
+  const f=setup({checkoutEnabled:true});
+  const details=await approvedBloggerPurchase(f);
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest('123','other@example.test'))).code,409);
+  for(const change of [
+    {status:'pending'}, {status_detail:'partially_refunded'}, {transaction_amount:4.99},
+    {currency_id:'USD'}, {external_reference:'buyer@example.test'}, {id:'124'},
+  ]){
+    f.paymentById['123']={...details,...change};
+    assert.equal((await f.post(recoveryPath,f.recoveryRequest())).code,409);
+  }
+  f.paymentById['123']=details;
+  f.account.uid='changed-uid';
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest())).code,409);
+  assert.equal(f.calls.usersUpdated,0);
+  assert.equal(f.receipts.size,0);
+  assert.equal(f.adminLogs.size,0);
+});
+
+test('recuperação estende prazo e salva um recibo e um log mesmo após reenvio do webhook',async()=>{
+  const expiry=Date.now()+10*DAY;
+  const f=setup({checkoutEnabled:true,account:{
+    email:'buyer@example.test',uid:'firebase-user-123',plano:'essencial',
+    is_active:true,premium_ate:new Date(expiry).toISOString(),creditos:7
+  }});
+  await approvedBloggerPurchase(f);
+  const response=await f.post(recoveryPath,f.recoveryRequest('123','BUYER@example.test'));
+  assert.equal(response.code,200);
+  assert.equal(response.body.status,'recuperado');
+  const expected=new Date(expiry+30*DAY).toISOString();
+  assert.equal(response.body.premium_ate,expected);
+  assert.equal((await f.post('/webhook/mercado-pago',f.signedRequest())).code,200);
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest())).body.status,'ja_processado');
+  assert.equal(f.account.premium_ate,expected);
+  assert.equal(f.account.creditos,7);
+  assert.equal(f.receipts.size,1);
+  assert.equal(f.adminLogs.size,1);
+  assert.equal(f.adminLogs.get('mp-recovery-123').por,'operator@example.test');
+  assert.equal(f.adminLogs.get('mp-recovery-123').detalhes.email_alvo,'buyer@example.test');
+});
+
+test('webhook e recuperação em paralelo aplicam o mesmo pagamento uma vez',async()=>{
+  const f=setup({checkoutEnabled:true});
+  await approvedBloggerPurchase(f);
+  const [webhook,manual]=await Promise.all([
+    f.post('/webhook/mercado-pago',f.signedRequest()),
+    f.post(recoveryPath,f.recoveryRequest()),
+  ]);
+  assert.equal(webhook.code,200);
+  assert.equal(manual.code,200);
+  assert.ok(['ja_processado','recuperado'].includes(manual.body.status));
+  assert.equal(f.receipts.size,1);
+  assert.equal(f.calls.usersUpdated,1);
+});
+
+test('falha de banco na recuperação mantém pagamento elegível para retry',async()=>{
+  const options={checkoutEnabled:true,failTransaction:true};
+  const f=setup(options);
+  await approvedBloggerPurchase(f);
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest())).code,503);
+  assert.equal(f.receipts.size,0);
+  assert.equal(f.adminLogs.size,0);
+  options.failTransaction=false;
+  assert.equal((await f.post(recoveryPath,f.recoveryRequest())).body.status,'recuperado');
 });

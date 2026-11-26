@@ -2,7 +2,7 @@
 import type { AccountRecord } from '../contracts/accounts';
 import type { RouteRequest, RouteResponse, RouteHandler, RouteRouter, RouteFailure, RouteRateLimit } from '../contracts/routeHttp';
 import type { Firestore } from '@google-cloud/firestore';
-interface RouteBody { plano: string; aceitePoliticaArmazenamento?: boolean; formData?: Record<string, unknown>; action?: string; type?: string; data?: {id: string}; id: string; query?: unknown; topK?: number; corpus?: string }
+interface RouteBody { plano: string; aceitePoliticaArmazenamento?: boolean; formData?: Record<string, unknown>; action?: string; type?: string; data?: {id: string}; pagamentoId?: unknown; email?: unknown; id: string; query?: unknown; topK?: number; corpus?: string }
 declare function require(name: string): unknown;
 const express = require('express') as { Router(): RouteRouter<RouteBody> };
 const crypto = require('crypto') as typeof import('crypto');
@@ -12,6 +12,7 @@ const { db } = require('../services/firebase') as { db: Firestore; bucket: impor
 const { approvedPlanForPayment, PRICES_CENTS } = require('../services/mpPlanRules') as typeof import('../services/mpPlanRules');
 const { enviarPlanoAtivado }              = require('../services/emailService') as typeof import('../services/emailService');
 const { MercadoPagoConfig, Payment, Preference } = require('mercadopago') as typeof import('mercadopago');
+const { exigirSuperAdmin } = require('../middlewares/adminGuard') as { exigirSuperAdmin: RouteHandler<RouteBody> };
 const { exigirLogin } = require('../middlewares/authGuard') as { exigirLogin: RouteHandler<RouteBody> };
 
 
@@ -286,218 +287,227 @@ router.post('/dashboard/payment/process', exigirLogin, pagamentoLimiter, async (
 // WEBHOOK MERCADO PAGO
 // ==========================================
 
+type Recovery = { expectedEmail: string; operator: string };
+type Settlement =
+    | { kind: 'applied'; expiresAt: string }
+    | { kind: 'duplicate' | 'not-approved' | 'review' | 'wrong-account' | 'not-linked' | 'account-missing' };
+
+async function processarPagamento(paymentId: string, recovery?: Recovery): Promise<Settlement> {
+    // A origem do pedido nunca fornece valor, status ou referência do pagamento.
+    const paymentDetails = await payment.get({ id: paymentId });
+    if (paymentDetails.id != null && String(paymentDetails.id) !== paymentId) return { kind: 'not-linked' };
+    const mpStatus = String(paymentDetails.status || '');
+    const mpStatusDetail = String(paymentDetails.status_detail || '');
+    const requiresReview = mpStatus === 'refunded' || mpStatus === 'charged_back' ||
+        mpStatus === 'in_mediation' || (mpStatus === 'approved' && mpStatusDetail === 'partially_refunded');
+
+    if (requiresReview) {
+        // O webhook mantém o registro de estornos e disputas para tratamento manual.
+        if (!recovery) {
+            const caseRef = db.collection('softload_mp_reconciliations').doc(paymentId);
+            const receiptRef = db.collection('softload_mp_payments').doc(paymentId);
+            await db.runTransaction(async (tx) => {
+                const existingCase = await tx.get(caseRef);
+                const receipt = await tx.get(receiptRef);
+                if (existingCase.exists &&
+                    existingCase.data()?.status === mpStatus &&
+                    existingCase.data()?.status_detail === mpStatusDetail) return;
+                const record = {
+                    payment_id: paymentId,
+                    status: mpStatus,
+                    status_detail: mpStatusDetail,
+                    receipt_exists: receipt.exists,
+                    needs_manual_review: true,
+                    observed_at: new Date().toISOString(),
+                };
+                if (existingCase.exists) tx.update(caseRef, record);
+                else tx.create(caseRef, { ...record, created_at: new Date().toISOString() });
+            });
+            console.warn('[MP] Pagamento em estorno ou disputa; conciliação manual pendente:', paymentId);
+        }
+        return { kind: 'review' };
+    }
+    if (mpStatus !== 'approved') return { kind: 'not-approved' };
+
+    const externalReference = String(paymentDetails.external_reference || '').trim();
+    const intentId = externalReference.startsWith('slb:') ? externalReference.slice(4) : null;
+    // O painel recupera somente compras com intenção rastreável do Blogger.
+    // Webhooks antigos continuam compatíveis com a referência por e-mail.
+    if ((recovery && intentId === null) ||
+        (intentId !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(intentId))) {
+        return { kind: 'not-linked' };
+    }
+    const intentRef = intentId ? db.collection('softload_mp_intents').doc(intentId) : null;
+    const intentSnapshot = intentRef ? await intentRef.get() : null;
+    if (intentRef && !intentSnapshot?.exists) return { kind: 'not-linked' };
+    const emailCliente = intentRef
+        ? String(intentSnapshot?.data()?.email || '').toLowerCase()
+        : externalReference.toLowerCase();
+    if (!emailCliente.includes('@')) return { kind: 'not-linked' };
+    if (recovery && emailCliente !== recovery.expectedEmail) return { kind: 'wrong-account' };
+
+    const query = await db.collection('clientes_premium').where('email', '==', emailCliente).limit(1).get();
+    if (query.empty) return { kind: 'account-missing' };
+    const userRef = query.docs[0].ref;
+    const receiptRef = db.collection('softload_mp_payments').doc(paymentId);
+
+    // O recibo, o acesso e o log da recuperação são gravados juntos.
+    // O webhook e o painel disputam o mesmo recibo em caso de concorrência.
+    const result = await db.runTransaction(async (tx) => {
+        const receipt = await tx.get(receiptRef);
+        const user = await tx.get(userRef);
+        const liveIntent = intentRef ? await tx.get(intentRef) : null;
+        if (receipt.exists) {
+            if (recovery && receipt.data()?.user_email !== recovery.expectedEmail) {
+                return { kind: 'wrong-account' } as const;
+            }
+            return { kind: 'duplicate' } as const;
+        }
+        if (!user.exists) return { kind: 'account-missing' } as const;
+        const userData = user.data() as AccountRecord & { uid?: string };
+        if (userData.mp_payment_id === paymentId) return { kind: 'duplicate' } as const;
+        const intentData = liveIntent?.data();
+        if (intentRef && (!liveIntent?.exists || intentData?.status !== 'created' ||
+            typeof intentData?.uid !== 'string' || !intentData.uid || intentData.uid !== userData.uid ||
+            intentData.email !== emailCliente || typeof intentData.aceiteEm !== 'string' ||
+            intentData?.plano !== 'essencial' || intentData?.precoCentavos !== PRICES_CENTS.essencial)) {
+            return { kind: 'not-linked' } as const;
+        }
+        const plan = approvedPlanForPayment(paymentDetails, intentRef ? intentData?.plano : userData.plano_pendente);
+        if (!plan) return { kind: 'not-linked' } as const;
+
+        const now = Date.now();
+        const currentExpiry = Date.parse(userData.premium_ate || '');
+        const base = plan === 'essencial' && userData.plano === 'essencial' &&
+            userData.is_active === true && currentExpiry > now ? currentExpiry : now;
+        const expiresAt = new Date(base + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const updatedAt = new Date(now).toISOString();
+
+        tx.create(receiptRef, {
+            payment_id: paymentId,
+            user_email: emailCliente,
+            plan,
+            amount: paymentDetails.transaction_amount,
+            currency: paymentDetails.currency_id,
+            processed_at: updatedAt,
+            ...(intentRef ? { intent_id: intentId } : {}),
+        });
+        tx.update(userRef, {
+            plano: plan,
+            is_active: true,
+            status: 'ativo',
+            premium_ate: expiresAt,
+            ...(plan === 'essencial' ? { essencial_storage_expira_em: expiresAt } : {}),
+            mp_payment_id: paymentId,
+            ...(intentRef ? { essencial_storage_aceite_em: intentData!.aceiteEm } : { plano_pendente: null }),
+            ultima_atualizacao: updatedAt,
+            creditos_expira_em: expiresAt,
+            creditos_gpt_expira_em: expiresAt,
+            creditos_bloggerai_expira_em: expiresAt,
+        });
+        if (intentRef) tx.update(intentRef, {
+            status: 'approved', mp_payment_id: paymentId, processadoEm: updatedAt,
+        });
+        if (recovery) tx.create(db.collection('admin_logs').doc('mp-recovery-' + paymentId), {
+            por: recovery.operator,
+            tipo: 'pagamento_recuperado',
+            detalhes: { email_alvo: emailCliente, pagamento_id: paymentId, premium_ate: expiresAt },
+            criado_em: new Date(now),
+        });
+        return { kind: 'applied', plan, name: userData.nome || '', expiresAt } as const;
+    });
+
+    if (result.kind !== 'applied') return result;
+    enviarPlanoAtivado(emailCliente, result.name, result.plan, result.expiresAt)
+        .catch(e => console.error('[EMAIL] Plano ativado falhou:', e.message));
+
+    try {
+        const sessionsSnap = await db.collection('sessions').where('sess.user.email', '==', emailCliente).get();
+        if (!sessionsSnap.empty) {
+            const batch = db.batch();
+            for (const sDoc of sessionsSnap.docs) {
+                if (!(sDoc.data() as AccountRecord).sess?.user) continue;
+                batch.update(sDoc.ref, {
+                    'sess.user.plano': result.plan,
+                    'sess.user.is_active': true,
+                    'sess.user.premium_ate': result.expiresAt,
+                });
+            }
+            await batch.commit();
+        }
+    } catch (sessErr) {
+        console.warn('[MP] Falha ao atualizar sessões ativas:', (sessErr as RouteFailure).message);
+    }
+    return { kind: 'applied', expiresAt: result.expiresAt };
+}
+
 router.post('/webhook/mercado-pago', async (req, res) => {
-    // Recusa assinaturas inválidas — bloqueia ataques de webhook forjado
     if (!verificarAssinaturaMP(req)) {
-        console.warn('[MP] Assinatura HMAC inválida — possível tentativa de fraude.');
+        console.warn('[MP] Assinatura HMAC inválida.');
         return res.status(403).send('Forbidden');
     }
 
     try {
         const { action, type, data } = req.body;
-
         if (action === 'payment.created' || type === 'payment' || action === 'payment.updated') {
-            // Usa somente o ID assinado; o id da notificação no body não
-            // é necessariamente o ID do pagamento.
             const paymentId = String(req.query?.['data.id'] || data?.id || '');
-
-            console.log(`[MP] Verificando pagamento: ${paymentId}`);
-
-            // Consulta back-channel — nunca confia no body
-            const paymentDetails = await payment.get({ id: paymentId });
-
-            // Estornos e disputas exigem conciliação. Não revogar automaticamente
-            // o acesso: outras compras podem ter adicionado períodos válidos.
-            const mpStatus = String(paymentDetails.status || '');
-            const mpStatusDetail = String(paymentDetails.status_detail || '');
-            const requiresReview = mpStatus === 'refunded' ||
-                mpStatus === 'charged_back' ||
-                mpStatus === 'in_mediation' ||
-                (mpStatus === 'approved' && mpStatusDetail === 'partially_refunded');
-            if (requiresReview) {
-                const caseRef = db.collection('softload_mp_reconciliations').doc(paymentId);
-                const receiptRef = db.collection('softload_mp_payments').doc(paymentId);
-                await db.runTransaction(async (tx) => {
-                    const existingCase = await tx.get(caseRef);
-                    const receipt = await tx.get(receiptRef);
-                    // Duplicatas não alteram a data da primeira observação nem
-                    // reabrem casos que já tenham recebido tratamento manual.
-                    if (existingCase.exists &&
-                        existingCase.data()?.status === mpStatus &&
-                        existingCase.data()?.status_detail === mpStatusDetail) return;
-                    const record = {
-                        payment_id: paymentId,
-                        status: mpStatus,
-                        status_detail: mpStatusDetail,
-                        receipt_exists: receipt.exists,
-                        needs_manual_review: true,
-                        observed_at: new Date().toISOString(),
-                    };
-                    if (existingCase.exists) tx.update(caseRef, record);
-                    else tx.create(caseRef, { ...record, created_at: new Date().toISOString() });
-                });
-                console.warn(`[MP] Pagamento ${paymentId} em ${mpStatus}/${mpStatusDetail}; conciliação manual pendente.`);
-                return res.status(200).send('OK');
-            }
-
-            if (paymentDetails.status === 'approved') {
-                const externalReference = String(paymentDetails.external_reference || '').trim();
-                const novaIntencao = externalReference.startsWith('slb:');
-                const intentId = novaIntencao ? externalReference.slice(4) : null;
-                if (novaIntencao && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(intentId || '')) {
-                    console.error('[MP] Referência de compra Blogger inválida.');
-                    return res.status(503).send('Pagamento requer conciliação');
-                }
-                const intentRef = intentId ? db.collection('softload_mp_intents').doc(intentId) : null;
-                // Compatibilidade: pagamentos iniciados ANTES desta migração
-                // continuam referenciando diretamente o email do comprador.
-                const intentSnapshot = intentRef ? await intentRef.get() : null;
-                if (intentRef && !intentSnapshot?.exists) {
-                    console.error('[MP] Intenção da compra não localizada; manter retry.');
-                    return res.status(503).send('Pagamento requer conciliação');
-                }
-                const emailCliente = intentRef
-                    ? String(intentSnapshot?.data()?.email || '').toLowerCase()
-                    : externalReference.toLowerCase();
-
-                if (!emailCliente || !emailCliente.includes('@')) {
-                    console.warn('[MP] Pagamento aprovado sem referência de conta válida.');
-                    return res.status(503).send('Pagamento requer conciliação');
-                }
-
-                console.log(`[MP] Pagamento aprovado: ${emailCliente}`);
-
-                // Busca o usuário pelo campo email (compatível com doc ID = email ou UID)
-                const query = await db.collection('clientes_premium')
-                    .where('email', '==', emailCliente)
-                    .limit(1)
-                    .get();
-
-                if (query.empty) {
-                    console.warn(`[MP] Usuário ${emailCliente} não encontrado na base.`);
-                    // Sem conta, não podemos descartar uma cobrança aprovada.
-                    // HTTP 5xx permite o reenvio pelo Mercado Pago.
-                    return res.status(503).send('Conta não encontrada para conciliação');
-                }
-
-                const userRef = query.docs[0].ref;
-                const id = String(paymentId);
-                if (!/^\d+$/.test(id)) {
-                    console.warn('[MP] ID de pagamento inválido.');
-                    return res.status(200).send('OK');
-                }
-
-                // O recibo e os três saldos são gravados na MESMA transação.
-                // Webhooks repetidos ou simultâneos não podem renovar o plano de novo.
-                const receiptRef = db.collection('softload_mp_payments').doc(id);
-                const result = await db.runTransaction(async (tx) => {
-                    // Todas as leituras precedem as escritas na transação Firestore.
-                    const receipt = await tx.get(receiptRef);
-                    const user = await tx.get(userRef);
-                    const liveIntent = intentRef ? await tx.get(intentRef) : null;
-                    if (receipt.exists || user.data()?.mp_payment_id === id) return { duplicate: true };
-                    if (!user.exists) return { missingUser: true };
-
-                    const userData = user.data() as AccountRecord;
-                    const intentData = liveIntent?.data();
-                    if (intentRef) {
-                        // Nunca aprovar com plano, valor ou usuário de outra tentativa.
-                        if (!liveIntent?.exists || intentData?.status !== 'created' ||
-                            intentData?.uid !== (userData as AccountRecord & {uid?: string}).uid || intentData?.email !== emailCliente ||
-                            intentData?.plano !== 'essencial' ||
-                            intentData?.precoCentavos !== PRICES_CENTS.essencial) {
-                            return { invalidIntent: true };
-                        }
-                    }
-                    const plan = approvedPlanForPayment(paymentDetails,
-                        intentRef ? intentData?.plano : userData.plano_pendente);
-                    if (!plan) return { invalidPlanOrAmount: true };
-                    // Uma renovação Essencial soma 30 dias ao vencimento vigente,
-                    // em vez de apagar os dias já pagos. Tudo ocorre dentro da transação.
-                    const currentExpiry = Date.parse(userData.premium_ate || '');
-                    const base = plan === 'essencial' && userData.plano === 'essencial' &&
-                        userData.is_active === true && Number.isFinite(currentExpiry) && currentExpiry > Date.now()
-                        ? currentExpiry : Date.now();
-                    const expiresAt = new Date(base + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-                    tx.create(receiptRef, {
-                        payment_id: id,
-                        user_email: emailCliente,
-                        plan,
-                        amount: paymentDetails.transaction_amount,
-                        currency: paymentDetails.currency_id,
-                        processed_at: new Date().toISOString(),
-                        ...(intentRef ? { intent_id: intentId } : {}),
-                    });
-                    tx.update(userRef, {
-                        plano: plan,
-                        is_active: true,
-                        status: 'ativo',
-                        premium_ate: expiresAt,
-                        ...(plan === 'essencial' ? { essencial_storage_expira_em: expiresAt } : {}),
-                        mp_payment_id: id,
-                        // Fluxo novo não interfere em pagamentos legados pendentes.
-                        ...(intentRef ? { essencial_storage_aceite_em: intentData!.aceiteEm } : { plano_pendente: null }),
-                        ultima_atualizacao: new Date().toISOString(),
-                        creditos_expira_em: expiresAt,
-                        creditos_gpt_expira_em: expiresAt,
-                        creditos_bloggerai_expira_em: expiresAt,
-                    });
-                    if (intentRef) tx.update(intentRef, {
-                        status: 'approved', mp_payment_id: id, processadoEm: new Date().toISOString(),
-                    });
-                    return { activated: true, plan, name: userData.nome || '', expiresAt };
-                });
-
-                if (result.duplicate) {
-                    console.log(`[MP] Pagamento ${id} já processado. Ignorando.`);
-                    return res.status(200).send('OK');
-                }
-                if (!result.activated) {
-                    console.error(`[MP] Pagamento ${id} sem vínculo válido; requer conciliação.`);
-                    return res.status(503).send('Pagamento requer conciliação');
-                }
-
-                const planoAtivado = result.plan;
-                enviarPlanoAtivado(emailCliente, result.name, planoAtivado, result.expiresAt)
-                    .catch(e => console.error('[EMAIL] Plano ativado falhou:', e.message));
-
-                // Atualiza qualquer sessão ativa do usuário no Firestore — UX:
-                // o cliente que está logado vê o premium ser liberado sem precisar deslogar.
-                try {
-                    const sessionsSnap = await db.collection('sessions')
-                        .where('sess.user.email', '==', emailCliente)
-                        .get();
-                    if (!sessionsSnap.empty) {
-                        const batch = db.batch();
-                        sessionsSnap.docs.forEach(sDoc => {
-                            const sess = (sDoc.data() as AccountRecord).sess;
-                            if (sess && sess.user) {
-                                sess.user.plano = planoAtivado;
-                                sess.user.is_active = true;
-                                sess.user.premium_ate = result.expiresAt;
-                                batch.update(sDoc.ref, { sess });
-                            }
-                        });
-                        await batch.commit();
-                    }
-                } catch (sessErrCaught) {
-        const sessErr = sessErrCaught as RouteFailure;
-                    console.warn('[MP] Falha ao atualizar sessões ativas:', sessErr.message);
-                }
-
-                console.log(`[MP] ${emailCliente} ativado como ${planoAtivado.toUpperCase()} até ${new Date(result.expiresAt).toDateString()}`);
-            }
+            const result = await processarPagamento(paymentId);
+            if (result.kind === 'account-missing') return res.status(503).send('Conta não encontrada para conciliação');
+            if (result.kind === 'not-linked') return res.status(503).send('Pagamento requer conciliação');
         }
+        return res.status(200).send('OK');
+    } catch (e) {
+        console.error('[MP] Erro no webhook:', (e as RouteFailure).message);
+        return res.status(500).send('Erro ao processar notificação');
+    }
+});
 
-        res.status(200).send('OK');
+const recuperarPagamentoLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { erro: 'Aguarde alguns minutos antes de tentar recuperar mais pagamentos.' },
+});
 
-    } catch (errorCaught) {
-        const error = errorCaught as RouteFailure;
-        console.error('[MP] Erro no webhook:', error.message);
-        // Uma falha inesperada não deve confirmar ao MP um pagamento que
-        // talvez não tenha sido creditado. O recibo transacional torna o retry seguro.
-        res.status(500).send('Erro ao processar notificação');
+router.post('/eu/api/pagamentos/recuperar', exigirSuperAdmin, recuperarPagamentoLimiter, async (req, res) => {
+    // O CORS geral é permissivo. Esta ação administrativa só aceita o POST
+    // JSON da origem do próprio painel, inclusive quando há cookies de sessão.
+    if (!req.get('host') || req.get('origin') !== req.protocol + '://' + req.get('host') ||
+        req.get('sec-fetch-site') === 'cross-site' ||
+        !/^application\/json(?:;|$)/i.test(req.get('content-type') || '')) {
+        return res.status(403).json({ erro: 'Abra o painel no próprio site para recuperar um pagamento.' });
+    }
+
+    const paymentId = typeof req.body?.pagamentoId === 'string' ? req.body.pagamentoId.trim() : '';
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    if (!/^\d{1,30}$/.test(paymentId) || email.length > 254 || !/^[^\s@]+@[^\s@]+$/.test(email)) {
+        return res.status(400).json({ erro: 'Informe o e-mail da conta e o ID numérico do pagamento.' });
+    }
+
+    try {
+        const result = await processarPagamento(paymentId, { expectedEmail: email, operator: req.session.user.email });
+        switch (result.kind) {
+        case 'applied':
+            return res.json({ status: 'recuperado', premium_ate: result.expiresAt });
+        case 'duplicate':
+            return res.json({ status: 'ja_processado' });
+        case 'wrong-account':
+            return res.status(409).json({ erro: 'O pagamento pertence a outra conta.' });
+        case 'account-missing':
+            return res.status(404).json({ erro: 'A conta desse pagamento não está cadastrada.' });
+        case 'not-approved':
+            return res.status(409).json({ erro: 'O Mercado Pago ainda não confirmou a aprovação.' });
+        case 'review':
+            return res.status(409).json({ erro: 'O pagamento está em estorno ou disputa e exige análise.' });
+        case 'not-linked':
+            return res.status(409).json({ erro: 'O pagamento não corresponde a uma compra válida do Essencial.' });
+        }
+    } catch (e) {
+        const error = e as RouteFailure;
+        if (error.status === 404) return res.status(404).json({ erro: 'Pagamento não encontrado no Mercado Pago.' });
+        console.error('[ADMIN] Falha ao recuperar pagamento:', error.message);
+        return res.status(503).json({ erro: 'Não foi possível verificar o pagamento. A mesma operação pode ser repetida com segurança.' });
     }
 });
 

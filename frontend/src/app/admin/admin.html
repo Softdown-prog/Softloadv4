@@ -1,0 +1,91 @@
+<main class="container stack">
+  <header>
+    <h1>{{ usersOnly ? 'Usuários cadastrados' : 'Administração' }}</h1>
+    <nav class="flex" aria-label="Administração">
+      <a routerLink="/eu" [attr.aria-current]="usersOnly ? null : 'page'">Visão geral</a>
+      <a routerLink="/eu/usuarios" [attr.aria-current]="usersOnly ? 'page' : null">Usuários</a>
+    </nav>
+  </header>
+
+  @if (metrics(); as values) {
+    <section class="grid" aria-label="Indicadores">
+      @for (metric of metricLabels; track metric.key) {
+        <div class="panel">
+          <p class="muted">{{ metric.label }}</p>
+          <div class="metric">{{ values[metric.key] }}</div>
+        </div>
+      }
+    </section>
+  }
+
+  <section class="panel" aria-labelledby="recover-heading">
+    <h2 id="recover-heading">Recuperar pagamento</h2>
+    <p class="muted">Use o ID de um pagamento aprovado no Mercado Pago quando o acesso Essencial não for liberado.</p>
+    <form (submit)="recoverPayment($event, buyer.value, payment.value)">
+      <div class="grid-two">
+        <div class="field">
+          <label for="recovery-email">E-mail da conta</label>
+          <input #buyer id="recovery-email" type="email" autocomplete="off" maxlength="254" required>
+        </div>
+        <div class="field">
+          <label for="recovery-id">ID do pagamento</label>
+          <input #payment id="recovery-id" type="text" inputmode="numeric" autocomplete="off" maxlength="30" pattern="[0-9]{1,30}" required>
+        </div>
+      </div>
+      <button class="button" type="submit" [disabled]="busy() || loading()">Verificar e recuperar acesso</button>
+    </form>
+    @if (result(); as outcome) {
+      <p class="status ok" role="status">
+        @if (outcome.status === 'recuperado') {
+          Pagamento recuperado. O acesso Essencial vence em {{ outcome.premium_ate | date:'dd/MM/yyyy' }}.
+        } @else {
+          Esse pagamento já foi processado.
+        }
+      </p>
+    }
+  </section>
+
+  @if (error()) { <p class="status error" role="alert">{{ error() }}</p> }
+
+  <section class="panel" aria-labelledby="users-heading" [attr.aria-busy]="loading()">
+    <div class="space-between">
+      <h2 id="users-heading">Usuários</h2>
+      <button type="button" class="button button-outline button-small" [disabled]="loading() || busy()" (click)="refresh()">Atualizar</button>
+    </div>
+    @if (users().length) {
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de usuários">
+        <table>
+          <thead><tr><th>Conta</th><th>Cadastro</th><th>Plano</th><th>Armazenamento</th><th>Compilações</th><th>Ações</th></tr></thead>
+          <tbody>
+            @for (user of users(); track user.email) {
+              <tr>
+                <td>{{ user.nome }}<br><span class="muted small">{{ user.email }}</span></td>
+                <td>{{ user.criado_em }}</td>
+                <td>
+                  {{ user.plano }} {{ user.is_active ? '· ativo' : '' }}
+                  @if (user.is_active && user.premium_ate) {
+                    <br><span class="muted small">Até {{ user.premium_ate | date:'dd/MM/yyyy' }}</span>
+                  }
+                </td>
+                <td>{{ user.storage_usado_mb }} MB</td>
+                <td>{{ user.tentativas_compilacao }}</td>
+                <td>
+                  <button type="button" class="button button-outline button-small" [disabled]="busy() || loading()" (click)="changePlan(user)">
+                    {{ user.is_active ? 'Revogar acesso' : 'Conceder Essencial' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (loading()) {
+      <p class="status" role="status">Carregando usuários…</p>
+    } @else if (!error()) {
+      <p class="status">Nenhum usuário cadastrado.</p>
+    }
+    @if (nextCursor()) {
+      <p><button type="button" class="button button-outline button-small" [disabled]="loading() || busy()" (click)="more()">Mais usuários</button></p>
+    }
+  </section>
+</main>

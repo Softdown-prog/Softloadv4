@@ -3,7 +3,8 @@ import { RouterLink, RouterOutlet, Routes } from '@angular/router';
 import { SoftloadApi } from './api';
 import { EditorPage } from './editor';
 import { HomePage } from './home/home';
-import { AuthPage, DashboardPage, HistoryPage, FilesPage, AccountPage, PlanPage, ContactPage, LegalPage, AdminPage } from './pages';
+import { AuthPage, DashboardPage, HistoryPage, FilesPage, AccountPage, PlanPage, ContactPage, LegalPage } from './pages';
+import { AdminPage } from './admin/admin';
 
 export const routes: Routes = [
   {path:'', component:HomePage, title:'Softload — Editor de templates para Blogger'},
@@ -23,7 +24,7 @@ export const routes: Routes = [
   {path:'termos-de-uso', component:LegalPage, data:{kind:'terms'}, title:'Termos de Uso — Softload'},
   {path:'privacidade', component:LegalPage, data:{kind:'privacy'}, title:'Privacidade — Softload'},
   {path:'eu', component:AdminPage, title:'Administração — Softload'},
-  {path:'eu/usuarios', component:AdminPage, title:'Usuários — Softload'},
+  {path:'eu/usuarios', component:AdminPage, data:{usersOnly:true}, title:'Usuários — Softload'},
   {path:'**', redirectTo:''}
 ];
 @Component({
@@ -35,7 +36,8 @@ export const routes: Routes = [
       <nav class="navigation container" aria-label="Navegação principal">
         <a routerLink="/" class="brand"><span class="brand-mark">S</span><span>softload<span class="brand-dot">.</span></span></a>
         <div class="nav-actions">
-          <a routerLink="/criar">Criar template</a>
+          <a class="nav-editor" routerLink="/criar">Criar template</a>
+          <a class="nav-guide" href="/#como-funciona">Como funciona</a>
           @if (api.data()?.user) {
             <a routerLink="/dashboard">Meu painel</a>
             <a href="/logout" class="nav-muted">Sair</a>

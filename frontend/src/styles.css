@@ -11,3 +11,20 @@ table{width:100%;border-collapse:collapse}td,th{padding:13px;border-bottom:1px s
 .check-line{display:flex;align-items:flex-start;gap:12px}.check-line input{margin-top:5px;accent-color:var(--accent);width:20px;height:20px}.skip-link{position:absolute;top:-100px;left:12px;background:white;color:black;padding:14px;z-index:100}.skip-link:focus{top:5px}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 @media(max-width:740px){.grid-two{grid-template-columns:1fr}.nav-actions{gap:9px}.nav-actions>a{font-size:.78rem}.nav-actions>a:first-child{display:none}.site-header .container{width:calc(100% - 22px)}.brand{font-size:1.12rem}.brand-mark{width:31px;height:31px}.footer-inner{display:grid}main{padding-top:40px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.nav-guide { display: none; }
+body:has(sl-home, sl-editor) .site-header {
+  background: #fcfbfff5;
+  border-color: #e2dfed;
+}
+body:has(sl-home, sl-editor) .brand,
+body:has(sl-home, sl-editor) .nav-actions > a,
+body:has(sl-home, sl-editor) .nav-actions > a.nav-muted { color: #25203b; }
+body:has(sl-home, sl-editor) .brand-dot { color: #4933d5; }
+body:has(sl-home, sl-editor) .brand-mark { background: #4933d5; color: white; }
+body:has(sl-home, sl-editor) .nav-actions > .button { background: #4933d5; border-color: #4933d5; color: #fff !important; }
+body:has(sl-home, sl-editor) .nav-actions > .button:hover { background: #3625ad; }
+@media (min-width: 741px) { body:has(sl-home) .nav-guide { display: inline-flex; } }
+@media (max-width: 740px) {
+  body:has(sl-home, sl-editor) .navigation { min-height: 62px; }
+}

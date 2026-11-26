@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const ejs=require('ejs');
 const preview=require('../../public/js/blogger-preview.js');
-const {COLOR_PRESETS}=require('../core/presets');
+const {COLOR_PRESETS,TYPOGRAPHY_PRESETS}=require('../core/presets');
 const {NICHO_PAGE_TYPE_MAP}=require('../core/nichoTaxonomy');
 
 test('código servido ao navegador é igual à fonte TypeScript, sem divergência',()=>{
@@ -16,7 +16,7 @@ test('código servido ao navegador é igual à fonte TypeScript, sem divergênci
 });
 function config(niche,pageType){
   const p=COLOR_PRESETS['tech-blue'];
-  return {siteName:'Blog de Teste',niche,pageType,accent:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg,typography:'playfair',layout:'dupla',side:'left'};
+  return {siteName:'Blog de Teste',niche,pageType,accent:p.primary,bg:p.bgBody,surface:p.cardBg,text:p.textMain,footer:p.footerBg,typography:'playfair',font:TYPOGRAPHY_PRESETS.playfair,layout:'dupla',side:'left'};
 }
 
 test('prévia é um HTML local sem Chromium, script de terceiro ou rede',()=>{
@@ -27,7 +27,8 @@ test('prévia é um HTML local sem Chromium, script de terceiro ou rede',()=>{
   assert.match(html,/EM DESTAQUE/);
   assert.match(html,/side-left/);
   assert.match(html,/layout-dupla/);
-  assert.match(html,/Georgia,Times New Roman,serif/);
+  assert.match(html,/'Playfair Display',Georgia,Times New Roman,serif/);
+  assert.match(html,/font-weight:900;line-height:1\.5;letter-spacing:0\.01em/);
   assert.doesNotMatch(html,/<script|<iframe|<link|https?:\/\/|fetch\(/i);
 });
 test('prévia distingue todas as famílias visuais e os 15 nichos',()=>{
@@ -35,7 +36,7 @@ test('prévia distingue todas as famílias visuais e os 15 nichos',()=>{
     'biolink-social':'bio-link',
     'portfolio-minimalista':'portfolio-tile',
     'saas-nexus':'landing-visual',
-    'elearning-academy':'learning-grid',
+    'elearning-academy':'lesson-list',
     'appstore-bulma-mobile':'apps-grid',
     'tecnologia-mag-tech':'breaking',
     'gamer-playerone':'post-card'
@@ -56,6 +57,7 @@ test('cores inválidas e título digitado não injetam HTML/CSS na prévia',()=>
     niche:'__proto__',
     pageType:'foo',
     accent:'red; background:url(https://evil.test)',
+    font:{fontFamily:"'Inter', sans-serif; background:url(https://evil.test)",headingWeight:"900; url(https://evil.test)",lineHeight:"2; url(https://evil.test)",letterSpacing:"0; url(https://evil.test)"},
     bg:'red',surface:'#ffffff',text:'#121212',footer:'#002244',
     layout:'__proto__',side:'__proto__',typography:'__proto__'
   });
@@ -64,6 +66,15 @@ test('cores inválidas e título digitado não injetam HTML/CSS na prévia',()=>
   assert.match(html,/#0ea5e9/);
   assert.match(html,/layout-revista/);
   assert.match(html,/side-right/);
+});
+test('prévia usa a grade nativa do nicho e respeita a presença de barra lateral',()=>{
+  const news=config('noticias-mag-news','portal-noticias');
+  const fixed=preview.renderMarkup({...news,gridConfigurable:false,layout:'mural'});
+  assert.match(fixed,/<div class="post-grid layout-native-two">/);
+  assert.doesNotMatch(fixed,/<div class="post-grid layout-mural">/);
+  const single=preview.renderMarkup({...news,gridConfigurable:false,sidebarConfigurable:false});
+  assert.match(single,/<div class="body-grid side-none">/);
+  assert.doesNotMatch(single,/<aside class="aside">/);
 });
 test('viewport aplica dimensões reais no iframe sem alterar o DOM do editor',()=>{
   const iframe={style:{},srcdoc:''};
@@ -83,6 +94,9 @@ test('viewport aplica dimensões reais no iframe sem alterar o DOM do editor',()
   assert.match(iframe.style.transform,/scale\(1\)/);
   viewer.setDevice('invalido');
   assert.equal(stage.dataset.device,'mobile');
+  stage.clientWidth=228;
+  viewer.setDevice('mobile');
+  assert.ok(iframe.style.transform.includes('scale(0.584'));
 });
 test('editor EJS inclui iframe sem scripts e controles de tela com dados de paleta',async()=>{
   const html=await ejs.renderFile(path.resolve(__dirname,'../../views/pages/gerador-blogger.ejs'),{

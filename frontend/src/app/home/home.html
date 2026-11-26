@@ -1,95 +1,136 @@
 <main class="landing">
-  <div class="container">
-    <section class="intro" aria-labelledby="intro-title">
+  <section class="hero-band" aria-labelledby="intro-title">
+    <div class="container landing-container intro">
       <div class="intro-copy">
         <p class="kicker">Editor de templates para Blogger</p>
-        <h1 id="intro-title">Crie o visual <em>do seu blog.</em></h1>
-        <p class="intro-description">Escolha um modelo ou comece do zero. Ajuste cores, fontes e layout, veja a prévia e baixe o XML para instalar no Blogger.</p>
+        <h1 id="intro-title">Seu blog no Blogger, <em>com a sua cara.</em></h1>
+        <p class="intro-description">Parta de um modelo, personalize cores, fontes e layout e veja como o blog fica em cada tela. Depois, baixe o arquivo XML e instale no Blogger.</p>
         <div class="intro-actions">
-          <a routerLink="/criar" class="button landing-button">
-            Criar meu template <span aria-hidden="true">→</span>
-          </a>
-          <a href="#como-funciona" class="text-link">Como funciona <span aria-hidden="true">↓</span></a>
+          <a routerLink="/criar" class="button landing-button">Criar meu template <span aria-hidden="true">→</span></a>
+          <a href="#modelos" class="secondary-action">Explorar modelos <span aria-hidden="true">↓</span></a>
         </div>
-        <p class="trial-note"><span aria-hidden="true">✓</span> Até 2 downloads grátis por sessão, sem cadastro.</p>
+        <p class="trial-note">Experimente sem cadastro, com até 2 downloads gratuitos por sessão.</p>
       </div>
 
-      <figure class="demo">
-        <figcaption class="demo-bar">
-          <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span>Prévia ilustrativa</span>
-          <span class="demo-format" aria-hidden="true">.xml</span>
-        </figcaption>
-
-        <div class="sample-blog" [attr.data-palette]="palette()" aria-hidden="true">
-          <div class="sample-header">
-            <strong>Horizonte<span>.</span></strong>
-            <div><span>Início</span><span>Diário</span><span>Sobre</span></div>
+      <figure class="hero-preview">
+        <div class="hero-preview-scene">
+          <div class="browser-preview">
+            <div class="browser-bar"><span class="window-dots" aria-hidden="true"></span><span>Ateliê Digital</span></div>
+            <img src="/assets/landing/portfolio.webp" width="1080" height="700" alt="Prévia do modelo Ateliê Digital no computador" fetchpriority="high">
           </div>
-          <div class="sample-feature">
-            <div class="sample-feature-copy">
-              <span>Diário de viagem</span>
-              <strong>Para além<br>do mapa.</strong>
-            </div>
-            <div class="sample-art">
-              <span class="art-sun"></span>
-              <span class="art-ridge art-ridge-far"></span>
-              <span class="art-ridge art-ridge-near"></span>
-            </div>
-          </div>
-          <div class="sample-posts">
-            <span>Últimas histórias</span>
-            <div class="sample-post-grid">
-              <div><b></b><i></i><i></i></div>
-              <div><b></b><i></i><i></i></div>
-              <div><b></b><i></i><i></i></div>
-            </div>
+          <div class="phone-preview">
+            <img src="/assets/landing/portfolio-mobile.webp" width="390" height="625" alt="O mesmo modelo adaptado à tela do celular">
           </div>
         </div>
-
-        <div class="demo-controls" role="group" aria-label="Paleta da prévia">
-          <span>Teste uma cor</span>
-          <div class="palette-options">
-            @for (option of palettes; track option.id) {
-              <button type="button" class="palette-option" [attr.data-palette]="option.id"
-                [attr.aria-pressed]="palette() === option.id" (click)="palette.set(option.id)">
-                <span class="swatch" aria-hidden="true"></span>{{ option.name }}
-              </button>
-            }
-          </div>
-        </div>
+        <figcaption>Ateliê Digital · prévia ilustrativa no computador e no celular</figcaption>
       </figure>
-    </section>
+    </div>
+  </section>
 
-    <section id="como-funciona" class="workflow" aria-labelledby="workflow-title">
-      <h2 id="workflow-title">Do primeiro ajuste ao XML.</h2>
+  <section id="modelos" class="container landing-container section-block" aria-labelledby="models-title">
+    <div class="section-top">
+      <div>
+        <h2 id="models-title">Encontre uma base para o seu blog.</h2>
+        <p>Os modelos são pontos de partida editáveis. Escolha a estrutura que combina com o seu conteúdo.</p>
+      </div>
+      <a routerLink="/criar" class="section-link">Ver todos no editor <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="models-grid">
+      @for (model of featuredModels; track model.id) {
+        <a class="model-card" routerLink="/criar" [queryParams]="{modelo: model.id}">
+          <div class="model-image">
+            <img [src]="'/assets/landing/' + model.image + '.webp'" [width]="model.width" [height]="model.height"
+              alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="model-content">
+            <p class="model-category">{{ model.category }}</p>
+            <h3>{{ model.name }}</h3>
+            <p class="model-description">{{ model.description }}</p>
+            <span class="model-action">Usar este modelo <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section id="como-funciona" class="process-band section-block" aria-labelledby="workflow-title">
+    <div class="container landing-container">
+      <div class="section-top">
+        <div>
+          <h2 id="workflow-title">Do primeiro ajuste ao XML.</h2>
+          <p>Monte o tema no Softload e publique no Blogger seguindo o seu ritmo.</p>
+        </div>
+      </div>
       <ol class="workflow-steps">
         <li>
-          <h3>Escolha uma base</h3>
-          <p>Comece do zero ou use um modelo de nicho como ponto de partida.</p>
+          <h3>Escolha o ponto de partida</h3>
+          <p>Use um modelo de nicho ou crie uma base nova para organizar o seu conteúdo.</p>
         </li>
         <li>
-          <h3>Personalize e visualize</h3>
-          <p>Combine cores, fontes e layouts de postagem. Confira a prévia em computador, tablet ou celular.</p>
+          <h3>Personalize por etapas</h3>
+          <p>Defina nome, cores e tipografia. Ajuste as postagens e a barra lateral e confira a prévia em diferentes telas.</p>
         </li>
         <li>
-          <h3>Baixe e importe</h3>
-          <p>O Softload valida o XML antes do download. No Blogger, abra <strong>Tema → Restaurar</strong> para importar o arquivo.</p>
+          <h3>Revise, baixe e instale</h3>
+          <p>Confira as escolhas, baixe o XML validado e importe no Blogger em <strong>Tema → Restaurar</strong>.</p>
         </li>
       </ol>
-    </section>
+    </div>
+  </section>
 
-    <section class="offer" aria-labelledby="offer-title">
+  <section class="container landing-container section-block" aria-labelledby="plans-title">
+    <div class="section-top">
       <div>
-        <p class="kicker">Plano Essencial</p>
-        <h2 id="offer-title">Crie mais versões do seu blog.</h2>
-        <p>Gerações e downloads de XML ilimitados durante o acesso ativo, sujeitos aos limites técnicos de proteção.</p>
+        <h2 id="plans-title">Quanto custa criar um template?</h2>
+        <p>Comece grátis. Escolha o Essencial se precisar baixar mais versões.</p>
       </div>
-      <div class="offer-price">
-        <p><strong>R$ 5,00</strong> <span>/ 30 dias</span></p>
-        <p>Pagamento único, sem renovação automática.</p>
+    </div>
+    <div class="plans-grid">
+      <article class="plan">
+        <h3>Grátis</h3>
+        <p class="plan-price"><strong>R$ 0</strong></p>
+        <ul>
+          <li>Modelos editáveis e prévia em três tamanhos de tela.</li>
+          <li>Até 2 downloads de XML por sessão sem cadastro.</li>
+          <li>Mais 2 downloads ao criar uma conta gratuita.</li>
+        </ul>
+        <a routerLink="/criar" class="button plans-button">Experimentar grátis <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="plan plan-essential">
+        <h3>Essencial</h3>
+        <p class="plan-price"><strong>R$ 5,00</strong> <span>/ 30 dias</span></p>
+        <ul>
+          <li>Gerações e downloads de XML ilimitados durante o acesso ativo, sujeitos à proteção antiabuso.</li>
+          <li>Pagamento único, sem renovação automática.</li>
+        </ul>
         <a routerLink="/planos" class="button landing-button">Conhecer o Essencial <span aria-hidden="true">→</span></a>
-      </div>
-    </section>
-  </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="container landing-container section-block faq" aria-labelledby="faq-title">
+    <div>
+      <h2 id="faq-title">Dúvidas frequentes</h2>
+      <p>O que saber antes de criar e instalar o tema.</p>
+      <a routerLink="/contato" class="section-link">Falar com o Softload <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>O Softload publica meu blog?</summary>
+        <p>O Softload gera o arquivo de tema. Você faz a instalação na sua conta do Blogger, onde também publica e edita suas postagens.</p>
+      </details>
+      <details>
+        <summary>Como instalo o XML no Blogger?</summary>
+        <p>Entre no painel do blog, abra <strong>Tema</strong> e use o menu ao lado do botão de personalização. Faça um backup do tema atual e depois escolha <strong>Restaurar</strong> para enviar o XML baixado.</p>
+      </details>
+      <details>
+        <summary>Consigo revisar o resultado antes de baixar?</summary>
+        <p>Sim. Alterne a prévia entre computador, tablet e celular durante a edição. Ela usa conteúdo de exemplo. Depois de instalar, confira o resultado no Blogger com suas postagens e widgets.</p>
+      </details>
+      <details>
+        <summary>Posso continuar o template depois?</summary>
+        <p>Use <strong>Salvar rascunho</strong> no editor e abra-o no mesmo navegador para retomar as escolhas.</p>
+      </details>
+    </div>
+  </section>
 </main>

@@ -14,9 +14,18 @@ const catalog={
     {id:'tech-blue',nome:'Azul',hex:'#0ea5e9',bg:'#f8fafc',surface:'#ffffff',text:'#1e293b',footer:'#0f172a'},
     {id:'coral',nome:'Coral',hex:'#f87171',bg:'#ffffff',surface:'#fff7ed',text:'#1e293b',footer:'#0f172a'}
   ],
-  fontes:[{id:'inter',nome:'Inter'},{id:'playfair',nome:'Playfair'}],
-  nichos:[{id:'tecnologia-mag-tech',nome:'Tecnologia',pageType:'blogger-conteudo',aviso:'Blog de tecnologia'}],
-  exemplos:[{id:'tech',nome:'Meu Blog Tech',descricao:'Notícias e análises do universo tecnológico.',categoria:'Tecnologia',nichoTema:'tecnologia-mag-tech',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'}],
+  fontes:[
+    {id:'inter',nome:'Inter',fontFamily:"'Inter', sans-serif",headingWeight:'800',lineHeight:'1.7',letterSpacing:'-0.01em'},
+    {id:'playfair',nome:'Playfair',fontFamily:"'Playfair Display', serif",headingWeight:'900',lineHeight:'1.5',letterSpacing:'0.01em'}
+  ],
+  nichos:[
+    {id:'portfolio-minimalista',nome:'Portfólio',pageType:'landing-page',gridConfigurable:true,sidebarConfigurable:false},
+    {id:'noticias-mag-news',nome:'Notícias',pageType:'portal-noticias',gridConfigurable:false,sidebarConfigurable:true}
+  ],
+  exemplos:[
+    {id:'tech',nome:'Meu Blog Tech',descricao:'Notícias e análises do universo tecnológico.',categoria:'Tecnologia',nichoTema:'portfolio-minimalista',colorPreset:'tech-blue',typography:'inter',gridLayout:'revista',sidebarPosition:'right'},
+    {id:'portfolio-violeta',nome:'Ateliê Digital',categoria:'Portfólio',nichoTema:'portfolio-minimalista',colorPreset:'coral',typography:'playfair',gridLayout:'dupla',sidebarPosition:'none'}
+  ],
   checkoutEnabled:true,filesEnabled:false
 };
 // Compare actual bytes served by the Docker image with the files inspected by
@@ -47,7 +56,8 @@ async function verifySacArtifact(page){
   }
   console.log('SAC_DOCKER_ARTIFACT_MATCH: index, Angular JS/CSS and procedural preview script');
 }
-const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+const executablePath=process.env.SOFTLOAD_CHROMIUM_EXECUTABLE;
+const browser=await chromium.launch({...(executablePath?{executablePath}:{channel:'chrome'}),headless:true,args:['--no-sandbox']});
 let checks=0;
 try {
   for(const viewport of [{width:1366,height:860},{width:390,height:844}]){
@@ -104,90 +114,161 @@ try {
     checks++;
 
     if(integrity&&viewport.width===1366){await verifySacArtifact(page);checks++;}
-    await page.getByRole('heading',{name:'Crie o visual do seu blog.'}).waitFor();
-    const palette=page.getByRole('group',{name:'Paleta da prévia'});
-    const blue=palette.getByRole('button',{name:'Azul'});
-    const coral=palette.getByRole('button',{name:'Coral'});
-    const sample=page.locator('.sample-blog');
-    assert.equal(await blue.getAttribute('aria-pressed'),'true');
-    const initialColor=await sample.evaluate(el=>getComputedStyle(el).backgroundColor);
-    await coral.click();
-    await page.locator('.sample-blog[data-palette="coral"]').waitFor();
-    assert.notEqual(await sample.evaluate(el=>getComputedStyle(el).backgroundColor),initialColor);
-    assert.equal(await coral.getAttribute('aria-pressed'),'true');
-    assert.equal(await blue.getAttribute('aria-pressed'),'false');
+    await page.getByRole('heading',{name:'Seu blog no Blogger, com a sua cara.'}).waitFor();
+    const heroImage=page.getByRole('img',{name:'Prévia do modelo Ateliê Digital no computador'});
+    assert.ok(await heroImage.evaluate(img=>img.complete&&img.naturalWidth>0));
+    await page.getByRole('link',{name:'Explorar modelos'}).click();
+    await page.waitForURL('**/#modelos');
+    const card=page.getByRole('link',{name:/Ateliê Digital/});
+    await card.scrollIntoViewIfNeeded();
+    await card.locator('img').evaluate(img=>img.decode());
+    await page.getByRole('heading',{name:'Do primeiro ajuste ao XML.'}).waitFor();
+    const faq=page.getByText('Como instalo o XML no Blogger?',{exact:true});
+    await faq.click();
+    await page.getByText(/Faça um backup do tema atual/).waitFor();
     if(mobile){
       const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
       assert.ok(dimensions.scroll<=dimensions.width+2,
         'mobile landing horizontal overflow: '+JSON.stringify(dimensions));
     }
     checks++;
-    await page.getByRole('link',{name:'Como funciona'}).click();
-    await page.waitForURL('**/#como-funciona');
-    await page.getByRole('heading',{name:'Do primeiro ajuste ao XML.'}).waitFor();
-    await page.getByRole('link',{name:'Criar meu template'}).click();
-    await page.waitForURL('**/criar');
-    await page.getByRole('heading',{name:'Configurar template'}).waitFor();
-    assert.equal(await page.getByRole('link',{name:'Plano Essencial'}).getAttribute('href'),'/planos');
+
+    await card.click();
+    await page.waitForURL('**/criar?modelo=portfolio-violeta');
+    await page.getByRole('heading',{name:'Dê identidade ao blog'}).waitFor();
+    assert.equal(await page.locator('#siteName').inputValue(),'Ateliê Digital');
     checks++;
 
-    // Descriptions are part of the production API and help distinguish presets.
+    await page.goto(origin+'/');
+    await page.getByRole('link',{name:'Criar meu template',exact:true}).click();
+    await page.waitForURL('**/criar');
+    await page.getByRole('heading',{name:'Escolha o ponto de partida'}).waitFor();
+    assert.equal(await page.locator('#siteName').count(),0,'Identity controls belong to their own step');
+    const navigation=page.getByRole('navigation',{name:'Etapas de criação'});
+    async function goStep(label){
+      const step=navigation.getByRole('button',{name:label,exact:true});
+      await step.click();
+      await step.and(page.locator('[aria-current="step"]')).waitFor();
+    }
+    const next=page.getByRole('button',{name:'Continuar',exact:true});
+    await next.click();
+    await page.getByRole('heading',{name:'Dê identidade ao blog'}).waitFor();
+    await page.locator('#siteName').fill(' ');
+    await next.click();
+    await page.getByText('Informe um nome com 2 a 60 caracteres.').waitFor();
+    await page.locator('#siteName').fill('Meu Blog Azul');
+    await next.click();
+    await navigation.getByRole('button',{name:'Layout',exact:true}).and(page.locator('[aria-current="step"]')).waitFor();
+    checks++;
+
+    const stage=page.locator('.preview-window');
+    const viewer=page.frameLocator('.preview-window iframe');
+    const layout=page.locator('#gridLayout');
+    const side=page.locator('#sidebarPosition');
+    const showPreview=async()=>{if(mobile)await page.getByRole('button',{name:'Ver prévia',exact:true}).click();};
+    const showControls=async()=>{if(mobile)await page.getByRole('button',{name:'Ajustes',exact:true}).click();};
+    const modes=[
+      {name:'Computador',id:'desktop',width:1080,columns:[3,2,3,4,1,1,1]},
+      {name:'Tablet',id:'tablet',width:768,columns:[2,2,3,4,1,1,1]},
+      {name:'Celular',id:'mobile',width:390,columns:[1,1,2,2,1,1,1]}
+    ];
+    const readColumns=grid=>grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    await showPreview();
+    await page.locator('.preview-window[data-device="'+(mobile?'mobile':'desktop')+'"]').waitFor();
+    for(const mode of modes){
+      const deviceButton=page.getByRole('button',{name:mode.name,exact:true});
+      await deviceButton.click();
+      await page.getByRole('button',{name:mode.name,exact:true,pressed:true}).waitFor();
+      assert.equal(await stage.getAttribute('data-device'),mode.id);
+      assert.equal(await viewer.locator('html').evaluate(el=>el.ownerDocument.defaultView.innerWidth),mode.width);
+      for(const [i,name] of ['revista','dupla','quadrado','mural','lista','coluna-unica','zigzag'].entries()){
+        await showControls();
+        await layout.selectOption(name);
+        await showPreview();
+        const grid=viewer.locator('.post-grid.layout-'+name);
+        await grid.waitFor();
+        assert.equal(await readColumns(grid),mode.columns[i],mode.id+' '+name);
+        if(name==='zigzag'){
+          const directions=await grid.locator('.post-card').evaluateAll(cards=>cards.slice(0,2).map(card=>getComputedStyle(card).flexDirection));
+          assert.deepEqual(directions,mode.id==='mobile'?['column','column']:['row','row-reverse']);
+        }
+      }
+    }
+    if(!mobile){
+      const oldWidth=await stage.evaluate(el=>el.clientWidth);
+      await page.getByRole('button',{name:'Ampliar prévia'}).click();
+      await layout.waitFor({state:'hidden'});
+      assert.ok(await stage.evaluate(el=>el.clientWidth)>oldWidth);
+      await page.getByRole('button',{name:'Voltar aos ajustes'}).click();
+      await layout.waitFor({state:'visible'});
+    }
+    await goStep('Identidade');
+    await page.locator('#typography').selectOption('playfair');
+    await showPreview();
+    const previewFrame=page.frames().find(frame=>frame.url()==='about:srcdoc');
+    assert.ok(previewFrame,'preview should use a sandboxed srcdoc frame');
+    await previewFrame.waitForFunction(()=>getComputedStyle(document.body).fontFamily.includes('Playfair Display'));
+    assert.equal(await stage.locator('iframe').getAttribute('sandbox'),'');
+    await goStep('Modelo');
+    await page.locator('#modo').selectOption('modelo');
+    await page.locator('#nichoTema').selectOption('noticias-mag-news');
+    await goStep('Layout');
+    assert.equal(await layout.isDisabled(),true);
+    assert.equal(await side.isEnabled(),true);
+    await showPreview();
+    await page.getByRole('button',{name:'Tablet',exact:true}).click();
+    await viewer.locator('.post-grid.layout-native-two').waitFor();
+    assert.equal(await readColumns(viewer.locator('.post-grid.layout-native-two')),2);
+    checks++;
+
+    await goStep('Modelo');
     await page.getByText('Notícias e análises do universo tecnológico.').waitFor();
-    checks++;
-    // The gallery selection updates form fields and the isolated iframe.
-    await page.getByRole('button',{name:/Meu Blog Tech/}).click();
-    await page.waitForFunction(()=>[...document.querySelectorAll('.gallery button')]
-      .some(b=>b.textContent?.includes('Meu Blog Tech')&&b.getAttribute('aria-pressed')==='true'));
-    checks++;
-    // The editor uses OnPush and signals: assert settled DOM after render,
-    // not the stale input value from the click's synchronous frame.
-    await page.waitForFunction(() => {
-      const input=document.querySelector('#siteName');
-      const button=[...document.querySelectorAll('button')].find(
-        b=>b.textContent?.includes('Meu Blog Tech'));
-      return input instanceof HTMLInputElement &&
-        input.value==='Meu Blog Tech' && button?.getAttribute('aria-pressed')==='true';
-    });
+    const example=page.getByRole('button',{name:/Meu Blog Tech/});
+    await example.click();
+    await example.and(page.locator('[aria-pressed="true"]')).waitFor();
+    await next.click();
+    await page.waitForFunction(()=>document.querySelector('#siteName')?.value==='Meu Blog Tech');
     await page.locator('#siteName').fill('Blog de Teste Angular');
-    // Manual editing must immediately unselect the now-different gallery model.
-    await page.waitForFunction(()=>[...document.querySelectorAll('.gallery button')]
-      .filter(b=>b.textContent?.includes('Meu Blog Tech'))
-      .every(b=>b.getAttribute('aria-pressed')==='false'));
-    checks++;
-    await page.getByRole('button',{name:'Celular'}).click();
-    await page.waitForFunction(()=>document.querySelector('.preview-window')?.getAttribute('data-device')==='mobile');
+    await goStep('Modelo');
+    await example.and(page.locator('[aria-pressed="false"]')).waitFor();
+    await showPreview();
+    await page.getByRole('button',{name:'Celular',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('.preview-window iframe')?.srcdoc?.includes('Blog de Teste Angular'));
     checks++;
 
-    // Exercise XML download through Angular without consuming a real quota.
+    await goStep('Revisão');
+    await page.getByRole('heading',{name:'Revise e baixe o XML'}).waitFor();
+    await page.getByText('Blog de Teste Angular',{exact:true}).waitFor();
+    assert.equal(await page.getByRole('link',{name:'Plano Essencial',exact:true}).getAttribute('href'),'/planos');
     const [download]=await Promise.all([
       page.waitForEvent('download',{timeout:15000}),
       page.getByRole('button',{name:'Gerar e baixar XML'}).click()
     ]);
     assert.equal(download.suggestedFilename(),'blog-teste.xml');
     await page.getByRole('link',{name:'Baixar XML novamente'}).waitFor();
-    // The generated XML belongs to the old settings: changing layout must
-    // revoke that old download link, not silently offer a stale template.
-    await page.locator('#gridLayout').selectOption('lista');
-    await page.getByRole('link',{name:'Baixar XML novamente'}).waitFor({state:'detached'});
+    await goStep('Layout');
+    await layout.selectOption('lista');
+    await goStep('Revisão');
     await page.getByText('Você alterou o template. Gere um novo XML para essas escolhas.').waitFor();
-    assert.equal(await page.locator('#gridLayout').inputValue(),'lista');
+    assert.equal(await page.getByRole('link',{name:'Baixar XML novamente'}).count(),0);
     checks++;
-    // "Salvar escolhas" must restore the full editable configuration on reload,
-    // not only the palette. It stays browser-local and consumes no server quota.
+
+    await goStep('Identidade');
     await page.locator('#siteName').fill('Meu Blog Salvo');
-    await page.locator('#sidebarPosition').selectOption('left');
-    await page.getByRole('button',{name:'Salvar escolhas'}).click();
-    await page.getByText('Escolhas salvas neste dispositivo.').waitFor();
+    await page.getByRole('button',{name:'Salvar rascunho'}).click();
+    await page.getByText('Rascunho salvo neste navegador.').waitFor();
     await page.reload();
-    await page.getByRole('heading',{name:'Configurar template'}).waitFor();
-    await page.waitForFunction(()=>
-      document.querySelector('#siteName')?.value==='Meu Blog Salvo' &&
-      document.querySelector('#gridLayout')?.value==='lista' &&
-      document.querySelector('#sidebarPosition')?.value==='left' &&
-      document.querySelector('#modo')?.value==='modelo');
-    assert.equal(await page.locator('#nichoTema').inputValue(),'tecnologia-mag-tech');
-    checks++;
+    await page.getByRole('heading',{name:'Dê identidade ao blog'}).waitFor();
+    assert.equal(await page.locator('#siteName').inputValue(),'Meu Blog Salvo');
+    await goStep('Layout');
+    assert.equal(await layout.inputValue(),'lista');
+    assert.equal(await side.inputValue(),'right');
+    assert.equal(await side.isDisabled(),true);
+    await goStep('Modelo');
+    assert.equal(await page.locator('#modo').inputValue(),'modelo');
+    assert.equal(await page.locator('#nichoTema').inputValue(),'portfolio-minimalista');
+    const editorOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(editorOverflow<=2,'editor horizontal overflow: '+editorOverflow);
     checks++;
 
     // Auth screens are real routed components; no Firebase request is made.
